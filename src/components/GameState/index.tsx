@@ -51,7 +51,7 @@ function GameState({ socket }: { socket: Socket<ServerToClientEvents, ClientToSe
     // is that bad?
     socket.emit("sendUserInfo");
 
-    // trigger the server to send all user info
+    // get initial info (must update after any turn change)
     socket.emit("sendAllUserInfoToAll");
 
     return () => {
