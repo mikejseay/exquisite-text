@@ -181,7 +181,6 @@ const LineInput = ({
     socket.emit("getLines");
 
     socket.on("userInfo", userInfoListener);
-    socket.emit("sendUserInfo");
 
     return () => {
       socket.off("lineEdit", lineEditListener);
@@ -297,7 +296,6 @@ const LineInput = ({
         // setMessageType(2);
         // setProgress(lines[1].length / idealCharsOnLineTwo);
         helpBasedOnProgress(2, lines[1].length / idealCharsOnLineTwo);
-        // console.log('just right zone', lines);
         setDoneLine(
           lines[1].length >= minCharsOnLineTwo &&
             lines[1].length <= maxCharsOnLineTwo
@@ -325,8 +323,6 @@ const LineInput = ({
   }
 
   function makeExquisite() {
-    // console.log('try to make exquisite');
-
     // this function takes approximately 1.5 lines of poem, and "makes them exquisite" by clipping the 1st line.
     // the next person who sees the result should not be aware of the 1st line but must continue with a new line
     const poemParts = poemInput.split(lineSepString);
@@ -342,20 +338,16 @@ const LineInput = ({
 
       setOnSecondLine(false);
 
-      // emit a message of the first part to be posted to the Lines
+      // post the first part to the Lines
       socket.emit("line", firstPart);
 
-      // this client only tell the server to do the turn event
+      // this client only tell the server to do the turn event, which sends user info appropriately
       socket.emit("allTurns");
-
-      // this client only tell the server to do the sendUserInfo event
-      socket.emit("sendEachUserTheirInfo");
-      socket.emit("sendAllUserInfoToAll");
     }
   }
 
   function finishExquisite() {
-    // emit a message of the current input to be posted to the Lines
+    // post the current input to the lines
     socket.emit("line", poemInput);
 
     // set the input textarea to be blank
@@ -370,12 +362,8 @@ const LineInput = ({
     // in Lines.js to be initialized (an empty object)...
     socket.emit("clearLines");
 
-    // trigger the turn event on the server (switch the turn index and assign roles)
+    // this client only tell the server to do the turn event, which sends user info appropriately
     socket.emit("allTurns");
-
-    // since roles have changed, we must update user info
-    socket.emit("sendEachUserTheirInfo");
-    socket.emit("sendAllUserInfoToAll");
   }
 
   function handleKeypress({ charCode, ctrlKey }: KeyboardEvent) {
@@ -585,12 +573,3 @@ const LineInput = ({
 };
 
 export default LineInput;
-
-// const poemParts = poemInputRef.split(lineSepString);
-// console.log(poemParts);
-// const poemSecondLine = poemParts[1].trim();
-// setDoneLine(poemParts.length === 2 &&
-//     poemSecondLine.length > minCharsOnNewLine &&
-//     poemSecondLine.length < maxCharsOnNewLine);
-
-// {'*'.repeat(poemInput.length)}

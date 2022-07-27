@@ -4,6 +4,7 @@
 
 import { Server, Socket } from "socket.io";
 import { ClientToServerEvents, ILine, InterServerEvents, IPoem, ServerToClientEvents, SocketData } from "../src/types";
+const db = require('./queries');
 
 const defaultUser = {
     id: 'anon',
@@ -16,19 +17,14 @@ const randomColors = ['red', 'blue', 'orange', 'green', 'purple'];
 
 const uuidv4 = require('uuid').v4; // a function that generates a random uuid for lines
 
-// The poem room holds two global data structures, lines and users.
+// The poem room holds global data structures, lines, poems, and users.
 
-// The lines object is a set that simply contains all lines together with some metadata.
 let lineEditCurrentVal = '';
 let lines: Set<ILine> = new Set();
 const poems: Set<IPoem> = new Set();
 
-const db = require('./queries');
-
-
 async function populatePoems() {
     const dbPoems = await db.returnPoems(3);
-    console.log(dbPoems);
     for (const { id, createdAt, title, content } of dbPoems) {
         poems.add({
             id,
@@ -40,18 +36,11 @@ async function populatePoems() {
 }
 populatePoems();
 
-// async function addPoemToDB(poemObj) {
-//     console.log('in addPoemToDB');
-//     console.log(poemObj);
-//     await db.storePoem(poemObj);
-// }
-
 // The users map is intended to hold user information indexed by the socket connection.
 // the key is the socket, and the value is an object full of info
-// note that a map is ordered -- can you pop?
 const users = new Map();
 
-const maxEditors = 4;
+const maxEditors = 2;  // should be being defined upon room creation...
 let nEditors = 0;
 let turnIndex = 0;
 
@@ -91,14 +80,6 @@ class Connection {
         socket.on('clearLines', () => this.clearLines());
         socket.on('getPoems', () => this.getPoems());
 
-        // socket.on('chat message', (msg) => {
-        //     db.createSocketPoem(JSON.parse(msg))
-        //         .then((_) => {
-        //             this.emitMostRecentPoems();
-        //         })
-        //         .catch((err) => io.emit(err));
-        // });
-
         // The disconnect and connection_error are predefined events
         // that are triggered when the socket disconnects, or when an error happens during the connection.
         socket.on('disconnect', () => this.disconnect());
@@ -108,21 +89,11 @@ class Connection {
     }
 
     changeTurnsForAll() {
+        console.log('turn was passed');
         turnIndex = (turnIndex + 1) % nEditors; // cycles through 0 up to nEditors - 1
         this.assignRolesOnPrinciples()
-        // console.log('the turn switched to', turnIndex);
-        // function editRole(value, key, map) {
-        //     if (value['role'] === 'activeEditor') {
-        //         console.log(value['name'], 'is no longer activeEditor');
-        //         value['role'] = 'inactiveEditor';
-        //     } else if (value['role'] === 'inactiveEditor' && turnIndex === value['turn']) {
-        //         console.log(value['name'], 'is now activeEditor');
-        //         value['role'] = 'activeEditor';
-        //     } else {
-        //         console.log(value['name'], 'didnt change status');
-        //     }
-        // }
-        // users.forEach(editRole)
+        this.sendEachUserTheirInfo()
+        this.sendAllUserInfoToAll()
     }
 
     clearLines() {
@@ -152,14 +123,14 @@ class Connection {
     }
 
     sendAllUserInfoToAll() {
+        console.log('sendAllUserInfoToAll reached');
         this.io.sockets.emit('allUserInfo', Array.from(users.values()));
     }
 
     assignRolesOnPrinciples () {
-        console.log('assigning user roles from first principles');
         let turnCounter = 0;
         nEditors = Math.min(users.size, maxEditors);
-        console.log('nEditors', nEditors)
+        console.log('assigning roles for', nEditors)
         for (let userInfoObj of users.values()) {
             userInfoObj['turn'] = turnCounter;
             if (turnCounter === turnIndex) {
@@ -174,7 +145,6 @@ class Connection {
             }
             turnCounter += 1;
         }
-        // console.log('afterwards it was', users)
     }
 
     // Handle the initial arrival of the user
@@ -184,8 +154,6 @@ class Connection {
         users.set(this.socket, {
             id: uuidv4(),
             name: randomUserNames.pop(),
-            // role: proposedRole,
-            // turn: users.size,
             color: randomColors.pop(),
         });
 
@@ -193,7 +161,7 @@ class Connection {
     }
 
     sendLine(line: ILine) {
-        // emit is a crucial method that sends the line to all users
+        // crucial method that sends the line to all users
         // note that here we name this emitted signal "line," which allows us to identify it within IO
         this.io.sockets.emit('line', line);
     }
@@ -225,13 +193,12 @@ class Connection {
     }
 
     handleLineEdit(value: string) {
-        // this.io.sockets.emit('lineEdit', value);
         this.socket.broadcast.emit('lineEdit', value);
         lineEditCurrentVal = value;
     }
 
     sendPoem(poem: IPoem) {
-        // emit is a crucial method that sends the poem to all users
+        // crucial method that sends the poem to all users
         // note that here we name this emitted signal "poem," which allows us to identify it within IO
         this.io.sockets.emit('poem', poem);
     }
@@ -252,9 +219,8 @@ class Connection {
         };
         poems.add(poem);
 
-        // here we should also add the poem to our database?
-        const myPromise = db.storePoem(poem);
-        console.log(myPromise);
+        // add the poem to the database
+        db.storePoem(poem);
 
         // It will then call sendMessage() which uses the Socket.IO server
         // to send the poem to all sockets that are currently connected.

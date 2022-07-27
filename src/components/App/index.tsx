@@ -6,7 +6,6 @@ import {
   io,
   Socket,
 } from "socket.io-client";
-import Lines from "../Lines";
 import Poems from "../Poems";
 import LineInput from "../LineInput";
 import GameState from "../GameState";
