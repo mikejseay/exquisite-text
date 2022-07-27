@@ -7,8 +7,15 @@ import { modalContent, modalTitle, tutorial } from "./styles";
 import exampleGif from '../../assets/images/exquisiteExample.gif';
 
 const Tutorial = () => {
-  // whether the modal window is open
-  const [helpOpen, setHelpOpen] = useState(true);
+
+  // check if the user's visited the page before
+  const firstVisit = !localStorage.getItem('visited');
+  if (firstVisit) {
+    localStorage.setItem('visited', 'yes');
+  }
+
+  // if first visit, the help modal will be initially open
+  const [helpOpen, setHelpOpen] = useState(firstVisit);
   const handleHelpOpen = () => setHelpOpen(true);
   const handleHelpClose = () => setHelpOpen(false);
 
@@ -35,7 +42,7 @@ const Tutorial = () => {
             <p>Then, press Return ⏎.</p>
             <p> </p>
             <img src={exampleGif} alt="Example"/>
-            <p>The second line is for the next player, so write a short fragment that will be passed on.</p>
+            <p>On the second line, write a short fragment. The next player will see this part, so give them a "prompt" to carry onward!</p>
             <p>When you've written enough on the second line, press the "Pass Turn" button that will appear.</p>
             <p>Express your creativity! Give your collaborator a tricky prompt!</p>
             <p>If you feel the poem has been finished, press the 'Complete Poem' button.</p>
