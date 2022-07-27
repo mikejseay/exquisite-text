@@ -25,20 +25,16 @@ const poems: Set<IPoem> = new Set();
 
 const db = require('./queries');
 
-// async function initialReturnPoems() {
-//     const dbPoems = await db.returnPoems();
-//     console.log(dbPoems);
-// }
-// initialReturnPoems();
 
 async function populatePoems() {
     const dbPoems = await db.returnPoems(3);
-    for (const { id, content, time, title } of dbPoems) {
+    console.log(dbPoems);
+    for (const { id, createdAt, title, content } of dbPoems) {
         poems.add({
             id,
-            content,
-            time,
+            createdAt,
             title,
+            content,
         });
     }
 }
@@ -111,13 +107,6 @@ class Connection {
         });
     }
 
-    // emitMostRecentPoems() {
-    //     db.getSocketPoems()
-    //         // .then((result) => console.log(result))
-    //         .then((result) => this.io.emit('chat message', result))
-    //         .catch(console.log);
-    // };
-
     changeTurnsForAll() {
         turnIndex = (turnIndex + 1) % nEditors; // cycles through 0 up to nEditors - 1
         this.assignRolesOnPrinciples()
@@ -149,13 +138,6 @@ class Connection {
         this.handlePoem(poemString)
         lines.clear();
     }
-
-    // allUsersSpectators() {
-    //     function makeSpectator(value, key, map) {
-    //         value['role'] = 'spectator';
-    //     }
-    //     users.forEach(makeSpectator)
-    // }
 
     // to be critical: there are multiple pieces of the app that listen for this
     sendEachUserTheirInfo() {
@@ -232,7 +214,7 @@ class Connection {
             id: uuidv4(),
             user: users.get(this.socket) || defaultUser,
             value,
-            time: new Date()
+            createdAt: new Date()
         };
         lines.add(line);
 
@@ -265,7 +247,7 @@ class Connection {
         const poem: IPoem = {
             id: uuidv4(),
             content: poemString,
-            time: new Date(),
+            createdAt: new Date(),
             title: `exquisite text #${Math.round(Math.random() * 100)}`,
         };
         poems.add(poem);
