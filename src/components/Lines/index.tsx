@@ -74,7 +74,7 @@ function Lines({
     <div className="lines-outer-container">
       <div className="lines-container">
         {[...Object.values(lines)]
-          .sort((a, b) => Number(a.time) - Number(b.time))
+          .sort((a, b) => Number(a.createdAt) - Number(b.createdAt))
           .map((line) => (
             <div
               className="line-container"
@@ -94,8 +94,3 @@ function Lines({
 }
 
 export default Lines;
-
-// title={`Sent at ${new Date(line.time).toLocaleTimeString()}`}
-// <span className="user">{line.user.name}:</span>
-// <span className="date">{new Date(line.time).toLocaleTimeString()}</span>
-// <span className="line">{line.value}</span>

@@ -1,19 +1,9 @@
-import { Sequelize } from "sequelize";
-import { Poem } from "./entity/poem";
+import { pgSequelConn, Poem } from "./entity/poem";
 import { IPoem } from "../src/types";
-
-const isProduction = process.env.NODE_ENV === "production";
-const connectionString = `postgres://${process.env.PG_USER}:${process.env.PG_PASSWORD}@${process.env.PG_HOST}:${process.env.PG_PORT}/${process.env.PG_DATABASE}`;
-
-const sequelize = new Sequelize(
-  isProduction && process.env.DATABASE_URL
-    ? process.env.DATABASE_URL
-    : connectionString
-);
 
 (async () => {
   try {
-    await sequelize.authenticate();
+    await pgSequelConn.authenticate();
     console.log("Connection has been established successfully.");
   } catch (error) {
     console.error("Unable to connect to the database:", error);
@@ -22,23 +12,22 @@ const sequelize = new Sequelize(
 
 async function returnPoems(nPoems: number) {
   try {
-    const getAllPoems = await Poem.findall({
+    await Poem.sync();  // make sure the table exists
+    return await Poem.findAll({
+      attributes: ['id', 'createdAt', 'title', 'content'],
       limit: nPoems,
       order: [
-        ['time', 'DESC'],
-    ],
+        ['createdAt', 'DESC'],
+      ],
     });
-    console.log(getAllPoems);
-    return getAllPoems.rows;
   } catch ({ stack }) {
     return stack;
   }
 }
 
-async function storePoem({title, content, time}: IPoem) {
+async function storePoem({title, content }: IPoem) {
   try {
-    const poem = new Poem({ title, content, time });
-    console.log(poem.rows[0]);
+    await Poem.create({ title, content });
   } catch ({ stack }) {
     console.log(stack);
   }

@@ -23,7 +23,7 @@ export interface ILine {
   id: Key;
   user: IUserInfo;
   value: string;
-  time: Date;
+  createdAt: Date;
 }
 
 export interface IPoems {
@@ -33,7 +33,7 @@ export interface IPoems {
 export interface IPoem {
   id: Key;
   content: string;
-  time: Date;
+  createdAt: Date;
   title: string;
 }
 

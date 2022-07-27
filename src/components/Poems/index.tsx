@@ -48,7 +48,7 @@ function Poems({ socket }: { socket: Socket<ServerToClientEvents, ClientToServer
     // we can switch this so that it renders previous poems according to a view
     <div style={poemsBody}>
       {[...Object.values(poems)]
-        .sort((a, b) => Number(a.time) - Number(b.time))
+        .sort((a, b) => Number(a.createdAt) - Number(b.createdAt))
         .map((poem) => (
           <div key={poem.id} className="poem-container">
             <Accordion>
@@ -77,17 +77,3 @@ function Poems({ socket }: { socket: Socket<ServerToClientEvents, ClientToServer
 }
 
 export default Poems;
-
-// <div className='poems-body'>
-//     {[...Object.values(poems)]
-//         .sort((a, b) => b.time - a.time)
-//         .map((poem) => (
-//             <div
-//                 key={poem.id}
-//                 className='poem-container'
-//             >
-//                 <div className='poem-title'>{poem.title}</div>
-//                 <div className='poem'>{poem.content}</div>
-//             </div>
-//         ))}
-// </div>

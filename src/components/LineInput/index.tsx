@@ -421,7 +421,7 @@ const LineInput = ({
           <div className="lines-outer-container">
             <div className="lines-container">
               {[...Object.values(lines)]
-                .sort((a, b) => Number(a.time) - Number(b.time))
+                .sort((a, b) => Number(a.createdAt) - Number(b.createdAt))
                 .map((line) => (
                   <div
                     className="line-container"
