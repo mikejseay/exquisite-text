@@ -7,7 +7,7 @@ export enum Role {
 }
 
 export interface IUserInfo {
-  id: Key;
+  id: string;
   name: string;
   color: string;
   turn: number;
