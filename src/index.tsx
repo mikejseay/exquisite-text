@@ -1,7 +1,13 @@
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route
+} from "react-router-dom";
 import './index.css';
 import App from './components/App';
+import Host from "./routes/host"
+import Join from "./routes/join"
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(
@@ -9,7 +15,11 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <BrowserRouter>
-    <App />
+    <Routes>
+      <Route path="/" element={<Join />} />
+      <Route path="host" element={<Host />} />
+      <Route path="app" element={<App />} />
+    </Routes>
   </BrowserRouter>
 );
 
