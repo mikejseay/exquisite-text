@@ -20,7 +20,7 @@ const Tutorial = () => {
   const handleHelpClose = () => setHelpOpen(false);
 
   return (
-    <div>
+    <div className={"tutorial"}>
       <IconButton aria-label="info" onClick={handleHelpOpen} size={"large"}>
         <InfoOutlinedIcon />
       </IconButton>
