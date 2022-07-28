@@ -11,6 +11,7 @@ import LineInput from "../LineInput";
 import GameState from "../GameState";
 import Tutorial from "../Tutorial";
 import Settings from "../Settings";
+import Menu from "../Menu";
 import {
   appHeader,
   appBody,
@@ -49,13 +50,13 @@ function App() {
     <div style={possibleSocket}>
       <div style={app}>
         <header style={appHeader}>
+          <Menu />
           <Tutorial />
           <div style={appTitle}>Exquisite Text</div>
           <GameState socket={socket} />
           <Settings />
         </header>
         <div style={appBody}>
-          {/*<Lines socket={socket} />*/}
           <LineInput socket={socket} />
           <Poems socket={socket} />
         </div>
