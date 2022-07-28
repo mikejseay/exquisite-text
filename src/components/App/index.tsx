@@ -1,10 +1,10 @@
 import {
   useEffect,
-  useState,
+  useState
 } from "react";
 import {
   io,
-  Socket,
+  Socket
 } from "socket.io-client";
 import Poems from "../Poems";
 import LineInput from "../LineInput";
@@ -17,14 +17,14 @@ import {
   appBody,
   appTitle,
   app,
-  possibleSocket,
+  possibleSocket
 } from "./styles";
 import type {
   ClientToServerEvents,
-  ServerToClientEvents,
+  ServerToClientEvents
 } from "../../types";
 
-const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
+const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
 const serverPath: URL["pathname"] | URL["href"] = isDevelopment
   ? `http://${window.location.hostname}:3000`
   : `/`;
@@ -36,7 +36,9 @@ function App() {
     const newSocket: Socket<ServerToClientEvents, ClientToServerEvents> = io(serverPath);
     setSocket(newSocket);
 
-    return () => { newSocket.close() };
+    return () => {
+      newSocket.close();
+    };
   }, [setSocket]);
 
   // The component then renders a page that contains a header.
