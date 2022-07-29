@@ -62,7 +62,7 @@ function useStateRef(initialValue: boolean) {
 const LineInput = ({
   socket,
 }: {
-  socket: Socket<ServerToClientEvents, ClientToServerEvents>
+  socket: Socket<ServerToClientEvents, ClientToServerEvents>;
 }) => {
   const minCharsOnLineOne = 30;
   const maxCharsOnLineOne = 70;
@@ -256,7 +256,6 @@ const LineInput = ({
         helpBasedOnProgress(1, evt.target.value.length / idealCharsOnLineOne);
         setDoneLine(false);
       }
-
     } else if (lines.length === 2) {
       // two lines
 
@@ -373,36 +372,30 @@ const LineInput = ({
     if (doneLineRef.current && charCode === 13 && ctrlKey) {
       makeExquisite();
     }
+  
+    window.addEventListener("keydown", function (e) {
+      if (e.metaKey && e.charCode === 13) {
+        makeExquisite();
+      }
+    });
   }
 
   return (
     // the initial idea here was to have a single textarea element that was editable
     // an alternative idea is to have this element be composed of a non-editable portion
     // and an editable portion
-    <div
-      className={"line-input-container"}
-      style={lineInputContainer}
-    >
+    <div className={"line-input-container"} style={lineInputContainer}>
       <Snackbar
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         open={snackOpen}
         onClose={handleClose}
         message={snackMessage}
       />
-      <div
-        className={"main-input-container"}
-        style={mainInputContainer}
-      >
-        <div
-          className={"help-message"}
-          style={helpMessageStyle}
-        >
+      <div className={"main-input-container"} style={mainInputContainer}>
+        <div className={"help-message"} style={helpMessageStyle}>
           {helpMessage}
         </div>
-        <div
-          className={"error-message"}
-          style={errorMessage}
-        >
+        <div className={"error-message"} style={errorMessage}>
           {inputErrorMsg}
         </div>
         {linesVisible ? (
@@ -416,10 +409,7 @@ const LineInput = ({
                     key={line.id}
                     style={lineContainer}
                   >
-                    <div
-                      className="line"
-                      style={lineStyle}
-                    >
+                    <div className="line" style={lineStyle}>
                       {line.value}
                     </div>
                   </div>
@@ -429,24 +419,27 @@ const LineInput = ({
         ) : (
           <React.Fragment />
         )}
-        <div
-          className={"input-box"}
-          style={inputBox}
-        >
+        <div className={"input-box"} style={inputBox}>
           {lineInputVisible ? (
             <div
               className={"active-input"}
               style={activeInput}
               onMouseOver={(e) => {
-                const target = document.getElementById("hoverSensitiveSpan") as HTMLElement;
+                const target = document.getElementById(
+                  "hoverSensitiveSpan"
+                ) as HTMLElement;
                 if (!isNil(underlineSpanHover.borderBottom)) {
-                  target.style.borderBottom = underlineSpanHover.borderBottom as string;
+                  target.style.borderBottom =
+                    underlineSpanHover.borderBottom as string;
                 }
               }}
               onMouseOut={(e) => {
-                const target = document.getElementById("hoverSensitiveSpan") as HTMLElement;
+                const target = document.getElementById(
+                  "hoverSensitiveSpan"
+                ) as HTMLElement;
                 if (!isNil(underlineSpan.borderBottom)) {
-                  target.style.borderBottom = underlineSpan.borderBottom as string;
+                  target.style.borderBottom =
+                    underlineSpan.borderBottom as string;
                 }
               }}
             >
@@ -454,15 +447,12 @@ const LineInput = ({
                 className={"underline-suggestion"}
                 style={underlineSuggestionDiv}
               >
-                <span
-                  id={"hoverSensitiveSpan"}
-                  style={underlineSpan}
-                >
-                  {onSecondLine ? (
-                    "  ".repeat(idealCharsOnLineOne + 3) + "\n" + "  ".repeat(idealCharsOnLineTwo + 3)
-                  ) : (
-                    "  ".repeat(idealCharsOnLineOne + 3)
-                  )}
+                <span id={"hoverSensitiveSpan"} style={underlineSpan}>
+                  {onSecondLine
+                    ? "  ".repeat(idealCharsOnLineOne + 3) +
+                      "\n" +
+                      "  ".repeat(idealCharsOnLineTwo + 3)
+                    : "  ".repeat(idealCharsOnLineOne + 3)}
                 </span>
               </div>
               <textarea
@@ -484,33 +474,22 @@ const LineInput = ({
               ></textarea>
             </div>
           ) : (
+            <div className={"inactive-input"} style={inactiveInput}>
               <div
-                className={"inactive-input"}
-                style={inactiveInput}
+                className={"text-spacer"}
+                data-autofocus={true}
+                style={textSpacer}
               >
-                <div
-                  className={"text-spacer"}
-                  data-autofocus={true}
-                  style={textSpacer}
-                >
-                  <span
-                    style={spacingSpan}
-                  >
-                    {poemInput.replaceAll(/[^\n]/g, "*")}
-                  </span>
-                  <div
-                    id="caret"
-                    style={caret}
-                  ></div>
+                <span style={spacingSpan}>
+                  {poemInput.replaceAll(/[^\n]/g, "*")}
+                </span>
+                <div id="caret" style={caret}></div>
               </div>
             </div>
           )}
         </div>
         <div className={"pass-button-container"}>
-          <div
-            className={"pass-button"}
-            style={passButton}
-          >
+          <div className={"pass-button"} style={passButton}>
             {doneLineEnabled && (
               <Button
                 variant={"contained"}
@@ -523,9 +502,7 @@ const LineInput = ({
           </div>
         </div>
         {poemDoneAccordionVisible && (
-          <div
-            className={"done-poem-accordion"}
-          >
+          <div className={"done-poem-accordion"}>
             <Accordion>
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
@@ -551,10 +528,7 @@ const LineInput = ({
                   is done!
                 </div>
                 {/*</Typography>*/}
-                <div
-                  className={"done-poem-button"}
-                  style={donePoemButton}
-                >
+                <div className={"done-poem-button"} style={donePoemButton}>
                   <Button
                     variant={"contained"}
                     onClick={finishExquisite}
