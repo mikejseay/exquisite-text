@@ -6,15 +6,13 @@ import {
   io,
   Socket
 } from "socket.io-client";
-import Poems from "../Poems";
-import LineInput from "../LineInput";
+import { Outlet, useOutletContext } from "react-router-dom";
 import GameState from "../GameState";
 import Tutorial from "../Tutorial";
 import Settings from "../Settings";
 import Menu from "../Menu";
 import {
   appHeader,
-  appBody,
   appTitle,
   app,
   possibleSocket
@@ -23,13 +21,16 @@ import type {
   ClientToServerEvents,
   ServerToClientEvents
 } from "../../types";
+const uuidv4 = require("uuid").v4;
 
 const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
 const serverPath: URL["pathname"] | URL["href"] = isDevelopment
   ? `http://${window.location.hostname}:3000`
   : `/`;
 
-function App() {
+type ContextType = { socket: Socket<ServerToClientEvents, ClientToServerEvents> };
+
+export default function App() {
   const [socket, setSocket] = useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
 
   useEffect(() => {
@@ -48,6 +49,17 @@ function App() {
     return <div>Not Connected</div>;
   }
 
+  // check if this device (browser) has visited the page before
+  // const firstVisit = !localStorage.getItem('device');
+  // if (firstVisit) {
+  //   localStorage.setItem('device', uuidv4());
+  // }
+  // socket.emit("recognizeDevice", localStorage.getItem('device'));
+
+  // to debug I will send a random device id each time
+  socket.emit("recognizeDevice", uuidv4());
+
+
   return (
     <div style={possibleSocket}>
       <div style={app}>
@@ -55,16 +67,15 @@ function App() {
           <Menu />
           <Tutorial />
           <div style={appTitle}>Exquisite Text</div>
-          <GameState socket={socket} />
+          <GameState />
           <Settings />
         </header>
-        <div style={appBody}>
-          <LineInput socket={socket} />
-          <Poems socket={socket} />
-        </div>
+        <Outlet context={{ socket }}/>
       </div>
     </div>
   );
 }
 
-export default App;
+export function useSocket() {
+  return useOutletContext<ContextType>();
+}
