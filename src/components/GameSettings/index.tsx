@@ -49,8 +49,8 @@ function GameSettings() {
     socket.on("gameSettingsInfo", gameSettingsInfoListener);
     socket.on("gameSettingsEnabled", gameSettingsEnabledListener);
 
-    socket.emit("getSettingsEnabled");
-    socket.emit("getGameSettingsInfo");
+    socket.emit("getSettingsEnabled");   // initial populate
+    socket.emit("getGameSettingsInfo");  // initial populate
 
     return () => {
       socket.off("gameSettingsInfo", gameSettingsInfoListener);

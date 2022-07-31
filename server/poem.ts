@@ -8,27 +8,12 @@ import {
   IGameSettingsInfo,
   ILine,
   InterServerEvents,
-  IPoem,
+  IPoem, IUserTableInfo,
   ServerToClientEvents,
   SocketData
 } from "../src/types";
 
 const db = require("./queries");
-
-const defaultUser = {
-  id: "anon",
-  name: "Anonymous"
-};
-
-// const randomUserNames = ["Johnald", "Jimothy", "Gouglas", "Bobson", "Danthony", "Davery",
-//   "Johnald", "Jimothy", "Gouglas", "Bobson", "Danthony", "Davery"];
-// const randomColors = ["red", "blue", "orange", "green", "purple"];
-const defaultGameSettings = {
-  lineLength: "short",
-  nRounds: 2,
-  nPoems: 1,
-}
-
 const uuidv4 = require("uuid").v4; // a function that generates a random uuid for lines
 
 // this function grabs some old poems to have something to show the users
@@ -43,130 +28,103 @@ async function populatePoems() {
     });
   }
 }
-
 populatePoems();
 
+// type ISocketToDeviceID = Map<Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>, string>
+// type IDeviceIDToSocket = Map<string, Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>>
+type ISocketIDToDeviceID = { [key: string]: string; }
+type IDeviceIDToSocketID = { [key: string]: string; }
+type IRoomIDToRoom = Map<string, any>
+
 // New global data structures
-const sockets = new Map();
+// const socketToDeviceID: ISocketToDeviceID = new Map();  // unique on socket. can have multiple devices on socket
+// const deviceIDToSocket: IDeviceIDToSocket = new Map();  // unique on device. only latest is present
 
-// all previously necessary globals must now also be mapped to the corresponding room
-// these need much better typing once the dust settles...
-const roomHost = new Map(); // room name to host socket
-// const roomEditors: Map<string, Map<string, string>> = new Map();  // room name to map of (deviceUUID to name)
-const roomEditors = new Map();  // room name to map of (deviceUUID to name)
-const roomSpectators = new Map(); // room name to map of (deviceUUID to name)
-const roomGameSettings = new Map(); // room name to Object
-// const roomGameState = new Map(); // room name to ???
-// const roomLineEdits = new Map(); // room name to Array (length equal to nPoems in game) of strings
-// const roomLines = new Map(); // room name to an Array (length equal to nPoems in game) of Arrays (variable length) of strings
-// const roomPoems = new Map(); // room name to a Set (length equal to nPoems in game at end of game)
+const socketIDToDeviceID: ISocketIDToDeviceID = {};  // unique on socket. can have multiple devices on socket
+const deviceIDToSocketID: IDeviceIDToSocketID = {};  // unique on device. only latest is present
 
-const poemQueue: string[][] = [];  // array of arrays (inner arrays will be used as queues)
-const poem2LineEdit = new Map(); // map of string: string
-const poem2Lines = new Map(); // map of string: Set
-
-let lineEditCurrentVal = "";
-let lines: Set<ILine> = new Set();
+const roomIDToRoom: IRoomIDToRoom = new Map();
 const poems: Set<IPoem> = new Set();
 
-
 const maxEditors = 2;
+const defaultGameSettings = {
+  lineLength: "short",
+  nRounds: 2,
+  nPoems: 1,
+}
 
-// function countElementsMatching(myIterator: IterableIterator<string>, valMatch: string) {
-//   let count = 0;
-//   for (const value of myIterator) {
-//     if (value === valMatch) {
-//       count++;
-//     }
-//   }
-//   return count;
-// }
+class Member {
+  // represents an Editor or Spectator (which extend this)
+  // enforces deviceID constraint
+  // (if the same device tries to be a member of the same room twice,
+  // the old socket gets disconnected and removed and the new socket replaces it)
 
-// When a user connects, a Connection object will be created for them, which will use their socket to connect
-// to the IO server. It sits there and handles events from their socket
-// It should NOT automatically add them to the game.
-class Connection {
   io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
-  socket: Socket;
-  deviceUUID: null | string;
-  room: string;
-  role: string;
-  name: null | string;
-  active: boolean;
-  turnPosition: number;
-  targetEditorUUID: unknown;
+  socket: Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
+  roomID: string;
+  deviceID: string;
+  name: string;
 
-  // The constructor of the Connection class sets up callbacks on events coming from the socket.
-  constructor(
-    io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
-    socket: Socket
-  ) {
-    this.socket = socket;
+  constructor(io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
+              hostSocket: Socket,
+              roomID: string,
+              deviceID: string,
+              name: string) {
     this.io = io;
-    this.deviceUUID = null;
-    this.room = "/";
-    this.role = "";
-    this.name = null;
-    this.active = false;
-    this.turnPosition = 0;
-    this.targetEditorUUID = "";
+    this.socket = hostSocket;
+    this.roomID = roomID;
+    this.deviceID = deviceID;
+    this.name = name;
+  }
 
-    this.initialConnect();
+  joinRoom() {
+    this.socket.join(this.roomID);
+    this.io.to(this.socket.id).emit("joinSuccess"); // navigates to /lobby
+    this.setReceive(); // listen for certain messages from client
+  }
 
-    // any socket might need these messages from client
-    socket.on("recognizeDevice", (value) => this.handleRecognizeDevice(value));
-    socket.on("createGameHost", (value) => this.createGameHost(value));
-    socket.on("joinGameEditor", (room, name) => this.handleJoinGameEditor(room, name));
-    socket.on("joinGameSpectator", (room, name) => this.handleJoinGameSpectator(room, name));
+  // setSend
+    // errors about join fail
+    // command to go to a certain view
+    // supply lobby subscription to keep game view up to date during configuration
+    // supply completed poems
 
-    // to do with the lobby
-    socket.on("getUserTableInfo", () => this.requestUserTableInfo());
-    socket.on("alterGameSettings", (value) => this.alterGameSettings(value));
-    socket.on("getGameSettingsInfo", () => this.requestGameSettingsInfo());
-    socket.on("getSettingsEnabled", () => this.requestSettingsEnabled());
-    socket.on("startGame", () => this.broadcastStartGame());
-    socket.on("getRole", () => this.requestRole());
-    socket.on("getEditorActive", () => this.requestEditorActivity());
+  // setReceive
+    // getUserTableInfo
 
-    // to do with the game
-    socket.on("editorsDefineTurns", () => this.defineTurnPositionAndTarget());
-    socket.on("passTurn", (firstPart, secondPart) => this.handlePassTurn(firstPart, secondPart))
+  setReceive() {
+    this.socket.on("getUserTableInfo", () => this.requestUserTableInfo());
+    this.socket.on("getGameSettingsInfo", () => this.requestGameSettingsInfo());
+    this.socket.on("getSettingsEnabled", () => this.requestSettingsEnabled());
+    this.socket.on("getPoems", () => this.getPoems()); // initial load
 
     // These are all reserved events
-    socket.on("disconnect", () => this.disconnect());
-    socket.on("disconnecting", () => this.disconnecting());
-    socket.on("connect_error", (err) => {
-      console.log(`connect_error due to ${err.line}`);
-    });
+    this.socket.on("disconnect", () => this.disconnect());
+    this.socket.on("disconnecting", () => this.disconnecting());
   }
 
-  addSpecialListeners() {
-    // only certain kinds of sockets will need these events
-    this.socket.on("getLines", () => this.getLines()); // retrieve all existing finished lines from the server.
-    this.socket.on("getLineEdit", () => this.getLineEdit());
-    this.socket.on("line", (value) => this.handleLine(value)); // whenever a new line has been submitted into the poem.
-    this.socket.on("lastLine", (value) => this.handlelastLine(value)); // whenever a new line has been submitted into the poem.
-    this.socket.on("lineEdit", (value) => this.handleLineEdit(value));  //whenever the input box is edited.
-    this.socket.on("poemDone", () => this.poemDone());
-    this.socket.on("clearLines", () => this.clearLines());
-    this.socket.on("getPoems", () => this.getPoems());
+  requestUserTableInfo() {
+    console.log(this.name, "requestUserTableInfo");
+    this.io.to(this.socket.id).emit("userTableInfo",
+      roomIDToRoom.get(this.roomID).currentUserTableInfo());
   }
 
-  initialConnect() {
-    console.log("new socket connection:", this.socket.id);
-    sockets.set(this.socket, {
-      deviceUUID: null,
-      role: null,
-      room: "/"
-    });
+  requestGameSettingsInfo() {
+    console.log(this.name, "requestGameSettingsInfo");
+    this.io.to(this.socket.id).emit("gameSettingsInfo",
+      roomIDToRoom.get(this.roomID).gameSettings);
+  }
+
+  requestSettingsEnabled () {
+    console.log(this.name, "requestSettingsEnabled");
+    this.io.to(this.socket.id).emit("gameSettingsEnabled", false);
   }
 
   disconnect() {
     console.log(this.socket.id, "disconnected");
 
+    // do cleanup intelligently
     // remove from socket map
-    sockets.delete(this.socket);
-
     // notice that we don't remove from the other maps
     // this gives opportunity for the person to reconnect...
     // but eventually we might have to remove them if they're inactive
@@ -176,261 +134,149 @@ class Connection {
     console.log("socket disconnecting from", this.socket.rooms);
   }
 
-  handleRecognizeDevice(deviceUUID: string) {
-    this.deviceUUID = deviceUUID;
-    sockets.get(this.socket)["deviceUUID"] = deviceUUID; // this actually sets
+  sendPoem(poem: IPoem) {
+    // crucial method that sends the poem to all users
+    // make sure the correct members receive this
+    this.io.in(this.roomID).emit("poem", poem);
   }
 
-  joinRoom(roomName: string) {
-    this.socket.join(roomName);
-    this.room = roomName;
-    sockets.get(this.socket)["room"] = roomName;
+  getPoems() {
+    // this is used to bring a new user up to date on what's happening
+    poems.forEach((poem) => this.sendPoem(poem));
   }
 
-  assignRole(role: string) {
-    this.role = role;
-    sockets.get(this.socket)["role"] = role;
+}
 
-    // set up listeners according to role
+class Host extends Member {
+  // does not enforce device ID constraint
+  // (same device can be Host AND either of Editor or Spectator)
+
+  joinRoom() {
+    // unlike other Members, this does NOT navigate to lobby
+    this.socket.join(this.roomID);
+    this.setReceive(); // listen for certain messages from client
   }
 
-  createGameHost(roomName: string) {
-    console.log("createGameHost for ", this.socket.id, "joining", roomName);
-    this.joinRoom(roomName); // this creates the room
-    roomHost.set(roomName, this.socket);
-    roomEditors.set(roomName, new Map());
-    roomSpectators.set(roomName, new Map());
-    roomGameSettings.set(roomName, defaultGameSettings);
-    this.assignRole("Host");
-    console.log("room", roomName, "created with ", this.socket.id, "as host");
+  // setSend
+    // super.setSend()
+    // eventually send cool game state info to inform hostGameView
+
+}
+
+class Editor extends Member {
+
+  previousEditorID: string;
+  targetEditorID: string;
+  turnPosition: number;
+  poemQueue: Array<any>;
+
+  constructor(io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
+              hostSocket: Socket,
+              roomID: string,
+              deviceID: string,
+              name: string) {
+    super(io, hostSocket, roomID, deviceID, name);
+    this.previousEditorID = "";
+    this.targetEditorID = "";
+    this.turnPosition = 0;
+    this.poemQueue = [];
   }
 
-  attemptJoinRoom(roomName: string) {
-    const room = this.io.sockets.adapter.rooms.get(roomName);
-    if (room) {
-      console.log("the room exists");
-      this.joinRoom(roomName);
-      return true;
-    } else {
-      console.log("the room does not exist");
-      this.io.to(this.socket.id).emit("joinError", "Room does not exist.");
-      return false;
+  prepareForGame() {
+    const thisRoom = roomIDToRoom.get(this.roomID);
+    const editorDeviceIDs = Array.from(thisRoom.editors.keys()) as Array<string>;
+    const nEditors = editorDeviceIDs.length;
+    this.turnPosition = editorDeviceIDs.indexOf(this.deviceID);
+    const safeNextIndex = (this.turnPosition + 1) % nEditors;
+    const safePrevIndex = (this.turnPosition - 1 + nEditors) % nEditors;
+    this.targetEditorID = editorDeviceIDs[safeNextIndex];
+    this.previousEditorID = editorDeviceIDs[safePrevIndex];
+    console.log(this.deviceID, "in position", this.turnPosition, "targets", this.targetEditorID);
+  }
+
+  joinRoom() {
+    super.joinRoom();
+    this.socket.join(this.roomID + "_Editors");
+  }
+
+  // setSend
+    // super.setSend()
+    // ((line1Chars, line2Chars) in previousEditor's lineInput)
+
+  setReceive() {
+    super.setReceive();
+    this.socket.on("getLineEdit", () => this.requestLineEdit()); // initial populate
+    this.socket.on("lineEdit", (value) => this.handleLineEdit(value));  //whenever the input box is edited.
+    this.socket.on("getEditorActive", () => this.requestActivity());
+    this.socket.on("passTurn", (firstPart, secondPart) => this.handlePassTurn(firstPart, secondPart))
+    this.socket.on("lastLine", (value) => this.handleLastLine(value)); // whenever a new line has been submitted into the poem.
+  }
+
+  requestLineEdit() {
+    // this is activated when the game view initially loads
+    // this should fill in what it's supposed to based on
+    // the halfLine of the first Poem in the queue (if this editor is active)
+
+    if (this.isActive()) {
+      this.io.to(this.socket.id).emit("lineEdit", this.poemQueue[0].halfLine);
     }
   }
 
-  handleJoinGameEditor(roomName: string, userName: string) {
-    console.log("handleJoinGameEditor for ", userName, "to room", roomName);
-    const joinSuccess = this.attemptJoinRoom(roomName);  // checks if room exists and gives error if not
-    if (!joinSuccess) {
-      return;
-    }
-    const nEditorsInRoom = roomEditors.get(roomName).size;
-    if (nEditorsInRoom === maxEditors) {
-      console.log("trying to join as editor but it's already full");
-      this.io.to(this.socket.id).emit("joinError", "Writer's room full. Join as spectator?");
-      return;
-    }
-    this.assignRole("Editor");
-    roomEditors.get(roomName).set(this.deviceUUID, userName);
-    this.io.to(this.socket.id).emit("editorJoinSuccess");
-    this.addSpecialListeners();
-    this.broadcastUserTableInfo();
+  handleLineEdit(value: string) {
+    // when an active editor changes the lineInput, they want to broadcast this
+    // to the other active editors and/or spectators so that they can "watch" them type
+
+    // for other active editors (this version), they want the string
+
+    // for other active editors (next version), all they would need to know is
+    // the value.split(lineSepString).map(s => s.length), a 2-tuple of numbers
+
+    // for the spectator, TBD
+
+    // this will change in next version
+    this.socket.to(this.roomID + "_Editors").emit("lineEdit", value);
   }
 
-  handleJoinGameSpectator(roomName: string, userName: string) {
-    console.log("handleJoinGameSpectator for ", userName, "to room", roomName);
-    const joinSuccess = this.attemptJoinRoom(roomName);  // checks if room exists and gives error if not
-    if (!joinSuccess) {
-      return;
-    }
-    this.assignRole("Spectator");
-    roomSpectators.get(roomName).set(this.deviceUUID, userName);
-    this.io.to(this.socket.id).emit("spectatorJoinSuccess");
-    this.addSpecialListeners();
-    this.broadcastUserTableInfo();
-  }
-
-  broadcastUserTableInfo() {
-    console.log("broadcastUserTableInfo");
-    this.io.in(this.room).emit("userTableInfo",
-      {
-        editors: Array.from(roomEditors.get(this.room).values()),
-        spectators: Array.from(roomSpectators.get(this.room).values())
-      });
-  }
-
-  requestUserTableInfo() {
-    console.log("requestUserTableInfo");
-    this.io.to(this.socket.id).emit("userTableInfo",
-      {
-        editors: Array.from(roomEditors.get(this.room).values()),
-        spectators: Array.from(roomSpectators.get(this.room).values())
-      });
-  }
-
-  alterGameSettings(gameSettings: IGameSettingsInfo) {
-    console.log("alterGameSettings");
-    roomGameSettings.set(this.room, gameSettings);
-    this.socket.to(this.room).emit("gameSettingsInfo", gameSettings);
-  }
-
-  requestGameSettingsInfo() {
-    console.log("requestGameSettingsInfo");
-    this.io.to(this.socket.id).emit("gameSettingsInfo",
-      roomGameSettings.get(this.room));
-  }
-
-  requestSettingsEnabled() {
-    console.log("requestSettingsEnabled");
-    // gets first value of roomEditors
-    const [VIPEditorUUID] = roomEditors.get(this.room).keys();
-    // first editor is always VIP
-    this.io.to(this.socket.id).emit("gameSettingsEnabled", VIPEditorUUID === this.deviceUUID);
-  }
-
-  broadcastStartGame() {
-    // be sure that the game settings are legit
-    console.log("startGame");
-    this.setUpGame();
-    this.io.in(this.room).emit("enactStartGame");  // sends editors to /game route, which loads lineInput
-  }
-
-  defineTurnPositionAndTarget() {
-    console.log("defineTurnPositionAndTarget");
-    const editorArray = Array.from(roomEditors.get(this.room).keys()); // array of deviceUUIDs
-    this.turnPosition = editorArray.indexOf(this.deviceUUID);
-    const safeNextIndex = (this.turnPosition + 1) % editorArray.length;
-    this.targetEditorUUID = editorArray[safeNextIndex];
-    console.log(this.deviceUUID, "in position", this.turnPosition, "targets", this.targetEditorUUID);
-  }
-
-  setUpGame() {
-    // this connection (VIP) will configure the globals for the game
-    // each editor (in each room) has a poemQueue which (potentially) contains a poemID
-    const nEditors = roomEditors.get(this.room).size;
-    for (let i = 0; i < nEditors; i++) {
-      poemQueue.push([]);
-    }
-    const initPoemID: string = uuidv4(); // poemID
-    poemQueue[0].push(initPoemID); // VIP always in first position
-    poem2LineEdit.set(initPoemID, "");
-    poem2Lines.set(initPoemID, new Set());
-
-    // each editor also has a targetEditor (linked chain)
-    // the poemID maps to a lineEdit and Lines object
-    // at the beginning of the game, the VIP's poemQueue will contain the new poemID
-    // and the poem2LineEdit / poem2Lines references will be empty string / empty Set
-    // the targetEditor chain will be established based on the state of roomEditors.get(this.room)
-    // (if any editor is booted, we can reorganize the targetEditors and poemQueues)
-
-    // we start the game by checking which editors have poemIDs in their queue via setActivityBasedOnQueues()
-    // any editors with poemIDs in their queue become active, and those who don't become inactive
-    // the VIP will do lineEdits (broadcast normally) and then submit, which will
-    // 1) move the poemID to their targetEditor's poemQueue
-    // 2) add the first line to the poem2Lines
-    // 3) set the second line to the value of poem2LineEdit
-    // 4) trigger setActivityBasedOnQueues()
-    // const poemQueue = [];  // array of arrays (inner arrays will be used as queues)
-    // const poem2LineEdit = []; // array of strings
-    // const poem2Lines = []; // array of Sets
-
-  }
-
-  requestRole() {
-    console.log("requestRole");
-    this.io.to(this.socket.id).emit("sendRole", this.role);
-  }
-
-  requestEditorActivity() {
+  requestActivity() {
     console.log("requestEditorActivity");
-    const hasPoemInQueue = poemQueue[this.turnPosition].length > 0
-    this.io.to(this.socket.id).emit("receiveEditorActive", hasPoemInQueue);
+    this.io.to(this.socket.id).emit("editorActive", this.isActive());
+  }
+
+  isActive() {
+   return (this.poemQueue.length > 0);
   }
 
   handlePassTurn(firstPart: string, secondPart: string) {
     console.log("handlePassTurn");
-    const editorArray = Array.from(roomEditors.get(this.room).keys());
-    const safeNextIndex = (this.turnPosition + 1) % editorArray.length;
-    const poemIDToPass = poemQueue[this.turnPosition].pop() as string;
-    poemQueue[safeNextIndex].push(poemIDToPass);
+    const thisRoom = roomIDToRoom.get(this.roomID) as Room;
+    const poemToPass = this.poemQueue.pop();
 
-    poem2Lines.get(poemIDToPass).add(firstPart);
-    poem2LineEdit.set(poemIDToPass, secondPart);
-
-    // set the current lineInput to the first
-    this.socket.to(this.room).emit("lineEdit", secondPart);
-    lineEditCurrentVal = secondPart;
+    poemToPass.lines.push(firstPart);
+    poemToPass.halfLine = secondPart;
+    const nextEditor = thisRoom.editors.get(this.targetEditorID) as Editor;
+    this.io.to(nextEditor.socket.id).emit("lineEdit", poemToPass.halfLine);
+    nextEditor.poemQueue.push(poemToPass);
 
     // trigger each socket to check its own queue and update its activity state
+    // and view (i.e. the correct lineEdit if necessary)
     // here we send to the whole room but should be only editors in theory
-    this.io.in(this.room).emit("checkIfActive");
+    for (const editorObj of thisRoom.editors.values()) {
+      this.io.to(editorObj.socket.id).emit("editorActive", editorObj.isActive());
+    }
   }
 
-  handlelastLine(lastPart: string) {
+  handleLastLine(lastPart: string) {
     console.log("handleLastLine");
-    const poemIDToPass = poemQueue[this.turnPosition].pop() as string;
-    poem2Lines.get(poemIDToPass).add(lastPart);
+    const poemToPass = this.poemQueue.pop();
+    poemToPass.lines.push(lastPart);
 
     let poemString = "";
-    for (let line of poem2Lines.get(poemIDToPass)) {
+    for (const line of poemToPass.lines) {
       poemString += line + "\n";
     }
     this.handlePoem(poemString);
-    lines.clear();
   }
 
-  // When a new line arrives from this Connection, handleMessage() creates a line object and adds it to lines
-  handleLine(value: ILine["value"]) {
-    const line: ILine = {
-      id: uuidv4(),
-      user: roomEditors.get(this.deviceUUID) || defaultUser,
-      value,
-      createdAt: new Date()
-    };
-    lines.add(line);
-
-    // It will then call sendMessage() which uses the Socket.IO server
-    // to send the line to all sockets that are currently connected.
-    // It is this call that will update all clients simultaneously.
-    // TODO: Technically could be broadcast only to spectators.
-    this.sendLine(line);
-  }
-
-  sendLine(line: ILine) {
-    // crucial method that sends the line to all users
-    // note that here we name this emitted signal "line," which allows us to identify it within IO
-    this.io.in(this.room).emit("line", line);
-  }
-
-  getLines() {
-    lines.forEach((line) => this.sendLine(line));
-  }
-
-  clearLines() {
-    this.io.in(this.room).emit("clearLines");
-  }
-
-  // this is used to bring a new user up to date on what's happening in the lineEdit
-  getLineEdit() {
-    this.io.to(this.socket.id).emit("lineEdit", lineEditCurrentVal);
-  }
-
-  handleLineEdit(value: string) {
-    // this is broadcast because if it were just emit, it would cause a looping behavior
-    this.socket.to(this.room).emit("lineEdit", value);
-    lineEditCurrentVal = value;
-  }
-
-  poemDone() {
-    let poemString = "";
-    for (let line of lines) {
-      poemString += line["value"] + "\n";
-    }
-    this.handlePoem(poemString);
-    lines.clear();
-  }
-
-  // When a new poem arrives from this Connection, handlePoem() creates a poem object and adds it to poems
   handlePoem(poemString: string) {
 
     const poem: IPoem = {
@@ -444,37 +290,191 @@ class Connection {
     // add the poem to the database
     db.storePoem(poem);
 
-    // It will then call sendMessage() which uses the Socket.IO server
-    // to send the poem to all sockets that are currently connected.
-    // It is this call that will update all clients simultaneously.
+    // broadcast the poem via sockets
     this.sendPoem(poem);
   }
+}
 
-  sendPoem(poem: IPoem) {
-    // crucial method that sends the poem to all users
-    // note that here we name this emitted signal "poem," which allows us to identify it within IO
-    this.io.in(this.room).emit("poem", poem);
+class VIPEditor extends Editor {
+
+  joinRoom() {
+    super.joinRoom();
+    this.socket.join(this.roomID + "_VIP");
   }
 
-  // this is used to bring a new user up to date on what's happening, could be good for Spectator mode
-  getPoems() {
-    poems.forEach((poem) => this.sendPoem(poem));
+  setReceive() {
+    super.setReceive();
+    this.socket.on("alterGameSettings", (value) => this.alterGameSettings(value));
+    this.socket.on("startGame", () => this.broadcastStartGame());
   }
+
+  alterGameSettings(gameSettings: IGameSettingsInfo) {
+    console.log("alterGameSettings");
+    roomIDToRoom.get(this.roomID).gameSettings = gameSettings;
+    this.socket.to(this.roomID).emit("gameSettingsInfo", gameSettings);
+  }
+
+  broadcastStartGame () {
+    // global in nature, so it will mainly deal with the room
+    console.log("startGame");
+    roomIDToRoom.get(this.roomID).setUpGame();
+  }
+
+  requestSettingsEnabled () {
+    console.log(this.name, "requestSettingsEnabled");
+    this.io.to(this.socket.id).emit("gameSettingsEnabled", true);
+  }
+}
+
+class Spectator extends Member {
+
+  joinRoom() {
+    super.joinRoom();
+    this.socket.join(this.roomID + "_Spectators");
+  }
+
+  // eventually send cool game state info to inform spectatorGameView
+}
+
+class Room {
+  // represents a socket.io room and a game of Exquisite Text
+  io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
+  hostSocket: Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData> | null;
+  roomID: string;
+
+  editors: Map<string, Editor>;
+  spectators: Map<any, any>;
+  editorNames: Array<string>;
+  spectatorNames: Array<string>;
+  gameSettings: Object;
+  poems: Map<any, any>;
+
+  constructor(
+    io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
+    hostSocket: Socket,
+    room: string,
+  ) {
+    this.io = io;
+    this.hostSocket = hostSocket;
+    this.roomID = room;
+
+    this.editors = new Map();  // deviceID to editorObj
+    this.spectators = new Map();  // deviceID to spectatorObj
+    this.editorNames = [];  // deviceID to editorObj
+    this.spectatorNames = [];  // deviceID to spectatorObj
+    this.gameSettings = defaultGameSettings;
+    this.poems = new Map();
+  }
+
+  addEditor(deviceUUID: string, editorObj: any) {
+    this.editors.set(deviceUUID, editorObj);
+    this.editorNames.push(editorObj.name);
+    this.sendCurrentUserTableInfo(); // give the room updated user info
+  }
+
+  addSpectator(deviceUUID: string, spectatorObj: any) {
+    this.spectators.set(deviceUUID, spectatorObj);
+    this.spectatorNames.push(spectatorObj.name);
+    this.sendCurrentUserTableInfo(); // give the room updated user info
+  }
+
+  currentUserTableInfo() {
+    return {
+      editors: this.editorNames,
+      spectators: this.spectatorNames
+    };
+  }
+
+  sendCurrentUserTableInfo() {
+    this.io.in(this.roomID).emit("userTableInfo", this.currentUserTableInfo());
+  }
+
+  setUpGame() {
+    const thisPoem = new Poem(10); // 10 target lines for now
+    this.editors.values().next().value.poemQueue.push(thisPoem); // give the VIP a poem in their queue
+
+    // have each editor set their important properties
+    for (const thisEditor of this.editors.values()) {
+      thisEditor.prepareForGame();
+    }
+
+    // should tell editors to navigate to /game and spectators to /spectate
+    this.io.in(this.roomID + "_Editors").emit("navigate", "/game")
+    this.io.in(this.roomID + "_Spectators").emit("navigate", "/spectate")
+  }
+
+}
+
+class Poem {
+  // represents a single poem
+
+  targetLines: number;
+  lines: Array<string>;
+  halfLine: string;
+  poemID: string;
+
+  constructor(targetLines: number) {
+    this.targetLines = targetLines;
+    this.lines = [];
+    this.halfLine = "";
+    this.poemID = uuidv4();
+  }
+
 }
 
 // The module exports a single function poem that takes the Socket.IO server instance as a parameter.
-function poem(io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>) {
+function socketFunctionality(io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>) {
 
   // connection is a reserved name for a socket event when someone connects
   io.on("connection", (socket) => {
-    // When a client requests a connection, the callback will create a new Collection instance
+    // When a client requests a connection, the callback will create a new Connection instance
     // and pass the Socket.IO server instance and the new socket to the constructor.
 
-    // this is about where we would declare or handle their status
-    // as the active editor, an inactive editor, or a spectator
+    socket.on("recognizeDevice", (deviceID) => {
+      // socketToDeviceID.set(socket, deviceID); // since socket is always uuid, won't overwrite
+      // deviceIDToSocket.set(deviceID, socket); // will overwrite previous
+      socketIDToDeviceID[socket.id] = deviceID; // since socket is always uuid, won't overwrite
+      deviceIDToSocketID[deviceID] = socket.id; // will overwrite previous
+    });
 
-    new Connection(io, socket);
+    socket.on("createGameHost", (roomID) => {
+
+      console.log("createGameHost for ", socket.id, "joining", roomID);
+      // device doesn't matter for host
+      const thisHost = new Host(io, socket, roomID, socketIDToDeviceID[socket.id], "HOST")
+      thisHost.joinRoom();
+      const thisRoom = new Room(io, socket, roomID)
+      roomIDToRoom.set(roomID, thisRoom);
+      console.log("room", roomID, "created with ", socket.id, "as host");
+    });
+
+    socket.on("joinGameAs", (role, roomID, name) => {
+
+      console.log("socket", socket.id, "joinGameAs", role, "to room", roomID, "with name", name);
+      if (!roomIDToRoom.has(roomID)) {
+        console.log(roomID, "does not exist");
+        io.to(socket.id).emit("joinError", "Room does not exist.");
+        return
+      }
+      const targetRoom = roomIDToRoom.get(roomID);
+      const deviceID = socketIDToDeviceID[socket.id];
+      if (role === "Editor") {
+        if (targetRoom.editors.size >= maxEditors) {
+          console.log("trying to join as editor but it's already full");
+          io.to(socket.id).emit("joinError", "Writer's room full. Join as spectator?");
+          return
+        }
+        const useEditorClass = (targetRoom.editors.size === 0 ? VIPEditor : Editor);
+        const thisEditor = new useEditorClass(io, socket, roomID, deviceID, name);
+        thisEditor.joinRoom();
+        targetRoom.addEditor(deviceID, thisEditor);
+      } else if (role === "Spectator") {
+        const thisSpectator = new Spectator(io, socket, roomID, deviceID, name);
+        thisSpectator.joinRoom();
+        targetRoom.addSpectator(deviceID, thisSpectator);
+      }
+    })
   });
 }
 
-module.exports = poem;
+module.exports = socketFunctionality;

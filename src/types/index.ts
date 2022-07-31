@@ -55,14 +55,12 @@ export interface ServerToClientEvents {
   poem: (a: IPoem) => void;
 
   joinError: (a: string) => void;
-  editorJoinSuccess: () => void;
-  spectatorJoinSuccess: () => void;
+  joinSuccess: () => void;
   userTableInfo: (a: IUserTableInfo) => void;
   gameSettingsInfo: (a: IGameSettingsInfo) => void;
   gameSettingsEnabled: (a: boolean) => void;
-  enactStartGame: () => void;
-  sendRole: (a: string) => void;
-  receiveEditorActive: (a: boolean) => void;
+  navigate: (a: string) => void;
+  editorActive: (a: boolean) => void;
   checkIfActive: () => void;
 
 }
@@ -76,18 +74,15 @@ export interface ClientToServerEvents {
   getLines: () => void;
   getPoems: () => void;
 
-  recognizeDevice: (a: string | null) => void;
+  recognizeDevice: (a: string) => void;
   createGameHost: (a: string) => void;
-  joinGameEditor: (a: string, b: string) => void;
-  joinGameSpectator: (a: string, b: string) => void;
+  joinGameAs: (a: string, b: string, c:string) => void;
   getUserTableInfo: () => void;
   getGameSettingsInfo: () => void;
   alterGameSettings: (a: IGameSettingsInfo) => void;
   getSettingsEnabled: () => void;
   startGame: () => void;
-  getRole: () => void;
   getEditorActive: () => void;
-  editorsDefineTurns: () => void;
   passTurn: (a: string, b: string) => void;
   lastLine: (a: string) => void;
 }

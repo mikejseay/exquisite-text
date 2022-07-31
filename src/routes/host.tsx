@@ -7,9 +7,9 @@ export default function Host() {
   const { socket } = useSocket();
 
   const rootURL = window.location.host;
-  const gameCode = generateAlphaString(4);
+  const roomID = generateAlphaString(4);
 
-  socket.emit("createGameHost", gameCode);
+  socket.emit("createGameHost", roomID);
 
   function generateAlphaString(stringLength: number) {
     let result = "";
@@ -24,7 +24,7 @@ export default function Host() {
   return (
     <main style={{ textAlign: "center" }}>
       <h2>{"Go to " + rootURL}</h2>
-      <h2>{"Enter room code: " + gameCode}</h2>
+      <h2>{"Enter room code: " + roomID}</h2>
       <UserTable />
       <GameSettings />
     </main>

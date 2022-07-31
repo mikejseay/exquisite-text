@@ -14,14 +14,14 @@ export default function Join() {
   const { socket } = useSocket();
 
   const [joinErrorMessage, setJoinErrorMessage] = useState<string>("");
-  const [room, setRoom] = useState<string>("");
+  const [roomID, setRoomID] = useState<string>("");
   const [name, setName] = useState<string>("");
 
   const [roomOK, setRoomOK] = useState<boolean>(false);
   const [nameOK, setNameOK] = useState<boolean>(false);
 
   const handleRoomEntryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRoom(event.target.value);
+    setRoomID(event.target.value);
     setRoomOK(event.target.value.length === roomCodeLength)
   };
 
@@ -31,11 +31,11 @@ export default function Join() {
   };
 
   const handleWritePress = () => {
-    socket.emit("joinGameEditor", room.toUpperCase(), name.toUpperCase());
+    socket.emit("joinGameAs", "Editor", roomID.toUpperCase(), name.toUpperCase());
   };
 
   const handleSpectatePress = () => {
-    socket.emit("joinGameSpectator", room.toUpperCase(), name.toUpperCase());
+    socket.emit("joinGameAs", "Spectator", roomID.toUpperCase(), name.toUpperCase());
   };
 
   useEffect(() => {
@@ -44,21 +44,14 @@ export default function Join() {
       setTimeout(() => setJoinErrorMessage(""), 3000);
     };
 
-    const editorJoinSuccessListener = () => {
-      console.log("editorJoinSuccess happened");
-      // send to lobby
-      navigate("/lobby");
-    };
-
-    const spectatorJoinSuccessListener = () => {
-      console.log("spectatorJoinSuccess happened");
+    const joinSuccessListener = () => {
+      console.log("joinSuccess happened");
       // send to lobby
       navigate("/lobby");
     };
 
     socket.on("joinError", joinErrorListener);
-    socket.on("editorJoinSuccess", editorJoinSuccessListener);
-    socket.on("spectatorJoinSuccess", spectatorJoinSuccessListener);
+    socket.on("joinSuccess", joinSuccessListener);
 
     return () => {
       socket.off("joinError", joinErrorListener);
@@ -83,7 +76,7 @@ export default function Join() {
             required
             label={"Enter " + roomCodeLength.toString() + "-Letter Code"}
             variant="standard"
-            value={room}
+            value={roomID}
             onChange={handleRoomEntryChange}
             inputProps={{ maxLength: roomCodeLength, style: { textTransform: "uppercase" } }}
           />

@@ -90,9 +90,9 @@ const LineInput = () => {
       setLineInputVisible(editorActiveFromServer);
     };
 
-    const checkIfActiveListener = () => {
-      socket.emit("getEditorActive")
-    };
+    // const checkIfActiveListener = () => {
+    //   socket.emit("getEditorActive")
+    // };
 
     // additionally, tell React to set the poem textarea to change
     // whenever a lineEdit event is emitted
@@ -103,12 +103,12 @@ const LineInput = () => {
     socket.emit("getLineEdit");
     socket.emit("getEditorActive")
 
-    socket.on("receiveEditorActive", editorActiveListener);
-    socket.on("checkIfActive", checkIfActiveListener);
+    socket.on("editorActive", editorActiveListener);
+    // socket.on("checkIfActive", checkIfActiveListener);
 
     return () => {
       socket.off("lineEdit", lineEditListener);
-      socket.off("receiveEditorActive", editorActiveListener);
+      socket.off("editorActive", editorActiveListener);
     };
   }, [socket]);
 
