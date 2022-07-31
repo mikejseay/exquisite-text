@@ -3,21 +3,19 @@ import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { Socket } from "socket.io-client";
-
 import {
-  ClientToServerEvents,
   IPoem,
   IPoems,
-  ServerToClientEvents,
 } from "../../types";
 import {
   poemsBody,
   poemFont,
   poemTitle,
 } from "./styles";
+import { useSocket } from "../App";
 
-function Poems({ socket }: { socket: Socket<ServerToClientEvents, ClientToServerEvents> }) {
+function Poems() {
+  const { socket } = useSocket();
   // The poems state is a plain object that contains each poem indexed by the poem ID.
   // Using React hooks, this state is updated inside the event handlers to reflect the changes provided by the server.
   const [poems, setPoems] = React.useState<IPoems>({} as IPoems);

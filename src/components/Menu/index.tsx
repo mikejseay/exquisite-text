@@ -27,7 +27,7 @@ const Menu = () => {
       >
         <List>
           <ListItem key={"Create Game"} disablePadding>
-            <ListItemButton component={RouterLink} to="host">
+            <ListItemButton component={RouterLink} to="host" onClick={handleDrawerClose}>
               <ListItemIcon>
                 <AddIcon />
               </ListItemIcon>

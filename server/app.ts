@@ -13,7 +13,6 @@ const usersRouter = require('./routes/users');  // an express object that routes
 
 const app = express();                          // instantiate the app object
 app.use(cors());                                // adds CORS support
-
 app.use(logger('dev'));                         // from here on, dunno
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));

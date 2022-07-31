@@ -8,6 +8,9 @@ import './index.css';
 import App from './components/App';
 import Host from "./routes/host"
 import Join from "./routes/join"
+import Lobby from "./routes/lobby"
+import Game from "./routes/game"
+import Spectate from "./routes/spectate"
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(
@@ -16,9 +19,27 @@ const root = ReactDOM.createRoot(
 root.render(
   <BrowserRouter>
     <Routes>
-      <Route path="/" element={<Join />} />
-      <Route path="host" element={<Host />} />
-      <Route path="app" element={<App />} />
+      <Route path="/" element={<App />}>
+
+        // create socket on button press with successful room entry
+        <Route path="/" element={<Join />} />
+
+        // definitely creates socket and room
+        <Route path="host" element={<Host />} />
+
+        // requires socket
+        <Route path="lobby" element={<Lobby />} />
+        <Route path="game" element={<Game />} />
+        <Route path="spectate" element={<Spectate />} />
+        <Route  // no match route
+          path="*"
+          element={
+            <main style={{ textAlign: "center" }}>
+              <p>There's nothing here!</p>
+            </main>
+          }
+        />
+      </Route>
     </Routes>
   </BrowserRouter>
 );

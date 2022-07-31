@@ -6,6 +6,17 @@ export enum Role {
   spectator = "spectator",
 }
 
+export interface IUserTableInfo {
+  editors: Array<string>;
+  spectators: Array<string>;
+}
+
+export interface IGameSettingsInfo {
+  lineLength: string;
+  nRounds: number;
+  nPoems: number;
+}
+
 export interface IUserInfo {
   id: string;
   name: string;
@@ -39,25 +50,41 @@ export interface IPoem {
 
 export interface ServerToClientEvents {
   clearLines: () => void;
-  userInfo: (a: IUserInfo) => void;
-  allUserInfo: (a: Array<IUserInfo>) => void;
   line: (a: ILine) => void;
   lineEdit: (a: string) => void;
   poem: (a: IPoem) => void;
+
+  joinError: (a: string) => void;
+  joinSuccess: () => void;
+  userTableInfo: (a: IUserTableInfo) => void;
+  gameSettingsInfo: (a: IGameSettingsInfo) => void;
+  gameSettingsEnabled: (a: boolean) => void;
+  navigate: (a: string) => void;
+  editorActive: (a: boolean) => void;
+  checkIfActive: () => void;
+
 }
 
 export interface ClientToServerEvents {
-  sendUserInfo: () => void;
-  sendAllUserInfoToAll: () => void;
   getLineEdit: () => void;
   lineEdit: (a: string) => void;
   line: (a: string) => void;
-  allTurns: () => void;
-  sendEachUserTheirInfo: () => void;
   poemDone: () => void;
   clearLines: () => void;
   getLines: () => void;
   getPoems: () => void;
+
+  recognizeDevice: (a: string) => void;
+  createGameHost: (a: string) => void;
+  joinGameAs: (a: string, b: string, c:string) => void;
+  getUserTableInfo: () => void;
+  getGameSettingsInfo: () => void;
+  alterGameSettings: (a: IGameSettingsInfo) => void;
+  getSettingsEnabled: () => void;
+  startGame: () => void;
+  getEditorActive: () => void;
+  passTurn: (a: string, b: string) => void;
+  lastLine: (a: string) => void;
 }
 
 export interface InterServerEvents {

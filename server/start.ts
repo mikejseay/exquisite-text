@@ -11,19 +11,19 @@ import type {
 require('dotenv').config();
 
 // import the http library
-var http = require('http');
+const http = require('http');
 
-// var https = require('https');
+// const https = require('https');
 // const fs = require('fs');
-// var privateKey   = fs.readFileSync('./.cert/key.pem', 'utf8');
-// var certificate  = fs.readFileSync('./.cert/cert.pem', 'utf8');
-// var credentials = {key: privateKey, cert: certificate};
+// const privateKey   = fs.readFileSync('./.cert/key.pem', 'utf8');
+// const certificate  = fs.readFileSync('./.cert/cert.pem', 'utf8');
+// const credentials = {key: privateKey, cert: certificate};
 
 // app assembles the two routers and creates the express app and does its basic configuration
-var app = require('./app');
+const app = require('./app');
 
 // "poem" contains the logic for the poem application
-var poem = require('./poem');
+const poem = require('./poem');
 
 
 /**
@@ -31,15 +31,15 @@ var poem = require('./poem');
  */
 
 // no ideas... chat-server is the name in package.json?
-// maybe server refers to the variable server inside this project?
-var debug = require('debug')('chat-server:server');
+// maybe server refers to the constiable server inside this project?
+const debug = require('debug')('chat-server:server');
 
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
+const port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
 /**
@@ -47,12 +47,12 @@ app.set('port', port);
  */
 
 // the http server that will listen on the port given by the app
-var server = http.createServer(app);
-// var server = https.createServer(credentials, app);
+const httpServer = http.createServer(app);
+// const server = https.createServer(credentials, app);
 
 
 
-const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(server, {
+const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(httpServer, {
     cors: {
         origin: '*',
         methods: ['GET', 'POST']
@@ -74,9 +74,9 @@ poem(io);
 
 // the server listens on the port for any incoming connections and maintains the connection over which
 //
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+httpServer.listen(port);
+httpServer.on('error', onError);
+httpServer.on('listening', onListening);
 
 // the below defines functions which are used above, they are mostly boilerplate and not necessary to read
 
@@ -85,7 +85,7 @@ server.on('listening', onListening);
  */
 
 function normalizePort(val: string) {
-    var port = parseInt(val, 10);
+    const port = parseInt(val, 10);
 
     if (isNaN(port)) {
         // named pipe
@@ -109,7 +109,7 @@ function onError(error: { syscall: string; code: string; }) {
         throw error;
     }
 
-    var bind = typeof port === 'string'
+    const bind = typeof port === 'string'
         ? 'Pipe ' + port
         : 'Port ' + port;
 
@@ -133,8 +133,8 @@ function onError(error: { syscall: string; code: string; }) {
  */
 
 function onListening() {
-    var addr = server.address();
-    var bind = typeof addr === 'string'
+    const addr = httpServer.address();
+    const bind = typeof addr === 'string'
         ? 'pipe ' + addr
         : 'port ' + addr.port;
     debug('Listening on ' + bind);
