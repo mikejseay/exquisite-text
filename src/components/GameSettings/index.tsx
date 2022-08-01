@@ -17,16 +17,22 @@ function GameSettings() {
 
   // these will only ever take place for the VIP editor
   const handleLineLength = (event: React.MouseEvent<HTMLElement>, newLineLength: string) => {
-    setLineLength(newLineLength);
-    socket.emit("alterGameSettings", {lineLength: newLineLength, nRounds: nRounds, nPoems: nPoems});
+    if (newLineLength !== null) {
+      setLineLength(newLineLength);
+      socket.emit("alterGameSettings", {lineLength: newLineLength, nRounds: nRounds, nPoems: nPoems});
+    }
   };
   const handleNRounds = (event: React.MouseEvent<HTMLElement>, newNRounds: number) => {
-    setNRounds(newNRounds);
-    socket.emit("alterGameSettings", {lineLength: lineLength, nRounds: newNRounds, nPoems: nPoems});
+    if (newNRounds !== null) {
+      setNRounds(newNRounds);
+      socket.emit("alterGameSettings", { lineLength: lineLength, nRounds: newNRounds, nPoems: nPoems });
+    }
   };
   const handleNPoems = (event: React.MouseEvent<HTMLElement>, newNPoems: number) => {
-    setNPoems(newNPoems);
-    socket.emit("alterGameSettings", {lineLength: lineLength, nRounds: nRounds, nPoems: newNPoems});
+    if (newNPoems !== null) {
+      setNPoems(newNPoems);
+      socket.emit("alterGameSettings", { lineLength: lineLength, nRounds: nRounds, nPoems: newNPoems });
+    }
   };
   const handlePressStartGameButton = () => {
     socket.emit("startGame");
