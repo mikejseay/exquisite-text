@@ -271,14 +271,25 @@ const LineInput = () => {
     // socket.emit("allTurns");
   }
 
-  function handleKeypress({ charCode, ctrlKey }: KeyboardEvent) {
-    // it triggers by pressing ctrl + enter (13), when the "Done Line" button is enabled
+  // function handleKeypress(event: KeyboardEvent) {
+  //   const { charCode, ctrlKey, metaKey } = event;
+  //   console.log('handleKeypress event', event)
+  //   // it triggers by pressing ctrl + enter (13), when the "Done Line" button is enabled
+  //   // might not be necessary, but it's kind of nice
+  //   // note we use doneLineRef instead of doneLineEnabled because it gets the current value
+  //   if (doneLineRef.current && charCode === 13 && ctrlKey) {
+  //     passTurn();
+  //   }
+  // };
+
+  function handleKeyDown({ charCode, key, ctrlKey, metaKey }: KeyboardEvent) {
+    // it triggers by pressing macOS cmd + enter (13), when the "Done Line" button is enabled
     // might not be necessary, but it's kind of nice
     // note we use doneLineRef instead of doneLineEnabled because it gets the current value
-    if (doneLineRef.current && charCode === 13 && ctrlKey) {
+    if (doneLineRef.current && (ctrlKey || metaKey) && (key === "Enter" || charCode === 13)) {
       passTurn();
     }
-  }
+  };
 
   return (
     // the initial idea here was to have a single textarea element that was editable
@@ -343,7 +354,8 @@ const LineInput = () => {
                 value={poemInput}
                 style={poemInputStyle}
                 onChange={handlePoemBodyChange}
-                onKeyPress={handleKeypress}
+                // onKeyPress={handleKeypress}
+                onKeyDown={handleKeyDown}
                 rows={2}
                 autoFocus={true}
                 readOnly={false}
