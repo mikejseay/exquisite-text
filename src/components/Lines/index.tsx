@@ -1,67 +1,63 @@
 import React, { useState, useEffect } from "react";
-import {
-  lineStyle,
-  lineContainer,
-} from "./styles";
-import type {
-  ILine,
-  ILines,
-} from "../../types";
 import { useSocket } from "../App";
 
 const Lines = () => {
   const { socket } = useSocket();
 
-  // The lines state is a plain object that contains each line indexed by the line ID.
-  // Using React hooks, this state is updated inside the event handlers to reflect the changes provided by the server.
-  const [lines, setLines] = useState<ILines>({});
+  const [lines, setLines] = useState<Array<Array<string>>>([[], [], [], []]);
+  const [lineEdits, setLineEdits] = useState<Array<string>>(["", "", "", ""]);
+
 
   useEffect(() => {
-    const lineListener = (line: ILine) => {
-      setLines((prevLines) => {
-        const newLines = { ...prevLines };
-        newLines[line.id] = line;
-        return newLines;
-      });
+
+    const lineSpectatorListener = (poemIndex: number, line: string) => {
+      setLines(prevLines => {
+          console.log(prevLines);
+          console.log(prevLines[poemIndex]);
+          return [...prevLines.slice(0, poemIndex), [...prevLines[poemIndex], line], ...prevLines.slice(poemIndex + 1)];
+        }
+      );
     };
 
-    const clearLineListener = () => {
-      setLines({});
+    const lineEditSpectatorListener = (poemIndex: number, value: string) => {
+      setLineEdits(prevLineEdits => {
+          return [...prevLineEdits.slice(0, poemIndex), value, ...prevLineEdits.slice(poemIndex + 1)];
+        }
+      );
     };
 
-    socket.on("line", lineListener);
-    socket.on("clearLines", clearLineListener);
+    socket.on("lineSpectator", lineSpectatorListener);
+    socket.on("lineEditSpectator", lineEditSpectatorListener);
 
     // tells the server for this client to do getLines
     // since this is client-side, it only happens for this client
     socket.emit("getLines");
 
     return () => {
-      socket.off("line", lineListener);
-      socket.off("clearLines", clearLineListener);
+      socket.off("lineSpectator", lineSpectatorListener);
+      socket.off("lineEditSpectator", lineEditSpectatorListener);
     };
   }, [socket]);
 
   return (
-    <div className="lines-outer-container">
-      <div className="lines-container">
-        {[...Object.values(lines)]
-          .sort((a, b) => Number(a.createdAt) - Number(b.createdAt))
-          .map((line) => (
-            <div
-              className="line-container"
-              key={line.id}
-              style={lineContainer}
-            >
-              <div
-                className="line"
-                style={lineStyle}
-              >
-                {line.value}
-              </div>
-            </div>
-          ))}
-      </div>
+    <div style={
+      {
+        whiteSpace: "pre-line",
+        textAlign: "center",
+        fontFamily: "'Esteban', serif",
+        fontSize: "18px",
+        marginTop: "1em",
+      }
+    }>
+      {lines.map((lineArray, poemIndex) => {
+          return <div style={{ marginBottom: "2em" }}>
+            <div>{
+              lineArray.join("\n")
+            }</div>
+            <div>{lineEdits[poemIndex]}</div>
+          </div>;
+        }
+      )}
     </div>
   );
 };

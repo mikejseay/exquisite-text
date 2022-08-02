@@ -116,8 +116,8 @@ const LineInput = () => {
       setPoemInput(lineEdit);
     };
 
-    const lineEditSpectateListener = (lineEditSpectate: string) => {
-      setPoemInputSpectate(lineEditSpectate);
+    const lineEditorWatchListener = (lineEditorWatchVal: string) => {
+      setPoemInputSpectate(lineEditorWatchVal);
     };
 
     const lastLineListener = (lastLine: boolean) => {
@@ -159,7 +159,7 @@ const LineInput = () => {
 
     // set up listeners
     socket.on("lineEdit", lineEditListener);
-    socket.on("lineEditSpectate", lineEditSpectateListener);
+    socket.on("lineEditorWatch", lineEditorWatchListener);
     socket.on("editorActive", editorActiveListener);
     socket.on("lastLine", lastLineListener)
     socket.on("gameSettingsInfo", gameSettingsInfoListener);

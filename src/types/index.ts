@@ -77,7 +77,9 @@ export interface ServerToClientEvents {
   editorActive: (a: boolean) => void;
   lastLine: (a: boolean) => void;
   checkIfActive: () => void;
-  lineEditSpectate: (a: string) => void;
+  lineEditorWatch: (a: string) => void;
+  lineSpectator: (a: number, b: string) => void;
+  lineEditSpectator: (a: number, b: string) => void;
 }
 
 export interface ClientToServerEvents {
