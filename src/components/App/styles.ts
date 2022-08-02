@@ -1,12 +1,12 @@
 import React from "react";
 
 export const appHeader: React.CSSProperties = {
-  height: "60px",
+  alignItems: "center",
   display: "flex",
   flexDirection: "row",
   flexWrap: "nowrap",
+  height: "60px",
   justifyContent: "space-between",
-  alignItems: "center",
 };
 
 export const appTitle: React.CSSProperties = {

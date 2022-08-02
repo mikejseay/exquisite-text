@@ -1,17 +1,16 @@
-import React, { useEffect, useState } from "react";
-import {
-  IUserTableInfo
-} from "../../types";
+import * as React from "react";
+
 import { useSocket } from "../App";
+import { IUserTableInfo } from "../../types";
 
 function UserTable() {
   const { socket } = useSocket();
 
-  const [editorArr, setEditorArr] = useState<Array<string>>([]);
-  const [spectatorArr, setSpectatorArr] = useState<Array<string>>([]);
+  const [editorArr, setEditorArr] = React.useState<Array<string>>([]);
+  const [spectatorArr, setSpectatorArr] = React.useState<Array<string>>([]);
 
   // listen for arrays of editors and spectators
-  useEffect(() => {
+  React.useEffect(() => {
 
     // Event handlers for the line and the deleteLine events are set up for the Socket.IO connection.
     const userTableInfoListener = (info: IUserTableInfo) => {

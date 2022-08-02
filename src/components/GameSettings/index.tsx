@@ -1,10 +1,11 @@
-import * as React from 'react';
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import Stack from "@mui/material/Stack";
+import * as React from 'react';
+
 import { useSocket } from "../App";
-import Button from "@mui/material/Button";
-import { useEffect } from "react";
+
 import { IGameSettingsInfo, LineLength } from "../../types";
 
 function GameSettings() {
@@ -19,19 +20,31 @@ function GameSettings() {
   const handleLineLength = (event: React.MouseEvent<HTMLElement>, newLineLength: LineLength) => {
     if (newLineLength !== null) {
       setLineLength(newLineLength);
-      socket.emit("alterGameSettings", {lineLength: newLineLength, nRounds: nRounds, nPoems: nPoems});
+      socket.emit("alterGameSettings", {
+        lineLength: newLineLength,
+        nRounds,
+        nPoems,
+      });
     }
   };
   const handleNRounds = (event: React.MouseEvent<HTMLElement>, newNRounds: number) => {
     if (newNRounds !== null) {
       setNRounds(newNRounds);
-      socket.emit("alterGameSettings", { lineLength: lineLength, nRounds: newNRounds, nPoems: nPoems });
+      socket.emit("alterGameSettings", {
+        lineLength,
+        nRounds: newNRounds,
+        nPoems,
+      });
     }
   };
   const handleNPoems = (event: React.MouseEvent<HTMLElement>, newNPoems: number) => {
     if (newNPoems !== null) {
       setNPoems(newNPoems);
-      socket.emit("alterGameSettings", { lineLength: lineLength, nRounds: nRounds, nPoems: newNPoems });
+      socket.emit("alterGameSettings", {
+        lineLength,
+        nRounds,
+        nPoems: newNPoems,
+      });
     }
   };
   const handlePressStartGameButton = () => {
@@ -39,7 +52,7 @@ function GameSettings() {
   };
 
   // listen for arrays of editors and spectators
-  useEffect(() => {
+  React.useEffect(() => {
 
     // Event handlers for the line and the deleteLine events are set up for the Socket.IO connection.
     const gameSettingsInfoListener = (info: IGameSettingsInfo) => {

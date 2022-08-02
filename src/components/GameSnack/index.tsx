@@ -1,20 +1,19 @@
-import React, { useEffect, useState } from "react";
 import Snackbar from "@mui/material/Snackbar";
-import type {
-  IUserInfo,
-} from "../../types";
+import * as React from "react";
+
 import { useSocket } from "../App";
+
+import type { IUserInfo } from "../../types";
 
 const GameSnack = () => {
   const { socket } = useSocket();
 
-  const [snackMessage, setSnackMessage] = useState("");
-  const [snackOpen, setSnackOpen] = useState(false);
+  const [snackMessage, setSnackMessage] = React.useState("");
+  const [snackOpen, setSnackOpen] = React.useState(false);
   const handleClose = () => { setSnackOpen(false); };
 
-  useEffect(() => {
-
-    const userInfoListener = (userInfo: IUserInfo) => {
+  React.useEffect(() => {
+    function userInfoListener (userInfo: IUserInfo) {
       if (userInfo["role"] === "activeEditor") {
         document.title = "Your turn!";
         setTimeout(() => (document.title = "Exquisite Text"), 3000);
