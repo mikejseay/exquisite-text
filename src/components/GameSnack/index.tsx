@@ -1,5 +1,5 @@
 import Snackbar from "@mui/material/Snackbar";
-import * as React from "react";
+import React from "react";
 
 import { useSocket } from "../App";
 

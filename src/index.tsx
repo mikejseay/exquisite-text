@@ -7,38 +7,38 @@ import {
 
 import './index.css';
 import App from './components/App';
-import Host from "./routes/host"
-import Join from "./routes/join"
-import Lobby from "./routes/lobby"
-import Game from "./routes/game"
-import Spectate from "./routes/spectate"
+import Game from "./screens/Game"
+import Host from "./screens/Host"
+import Join from "./screens/Join"
+import Lobby from "./screens/Lobby"
+import Spectate from "./screens/Spectate"
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
+const noMatchRouteElement = <main style={{ textAlign: "center" }}>
+  <p>There's nothing here!</p>
+</main>
+
 root.render(
   <BrowserRouter>
     <Routes>
       <Route path="/" element={<App />}>
 
-        // create socket on button press with successful room entry
+        {/* create socket on button press with successful room entry */}
         <Route path="/" element={<Join />} />
 
-        // definitely creates socket and room
+        {/* definitely creates socket and room */}
         <Route path="host" element={<Host />} />
 
-        // requires socket
+        {/* requires socket */}
         <Route path="lobby" element={<Lobby />} />
         <Route path="game" element={<Game />} />
         <Route path="spectate" element={<Spectate />} />
         <Route  // no match route
           path="*"
-          element={
-            <main style={{ textAlign: "center" }}>
-              <p>There's nothing here!</p>
-            </main>
-          }
+          element={noMatchRouteElement}
         />
       </Route>
     </Routes>

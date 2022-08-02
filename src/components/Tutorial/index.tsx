@@ -2,7 +2,7 @@ import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import Modal from "@mui/material/Modal";
-import * as React from "react";
+import React from "react";
 
 import { modalContent, modalTitle, tutorial } from "./styles";
 import exampleGif from '../../assets/images/exquisiteExample.gif';

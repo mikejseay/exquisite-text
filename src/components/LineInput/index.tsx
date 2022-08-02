@@ -5,7 +5,7 @@ import Button from "@mui/material/Button";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Typography from "@mui/material/Typography";
 import isNil from "lodash/isNil";
-import * as React from "react";
+import React from "react";
 
 import { useSocket } from "../App";
 import "./LineInput.css";

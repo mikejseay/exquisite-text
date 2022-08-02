@@ -1,9 +1,8 @@
-import React from "react";
-import Lines from "../components/Lines";
+import Lines from "../../components/Lines";
 
 function Spectate() {
   return (
-    <div >
+    <div>
       <Lines />
     </div>
   );

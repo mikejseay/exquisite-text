@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import { useSocket } from "../components/App";
+import { useSocket } from "../../components/App";
 
 export default function Join() {
   const navigate = useNavigate();
@@ -56,7 +56,10 @@ export default function Join() {
     return () => {
       socket.off("joinError", joinErrorListener);
     };
-  }, [socket]);
+  }, [
+    navigate,
+    socket,
+  ]);
 
   return (
     <div>

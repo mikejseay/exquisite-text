@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { useSocket } from "../App";
 import { useNavigate } from "react-router-dom";
 
@@ -17,10 +17,13 @@ function GameTransition() {
     return () => {
       socket.off("navigate", navigateListener);
     };
-  }, [navigate, socket]);
+  }, [
+    navigate,
+    socket,
+  ]);
 
   return (
-    <React.Fragment/>
+    <React.Fragment />
   );
 }
 
