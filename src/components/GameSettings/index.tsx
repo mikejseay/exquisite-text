@@ -5,18 +5,18 @@ import Stack from "@mui/material/Stack";
 import { useSocket } from "../App";
 import Button from "@mui/material/Button";
 import { useEffect } from "react";
-import { IGameSettingsInfo } from "../../types";
+import { IGameSettingsInfo, LineLength } from "../../types";
 
 function GameSettings() {
   const { socket } = useSocket();
 
   const [settingsEnabled, setSettingsEnabled] = React.useState<boolean>(false);
-  const [lineLength, setLineLength] = React.useState<string>('short');
+  const [lineLength, setLineLength] = React.useState<LineLength>(LineLength.short);
   const [nRounds, setNRounds] = React.useState<number>(2);
   const [nPoems, setNPoems] = React.useState<number>(1);
 
   // these will only ever take place for the VIP editor
-  const handleLineLength = (event: React.MouseEvent<HTMLElement>, newLineLength: string) => {
+  const handleLineLength = (event: React.MouseEvent<HTMLElement>, newLineLength: LineLength) => {
     if (newLineLength !== null) {
       setLineLength(newLineLength);
       socket.emit("alterGameSettings", {lineLength: newLineLength, nRounds: nRounds, nPoems: nPoems});

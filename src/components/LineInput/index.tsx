@@ -7,7 +7,6 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Typography from "@mui/material/Typography";
 
-
 import "./LineInput.css";
 import {
   activeInput,
@@ -29,11 +28,8 @@ import {
   donePoemAccordionText,
   donePoemButton
 } from "./styles";
-
-// import type {
-//   IUserInfo
-// } from "../../types";
 import { useSocket } from "../App";
+import { IGameSettingsInfo, LineLength } from "../../types";
 
 // if activeEditor, the letters are visible and textarea is editable
 // if inactiveEditor, the letters are invisible, and textarea is not editable
@@ -53,30 +49,64 @@ function useStateRef(initialValue: boolean) {
   return [value, setValue, ref] as const;
 }
 
+export interface ILineConstraints {
+  minCharsOnLineOne: number;
+  maxCharsOnLineOne: number;
+  minCharsOnLineTwo: number;
+  maxCharsOnLineTwo: number;
+  idealCharsOnLineOne: number;
+  idealCharsOnLineTwo: number;
+}
+
+export type ILineConstraintDict = {
+  [key in LineLength]: ILineConstraints;
+}
+
+const lineConstraints: ILineConstraintDict = {
+  long: {
+    minCharsOnLineOne: 30,
+    maxCharsOnLineOne: 70,
+    minCharsOnLineTwo: 18,
+    maxCharsOnLineTwo: 36,
+    idealCharsOnLineOne: 60,
+    idealCharsOnLineTwo: 30
+  },
+  short: {
+    minCharsOnLineOne: 20,
+    maxCharsOnLineOne: 50,
+    minCharsOnLineTwo: 12,
+    maxCharsOnLineTwo: 24,
+    idealCharsOnLineOne: 40,
+    idealCharsOnLineTwo: 20
+  }
+};
+
 const LineInput = () => {
   const { socket } = useSocket();
 
-  const minCharsOnLineOne = 30;
-  const maxCharsOnLineOne = 70;
-  const minCharsOnLineTwo = 18; // must have more than this many characters on 2nd line to make exquisite
-  const maxCharsOnLineTwo = 36; // must have less than this many characters on 2nd line to make exquisite
-  const idealCharsOnLineOne = 60;
-  const idealCharsOnLineTwo = 30;
+  const [minCharsOnLineOne, setMinCharsOnLineOne] = useState<number>(lineConstraints[LineLength.short]["minCharsOnLineOne"]);
+  const [maxCharsOnLineOne, setMaxCharsOnLineOne] = useState<number>(lineConstraints[LineLength.short]["maxCharsOnLineOne"]);
+  const [minCharsOnLineTwo, setMinCharsOnLineTwo] = useState<number>(lineConstraints[LineLength.short]["minCharsOnLineTwo"]);
+  const [maxCharsOnLineTwo, setMaxCharsOnLineTwo] = useState<number>(lineConstraints[LineLength.short]["maxCharsOnLineTwo"]);
+  const [idealCharsOnLineOne, setIdealCharsOnLineOne] = useState<number>(lineConstraints[LineLength.short]["idealCharsOnLineOne"]);
+  const [idealCharsOnLineTwo, setIdealCharsOnLineTwo] = useState<number>(lineConstraints[LineLength.short]["idealCharsOnLineTwo"]);
+
   const lineSepString = "\n";
 
-  const [poemInput, setPoemInput] = useState("");
-  const [doneLineEnabled, setDoneLine, doneLineRef] = useStateRef(false);
-  const [onSecondLine, setOnSecondLine] = useState(false);
+  const [poemInput, setPoemInput] = useState<string>("");
+  const [poemInputSpectate, setPoemInputSpectate] = useState<string>("");
 
-  // const [active, setActive] = React.useState<boolean>(false);
+  const [passEnabled, setPassEnabled, passEnabledRef] = useStateRef(false);
+  const [onSecondLine, setOnSecondLine] = useState<boolean>(false);
 
-  const [lineInputVisible, setLineInputVisible] = useState(true);
+  const [onLastLine, setOnLastLine] = useState<boolean>(false);
+  const [lineInputVisible, setLineInputVisible] = useState<boolean>(true);
   const [poemDoneAccordionVisible, setPoemDoneAccordionVisible] =
-    useState(true);
-  const [donePoemEnabled, setDonePoem] = useState(true);
+    useState<boolean>(true);
+  const [donePoemEnabled, setDonePoem] = useState<boolean>(true);
 
-  const [helpMessage, setHelpMessage] = useState("");
-  const [inputErrorMsg, setInputErrorMsg] = useState(lineSepString);
+  const [helpMessage, setHelpMessage] = useState<string>("");
+  const [inputErrorMsg, setInputErrorMsg] = useState<string>(lineSepString);
   const textareaRef = useRef() as React.MutableRefObject<HTMLTextAreaElement | null>;
 
   useEffect(() => {
@@ -85,32 +115,57 @@ const LineInput = () => {
       setPoemInput(lineEdit);
     };
 
-    const editorActiveListener = (editorActiveFromServer: boolean) => {
-      // setActive(editorActiveFromServer);
-      setLineInputVisible(editorActiveFromServer);
+    const lineEditSpectateListener = (lineEditSpectate: string) => {
+      setPoemInputSpectate(lineEditSpectate);
     };
 
-    // const checkIfActiveListener = () => {
-    //   socket.emit("getEditorActive")
-    // };
+    const lastLineListener = (lastLine: boolean) => {
+      setOnLastLine(lastLine);
+    };
 
-    // additionally, tell React to set the poem textarea to change
-    // whenever a lineEdit event is emitted
+    const editorActiveListener = (editorActiveFromServer: boolean) => {
+      if (editorActiveFromServer) {
+        setLineInputVisible(true);
+        setHelpMessage("Complete a line of poetry.");
+        setPoemDoneAccordionVisible(true);
+      } else {
+        setLineInputVisible(false);
+        setHelpMessage("Your friend is writing 👇");
+        setPassEnabled(false);
+        setPoemDoneAccordionVisible(false);
+      }
+    };
+
+    // Event handlers for the line and the deleteLine events are set up for the Socket.IO connection.
+    const gameSettingsInfoListener = (info: IGameSettingsInfo) => {
+      console.log("gameSettingsInfoListener", info);
+      const lineLength = info["lineLength"] as LineLength;
+      setMinCharsOnLineOne(lineConstraints[lineLength]["minCharsOnLineOne"]);
+      setMaxCharsOnLineOne(lineConstraints[lineLength]["maxCharsOnLineOne"]);
+      setMinCharsOnLineTwo(lineConstraints[lineLength]["minCharsOnLineTwo"]);
+      setMaxCharsOnLineTwo(lineConstraints[lineLength]["maxCharsOnLineTwo"]);
+      setIdealCharsOnLineOne(lineConstraints[lineLength]["idealCharsOnLineOne"]);
+      setIdealCharsOnLineTwo(lineConstraints[lineLength]["idealCharsOnLineTwo"]);
+    };
+
+    // set up listeners
     socket.on("lineEdit", lineEditListener);
-
-    // tells the server for this client to do getLineEdit
-    // since this is client-side, it only happens for this client
-    socket.emit("getLineEdit");
-    socket.emit("getEditorActive")
-
+    socket.on("lineEditSpectate", lineEditSpectateListener);
     socket.on("editorActive", editorActiveListener);
-    // socket.on("checkIfActive", checkIfActiveListener);
+    socket.on("lastLine", lastLineListener)
+    socket.on("gameSettingsInfo", gameSettingsInfoListener);
+
+    // request initial populate on page load
+    socket.emit("getLineEdit");
+    socket.emit("getEditorActive");
+    socket.emit("getGameSettingsInfo");  // initial populate
 
     return () => {
       socket.off("lineEdit", lineEditListener);
       socket.off("editorActive", editorActiveListener);
+      socket.off("gameSettingsInfo", gameSettingsInfoListener);
     };
-  }, [socket]);
+  }, [setPassEnabled, socket]);
 
   function helpBasedOnProgress(messageType: number, progressProp: number) {
     if (messageType === 1) {
@@ -152,16 +207,16 @@ const LineInput = () => {
         socket.emit("lineEdit", useInput);
         sendNotification("First line maxed, press Enter/Return to go to next.");
         // setMessageType(1);
-        // setProgress(useInput.length / idealCharsOnLineOne);
+        // setProgress(useInput.length / s["idealCharsOnLineOne"]);
         helpBasedOnProgress(1, useInput.length / idealCharsOnLineOne);
-        setDoneLine(false);
+        setPassEnabled(false);
       } else {
         setPoemInput(evt.target.value);
         socket.emit("lineEdit", evt.target.value);
         // setMessageType(1);
-        // setProgress(evt.target.value.length / idealCharsOnLineOne);
+        // setProgress(evt.target.value.length / s["idealCharsOnLineOne"]);
         helpBasedOnProgress(1, evt.target.value.length / idealCharsOnLineOne);
-        setDoneLine(false);
+        setPassEnabled(false);
       }
 
     } else if (lines.length === 2) {
@@ -178,9 +233,9 @@ const LineInput = () => {
         socket.emit("lineEdit", useInput);
         sendNotification("That's the max. When done, click pass.");
         // setMessageType(2);
-        // setProgress(maxCharsOnLineTwo / idealCharsOnLineTwo);
+        // setProgress(s["maxCharsOnLineTwo"] / s["idealCharsOnLineTwo"]);
         helpBasedOnProgress(2, maxCharsOnLineTwo / idealCharsOnLineTwo);
-        setDoneLine(true);
+        setPassEnabled(true);
       } else if (lines[0].length < minCharsOnLineOne) {
         // first line too short
 
@@ -190,9 +245,9 @@ const LineInput = () => {
         socket.emit("lineEdit", lines[0]);
         sendNotification("More on first line!");
         // setMessageType(1);
-        // setProgress(lines[0].length / idealCharsOnLineOne);
+        // setProgress(lines[0].length / s["idealCharsOnLineOne"]);
         helpBasedOnProgress(1, lines[0].length / idealCharsOnLineOne);
-        setDoneLine(false);
+        setPassEnabled(false);
       } else {
         // just right!
 
@@ -201,9 +256,9 @@ const LineInput = () => {
         setPoemInput(evt.target.value);
         socket.emit("lineEdit", evt.target.value);
         // setMessageType(2);
-        // setProgress(lines[1].length / idealCharsOnLineTwo);
+        // setProgress(lines[1].length / s["idealCharsOnLineTwo"]);
         helpBasedOnProgress(2, lines[1].length / idealCharsOnLineTwo);
-        setDoneLine(
+        setPassEnabled(
           lines[1].length >= minCharsOnLineTwo &&
           lines[1].length <= maxCharsOnLineTwo
         );
@@ -221,8 +276,8 @@ const LineInput = () => {
       sendNotification("Two lines only. If done click Pass.");
       helpBasedOnProgress(2, linesTwo[1].length / idealCharsOnLineTwo);
       // setMessageType(2);
-      // setProgress(maxCharsOnLineTwo / idealCharsOnLineTwo);
-      setDoneLine(
+      // setProgress(s["maxCharsOnLineTwo"] / s["idealCharsOnLineTwo"]);
+      setPassEnabled(
         linesTwo[1].length >= minCharsOnLineTwo &&
         linesTwo[1].length <= maxCharsOnLineTwo
       );
@@ -235,7 +290,7 @@ const LineInput = () => {
     const poemParts = poemInput.split(lineSepString);
 
     // check user input, should be two lines, although access to even executing this function is regulated
-    // by the doneLineRef value, which enables and disables the button
+    // by the passEnabledRef value, which enables and disables the button
     if (poemParts.length > 1) {
       const [firstPart, secondPart] = poemParts;
 
@@ -246,6 +301,13 @@ const LineInput = () => {
       // this client submits its line, triggering a movement of its poem from its queue
       // to the target queue
       socket.emit("passTurn", firstPart, secondPart);
+
+      // after this we will never be able to pass right away
+      setPassEnabled(false);
+
+      // after this, either we aren't editing any longer (normal) or if it's a solo game,
+      // or if there are multiple poems in your queue, you could go directly back into editing
+      // make sure the UI is set appropriately
     }
   }
 
@@ -260,36 +322,21 @@ const LineInput = () => {
     socket.emit("lineEdit", "");
     setOnSecondLine(false);
 
-    // this client only tell the server to do the ending event
-    // socket.emit("poemDone");
-
-    // this event should also set the value of the "lines" variable
-    // in Lines.js to be initialized (an empty object)...
-    // socket.emit("clearLines");
-
-    // this client only tell the server to do the turn event, which sends user info appropriately
-    // socket.emit("allTurns");
+    setLineInputVisible(false);
+    setPassEnabled(false);
+    // setHelpMessage("Poem completed! Open it at the bottom of the page.\n" +
+    //   "If you'd like to play again, make a new room.");
+    setPoemDoneAccordionVisible(false);
   }
-
-  // function handleKeypress(event: KeyboardEvent) {
-  //   const { charCode, ctrlKey, metaKey } = event;
-  //   console.log('handleKeypress event', event)
-  //   // it triggers by pressing ctrl + enter (13), when the "Done Line" button is enabled
-  //   // might not be necessary, but it's kind of nice
-  //   // note we use doneLineRef instead of doneLineEnabled because it gets the current value
-  //   if (doneLineRef.current && charCode === 13 && ctrlKey) {
-  //     passTurn();
-  //   }
-  // };
 
   function handleKeyDown({ charCode, key, ctrlKey, metaKey }: KeyboardEvent) {
     // it triggers by pressing macOS cmd + enter (13), when the "Done Line" button is enabled
     // might not be necessary, but it's kind of nice
-    // note we use doneLineRef instead of doneLineEnabled because it gets the current value
-    if (doneLineRef.current && (ctrlKey || metaKey) && (key === "Enter" || charCode === 13)) {
+    // note we use passEnabledRef instead of passEnabled because it gets the current value
+    if (passEnabledRef.current && (ctrlKey || metaKey) && (key === "Enter" || charCode === 13)) {
       passTurn();
     }
-  };
+  }
 
   return (
     // the initial idea here was to have a single textarea element that was editable
@@ -379,7 +426,7 @@ const LineInput = () => {
                   <span
                     style={spacingSpan}
                   >
-                    {poemInput.replaceAll(/[^\n]/g, "*")}
+                    {poemInputSpectate.replaceAll(/[^\n]/g, "*")}
                   </span>
                 <div
                   id="caret"
@@ -396,10 +443,10 @@ const LineInput = () => {
           >
             <Button
               variant={"contained"}
-              onClick={passTurn}
-              disabled={!doneLineEnabled}
+              onClick={onLastLine ? completePoem : passTurn}
+              disabled={!passEnabled}
             >
-              Pass
+              {onLastLine ? "Complete Poem" : "Pass"}
             </Button>
           </div>
         </div>
