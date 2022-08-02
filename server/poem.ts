@@ -341,7 +341,9 @@ class Editor extends Member {
     this.io.to(this.targetEditorSocketID).emit("lineEditorWatch", value);
 
     const thisPoem = this.poemQueue[0];
-    thisPoem.lineWasEdited(value);
+    if (!isNil(thisPoem)) {
+      thisPoem.lineWasEdited(value);
+    }
   }
 
   requestActivity() {
