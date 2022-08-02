@@ -12,6 +12,7 @@ import Host from "./screens/Host"
 import Join from "./screens/Join"
 import Lobby from "./screens/Lobby"
 import Spectate from "./screens/Spectate"
+import Disconnected from "./screens/Disconnected"
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(
@@ -36,6 +37,7 @@ root.render(
         <Route path="lobby" element={<Lobby />} />
         <Route path="game" element={<Game />} />
         <Route path="spectate" element={<Spectate />} />
+        <Route path="disconnected" element={<Disconnected />} />
         <Route  // no match route
           path="*"
           element={noMatchRouteElement}
