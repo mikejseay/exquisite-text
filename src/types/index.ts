@@ -94,6 +94,7 @@ export interface ClientToServerEvents {
   joinGameAs: (a: string, b: string, c:string) => void;
   getUserTableInfo: () => void;
   getGameSettingsInfo: () => void;
+  getLastLineStatus: () => void;
   alterGameSettings: (a: IGameSettingsInfo) => void;
   getSettingsEnabled: () => void;
   startGame: () => void;

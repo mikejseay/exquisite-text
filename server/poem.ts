@@ -305,6 +305,8 @@ class Editor extends Member {
     this.socket.on("getEditorActive", () => this.requestActivity());
     this.socket.on("passTurn", (firstPart, secondPart) => this.handlePassTurn(firstPart, secondPart))
     this.socket.on("lastLine", (value) => this.handleLastLine(value)); // whenever a new line has been submitted into the poem.
+    this.socket.on("getLastLineStatus", () => this.requestLastLineStatus());
+
   }
 
   requestLineEdit() {
@@ -342,13 +344,28 @@ class Editor extends Member {
    return (this.poemQueue.length > 0);
   }
 
+  currentlyOnLastLine() {
+    const thisPoem = this.poemQueue[0];
+    if (thisPoem) {
+      console.log("we think the poem has ", thisPoem.lines.length, "of", thisPoem.targetLines - 2);
+      return thisPoem.lines.length === (thisPoem.targetLines - 2);
+    } else {
+      return false;
+    }
+  }
+
+  requestLastLineStatus() {
+    console.log("requestLastLineStatus");
+    this.io.to(this.socket.id).emit("lastLine", this.currentlyOnLastLine());
+  }
+
   possibleStartNewTurn() {
     // console.log(this.name, "is checking if they are starting a new turn");
     if (this.hasPoemInQueue()) {
       // console.log(this.name, "thinks their poemQueue is", this.poemQueue);
       this.io.to(this.socket.id).emit("lineEdit", this.poemQueue[0].halfLine);
       const thisPoem = this.poemQueue[0];
-      console.log("we think the poem has ", thisPoem.lines.length, "of", thisPoem.targetLines - 2);
+
       if (thisPoem.lines.length === (thisPoem.targetLines - 2)) {
         this.io.to(this.socket.id).emit("lastLine", true);
       } else {

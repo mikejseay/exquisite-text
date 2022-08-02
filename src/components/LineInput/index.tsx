@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, KeyboardEvent } from "react";
+import React, { KeyboardEvent, useEffect, useRef, useState } from "react";
 import isNil from "lodash/isNil";
 import Button from "@mui/material/Button";
 import Accordion from "@mui/material/Accordion";
@@ -11,6 +11,9 @@ import "./LineInput.css";
 import {
   activeInput,
   caret,
+  donePoemAccordionText,
+  donePoemAccordionTitle,
+  donePoemButton,
   errorMessage,
   helpMessageStyle,
   inactiveInput,
@@ -19,14 +22,11 @@ import {
   mainInputContainer,
   passButton,
   poemInputStyle,
+  spacingSpan,
   textSpacer,
-  underlineSuggestionDiv,
   underlineSpan,
   underlineSpanHover,
-  spacingSpan,
-  donePoemAccordionTitle,
-  donePoemAccordionText,
-  donePoemButton
+  underlineSuggestionDiv
 } from "./styles";
 import { useSocket } from "../App";
 import { IGameSettingsInfo, LineLength } from "../../types";
@@ -84,6 +84,7 @@ const lineConstraints: ILineConstraintDict = {
 const LineInput = () => {
   const { socket } = useSocket();
 
+  const [lineLength, setLineLength] = useState<LineLength>(LineLength.short);
   const [minCharsOnLineOne, setMinCharsOnLineOne] = useState<number>(lineConstraints[LineLength.short]["minCharsOnLineOne"]);
   const [maxCharsOnLineOne, setMaxCharsOnLineOne] = useState<number>(lineConstraints[LineLength.short]["maxCharsOnLineOne"]);
   const [minCharsOnLineTwo, setMinCharsOnLineTwo] = useState<number>(lineConstraints[LineLength.short]["minCharsOnLineTwo"]);
@@ -121,6 +122,13 @@ const LineInput = () => {
 
     const lastLineListener = (lastLine: boolean) => {
       setOnLastLine(lastLine);
+      if (lastLine) {
+        setMaxCharsOnLineTwo(lineConstraints[lineLength]["maxCharsOnLineOne"]);
+        setIdealCharsOnLineTwo(lineConstraints[lineLength]["idealCharsOnLineOne"]);
+      } else {
+        setMaxCharsOnLineTwo(lineConstraints[lineLength]["maxCharsOnLineTwo"]);
+        setIdealCharsOnLineTwo(lineConstraints[lineLength]["idealCharsOnLineTwo"]);
+      }
     };
 
     const editorActiveListener = (editorActiveFromServer: boolean) => {
@@ -139,13 +147,14 @@ const LineInput = () => {
     // Event handlers for the line and the deleteLine events are set up for the Socket.IO connection.
     const gameSettingsInfoListener = (info: IGameSettingsInfo) => {
       console.log("gameSettingsInfoListener", info);
-      const lineLength = info["lineLength"] as LineLength;
-      setMinCharsOnLineOne(lineConstraints[lineLength]["minCharsOnLineOne"]);
-      setMaxCharsOnLineOne(lineConstraints[lineLength]["maxCharsOnLineOne"]);
-      setMinCharsOnLineTwo(lineConstraints[lineLength]["minCharsOnLineTwo"]);
-      setMaxCharsOnLineTwo(lineConstraints[lineLength]["maxCharsOnLineTwo"]);
-      setIdealCharsOnLineOne(lineConstraints[lineLength]["idealCharsOnLineOne"]);
-      setIdealCharsOnLineTwo(lineConstraints[lineLength]["idealCharsOnLineTwo"]);
+      const length = info["lineLength"];
+      setLineLength(length);
+      setMinCharsOnLineOne(lineConstraints[length]["minCharsOnLineOne"]);
+      setMaxCharsOnLineOne(lineConstraints[length]["maxCharsOnLineOne"]);
+      setMinCharsOnLineTwo(lineConstraints[length]["minCharsOnLineTwo"]);
+      setMaxCharsOnLineTwo(lineConstraints[length]["maxCharsOnLineTwo"]);
+      setIdealCharsOnLineOne(lineConstraints[length]["idealCharsOnLineOne"]);
+      setIdealCharsOnLineTwo(lineConstraints[length]["idealCharsOnLineTwo"]);
     };
 
     // set up listeners
@@ -159,6 +168,7 @@ const LineInput = () => {
     socket.emit("getLineEdit");
     socket.emit("getEditorActive");
     socket.emit("getGameSettingsInfo");  // initial populate
+    socket.emit("getLastLineStatus");
 
     return () => {
       socket.off("lineEdit", lineEditListener);
@@ -178,9 +188,17 @@ const LineInput = () => {
       }
     } else {
       if (progressProp < 0.6) {
-        setHelpMessage("Now start the next line (Next player will see this.)");
+        if (onLastLine) {
+          setHelpMessage("Last line. Make it count!");
+        } else {
+          setHelpMessage("Now start the next line (Next player will see this.)");
+        }
       } else {
-        setHelpMessage("Perfect. Pass the turn!");
+        if (onLastLine) {
+          setHelpMessage("Perfect. Finish the poem!");
+        } else {
+          setHelpMessage("Perfect. Pass the turn!");
+        }
       }
     }
   }
