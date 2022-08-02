@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 
 export const appBody: React.CSSProperties = {
   alignItems: "center",

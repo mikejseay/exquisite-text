@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import Popover from "@mui/material/Popover";
 import PeopleIcon from "@mui/icons-material/People";
 import IconButton from "@mui/material/IconButton";
