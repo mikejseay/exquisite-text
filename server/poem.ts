@@ -15,6 +15,7 @@ import {
   IDeviceIDToSocketID,
   LineLength,
 } from "../src/types";
+import isNil from "lodash/isNil";
 
 const db = require("./queries");
 const uuidv4 = require("uuid").v4; // a function that generates a random uuid for lines
@@ -43,11 +44,11 @@ const roomIDToRoom: Map<string, any> = new Map();
 const poems: Set<IPoem> = new Set();
 
 const maxEditors = 2;
-const defaultGameSettings = {
+const defaultGameSettings: IGameSettingsInfo = {
   lineLength: LineLength.short,
   nRounds: 2,
   nPoems: 1,
-} as IGameSettingsInfo;
+};
 
 class Room {
   // represents a socket.io room and a game of Exquisite Text
@@ -107,13 +108,15 @@ class Room {
 
     // have each editor set their important properties
     let nPoemsToHandOut = this.gameSettings["nPoems"];
+    let poemIndex = 0;
     for (const thisEditor of this.editors.values()) {
       thisEditor.prepareForGame();
       if (nPoemsToHandOut > 0) {
-        const thisPoem = new Poem(targetLines);
+        const thisPoem = new Poem(targetLines, poemIndex, this.io, this.roomID);
         thisEditor.poemQueue.push(thisPoem);
         thisEditor.isCurrentlyEditing = true;
         nPoemsToHandOut--;
+        poemIndex++;
       }
     }
 
@@ -257,7 +260,7 @@ class Editor extends Member {
   targetEditorID: string;
   targetEditorSocketID: string;
   turnPosition: number;
-  poemQueue: Array<any>;
+  poemQueue: Array<Poem>;
   isCurrentlyEditing: boolean;
 
   constructor(io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
@@ -320,8 +323,8 @@ class Editor extends Member {
   }
 
   handleLineEdit(value: string) {
-    // when an active editor changes the lineInput, they want to broadcast this
-    // to the other active editors and/or spectators so that they can "watch" them type
+    // when an active editor changes the lineInput, broadcast this
+    // to other editors and/or spectators so that they can "watch" them type
 
     // for other active editors (this version), they want the string
 
@@ -330,9 +333,11 @@ class Editor extends Member {
 
     // for the spectator, TBD
 
-    // this will change in next version
-    // this.socket.to(this.roomID + "_Editors").emit("lineEdit", value);
-    this.io.to(this.targetEditorSocketID).emit("lineEditSpectate", value);
+    // for now, only send to the next Editor in line (each watches who are behind them)
+    this.io.to(this.targetEditorSocketID).emit("lineEditorWatch", value);
+
+    const thisPoem = this.poemQueue[0];
+    thisPoem.lineWasEdited(value);
   }
 
   requestActivity() {
@@ -382,44 +387,34 @@ class Editor extends Member {
 
   handlePassTurn(firstPart: string, secondPart: string) {
     // console.log(this.name, "passing turn");
-    const thisRoom = roomIDToRoom.get(this.roomID) as Room;
-    // console.log(this.name, "poemQueue starts out as", this.poemQueue);
+    const thisRoom = roomIDToRoom.get(this.roomID);
     const poemToPass = this.poemQueue.shift();
-    // console.log(this.name, "after shift it becomes", this.poemQueue);
-    // console.log(this.name, "and the poem itself is", poemToPass);
+    if (isNil(poemToPass)) {
+      return
+    }
 
-    poemToPass.lines.push(firstPart);
+    poemToPass.submitLine(firstPart);
+    poemToPass.lineWasEdited(secondPart);
     poemToPass.halfLine = secondPart;
     // should be a reference!!!
-    const nextEditor = thisRoom.editors.get(this.targetEditorID) as Editor;
-    // console.log(this.name, "at first thinks the next player's poemQueue is", nextEditor.poemQueue);
+    const nextEditor = thisRoom.editors.get(this.targetEditorID);
     nextEditor.poemQueue.push(poemToPass);
-    // thisRoom.editors.get(this.targetEditorID).poemQueue.push(poemToPass)
-    // console.log(this.name, "after pushing thinks the next player's poemQueue is", nextEditor.poemQueue);
-    // const nextEditorAgain = thisRoom.editors.get(this.targetEditorID) as Editor;
-    // console.log(this.name, "on second check thinks the next player's poemQueue is", nextEditorAgain.poemQueue);
-    // nextEditor.receiveNewPoem(poemToPass);
 
     // trigger editors to check their queue and update their activity state
     // and view (i.e. the correct lineEdit if necessary)
-    // Shouldn't it be only the current editor and target editor?
-
     // only THIS editor should check its own queue and populate accordingly
     this.possibleStartNewTurn();
     if (!nextEditor.isCurrentlyEditing) {
-      // console.log("we thought", nextEditor.name, "wasn't currently editing");
       nextEditor.possibleStartNewTurn();
     }
-
-    // console.log("at the end of passing turn", this.name, "think its own poemQueue is", this.poemQueue);
-    // const thisRoomAgain = roomIDToRoom.get(this.roomID) as Room;
-    // const meEditor = thisRoomAgain.editors.get(this.deviceID) as Editor;
-    // console.log("but on second access the room thinks that it's", meEditor.poemQueue);
   }
 
   handleLastLine(lastPart: string) {
     console.log("handleLastLine");
-    const poemToPass = this.poemQueue.pop();
+    const poemToPass = this.poemQueue.shift();
+    if (isNil(poemToPass)) {
+      return
+    }
     poemToPass.lines.push(lastPart);
 
     let poemString = "";
@@ -481,18 +476,39 @@ class VIPEditor extends Editor {
 class Poem {
   // represents a single poem
 
-  targetLines: number;
   lines: Array<string>;
   halfLine: string;
   poemID: string;
+  targetLines: number;
+  poemIndex: number;
+  io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
+  roomID: string;
 
-  constructor(targetLines: number) {
+  // any edit of lines or halfline (e.g. submitLine, handleLineEdit)
+  // will send a message to the Spectators in the roomID
+
+  constructor(targetLines: number,
+              poemIndex: number,
+              io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
+              roomID: string,
+              ) {
     this.targetLines = targetLines;
+    this.poemIndex = poemIndex;
+    this.io = io;
+    this.roomID = roomID;
     this.lines = [];
     this.halfLine = "";
     this.poemID = uuidv4();
   }
 
+  submitLine(line: string) {
+    this.lines.push(line);
+    this.io.in(this.roomID + "_Spectators").emit("lineSpectator", this.poemIndex, line);
+  }
+
+  lineWasEdited(value: string) {
+    this.io.in(this.roomID + "_Spectators").emit("lineEditSpectator", this.poemIndex, value);
+  }
 }
 
 // The module exports a single function poem that takes the Socket.IO server instance as a parameter.

@@ -1,9 +1,10 @@
 import React from "react";
+import Lines from "../components/Lines";
 
 function Spectate() {
   return (
     <div >
-      {"You're spectating."}
+      <Lines />
     </div>
   );
 }
