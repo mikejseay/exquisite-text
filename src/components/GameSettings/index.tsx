@@ -22,8 +22,8 @@ function GameSettings() {
       setLineLength(newLineLength);
       socket.emit("alterGameSettings", {
         lineLength: newLineLength,
-        nRounds,
         nPoems,
+        nRounds,
       });
     }
   };
@@ -32,8 +32,8 @@ function GameSettings() {
       setNRounds(newNRounds);
       socket.emit("alterGameSettings", {
         lineLength,
-        nRounds: newNRounds,
         nPoems,
+        nRounds: newNRounds,
       });
     }
   };
@@ -42,8 +42,8 @@ function GameSettings() {
       setNPoems(newNPoems);
       socket.emit("alterGameSettings", {
         lineLength,
-        nRounds,
         nPoems: newNPoems,
+        nRounds,
       });
     }
   };
