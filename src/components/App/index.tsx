@@ -6,6 +6,7 @@ import {
   io,
   Socket
 } from "socket.io-client";
+import isNil from "lodash/isNil";
 import { Outlet, useOutletContext } from "react-router-dom";
 import GameState from "../GameState";
 import Tutorial from "../Tutorial";
@@ -49,16 +50,22 @@ export default function App() {
     return <div>Not Connected</div>;
   }
 
-  // check if this device (browser) has visited the page before
-  // const firstVisit = !localStorage.getItem('device');
-  // if (firstVisit) {
-  //   localStorage.setItem('device', uuidv4());
-  // }
-  // socket.emit("recognizeDevice", localStorage.getItem('device'));
+  if (isDevelopment) {
+    // to debug I will send a random device id each time
+    socket.emit("recognizeDevice", uuidv4());
 
-  // to debug I will send a random device id each time
-  socket.emit("recognizeDevice", uuidv4());
+  } else {
 
+    // check if this device (browser) has visited the page before
+    const firstVisit = !localStorage.getItem('device');
+    if (firstVisit) {
+      localStorage.setItem('device', uuidv4());
+    }
+    const deviceID = localStorage.getItem('device');
+    if (!isNil(deviceID)) {
+      socket.emit("recognizeDevice", deviceID);
+    }
+  }
 
   return (
     <div style={possibleSocket}>

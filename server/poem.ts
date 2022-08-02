@@ -10,7 +10,10 @@ import {
   InterServerEvents,
   IPoem, IUserTableInfo,
   ServerToClientEvents,
-  SocketData
+  SocketData,
+  ISocketIDToDeviceID,
+  IDeviceIDToSocketID,
+  LineLength,
 } from "../src/types";
 
 const db = require("./queries");
@@ -30,27 +33,95 @@ async function populatePoems() {
 }
 populatePoems();
 
-// type ISocketToDeviceID = Map<Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>, string>
-// type IDeviceIDToSocket = Map<string, Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>>
-type ISocketIDToDeviceID = { [key: string]: string; }
-type IDeviceIDToSocketID = { [key: string]: string; }
-type IRoomIDToRoom = Map<string, any>
-
 // New global data structures
 // const socketToDeviceID: ISocketToDeviceID = new Map();  // unique on socket. can have multiple devices on socket
 // const deviceIDToSocket: IDeviceIDToSocket = new Map();  // unique on device. only latest is present
 
 const socketIDToDeviceID: ISocketIDToDeviceID = {};  // unique on socket. can have multiple devices on socket
 const deviceIDToSocketID: IDeviceIDToSocketID = {};  // unique on device. only latest is present
-
-const roomIDToRoom: IRoomIDToRoom = new Map();
+const roomIDToRoom: Map<string, any> = new Map();
 const poems: Set<IPoem> = new Set();
 
 const maxEditors = 2;
 const defaultGameSettings = {
-  lineLength: "short",
+  lineLength: LineLength.short,
   nRounds: 2,
   nPoems: 1,
+} as IGameSettingsInfo;
+
+class Room {
+  // represents a socket.io room and a game of Exquisite Text
+  io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
+  hostSocket: Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData> | null;
+  roomID: string;
+
+  editors: Map<string, Editor>;
+  spectators: Map<any, any>;
+  editorNames: Array<string>;
+  spectatorNames: Array<string>;
+  gameSettings: IGameSettingsInfo;
+  poems: Map<any, any>;
+
+  constructor(
+    io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
+    hostSocket: Socket,
+    room: string,
+  ) {
+    this.io = io;
+    this.hostSocket = hostSocket;
+    this.roomID = room;
+
+    this.editors = new Map();  // deviceID to editorObj
+    this.spectators = new Map();  // deviceID to spectatorObj
+    this.editorNames = [];  // deviceID to editorObj
+    this.spectatorNames = [];  // deviceID to spectatorObj
+    this.gameSettings = defaultGameSettings;
+    this.poems = new Map();
+  }
+
+  addEditor(deviceUUID: string, editorObj: any) {
+    this.editors.set(deviceUUID, editorObj);
+    this.editorNames.push(editorObj.name);
+    this.sendCurrentUserTableInfo(); // give the room updated user info
+  }
+
+  addSpectator(deviceUUID: string, spectatorObj: any) {
+    this.spectators.set(deviceUUID, spectatorObj);
+    this.spectatorNames.push(spectatorObj.name);
+    this.sendCurrentUserTableInfo(); // give the room updated user info
+  }
+
+  currentUserTableInfo() {
+    return {
+      editors: this.editorNames,
+      spectators: this.spectatorNames
+    };
+  }
+
+  sendCurrentUserTableInfo() {
+    this.io.in(this.roomID).emit("userTableInfo", this.currentUserTableInfo());
+  }
+
+  setUpGame() {
+    const targetLines = this.gameSettings["nRounds"] * this.editors.size + 2;
+
+    // have each editor set their important properties
+    let nPoemsToHandOut = this.gameSettings["nPoems"];
+    for (const thisEditor of this.editors.values()) {
+      thisEditor.prepareForGame();
+      if (nPoemsToHandOut > 0) {
+        const thisPoem = new Poem(targetLines);
+        thisEditor.poemQueue.push(thisPoem);
+        thisEditor.isCurrentlyEditing = true;
+        nPoemsToHandOut--;
+      }
+    }
+
+    // should tell editors to navigate to /game and spectators to /spectate
+    this.io.in(this.roomID + "_Editors").emit("navigate", "/game")
+    this.io.in(this.roomID + "_Spectators").emit("navigate", "/spectate")
+  }
+
 }
 
 class Member {
@@ -123,11 +194,17 @@ class Member {
   disconnect() {
     console.log(this.socket.id, "disconnected");
 
+    // socketIDToDeviceID
+    // deviceIDToSocketID
+    // roomIDToRoom
+
     // do cleanup intelligently
     // remove from socket map
     // notice that we don't remove from the other maps
     // this gives opportunity for the person to reconnect...
     // but eventually we might have to remove them if they're inactive
+
+    // two-minute timer to boot completely from the Room?
   }
 
   disconnecting() {
@@ -163,12 +240,25 @@ class Host extends Member {
 
 }
 
+class Spectator extends Member {
+
+  joinRoom() {
+    super.joinRoom();
+    this.socket.join(this.roomID + "_Spectators");
+  }
+
+  // eventually send cool game state info to inform spectatorGameView
+}
+
 class Editor extends Member {
 
   previousEditorID: string;
+  previousEditorSocketID: string;
   targetEditorID: string;
+  targetEditorSocketID: string;
   turnPosition: number;
   poemQueue: Array<any>;
+  isCurrentlyEditing: boolean;
 
   constructor(io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
               hostSocket: Socket,
@@ -177,9 +267,12 @@ class Editor extends Member {
               name: string) {
     super(io, hostSocket, roomID, deviceID, name);
     this.previousEditorID = "";
+    this.previousEditorSocketID = "";
     this.targetEditorID = "";
+    this.targetEditorSocketID = "";
     this.turnPosition = 0;
     this.poemQueue = [];
+    this.isCurrentlyEditing = false;
   }
 
   prepareForGame() {
@@ -191,6 +284,8 @@ class Editor extends Member {
     const safePrevIndex = (this.turnPosition - 1 + nEditors) % nEditors;
     this.targetEditorID = editorDeviceIDs[safeNextIndex];
     this.previousEditorID = editorDeviceIDs[safePrevIndex];
+    this.targetEditorSocketID = thisRoom.editors.get(this.targetEditorID).socket.id;
+    this.previousEditorSocketID = thisRoom.editors.get(this.previousEditorID).socket.id;
     console.log(this.deviceID, "in position", this.turnPosition, "targets", this.targetEditorID);
   }
 
@@ -217,7 +312,7 @@ class Editor extends Member {
     // this should fill in what it's supposed to based on
     // the halfLine of the first Poem in the queue (if this editor is active)
 
-    if (this.isActive()) {
+    if (this.hasPoemInQueue()) {
       this.io.to(this.socket.id).emit("lineEdit", this.poemQueue[0].halfLine);
     }
   }
@@ -234,35 +329,75 @@ class Editor extends Member {
     // for the spectator, TBD
 
     // this will change in next version
-    this.socket.to(this.roomID + "_Editors").emit("lineEdit", value);
+    // this.socket.to(this.roomID + "_Editors").emit("lineEdit", value);
+    this.io.to(this.targetEditorSocketID).emit("lineEditSpectate", value);
   }
 
   requestActivity() {
     console.log("requestEditorActivity");
-    this.io.to(this.socket.id).emit("editorActive", this.isActive());
+    this.io.to(this.socket.id).emit("editorActive", this.hasPoemInQueue());
   }
 
-  isActive() {
+  hasPoemInQueue() {
    return (this.poemQueue.length > 0);
   }
 
+  possibleStartNewTurn() {
+    // console.log(this.name, "is checking if they are starting a new turn");
+    if (this.hasPoemInQueue()) {
+      // console.log(this.name, "thinks their poemQueue is", this.poemQueue);
+      this.io.to(this.socket.id).emit("lineEdit", this.poemQueue[0].halfLine);
+      const thisPoem = this.poemQueue[0];
+      console.log("we think the poem has ", thisPoem.lines.length, "of", thisPoem.targetLines - 2);
+      if (thisPoem.lines.length === (thisPoem.targetLines - 2)) {
+        this.io.to(this.socket.id).emit("lastLine", true);
+      } else {
+        this.io.to(this.socket.id).emit("lastLine", false);
+      }
+      this.io.to(this.socket.id).emit("editorActive", true);
+      this.isCurrentlyEditing = true;
+    } else {
+      this.io.to(this.socket.id).emit("lineEdit", "");
+      this.io.to(this.socket.id).emit("editorActive", false);
+      this.isCurrentlyEditing = false;
+    } // otherwise, leave it the way it was?
+  }
+
   handlePassTurn(firstPart: string, secondPart: string) {
-    console.log("handlePassTurn");
+    // console.log(this.name, "passing turn");
     const thisRoom = roomIDToRoom.get(this.roomID) as Room;
-    const poemToPass = this.poemQueue.pop();
+    // console.log(this.name, "poemQueue starts out as", this.poemQueue);
+    const poemToPass = this.poemQueue.shift();
+    // console.log(this.name, "after shift it becomes", this.poemQueue);
+    // console.log(this.name, "and the poem itself is", poemToPass);
 
     poemToPass.lines.push(firstPart);
     poemToPass.halfLine = secondPart;
+    // should be a reference!!!
     const nextEditor = thisRoom.editors.get(this.targetEditorID) as Editor;
-    this.io.to(nextEditor.socket.id).emit("lineEdit", poemToPass.halfLine);
+    // console.log(this.name, "at first thinks the next player's poemQueue is", nextEditor.poemQueue);
     nextEditor.poemQueue.push(poemToPass);
+    // thisRoom.editors.get(this.targetEditorID).poemQueue.push(poemToPass)
+    // console.log(this.name, "after pushing thinks the next player's poemQueue is", nextEditor.poemQueue);
+    // const nextEditorAgain = thisRoom.editors.get(this.targetEditorID) as Editor;
+    // console.log(this.name, "on second check thinks the next player's poemQueue is", nextEditorAgain.poemQueue);
+    // nextEditor.receiveNewPoem(poemToPass);
 
-    // trigger each socket to check its own queue and update its activity state
+    // trigger editors to check their queue and update their activity state
     // and view (i.e. the correct lineEdit if necessary)
-    // here we send to the whole room but should be only editors in theory
-    for (const editorObj of thisRoom.editors.values()) {
-      this.io.to(editorObj.socket.id).emit("editorActive", editorObj.isActive());
+    // Shouldn't it be only the current editor and target editor?
+
+    // only THIS editor should check its own queue and populate accordingly
+    this.possibleStartNewTurn();
+    if (!nextEditor.isCurrentlyEditing) {
+      // console.log("we thought", nextEditor.name, "wasn't currently editing");
+      nextEditor.possibleStartNewTurn();
     }
+
+    // console.log("at the end of passing turn", this.name, "think its own poemQueue is", this.poemQueue);
+    // const thisRoomAgain = roomIDToRoom.get(this.roomID) as Room;
+    // const meEditor = thisRoomAgain.editors.get(this.deviceID) as Editor;
+    // console.log("but on second access the room thinks that it's", meEditor.poemQueue);
   }
 
   handleLastLine(lastPart: string) {
@@ -326,85 +461,6 @@ class VIPEditor extends Editor {
   }
 }
 
-class Spectator extends Member {
-
-  joinRoom() {
-    super.joinRoom();
-    this.socket.join(this.roomID + "_Spectators");
-  }
-
-  // eventually send cool game state info to inform spectatorGameView
-}
-
-class Room {
-  // represents a socket.io room and a game of Exquisite Text
-  io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
-  hostSocket: Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData> | null;
-  roomID: string;
-
-  editors: Map<string, Editor>;
-  spectators: Map<any, any>;
-  editorNames: Array<string>;
-  spectatorNames: Array<string>;
-  gameSettings: Object;
-  poems: Map<any, any>;
-
-  constructor(
-    io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
-    hostSocket: Socket,
-    room: string,
-  ) {
-    this.io = io;
-    this.hostSocket = hostSocket;
-    this.roomID = room;
-
-    this.editors = new Map();  // deviceID to editorObj
-    this.spectators = new Map();  // deviceID to spectatorObj
-    this.editorNames = [];  // deviceID to editorObj
-    this.spectatorNames = [];  // deviceID to spectatorObj
-    this.gameSettings = defaultGameSettings;
-    this.poems = new Map();
-  }
-
-  addEditor(deviceUUID: string, editorObj: any) {
-    this.editors.set(deviceUUID, editorObj);
-    this.editorNames.push(editorObj.name);
-    this.sendCurrentUserTableInfo(); // give the room updated user info
-  }
-
-  addSpectator(deviceUUID: string, spectatorObj: any) {
-    this.spectators.set(deviceUUID, spectatorObj);
-    this.spectatorNames.push(spectatorObj.name);
-    this.sendCurrentUserTableInfo(); // give the room updated user info
-  }
-
-  currentUserTableInfo() {
-    return {
-      editors: this.editorNames,
-      spectators: this.spectatorNames
-    };
-  }
-
-  sendCurrentUserTableInfo() {
-    this.io.in(this.roomID).emit("userTableInfo", this.currentUserTableInfo());
-  }
-
-  setUpGame() {
-    const thisPoem = new Poem(10); // 10 target lines for now
-    this.editors.values().next().value.poemQueue.push(thisPoem); // give the VIP a poem in their queue
-
-    // have each editor set their important properties
-    for (const thisEditor of this.editors.values()) {
-      thisEditor.prepareForGame();
-    }
-
-    // should tell editors to navigate to /game and spectators to /spectate
-    this.io.in(this.roomID + "_Editors").emit("navigate", "/game")
-    this.io.in(this.roomID + "_Spectators").emit("navigate", "/spectate")
-  }
-
-}
-
 class Poem {
   // represents a single poem
 
@@ -430,12 +486,20 @@ function socketFunctionality(io: Server<ClientToServerEvents, ServerToClientEven
     // When a client requests a connection, the callback will create a new Connection instance
     // and pass the Socket.IO server instance and the new socket to the constructor.
 
+    console.log("new socket connection spawned");
+
     socket.on("recognizeDevice", (deviceID) => {
       // socketToDeviceID.set(socket, deviceID); // since socket is always uuid, won't overwrite
       // deviceIDToSocket.set(deviceID, socket); // will overwrite previous
       socketIDToDeviceID[socket.id] = deviceID; // since socket is always uuid, won't overwrite
       deviceIDToSocketID[deviceID] = socket.id; // will overwrite previous
+
+      // deviceUUID --> roomID --> Room --> Room.editors or Room.spectators.keys() --> deviceUUID
+      // at the very least we need deviceIDToRoomID
+      // and then define methods in Member to allow you to attach a new socket to the same Member
     });
+
+    // roomIDToRoom
 
     socket.on("createGameHost", (roomID) => {
 

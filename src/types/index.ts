@@ -6,13 +6,18 @@ export enum Role {
   spectator = "spectator",
 }
 
+export enum LineLength {
+  short = "short",
+  long = "long",
+}
+
 export interface IUserTableInfo {
   editors: Array<string>;
   spectators: Array<string>;
 }
 
 export interface IGameSettingsInfo {
-  lineLength: string;
+  lineLength: LineLength;
   nRounds: number;
   nPoems: number;
 }
@@ -48,10 +53,19 @@ export interface IPoem {
   title: string;
 }
 
+export interface ISocketIDToDeviceID {
+  [key: string]: string;
+}
+
+export interface IDeviceIDToSocketID {
+  [key: string]: string;
+}
+
 export interface ServerToClientEvents {
   clearLines: () => void;
   line: (a: ILine) => void;
   lineEdit: (a: string) => void;
+  lineEditSize: (a: number, b: number) => void;
   poem: (a: IPoem) => void;
 
   joinError: (a: string) => void;
@@ -61,8 +75,9 @@ export interface ServerToClientEvents {
   gameSettingsEnabled: (a: boolean) => void;
   navigate: (a: string) => void;
   editorActive: (a: boolean) => void;
+  lastLine: (a: boolean) => void;
   checkIfActive: () => void;
-
+  lineEditSpectate: (a: string) => void;
 }
 
 export interface ClientToServerEvents {
@@ -92,3 +107,4 @@ export interface InterServerEvents {
 
 export interface SocketData {
 }
+
