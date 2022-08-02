@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+
 import { useSocket } from "../App";
 
 const Lines = () => {
   const { socket } = useSocket();
 
-  const [lines, setLines] = useState<Array<Array<string>>>([[], [], [], []]);
-  const [lineEdits, setLineEdits] = useState<Array<string>>(["", "", "", ""]);
+  const [lines, setLines] = React.useState<Array<Array<string>>>([[], [], [], []]);
+  const [lineEdits, setLineEdits] = React.useState<Array<string>>(["", "", "", ""]);
 
-
-  useEffect(() => {
-
+  React.useEffect(() => {
     const lineSpectatorListener = (poemIndex: number, line: string) => {
       setLines(prevLines => {
           console.log(prevLines);

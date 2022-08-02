@@ -12,8 +12,8 @@ function GameState() {
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const open = Boolean(anchorEl);
-  const id = open ? "simple-popover" : undefined;
+  const isOpen = Boolean(anchorEl);
+  const id = isOpen ? "simple-popover" : undefined;
 
   return (
     <div style={marginLeftAuto}>
@@ -26,7 +26,7 @@ function GameState() {
         </IconButton>
       <Popover
         id={id}
-        open={open}
+        open={isOpen}
         anchorEl={anchorEl}
         onClose={handleClose}
         anchorOrigin={{

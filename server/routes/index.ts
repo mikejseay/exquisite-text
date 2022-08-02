@@ -1,9 +1,11 @@
-import { express } from "../app";
 import {
   NextFunction,
   Response,
   Request,
 } from 'express';
+
+import { express } from "../app";
+
 const router = express.Router();
 
 /* GET home page. */

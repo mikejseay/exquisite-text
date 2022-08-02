@@ -1,13 +1,14 @@
+import isNil from "lodash/isNil";
+import React from "react";
 import {
-  useEffect,
-  useState
-} from "react";
+  Outlet,
+  useOutletContext,
+} from "react-router-dom";
 import {
   io,
   Socket
 } from "socket.io-client";
-import isNil from "lodash/isNil";
-import { Outlet, useOutletContext } from "react-router-dom";
+
 import GameState from "../GameState";
 import Tutorial from "../Tutorial";
 import Settings from "../Settings";
@@ -18,10 +19,12 @@ import {
   app,
   possibleSocket
 } from "./styles";
+
 import type {
   ClientToServerEvents,
   ServerToClientEvents
 } from "../../types";
+
 const uuidv4 = require("uuid").v4;
 
 const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
@@ -32,9 +35,9 @@ const serverPath: URL["pathname"] | URL["href"] = isDevelopment
 type ContextType = { socket: Socket<ServerToClientEvents, ClientToServerEvents> };
 
 export default function App() {
-  const [socket, setSocket] = useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
+  const [socket, setSocket] = React.useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const newSocket: Socket<ServerToClientEvents, ClientToServerEvents> = io(serverPath);
     setSocket(newSocket);
 

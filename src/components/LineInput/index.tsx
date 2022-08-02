@@ -1,12 +1,13 @@
-import React, { KeyboardEvent, useEffect, useRef, useState } from "react";
-import isNil from "lodash/isNil";
-import Button from "@mui/material/Button";
 import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import Button from "@mui/material/Button";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Typography from "@mui/material/Typography";
+import isNil from "lodash/isNil";
+import React from "react";
 
+import { useSocket } from "../App";
 import "./LineInput.css";
 import {
   activeInput,
@@ -28,8 +29,11 @@ import {
   underlineSpanHover,
   underlineSuggestionDiv
 } from "./styles";
-import { useSocket } from "../App";
-import { IGameSettingsInfo, LineLength } from "../../types";
+
+import {
+  IGameSettingsInfo,
+  LineLength,
+} from "../../types";
 
 // if activeEditor, the letters are visible and textarea is editable
 // if inactiveEditor, the letters are invisible, and textarea is not editable
@@ -39,10 +43,10 @@ import { IGameSettingsInfo, LineLength } from "../../types";
 // with the third output argument "ref"
 // https://stackoverflow.com/questions/53845595/wrong-react-hooks-behaviour-with-event-listener
 function useStateRef(initialValue: boolean) {
-  const [value, setValue] = useState(initialValue);
-  const ref = useRef(value);
+  const [value, setValue] = React.useState(initialValue);
+  const ref = React.useRef(value);
 
-  useEffect(() => {
+  React.useEffect(() => {
     ref.current = value;
   }, [value]);
 
@@ -84,34 +88,33 @@ const lineConstraints: ILineConstraintDict = {
 const LineInput = () => {
   const { socket } = useSocket();
 
-  const [lineLength, setLineLength] = useState<LineLength>(LineLength.short);
-  const [minCharsOnLineOne, setMinCharsOnLineOne] = useState<number>(lineConstraints[LineLength.short]["minCharsOnLineOne"]);
-  const [maxCharsOnLineOne, setMaxCharsOnLineOne] = useState<number>(lineConstraints[LineLength.short]["maxCharsOnLineOne"]);
-  const [minCharsOnLineTwo, setMinCharsOnLineTwo] = useState<number>(lineConstraints[LineLength.short]["minCharsOnLineTwo"]);
-  const [maxCharsOnLineTwo, setMaxCharsOnLineTwo] = useState<number>(lineConstraints[LineLength.short]["maxCharsOnLineTwo"]);
-  const [idealCharsOnLineOne, setIdealCharsOnLineOne] = useState<number>(lineConstraints[LineLength.short]["idealCharsOnLineOne"]);
-  const [idealCharsOnLineTwo, setIdealCharsOnLineTwo] = useState<number>(lineConstraints[LineLength.short]["idealCharsOnLineTwo"]);
+  const [lineLength, setLineLength] = React.useState<LineLength>(LineLength.short);
+  const [minCharsOnLineOne, setMinCharsOnLineOne] = React.useState<number>(lineConstraints[LineLength.short]["minCharsOnLineOne"]);
+  const [maxCharsOnLineOne, setMaxCharsOnLineOne] = React.useState<number>(lineConstraints[LineLength.short]["maxCharsOnLineOne"]);
+  const [minCharsOnLineTwo, setMinCharsOnLineTwo] = React.useState<number>(lineConstraints[LineLength.short]["minCharsOnLineTwo"]);
+  const [maxCharsOnLineTwo, setMaxCharsOnLineTwo] = React.useState<number>(lineConstraints[LineLength.short]["maxCharsOnLineTwo"]);
+  const [idealCharsOnLineOne, setIdealCharsOnLineOne] = React.useState<number>(lineConstraints[LineLength.short]["idealCharsOnLineOne"]);
+  const [idealCharsOnLineTwo, setIdealCharsOnLineTwo] = React.useState<number>(lineConstraints[LineLength.short]["idealCharsOnLineTwo"]);
 
   const lineSepString = "\n";
 
-  const [poemInput, setPoemInput] = useState<string>("");
-  const [poemInputSpectate, setPoemInputSpectate] = useState<string>("");
+  const [poemInput, setPoemInput] = React.useState<string>("");
+  const [poemInputSpectate, setPoemInputSpectate] = React.useState<string>("");
 
   const [passEnabled, setPassEnabled, passEnabledRef] = useStateRef(false);
-  const [onSecondLine, setOnSecondLine] = useState<boolean>(false);
+  const [onSecondLine, setOnSecondLine] = React.useState<boolean>(false);
 
-  const [onLastLine, setOnLastLine] = useState<boolean>(false);
-  const [lineInputVisible, setLineInputVisible] = useState<boolean>(true);
+  const [onLastLine, setOnLastLine] = React.useState<boolean>(false);
+  const [lineInputVisible, setLineInputVisible] = React.useState<boolean>(true);
   const [poemDoneAccordionVisible, setPoemDoneAccordionVisible] =
-    useState<boolean>(true);
-  const [donePoemEnabled, setDonePoem] = useState<boolean>(true);
+    React.useState<boolean>(true);
+  const [donePoemEnabled, setDonePoem] = React.useState<boolean>(true);
 
-  const [helpMessage, setHelpMessage] = useState<string>("");
-  const [inputErrorMsg, setInputErrorMsg] = useState<string>(lineSepString);
-  const textareaRef = useRef() as React.MutableRefObject<HTMLTextAreaElement | null>;
+  const [helpMessage, setHelpMessage] = React.useState<string>("");
+  const [inputErrorMsg, setInputErrorMsg] = React.useState<string>(lineSepString);
+  const textareaRef = React.useRef() as React.MutableRefObject<HTMLTextAreaElement | null>;
 
-  useEffect(() => {
-
+  React.useEffect(() => {
     const lineEditListener = (lineEdit: string) => {
       setPoemInput(lineEdit);
     };
@@ -175,7 +178,11 @@ const LineInput = () => {
       socket.off("editorActive", editorActiveListener);
       socket.off("gameSettingsInfo", gameSettingsInfoListener);
     };
-  }, [setPassEnabled, socket]);
+  }, [
+    lineLength,
+    setPassEnabled,
+    socket,
+  ]);
 
   function helpBasedOnProgress(messageType: number, progressProp: number) {
     if (messageType === 1) {
@@ -347,7 +354,7 @@ const LineInput = () => {
     setPoemDoneAccordionVisible(false);
   }
 
-  function handleKeyDown({ charCode, key, ctrlKey, metaKey }: KeyboardEvent) {
+  function handleKeyDown({ charCode, key, ctrlKey, metaKey }: React.KeyboardEvent) {
     // it triggers by pressing macOS cmd + enter (13), when the "Done Line" button is enabled
     // might not be necessary, but it's kind of nice
     // note we use passEnabledRef instead of passEnabled because it gets the current value

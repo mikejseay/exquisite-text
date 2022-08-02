@@ -1,13 +1,13 @@
-import { useState } from "react";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import Modal from "@mui/material/Modal";
+import React from "react";
+
 import { modalContent, modalTitle, tutorial } from "./styles";
 import exampleGif from '../../assets/images/exquisiteExample.gif';
 
 const Tutorial = () => {
-
   // check if the user's visited the page before
   const firstVisit = !localStorage.getItem('visited');
   if (firstVisit) {
@@ -15,7 +15,7 @@ const Tutorial = () => {
   }
 
   // if first visit, the help modal will be initially open
-  const [helpOpen, setHelpOpen] = useState(firstVisit);
+  const [helpOpen, setHelpOpen] = React.useState(firstVisit);
   const handleHelpOpen = () => setHelpOpen(true);
   const handleHelpClose = () => setHelpOpen(false);
 
