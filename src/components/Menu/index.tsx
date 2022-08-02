@@ -7,7 +7,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import MenuIcon from "@mui/icons-material/Menu";
-import React from "react";
+import * as React from "react";
 import { Link as RouterLink } from "react-router-dom";
 
 const Menu = () => {
