@@ -53,11 +53,7 @@ export interface IPoem {
   title: string;
 }
 
-export interface ISocketIDToDeviceID {
-  [key: string]: string;
-}
-
-export interface IDeviceIDToSocketID {
+export interface IObjectStringToString {
   [key: string]: string;
 }
 

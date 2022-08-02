@@ -10,14 +10,13 @@ import {
 
 import {
   ClientToServerEvents,
-  IDeviceIDToSocketID,
   IGameSettingsInfo,
   InterServerEvents,
+  IObjectStringToString,
   IPoem,
-  ISocketIDToDeviceID,
   LineLength,
   ServerToClientEvents,
-  SocketData,
+  SocketData
 } from "../src/types";
 
 const db = require("./queries");
@@ -41,8 +40,9 @@ populatePoems();
 // const socketToDeviceID: ISocketToDeviceID = new Map();  // unique on socket. can have multiple devices on socket
 // const deviceIDToSocket: IDeviceIDToSocket = new Map();  // unique on device. only latest is present
 
-const socketIDToDeviceID: ISocketIDToDeviceID = {};  // unique on socket. can have multiple devices on socket
-const deviceIDToSocketID: IDeviceIDToSocketID = {};  // unique on device. only latest is present
+const socketIDToDeviceID: IObjectStringToString = {};  // unique on socket. can have multiple devices on socket
+const deviceIDToSocketID: IObjectStringToString = {};  // unique on device. only latest is present
+const deviceIDToRoomID: IObjectStringToString = {};
 const roomIDToRoom: Map<string, any> = new Map();
 const poems: Set<IPoem> = new Set();
 
@@ -64,7 +64,7 @@ class Room {
   editorNames: Array<string>;
   spectatorNames: Array<string>;
   gameSettings: IGameSettingsInfo;
-  poems: Map<any, any>;
+  nPoemsInRotation: number;
 
   constructor(
     io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
@@ -80,7 +80,7 @@ class Room {
     this.editorNames = [];  // deviceID to editorObj
     this.spectatorNames = [];  // deviceID to spectatorObj
     this.gameSettings = defaultGameSettings;
-    this.poems = new Map();
+    this.nPoemsInRotation = 0;
   }
 
   addEditor(deviceUUID: string, editorObj: any) {
@@ -111,6 +111,7 @@ class Room {
 
     // have each editor set their important properties
     let nPoemsToHandOut = this.gameSettings["nPoems"];
+    this.nPoemsInRotation = nPoemsToHandOut;
     let poemIndex = 0;
     for (const thisEditor of this.editors.values()) {
       thisEditor.prepareForGame();
@@ -158,7 +159,7 @@ class Member {
 
   joinRoom() {
     this.socket.join(this.roomID);
-    this.io.to(this.socket.id).emit("joinSuccess"); // navigates to /lobby
+    this.io.to(this.socket.id).emit("navigate", "/lobby"); // navigates to /lobby
     this.setReceive(); // listen for certain messages from client
   }
 
@@ -253,15 +254,11 @@ class Spectator extends Member {
     super.joinRoom();
     this.socket.join(this.roomID + "_Spectators");
   }
-
-  // eventually send cool game state info to inform spectatorGameView
 }
 
 class Editor extends Member {
-  previousEditorID: string;
-  previousEditorSocketID: string;
   targetEditorID: string;
-  targetEditorSocketID: string;
+  // targetEditorSocketID: string;
   turnPosition: number;
   poemQueue: Array<Poem>;
   isCurrentlyEditing: boolean;
@@ -274,10 +271,8 @@ class Editor extends Member {
     name: string
   ) {
     super(io, hostSocket, roomID, deviceID, name);
-    this.previousEditorID = "";
-    this.previousEditorSocketID = "";
     this.targetEditorID = "";
-    this.targetEditorSocketID = "";
+    // this.targetEditorSocketID = "";
     this.turnPosition = 0;
     this.poemQueue = [];
     this.isCurrentlyEditing = false;
@@ -289,11 +284,8 @@ class Editor extends Member {
     const nEditors = editorDeviceIDs.length;
     this.turnPosition = editorDeviceIDs.indexOf(this.deviceID);
     const safeNextIndex = (this.turnPosition + 1) % nEditors;
-    const safePrevIndex = (this.turnPosition - 1 + nEditors) % nEditors;
     this.targetEditorID = editorDeviceIDs[safeNextIndex];
-    this.previousEditorID = editorDeviceIDs[safePrevIndex];
-    this.targetEditorSocketID = thisRoom.editors.get(this.targetEditorID).socket.id;
-    this.previousEditorSocketID = thisRoom.editors.get(this.previousEditorID).socket.id;
+    // this.targetEditorSocketID = thisRoom.editors.get(this.targetEditorID).socket.id;
     console.log(this.deviceID, "in position", this.turnPosition, "targets", this.targetEditorID);
   }
 
@@ -338,7 +330,8 @@ class Editor extends Member {
     // for the spectator, TBD
 
     // for now, only send to the next Editor in line (each watches who are behind them)
-    this.io.to(this.targetEditorSocketID).emit("lineEditorWatch", value);
+    const thisRoom = roomIDToRoom.get(this.roomID);
+    this.io.to(thisRoom.editors.get(this.targetEditorID).socket.id).emit("lineEditorWatch", value);
 
     const thisPoem = this.poemQueue[0];
     if (!isNil(thisPoem)) {
@@ -347,7 +340,7 @@ class Editor extends Member {
   }
 
   requestActivity() {
-    console.log("requestEditorActivity");
+    console.log(this.name, "requestEditorActivity");
     this.io.to(this.socket.id).emit("editorActive", this.hasPoemInQueue());
   }
 
@@ -371,9 +364,7 @@ class Editor extends Member {
   }
 
   possibleStartNewTurn() {
-    // console.log(this.name, "is checking if they are starting a new turn");
     if (this.hasPoemInQueue()) {
-      // console.log(this.name, "thinks their poemQueue is", this.poemQueue);
       this.io.to(this.socket.id).emit("lineEdit", this.poemQueue[0].halfLine);
       const thisPoem = this.poemQueue[0];
 
@@ -392,7 +383,6 @@ class Editor extends Member {
   }
 
   handlePassTurn(firstPart: string, secondPart: string) {
-    // console.log(this.name, "passing turn");
     const thisRoom = roomIDToRoom.get(this.roomID);
     const poemToPass = this.poemQueue.shift();
     if (isNil(poemToPass)) {
@@ -428,6 +418,17 @@ class Editor extends Member {
       poemString += line + "\n";
     }
     this.handlePoem(poemString);
+
+    const thisRoom = roomIDToRoom.get(this.roomID);
+    thisRoom.nPoemsInRotation--;
+    // if all editors' poem queues are empty
+    // remove each of the editor/spectator deviceIDs from deviceIDToRoomID
+    if (thisRoom.nPoemsInRotation === 0) {
+      console.log("we think there are no poems left to finish");
+      for (const editorID of thisRoom.editors.keys()) {
+        delete deviceIDToRoomID[editorID];
+      }
+    }
   }
 
   handlePoem(poemString: string) {
@@ -467,7 +468,7 @@ class VIPEditor extends Editor {
   }
 
   broadcastStartGame () {
-    // global in nature, so it will mainly deal with the room
+    // global in nature, so it will mainly eal with the room
     console.log("startGame");
     roomIDToRoom.get(this.roomID).setUpGame();
   }
@@ -525,11 +526,42 @@ function socketFunctionality(io: Server<ClientToServerEvents, ServerToClientEven
     // When a client requests a connection, the callback will create a new Connection instance
     // and pass the Socket.IO server instance and the new socket to the constructor.
 
-    console.log("new socket connection spawned");
-
     socket.on("recognizeDevice", (deviceID) => {
+
+      console.log("new socket", socket.id, "from device", deviceID);
       // socketToDeviceID.set(socket, deviceID); // since socket is always uuid, won't overwrite
       // deviceIDToSocket.set(deviceID, socket); // will overwrite previous
+
+      const deviceInARoom = deviceIDToRoomID.hasOwnProperty(deviceID);
+      if (deviceInARoom) {
+        // try to reconnect them to that room in the correct role
+        const roomID = deviceIDToRoomID[deviceID];
+        const theRoom = roomIDToRoom.get(roomID);
+        const editorDeviceIDsInRoom = Array.from(theRoom.editors.keys());
+        const spectatorDeviceIDsInRoom = Array.from(theRoom.spectators.keys());
+
+        let theMember;
+        let targetView;
+        if (editorDeviceIDsInRoom.includes(deviceID)) {
+          theMember = theRoom.editors.get(deviceID);
+          targetView = "/game";
+        } else if (spectatorDeviceIDsInRoom.includes(deviceID)) {
+          theMember = theRoom.spectators.get(deviceID);
+          targetView = "/spectate";
+        } else {
+          targetView = "/";
+        }
+        const oldSocket = theMember.socket;
+        const oldRooms = theMember.socket.rooms;
+        io.to(oldSocket.id).emit("navigate", "/disconnected"); // send to disconnect page
+        oldRooms.delete(oldRooms.values().next().value); // delete first element (old socket id)
+        oldSocket.disconnect(); // force disconnect
+        socket.join(Array.from(oldRooms)); // re-join the same rooms
+        theMember.socket = socket; // connect the new socket in preference of the old
+        theMember.setReceive(); // re-establish server-side listeners
+        io.to(socket.id).emit("navigate", targetView); // force navigate
+      } // else this device isn't in a room yet, nothing to do
+
       socketIDToDeviceID[socket.id] = deviceID; // since socket is always uuid, won't overwrite
       deviceIDToSocketID[deviceID] = socket.id; // will overwrite previous
 
@@ -558,8 +590,12 @@ function socketFunctionality(io: Server<ClientToServerEvents, ServerToClientEven
         return
       }
 
-      const targetRoom = roomIDToRoom.get(roomID);
       const deviceID = socketIDToDeviceID[socket.id];
+      // const deviceInARoom = deviceIDToRoomID.hasOwnProperty(deviceID);
+      // if (deviceInARoom) {
+      // }
+      deviceIDToRoomID[deviceID] = roomID;
+      const targetRoom = roomIDToRoom.get(roomID);
       if (role === "Editor") {
         if (targetRoom.editors.size >= maxEditors) {
           console.log("trying to join as editor but it's already full");

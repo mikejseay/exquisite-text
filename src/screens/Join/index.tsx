@@ -44,17 +44,17 @@ export default function Join() {
       setTimeout(() => setJoinErrorMessage(""), 3000);
     };
 
-    const joinSuccessListener = () => {
-      console.log("joinSuccess happened");
-      // send to lobby
-      navigate("/lobby");
+    const navigateListener = (targetRoute: string) => {
+      console.log("received navigate message to", targetRoute);
+      navigate(targetRoute);
     };
 
     socket.on("joinError", joinErrorListener);
-    socket.on("joinSuccess", joinSuccessListener);
+    socket.on("navigate", navigateListener);
 
     return () => {
       socket.off("joinError", joinErrorListener);
+      socket.off("navigate", navigateListener);
     };
   }, [
     navigate,

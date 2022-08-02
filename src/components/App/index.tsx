@@ -8,7 +8,6 @@ import {
   io,
   Socket
 } from "socket.io-client";
-
 import GameState from "../GameState";
 import Tutorial from "../Tutorial";
 import Settings from "../Settings";
@@ -19,7 +18,6 @@ import {
   app,
   possibleSocket
 } from "./styles";
-
 import type {
   ClientToServerEvents,
   ServerToClientEvents
@@ -53,12 +51,12 @@ export default function App() {
     return <div>Not Connected</div>;
   }
 
-  if (isDevelopment) {
+  // set this to true if you want to be able to connect to the game
+  // multiple times from the same browser
+  if (process.env.REACT_APP_DEBUG_SINGLE_BROWSER) {
     // to debug I will send a random device id each time
     socket.emit("recognizeDevice", uuidv4());
-
   } else {
-
     // check if this device (browser) has visited the page before
     const firstVisit = !localStorage.getItem('device');
     if (firstVisit) {
