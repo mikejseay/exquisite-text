@@ -30,7 +30,7 @@ Exquisite Corpse is a game invented by surrealist artists in the 1920's. Each pl
 
 ### Local Development
 
-Clone this repository and make it your current directory.
+Clone this repository and make it your current directory. In this root directory, create a local .env file by making a copy of .env.example named .env (e.g. `cp .env.example .env`.)
 
 Install [Node](https://nodejs.org/en/) and [PostgreSQL](https://www.postgresql.org/download/) according to their instructions for your operating system. If you're using a Linux-like OS and have Homebrew, you can install PostgreSQL with `brew install postgresql` and then start its service with `brew services start postgresql`.
 
@@ -43,25 +43,11 @@ CREATE ROLE me WITH CREATEDB LOGIN PASSWORD 'password';
 \q
 ```
 
-Reconnect to `postgres` as the newly created user with `psql -d postgres -U me`, then run the following commands:
-
-```
-CREATE DATABASE exquisite;
-\c exquisite;
-CREATE TABLE poems(
-    ID SERIAL PRIMARY KEY,
-    title text,
-    content text,
-    time timestamp
-);
-\q
-```
-
 Install Yarn with `npm install --global yarn` and then run `yarn` to install the frontend node modules.
 
-Open up a new terminal and go to the server directory with `cd ./server`, then run `yarn` again, this time to install the server's node modules.
+Open up a new terminal and go to the server directory with `cd ./server`. Just as in the root directory, make a new copy of .env.example named .env (`cp .env.example .env`)  then run `yarn` again, this time to install the server's node modules.
 
-In the server terminal, run `yarn start`, then in the root terminal run `yarn start`. This should automatically open a new browser tab at [`http://localhost:8080/`](http://localhost:8080/). 
+In the server terminal, run `yarn start`, then in the root terminal run `yarn start`. This should automatically open a new browser tab at [`http://localhost:8080/`](http://localhost:8080/). Note that by default, you will not be able to join a game from multiple tabs in the same browser on the same device unless you prevent localStorage from being reused (e.g. incognito tab, Firefox multi-accounts).  
 
 ### Heroku Deployment
 
