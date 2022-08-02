@@ -11,7 +11,7 @@ import React from "react";
 import { Link as RouterLink } from "react-router-dom";
 
 const Menu = () => {
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const [ drawerOpen, setDrawerOpen ] = React.useState(false);
   const handleDrawerOpen = () => setDrawerOpen(true);
   const handleDrawerClose = () => setDrawerOpen(false);
 

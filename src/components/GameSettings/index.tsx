@@ -11,10 +11,10 @@ import { IGameSettingsInfo, LineLength } from "../../types";
 function GameSettings() {
   const { socket } = useSocket();
 
-  const [settingsEnabled, setSettingsEnabled] = React.useState<boolean>(false);
-  const [lineLength, setLineLength] = React.useState<LineLength>(LineLength.short);
-  const [nRounds, setNRounds] = React.useState<number>(2);
-  const [nPoems, setNPoems] = React.useState<number>(1);
+  const [ settingsEnabled, setSettingsEnabled ] = React.useState<boolean>(false);
+  const [ lineLength, setLineLength ] = React.useState<LineLength>(LineLength.short);
+  const [ nRounds, setNRounds ] = React.useState<number>(2);
+  const [ nPoems, setNPoems ] = React.useState<number>(1);
 
   // these will only ever take place for the VIP editor
   const handleLineLength = (event: React.MouseEvent<HTMLElement>, newLineLength: LineLength) => {
@@ -75,7 +75,7 @@ function GameSettings() {
       socket.off("gameSettingsInfo", gameSettingsInfoListener);
       socket.off("gameSettingsEnabled", gameSettingsEnabledListener);
     };
-  }, [socket]);
+  }, [ socket ]);
 
   return (
     <div className={"gameSettings"} style={{textAlign: "center"}}>

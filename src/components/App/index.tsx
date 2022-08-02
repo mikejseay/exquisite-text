@@ -33,7 +33,7 @@ const serverPath: URL["pathname"] | URL["href"] = isDevelopment
 type ContextType = { socket: Socket<ServerToClientEvents, ClientToServerEvents> };
 
 export default function App() {
-  const [socket, setSocket] = React.useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
+  const [ socket, setSocket ] = React.useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
 
   React.useEffect(() => {
     const newSocket: Socket<ServerToClientEvents, ClientToServerEvents> = io(serverPath);
@@ -42,7 +42,7 @@ export default function App() {
     return () => {
       newSocket.close();
     };
-  }, [setSocket]);
+  }, [ setSocket ]);
 
   // The component then renders a page that contains a header.
   // If a socket has already been established, it will also render two components Lines and LineInput.

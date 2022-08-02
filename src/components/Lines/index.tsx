@@ -5,8 +5,8 @@ import { useSocket } from "../App";
 const Lines = () => {
   const { socket } = useSocket();
 
-  const [lines, setLines] = React.useState<Array<Array<string>>>([[], [], [], []]);
-  const [lineEdits, setLineEdits] = React.useState<Array<string>>(["", "", "", ""]);
+  const [ lines, setLines ] = React.useState<Array<Array<string>>>([[], [], [], []]);
+  const [ lineEdits, setLineEdits ] = React.useState<Array<string>>(["", "", "", ""]);
 
   React.useEffect(() => {
     const lineSpectatorListener = (poemIndex: number, line: string) => {
@@ -20,9 +20,12 @@ const Lines = () => {
 
     const lineEditSpectatorListener = (poemIndex: number, value: string) => {
       setLineEdits(prevLineEdits => {
-          return [...prevLineEdits.slice(0, poemIndex), value, ...prevLineEdits.slice(poemIndex + 1)];
-        }
-      );
+        return [
+          ...prevLineEdits.slice(0, poemIndex),
+          value,
+          ...prevLineEdits.slice(poemIndex + 1),
+        ];
+      });
     };
 
     socket.on("lineSpectator", lineSpectatorListener);
@@ -36,7 +39,7 @@ const Lines = () => {
       socket.off("lineSpectator", lineSpectatorListener);
       socket.off("lineEditSpectator", lineEditSpectatorListener);
     };
-  }, [socket]);
+  }, [ socket ]);
 
   return (
     <div style={

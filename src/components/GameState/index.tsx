@@ -5,7 +5,7 @@ import IconButton from "@mui/material/IconButton";
 import { marginLeftAuto } from "./styles";
 
 function GameState() {
-  const [anchorEl, setAnchorEl] = React.useState<Element | null>(null);
+  const [ anchorEl, setAnchorEl ] = React.useState<Element | null>(null);
   const handleClick = (event: { currentTarget: React.SetStateAction<Element | null> }) => {
     setAnchorEl(event.currentTarget);
   };

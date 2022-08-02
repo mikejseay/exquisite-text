@@ -13,12 +13,12 @@ export default function Join() {
 
   const { socket } = useSocket();
 
-  const [joinErrorMessage, setJoinErrorMessage] = useState<string>("");
-  const [roomID, setRoomID] = useState<string>("");
-  const [name, setName] = useState<string>("");
+  const [ joinErrorMessage, setJoinErrorMessage ] = useState<string>("");
+  const [ roomID, setRoomID ] = useState<string>("");
+  const [ name, setName ] = useState<string>("");
 
-  const [roomOK, setRoomOK] = useState<boolean>(false);
-  const [nameOK, setNameOK] = useState<boolean>(false);
+  const [ roomOK, setRoomOK ] = useState<boolean>(false);
+  const [ nameOK, setNameOK ] = useState<boolean>(false);
 
   const handleRoomEntryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRoomID(event.target.value);
