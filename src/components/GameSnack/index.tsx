@@ -8,8 +8,8 @@ import type { IUserInfo } from "../../types";
 const GameSnack = () => {
   const { socket } = useSocket();
 
-  const [snackMessage, setSnackMessage] = React.useState("");
-  const [snackOpen, setSnackOpen] = React.useState(false);
+  const [ snackMessage, setSnackMessage ] = React.useState("");
+  const [ snackOpen, setSnackOpen ] = React.useState(false);
   const handleClose = () => { setSnackOpen(false); };
 
   React.useEffect(() => {
@@ -32,7 +32,7 @@ const GameSnack = () => {
     return () => {
       // socket.off("userInfo", userInfoListener);
     };
-  }, [socket]);
+  }, [ socket ]);
 
   function snackBasedOnTurnsAway(turnsAway: IUserInfo["turnsAway"]) {
     if (turnsAway === 0) {

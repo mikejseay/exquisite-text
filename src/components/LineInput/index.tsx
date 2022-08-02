@@ -43,14 +43,14 @@ import {
 // with the third output argument "ref"
 // https://stackoverflow.com/questions/53845595/wrong-react-hooks-behaviour-with-event-listener
 function useStateRef(initialValue: boolean) {
-  const [value, setValue] = React.useState(initialValue);
+  const [ value, setValue ] = React.useState(initialValue);
   const ref = React.useRef(value);
 
   React.useEffect(() => {
     ref.current = value;
-  }, [value]);
+  }, [ value ]);
 
-  return [value, setValue, ref] as const;
+  return [ value, setValue, ref ] as const;
 }
 
 export interface ILineConstraints {
@@ -88,30 +88,30 @@ const lineConstraints: ILineConstraintDict = {
 const LineInput = () => {
   const { socket } = useSocket();
 
-  const [lineLength, setLineLength] = React.useState<LineLength>(LineLength.short);
-  const [minCharsOnLineOne, setMinCharsOnLineOne] = React.useState<number>(lineConstraints[LineLength.short]["minCharsOnLineOne"]);
-  const [maxCharsOnLineOne, setMaxCharsOnLineOne] = React.useState<number>(lineConstraints[LineLength.short]["maxCharsOnLineOne"]);
-  const [minCharsOnLineTwo, setMinCharsOnLineTwo] = React.useState<number>(lineConstraints[LineLength.short]["minCharsOnLineTwo"]);
-  const [maxCharsOnLineTwo, setMaxCharsOnLineTwo] = React.useState<number>(lineConstraints[LineLength.short]["maxCharsOnLineTwo"]);
-  const [idealCharsOnLineOne, setIdealCharsOnLineOne] = React.useState<number>(lineConstraints[LineLength.short]["idealCharsOnLineOne"]);
-  const [idealCharsOnLineTwo, setIdealCharsOnLineTwo] = React.useState<number>(lineConstraints[LineLength.short]["idealCharsOnLineTwo"]);
+  const [ lineLength, setLineLength ] = React.useState<LineLength>(LineLength.short);
+  const [ minCharsOnLineOne, setMinCharsOnLineOne ] = React.useState<number>(lineConstraints[LineLength.short]["minCharsOnLineOne"]);
+  const [ maxCharsOnLineOne, setMaxCharsOnLineOne ] = React.useState<number>(lineConstraints[LineLength.short]["maxCharsOnLineOne"]);
+  const [ minCharsOnLineTwo, setMinCharsOnLineTwo ] = React.useState<number>(lineConstraints[LineLength.short]["minCharsOnLineTwo"]);
+  const [ maxCharsOnLineTwo, setMaxCharsOnLineTwo ] = React.useState<number>(lineConstraints[LineLength.short]["maxCharsOnLineTwo"]);
+  const [ idealCharsOnLineOne, setIdealCharsOnLineOne ] = React.useState<number>(lineConstraints[LineLength.short]["idealCharsOnLineOne"]);
+  const [ idealCharsOnLineTwo, setIdealCharsOnLineTwo ] = React.useState<number>(lineConstraints[LineLength.short]["idealCharsOnLineTwo"]);
 
   const lineSepString = "\n";
 
-  const [poemInput, setPoemInput] = React.useState<string>("");
-  const [poemInputSpectate, setPoemInputSpectate] = React.useState<string>("");
+  const [ poemInput, setPoemInput ] = React.useState<string>("");
+  const [ poemInputSpectate, setPoemInputSpectate ] = React.useState<string>("");
 
-  const [passEnabled, setPassEnabled, passEnabledRef] = useStateRef(false);
-  const [onSecondLine, setOnSecondLine] = React.useState<boolean>(false);
+  const [ passEnabled, setPassEnabled, passEnabledRef ] = useStateRef(false);
+  const [ onSecondLine, setOnSecondLine ] = React.useState<boolean>(false);
 
-  const [onLastLine, setOnLastLine] = React.useState<boolean>(false);
-  const [lineInputVisible, setLineInputVisible] = React.useState<boolean>(true);
-  const [poemDoneAccordionVisible, setPoemDoneAccordionVisible] =
+  const [ onLastLine, setOnLastLine ] = React.useState<boolean>(false);
+  const [ lineInputVisible, setLineInputVisible ] = React.useState<boolean>(true);
+  const [ poemDoneAccordionVisible, setPoemDoneAccordionVisible ] =
     React.useState<boolean>(true);
-  const [donePoemEnabled, setDonePoem] = React.useState<boolean>(true);
+  const [ donePoemEnabled, setDonePoem ] = React.useState<boolean>(true);
 
-  const [helpMessage, setHelpMessage] = React.useState<string>("");
-  const [inputErrorMsg, setInputErrorMsg] = React.useState<string>(lineSepString);
+  const [ helpMessage, setHelpMessage ] = React.useState<string>("");
+  const [ inputErrorMsg, setInputErrorMsg ] = React.useState<string>(lineSepString);
   const textareaRef = React.useRef() as React.MutableRefObject<HTMLTextAreaElement | null>;
 
   React.useEffect(() => {

@@ -6,8 +6,8 @@ import { IUserTableInfo } from "../../types";
 function UserTable() {
   const { socket } = useSocket();
 
-  const [editorArr, setEditorArr] = React.useState<Array<string>>([]);
-  const [spectatorArr, setSpectatorArr] = React.useState<Array<string>>([]);
+  const [ editorArr, setEditorArr ] = React.useState<Array<string>>([]);
+  const [ spectatorArr, setSpectatorArr ] = React.useState<Array<string>>([]);
 
   // listen for arrays of editors and spectators
   React.useEffect(() => {
@@ -24,7 +24,7 @@ function UserTable() {
     return () => {
       socket.off("userTableInfo", userTableInfoListener);
     };
-  }, [socket]);
+  }, [ socket ]);
 
   return (
     <div className={"userTable"} style={{textAlign: "center"}}>

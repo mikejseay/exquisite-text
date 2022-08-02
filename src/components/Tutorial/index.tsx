@@ -15,7 +15,7 @@ const Tutorial = () => {
   }
 
   // if first visit, the help modal will be initially open
-  const [helpOpen, setHelpOpen] = React.useState(firstVisit);
+  const [ helpOpen, setHelpOpen ] = React.useState(firstVisit);
   const handleHelpOpen = () => setHelpOpen(true);
   const handleHelpClose = () => setHelpOpen(false);
 
