@@ -2,20 +2,23 @@
 // and using that content, we maintain the user list and current history of the poem.
 // as far as I can tell, this will be the equivalent of the exquisite functionality, etc.
 
-import { Server, Socket } from "socket.io";
+import isNil from "lodash/isNil";
+import {
+  Server,
+  Socket,
+} from "socket.io";
+
 import {
   ClientToServerEvents,
+  IDeviceIDToSocketID,
   IGameSettingsInfo,
-  ILine,
   InterServerEvents,
-  IPoem, IUserTableInfo,
+  IPoem,
+  ISocketIDToDeviceID,
+  LineLength,
   ServerToClientEvents,
   SocketData,
-  ISocketIDToDeviceID,
-  IDeviceIDToSocketID,
-  LineLength,
 } from "../src/types";
-import isNil from "lodash/isNil";
 
 const db = require("./queries");
 const uuidv4 = require("uuid").v4; // a function that generates a random uuid for lines
@@ -139,11 +142,13 @@ class Member {
   deviceID: string;
   name: string;
 
-  constructor(io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
-              hostSocket: Socket,
-              roomID: string,
-              deviceID: string,
-              name: string) {
+  constructor(
+    io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
+    hostSocket: Socket,
+    roomID: string,
+    deviceID: string,
+    name: string
+  ) {
     this.io = io;
     this.socket = hostSocket;
     this.roomID = roomID;
@@ -244,7 +249,6 @@ class Host extends Member {
 }
 
 class Spectator extends Member {
-
   joinRoom() {
     super.joinRoom();
     this.socket.join(this.roomID + "_Spectators");
@@ -254,7 +258,6 @@ class Spectator extends Member {
 }
 
 class Editor extends Member {
-
   previousEditorID: string;
   previousEditorSocketID: string;
   targetEditorID: string;
@@ -263,11 +266,13 @@ class Editor extends Member {
   poemQueue: Array<Poem>;
   isCurrentlyEditing: boolean;
 
-  constructor(io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
-              hostSocket: Socket,
-              roomID: string,
-              deviceID: string,
-              name: string) {
+  constructor(
+    io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
+    hostSocket: Socket,
+    roomID: string,
+    deviceID: string,
+    name: string
+  ) {
     super(io, hostSocket, roomID, deviceID, name);
     this.previousEditorID = "";
     this.previousEditorSocketID = "";
@@ -309,7 +314,6 @@ class Editor extends Member {
     this.socket.on("passTurn", (firstPart, secondPart) => this.handlePassTurn(firstPart, secondPart))
     this.socket.on("lastLine", (value) => this.handleLastLine(value)); // whenever a new line has been submitted into the poem.
     this.socket.on("getLastLineStatus", () => this.requestLastLineStatus());
-
   }
 
   requestLineEdit() {
@@ -346,7 +350,7 @@ class Editor extends Member {
   }
 
   hasPoemInQueue() {
-   return (this.poemQueue.length > 0);
+    return (this.poemQueue.length > 0);
   }
 
   currentlyOnLastLine() {
@@ -443,7 +447,6 @@ class Editor extends Member {
 }
 
 class VIPEditor extends Editor {
-
   joinRoom() {
     super.joinRoom();
     this.socket.join(this.roomID + "_VIP");
@@ -487,11 +490,12 @@ class Poem {
   // any edit of lines or halfline (e.g. submitLine, handleLineEdit)
   // will send a message to the Spectators in the roomID
 
-  constructor(targetLines: number,
-              poemIndex: number,
-              io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
-              roomID: string,
-              ) {
+  constructor(
+    targetLines: number,
+    poemIndex: number,
+    io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
+    roomID: string,
+  ) {
     this.targetLines = targetLines;
     this.poemIndex = poemIndex;
     this.io = io;
@@ -535,7 +539,6 @@ function socketFunctionality(io: Server<ClientToServerEvents, ServerToClientEven
     // roomIDToRoom
 
     socket.on("createGameHost", (roomID) => {
-
       console.log("createGameHost for ", socket.id, "joining", roomID);
       // device doesn't matter for host
       const thisHost = new Host(io, socket, roomID, socketIDToDeviceID[socket.id], "HOST")
@@ -546,13 +549,13 @@ function socketFunctionality(io: Server<ClientToServerEvents, ServerToClientEven
     });
 
     socket.on("joinGameAs", (role, roomID, name) => {
-
       console.log("socket", socket.id, "joinGameAs", role, "to room", roomID, "with name", name);
       if (!roomIDToRoom.has(roomID)) {
         console.log(roomID, "does not exist");
         io.to(socket.id).emit("joinError", "Room does not exist.");
         return
       }
+
       const targetRoom = roomIDToRoom.get(roomID);
       const deviceID = socketIDToDeviceID[socket.id];
       if (role === "Editor") {
@@ -561,6 +564,7 @@ function socketFunctionality(io: Server<ClientToServerEvents, ServerToClientEven
           io.to(socket.id).emit("joinError", "Writer's room full. Join as spectator?");
           return
         }
+
         const useEditorClass = (targetRoom.editors.size === 0 ? VIPEditor : Editor);
         const thisEditor = new useEditorClass(io, socket, roomID, deviceID, name);
         thisEditor.joinRoom();

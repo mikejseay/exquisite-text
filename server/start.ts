@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { Server } from "socket.io";
+
 import type {
     ClientToServerEvents,
     InterServerEvents,

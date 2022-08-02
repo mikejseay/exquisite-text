@@ -1,4 +1,7 @@
-import { pgSequelConn, Poem } from "./entity/poem";
+import {
+  pgSequelConn,
+  Poem,
+} from "./entity/poem";
 import { IPoem } from "../src/types";
 
 (async () => {
@@ -33,4 +36,7 @@ async function storePoem({title, content }: IPoem) {
   }
 }
 
-export { returnPoems, storePoem };
+export {
+  returnPoems,
+  storePoem,
+};
