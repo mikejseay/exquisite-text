@@ -8,6 +8,7 @@ import {
     io,
     Socket,
 } from "socket.io-client";
+import { v4 as uuidv4 } from "uuid";
 
 import GameState from "../GameState";
 import Tutorial from "../Tutorial";
@@ -24,8 +25,6 @@ import type {
     ClientToServerEvents,
     ServerToClientEvents,
 } from "../../types";
-
-import { v4 as uuidv4 } from "uuid";
 
 const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
 const serverPath: URL["pathname"] | URL["href"] = isDevelopment
