@@ -48,6 +48,7 @@ module.exports = {
             "error",
             "double",
         ],
+        "react/jsx-tag-spacing": 2,
         "semi": [
             "error",
             "always",
