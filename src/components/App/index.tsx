@@ -54,7 +54,8 @@ export default function App() {
 
     // set this to true if you want to be able to connect to the game
     // multiple times from the same browser
-    if (process.env.REACT_APP_DEBUG_SINGLE_BROWSER) {
+    if (process.env.REACT_APP_DEBUG_SINGLE_BROWSER === "true") {
+        console.log("debug in single browser mode");
         // to debug I will send a random device id each time
         socket.emit("recognizeDevice", uuidv4());
     } else {

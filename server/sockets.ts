@@ -48,9 +48,6 @@ async function populatePoems() {
 populatePoems();
 
 // New global data structures
-// const socketToDeviceID: ISocketToDeviceID = new Map();  // unique on socket. can have multiple devices on socket
-// const deviceIDToSocket: IDeviceIDToSocket = new Map();  // unique on device. only latest is present
-
 const socketIDToDeviceID: IObjectStringToString = {};  // unique on socket. can have multiple devices on socket
 const deviceIDToSocketID: IObjectStringToString = {};  // unique on device. only latest is present
 const deviceIDToRoomID: IObjectStringToString = {};
@@ -68,6 +65,7 @@ class Room {
     editorNames: Array<string>;
     spectatorNames: Array<string>;
     gameSettings: IGameSettingsInfo;
+    gameOngoing: boolean;
     nPoemsInRotation: number;
 
     constructor(
@@ -84,6 +82,7 @@ class Room {
         this.editorNames = [];       // deviceID to editorObj
         this.spectatorNames = [];    // deviceID to spectatorObj
         this.gameSettings = defaultGameSettings;
+        this.gameOngoing = false;
         this.nPoemsInRotation = 0;
     }
 
@@ -131,6 +130,7 @@ class Room {
         // should tell editors to navigate to /game and spectators to /spectate
         this.io.in(this.roomID + "_Editors").emit("navigate", "/game");
         this.io.in(this.roomID + "_Spectators").emit("navigate", "/spectate");
+        this.gameOngoing = true;
     }
 
 }
@@ -163,7 +163,6 @@ class Member {
 
     joinRoom() {
         this.socket.join(this.roomID);
-        this.io.to(this.socket.id).emit("navigate", "/lobby"); // navigates to /lobby
         this.setReceive(); // listen for certain messages from client
     }
 
@@ -258,11 +257,24 @@ class Spectator extends Member {
         super.joinRoom();
         this.socket.join(this.roomID + "_Spectators");
     }
+
+    setReceive() {
+        super.setReceive();
+        this.socket.on("getLines", () => this.getAllPoemLines());
+    }
+
+    getAllPoemLines() {
+        const thisRoom = roomIDToRoom.get(this.roomID);
+        for (const thisEditor of thisRoom.editors.values()) {
+            for (const thisPoem of thisEditor.poemQueue) {
+                thisPoem.sendAllLinesTo(this.socket.id);
+            }
+        }
+    }
 }
 
 class Editor extends Member {
     targetEditorID: string;
-    // targetEditorSocketID: string;
     turnPosition: number;
     poemQueue: Array<Poem>;
     isCurrentlyEditing: boolean;
@@ -354,7 +366,7 @@ class Editor extends Member {
 
     currentlyOnLastLine() {
         const thisPoem = this.poemQueue[0];
-        console.log("currentlyOnLastLine", thisPoem);
+        console.log(this.name, "currentlyOnLastLine");
         if (thisPoem) {
             const weThinkCurrentLength = thisPoem.lines.length;
             console.log("we think the poem has ", weThinkCurrentLength, "of", thisPoem.targetLines - 2);
@@ -431,9 +443,12 @@ class Editor extends Member {
         // if all editors' poem queues are empty
         // remove each of the editor/spectator deviceIDs from deviceIDToRoomID
         if (thisRoom.nPoemsInRotation === 0) {
-            console.log("we think there are no poems left to finish");
+            console.log("no poems left to finish; forget everyone's device");
             for (const editorID of thisRoom.editors.keys()) {
                 delete deviceIDToRoomID[editorID];
+            }
+            for (const spectatorID of thisRoom.spectators.keys()) {
+                delete deviceIDToRoomID[spectatorID];
             }
         }
     }
@@ -523,6 +538,15 @@ class Poem {
     lineWasEdited(value: string) {
         this.io.in(this.roomID + "_Spectators").emit("lineEditSpectator", this.poemIndex, value);
     }
+
+    sendAllLinesTo(socketID: string) {
+        // this is used to bring a new spectator up to date
+        this.lines.forEach((line) => this.sendLine(line, socketID));
+    }
+
+    sendLine(line: string, socketID: string) {
+        this.io.to(socketID).emit("lineSpectator", this.poemIndex, line);
+    }
 }
 
 // The module exports a single function poem that takes the Socket.IO server instance as a parameter.
@@ -536,8 +560,6 @@ function sockets(io: Server<ClientToServerEvents, ServerToClientEvents, InterSer
         socket.on("recognizeDevice", (deviceID) => {
 
             console.log("new socket", socket.id, "from device", deviceID);
-            // socketToDeviceID.set(socket, deviceID); // since socket is always uuid, won't overwrite
-            // deviceIDToSocket.set(deviceID, socket); // will overwrite previous
 
             const deviceInARoom = Object.prototype.hasOwnProperty.call(deviceIDToRoomID, deviceID);
             if (deviceInARoom) {
@@ -571,17 +593,11 @@ function sockets(io: Server<ClientToServerEvents, ServerToClientEvents, InterSer
 
             socketIDToDeviceID[socket.id] = deviceID; // since socket is always uuid, won't overwrite
             deviceIDToSocketID[deviceID] = socket.id; // will overwrite previous
-
-            // deviceUUID --> roomID --> Room --> Room.editors or Room.spectators.keys() --> deviceUUID
-            // at the very least we need deviceIDToRoomID
-            // and then define methods in Member to allow you to attach a new socket to the same Member
         });
-
-        // roomIDToRoom
 
         socket.on("createGameHost", (roomID) => {
             console.log("createGameHost for ", socket.id, "joining", roomID);
-            // device doesn't matter for host
+            // notice we don't add the host device to deviceIDToRoomID
             const thisHost = new Host(io, socket, roomID, socketIDToDeviceID[socket.id], "HOST");
             thisHost.joinRoom();
             const thisRoom = new Room(io, socket, roomID);
@@ -596,26 +612,36 @@ function sockets(io: Server<ClientToServerEvents, ServerToClientEvents, InterSer
                 io.to(socket.id).emit("joinError", "Room does not exist.");
                 return;
             }
-
-            const deviceID = socketIDToDeviceID[socket.id];
-            deviceIDToRoomID[deviceID] = roomID;
             const targetRoom = roomIDToRoom.get(roomID);
+            const deviceID = socketIDToDeviceID[socket.id];
             if (role === "Editor") {
+                if (targetRoom.gameOngoing) {
+                    console.log(roomID, "game is already ongoing");
+                    io.to(socket.id).emit("joinError", "Game already ongoing. Join as spectator?");
+                    return;
+                }
                 if (targetRoom.editors.size >= maxEditors) {
                     console.log("trying to join as editor but it's already full");
                     io.to(socket.id).emit("joinError", "Writer's room full. Join as spectator?");
                     return;
                 }
-
+                deviceIDToRoomID[deviceID] = roomID;
                 const useEditorClass = (targetRoom.editors.size === 0
                     ? VIPEditor
                     : Editor);
                 const thisEditor = new useEditorClass(io, socket, roomID, deviceID, name);
                 thisEditor.joinRoom();
+                io.to(socket.id).emit("navigate", "/lobby");
                 targetRoom.addEditor(deviceID, thisEditor);
             } else if (role === "Spectator") {
+                deviceIDToRoomID[deviceID] = roomID;
                 const thisSpectator = new Spectator(io, socket, roomID, deviceID, name);
                 thisSpectator.joinRoom();
+                if (targetRoom.gameOngoing) {
+                    io.to(socket.id).emit("navigate", "/spectate");
+                } else {
+                    io.to(socket.id).emit("navigate", "/lobby");
+                }
                 targetRoom.addSpectator(deviceID, thisSpectator);
             }
         });
