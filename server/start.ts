@@ -25,7 +25,7 @@ import { createServer } from "http";
 // app assembles the two routers and creates the express app and does its basic configuration
 import app from "./app";
 // "poem" contains the logic for the poem application
-import socketFunctionality from "./socketFunctionality";
+import sockets from "./sockets";
 
 import debug0 from "debug";
 import { isNil } from "lodash";
@@ -65,18 +65,15 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEve
 // the socket.io server which will handle socket-based messages
 // in production, you might want to only allow certain clients
 
-// runs the poem functionality defined in poem.js, which takes the io server as input,
-// tells it to use the authenticator, and also tells it how to handle connection events (when someone opens the page)
-// when someone opens the page and a connection object is created, that uses their socket to create a connection to the io server
-// and tells that connection to get all existing messages, how to handle incoming messages, and how to send out a message
-socketFunctionality(io);
+// runs the functionality defined in sockets.ts, which takes the io server as input,
+// and tells it how to handle socket events
+sockets(io);
 
 /**
  * Listen on provided port, on all network interfaces.
  */
 
-// the server listens on the port for any incoming connections and maintains the connection over which
-//
+// the server listens on the port for any incoming connections and maintains the connection
 httpServer.listen(port);
 httpServer.on("error", onError);
 httpServer.on("listening", onListening);

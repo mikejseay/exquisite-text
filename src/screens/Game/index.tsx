@@ -10,7 +10,7 @@ function Game() {
         <div style={appBody}>
             <LineInput />
             <Poems />
-            <GameTransition/>
+            <GameTransition />
         </div>
     );
 }

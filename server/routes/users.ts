@@ -1,6 +1,6 @@
 import { Response } from "express";
 
-import { express } from "../app";
+import express from "express";
 
 const router = express.Router();
 
@@ -9,4 +9,4 @@ router.get("/", function (res: Response) {
     res.send("respond with a resource");
 });
 
-module.exports = router;
+export default router;

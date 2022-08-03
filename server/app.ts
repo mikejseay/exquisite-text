@@ -2,15 +2,14 @@
 
 // CORS stands for Cross-Origin Resource Sharing
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-const cors = require("cors");
-export const express = require("express");      // the app framework library
-const path = require("path");                   // for joining paths
-const cookieParser = require("cookie-parser");  // for parsing cookies
-const logger = require("morgan");               // for logging
+import cors from "cors";
 
-const indexRouter = require("./routes/index");  // an express object that routes users to the root page /
-const usersRouter = require("./routes/users");  // an express object that routes users to the page /users
-
+import express from "express";                  // the app framework library
+import path from "path";                        // for joining paths
+import cookieParser from "cookie-parser";       // for parsing cookies
+import logger from "morgan";                    // for logging
+import indexRouter from "./routes/index";       // an express object that routes users to the root page /
+import usersRouter from "./routes/users";       // an express object that routes users to the page /users
 const app = express();                          // instantiate the app object
 app.use(cors());                                // adds CORS support
 app.use(logger("dev"));                         // from here on, dunno
