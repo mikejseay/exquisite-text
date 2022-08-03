@@ -22,9 +22,18 @@ import {
 const db = require("./queries");
 const uuidv4 = require("uuid").v4; // a function that generates a random uuid for lines
 
+const retrieveNPoemsAtStart = 1;
+const maxEditors = 4;
+const defaultGameSettings: IGameSettingsInfo = {
+  lineLength: LineLength.short,
+  nRounds: 2,
+  nPoems: 1,
+};
+
+
 // this function grabs some old poems to have something to show the users
 async function populatePoems() {
-  const dbPoems = await db.returnPoems(3);
+  const dbPoems = await db.returnPoems(retrieveNPoemsAtStart);
   for (const { id, createdAt, title, content } of dbPoems) {
     poems.add({
       id,
@@ -45,13 +54,6 @@ const deviceIDToSocketID: IObjectStringToString = {};  // unique on device. only
 const deviceIDToRoomID: IObjectStringToString = {};
 const roomIDToRoom: Map<string, any> = new Map();
 const poems: Set<IPoem> = new Set();
-
-const maxEditors = 2;
-const defaultGameSettings: IGameSettingsInfo = {
-  lineLength: LineLength.short,
-  nRounds: 2,
-  nPoems: 1,
-};
 
 class Room {
   // represents a socket.io room and a game of Exquisite Text

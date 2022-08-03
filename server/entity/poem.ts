@@ -10,14 +10,15 @@ export const pgSequelConn = new Sequelize(
   isProduction && process.env.DATABASE_URL
     ? process.env.DATABASE_URL
     : connectionString,
-  {
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false
+  isProduction && process.env.DATABASE_URL
+    ? {
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false
+        }
       }
-    }
-  }
+    } : {}
 );
 
 export const Poem = pgSequelConn.define(
