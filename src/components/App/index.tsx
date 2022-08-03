@@ -27,7 +27,7 @@ const uuidv4 = require("uuid").v4;
 
 const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
 const serverPath: URL["pathname"] | URL["href"] = isDevelopment
-  ? `http://${window.location.hostname}:3000`
+  ? `http://${window.location.hostname}:8080`
   : `/`;
 
 type ContextType = { socket: Socket<ServerToClientEvents, ClientToServerEvents> };
