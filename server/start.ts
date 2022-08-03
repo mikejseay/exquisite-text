@@ -9,55 +9,57 @@ import type {
     SocketData,
 } from "../src/types";
 
-require('dotenv').config();
+import * as dotenv from "dotenv";
+dotenv.config({ path: __dirname+"/.env" });
 
 // import the http library
-const http = require('http');
+// const http = require("http");
+import { createServer } from "http";
 
-// const https = require('https');
-// const fs = require('fs');
-// const privateKey   = fs.readFileSync('./.cert/key.pem', 'utf8');
-// const certificate  = fs.readFileSync('./.cert/cert.pem', 'utf8');
+// const https = require("https");
+// const fs = require("fs");
+// const privateKey   = fs.readFileSync("./.cert/key.pem", "utf8");
+// const certificate  = fs.readFileSync("./.cert/cert.pem", "utf8");
 // const credentials = {key: privateKey, cert: certificate};
 
 // app assembles the two routers and creates the express app and does its basic configuration
-const app = require('./app');
-
+import app from "./app";
 // "poem" contains the logic for the poem application
-const poem = require('./poem');
+import socketFunctionality from "./socketFunctionality";
 
+import debug0 from "debug";
+import { isNil } from "lodash";
 
 /**
  * Module dependencies.
  */
 
 // no ideas... chat-server is the name in package.json?
-// maybe server refers to the constiable server inside this project?
-const debug = require('debug')('chat-server:server');
+const debug = debug0("chat-server:server");
 
 
 /**
  * Get port from environment and store in Express.
  */
 
-const port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
+const port = normalizePort(process.env.PORT || "3000");
+app.set("port", port);
 
 /**
  * Create HTTP server.
  */
 
 // the http server that will listen on the port given by the app
-const httpServer = http.createServer(app);
+const httpServer = createServer(app);
 // const server = https.createServer(credentials, app);
 
 
 
 const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(httpServer, {
     cors: {
-        origin: '*',
-        methods: ['GET', 'POST']
-    }
+        origin: "*",
+        methods: [ "GET", "POST" ],
+    },
 });
 
 // the socket.io server which will handle socket-based messages
@@ -67,7 +69,7 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEve
 // tells it to use the authenticator, and also tells it how to handle connection events (when someone opens the page)
 // when someone opens the page and a connection object is created, that uses their socket to create a connection to the io server
 // and tells that connection to get all existing messages, how to handle incoming messages, and how to send out a message
-poem(io);
+socketFunctionality(io);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -76,8 +78,8 @@ poem(io);
 // the server listens on the port for any incoming connections and maintains the connection over which
 //
 httpServer.listen(port);
-httpServer.on('error', onError);
-httpServer.on('listening', onListening);
+httpServer.on("error", onError);
+httpServer.on("listening", onListening);
 
 // the below defines functions which are used above, they are mostly boilerplate and not necessary to read
 
@@ -106,26 +108,26 @@ function normalizePort(val: string) {
  */
 
 function onError(error: { syscall: string; code: string; }) {
-    if (error.syscall !== 'listen') {
+    if (error.syscall !== "listen") {
         throw error;
     }
 
-    const bind = typeof port === 'string'
-        ? 'Pipe ' + port
-        : 'Port ' + port;
+    const bind = typeof port === "string"
+        ? "Pipe " + port
+        : "Port " + port;
 
     // handle specific listen errors with friendly messages
     switch (error.code) {
-        case 'EACCES':
-            console.error(bind + ' requires elevated privileges');
-            process.exit(1);
-            break;
-        case 'EADDRINUSE':
-            console.error(bind + ' is already in use');
-            process.exit(1);
-            break;
-        default:
-            throw error;
+    case "EACCES":
+        console.error(bind + " requires elevated privileges");
+        process.exit(1);
+        break;
+    case "EADDRINUSE":
+        console.error(bind + " is already in use");
+        process.exit(1);
+        break;
+    default:
+        throw error;
     }
 }
 
@@ -134,11 +136,13 @@ function onError(error: { syscall: string; code: string; }) {
  */
 
 function onListening() {
-    const addr = httpServer.address();
-    const bind = typeof addr === 'string'
-        ? 'pipe ' + addr
-        : 'port ' + addr.port;
-    debug('Listening on ' + bind);
+    const address = httpServer.address();
+    if (!isNil(address)) {
+        const bind = typeof address === "string"
+            ? "pipe " + address
+            : "port " + address.port;
+        debug("Listening on " + bind);
+    }
 }
 
-export {};
+export { };

@@ -6,18 +6,18 @@ export const inputBox: React.CSSProperties = {
     flexDirection: "column",
     justifyContent: "center",
     marginBottom: "1em",
-}
+};
 
 export const activeInput: React.CSSProperties = {
     margin: "auto",
     width: "100%",
     maxWidth: "60ch",
     display: "grid",
-}
+};
 
 export const donePoemAccordionTitle: React.CSSProperties = {
     margin: "auto",
-}
+};
 
 export const underlineSuggestionDiv: React.CSSProperties = {
     zIndex: 1,
@@ -28,11 +28,11 @@ export const underlineSuggestionDiv: React.CSSProperties = {
     textAlign: "center",
     lineHeight: "150%",
     userSelect: "none",
-}
+};
 
 export const underlineSpan: React.CSSProperties = {
     borderBottom: "2px #aaaaaa solid",
-}
+};
 
 export const underlineSpanHover: React.CSSProperties = {
     // boxShadow: "0.1em 0.1em 0.6em grey",
@@ -69,7 +69,7 @@ export const poemInputStyle: React.CSSProperties = {
 
 export const spacingSpan: React.CSSProperties = {
     margin: "auto",
-}
+};
 
 export const textSpacer: React.CSSProperties = {
     whiteSpace: "pre",
@@ -83,7 +83,7 @@ export const errorMessage: React.CSSProperties = {
     fontSize: "small",
     color: "red",
     whiteSpace: "pre-line",
-    textAlign: "center"
+    textAlign: "center",
 };
 
 export const passButton: React.CSSProperties = {
@@ -98,12 +98,12 @@ export const helpMessageStyle: React.CSSProperties = {
 };
 
 export const donePoemButton: React.CSSProperties = {
-    textAlign: "center"
+    textAlign: "center",
 };
 
 export const donePoemAccordionText: React.CSSProperties = {
     marginBottom: "1em",
-    fontFamily: "sans-serif"
+    fontFamily: "sans-serif",
 };
 
 export const lineInputContainer: React.CSSProperties = {

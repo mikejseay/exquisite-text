@@ -11,33 +11,33 @@ import * as React from "react";
 import { Link as RouterLink } from "react-router-dom";
 
 const Menu = () => {
-  const [ drawerOpen, setDrawerOpen ] = React.useState(false);
-  const handleDrawerOpen = () => setDrawerOpen(true);
-  const handleDrawerClose = () => setDrawerOpen(false);
+    const [ drawerOpen, setDrawerOpen ] = React.useState(false);
+    const handleDrawerOpen = () => setDrawerOpen(true);
+    const handleDrawerClose = () => setDrawerOpen(false);
 
-  return (
-    <div className={"menu"}>
-      <IconButton aria-label="menu" onClick={handleDrawerOpen} size={"large"}>
-        <MenuIcon />
-      </IconButton>
-      <Drawer
-        anchor={"left"}
-        open={drawerOpen}
-        onClose={handleDrawerClose}
-      >
-        <List>
-          <ListItem key={"Create Game"} disablePadding>
-            <ListItemButton component={RouterLink} to="host" onClick={handleDrawerClose}>
-              <ListItemIcon>
-                <AddIcon />
-              </ListItemIcon>
-              <ListItemText primary={"Create Game"} />
-            </ListItemButton>
-          </ListItem>
-        </List>
-      </Drawer>
-    </div>
-  );
+    return (
+        <div className={"menu"}>
+            <IconButton aria-label="menu" onClick={handleDrawerOpen} size={"large"}>
+                <MenuIcon />
+            </IconButton>
+            <Drawer
+                anchor={"left"}
+                open={drawerOpen}
+                onClose={handleDrawerClose}
+            >
+                <List>
+                    <ListItem key={"Create Game"} disablePadding>
+                        <ListItemButton component={RouterLink} to="host" onClick={handleDrawerClose}>
+                            <ListItemIcon>
+                                <AddIcon />
+                            </ListItemIcon>
+                            <ListItemText primary={"Create Game"} />
+                        </ListItemButton>
+                    </ListItem>
+                </List>
+            </Drawer>
+        </div>
+    );
 };
 
 export default Menu;

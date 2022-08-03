@@ -9,134 +9,134 @@ import { useSocket } from "../App";
 import { IGameSettingsInfo, LineLength } from "../../types";
 
 function GameSettings() {
-  const { socket } = useSocket();
+    const { socket } = useSocket();
 
-  const [ settingsEnabled, setSettingsEnabled ] = React.useState<boolean>(false);
-  const [ lineLength, setLineLength ] = React.useState<LineLength>(LineLength.short);
-  const [ nRounds, setNRounds ] = React.useState<number>(2);
-  const [ nPoems, setNPoems ] = React.useState<number>(1);
+    const [ settingsEnabled, setSettingsEnabled ] = React.useState<boolean>(false);
+    const [ lineLength, setLineLength ] = React.useState<LineLength>(LineLength.short);
+    const [ nRounds, setNRounds ] = React.useState<number>(2);
+    const [ nPoems, setNPoems ] = React.useState<number>(1);
 
-  // these will only ever take place for the VIP editor
-  const handleLineLength = (event: React.MouseEvent<HTMLElement>, newLineLength: LineLength) => {
-    if (newLineLength !== null) {
-      setLineLength(newLineLength);
-      socket.emit("alterGameSettings", {
-        lineLength: newLineLength,
-        nPoems,
-        nRounds,
-      });
-    }
-  };
-  const handleNRounds = (event: React.MouseEvent<HTMLElement>, newNRounds: number) => {
-    if (newNRounds !== null) {
-      setNRounds(newNRounds);
-      socket.emit("alterGameSettings", {
-        lineLength,
-        nPoems,
-        nRounds: newNRounds,
-      });
-    }
-  };
-  const handleNPoems = (event: React.MouseEvent<HTMLElement>, newNPoems: number) => {
-    if (newNPoems !== null) {
-      setNPoems(newNPoems);
-      socket.emit("alterGameSettings", {
-        lineLength,
-        nPoems: newNPoems,
-        nRounds,
-      });
-    }
-  };
-  const handlePressStartGameButton = () => {
-    socket.emit("startGame");
-  };
-
-  // listen for arrays of editors and spectators
-  React.useEffect(() => {
-
-    // Event handlers for the line and the deleteLine events are set up for the Socket.IO connection.
-    const gameSettingsInfoListener = (info: IGameSettingsInfo) => {
-      setLineLength(info["lineLength"]);
-      setNRounds(info["nRounds"]);
-      setNPoems(info["nPoems"]);
+    // these will only ever take place for the VIP editor
+    const handleLineLength = (event: React.MouseEvent<HTMLElement>, newLineLength: LineLength) => {
+        if (newLineLength !== null) {
+            setLineLength(newLineLength);
+            socket.emit("alterGameSettings", {
+                lineLength: newLineLength,
+                nPoems,
+                nRounds,
+            });
+        }
+    };
+    const handleNRounds = (event: React.MouseEvent<HTMLElement>, newNRounds: number) => {
+        if (newNRounds !== null) {
+            setNRounds(newNRounds);
+            socket.emit("alterGameSettings", {
+                lineLength,
+                nPoems,
+                nRounds: newNRounds,
+            });
+        }
+    };
+    const handleNPoems = (event: React.MouseEvent<HTMLElement>, newNPoems: number) => {
+        if (newNPoems !== null) {
+            setNPoems(newNPoems);
+            socket.emit("alterGameSettings", {
+                lineLength,
+                nPoems: newNPoems,
+                nRounds,
+            });
+        }
+    };
+    const handlePressStartGameButton = () => {
+        socket.emit("startGame");
     };
 
-    const gameSettingsEnabledListener = (enabled: boolean) => {
-      setSettingsEnabled(enabled);
-    };
+    // listen for arrays of editors and spectators
+    React.useEffect(() => {
 
-    socket.on("gameSettingsInfo", gameSettingsInfoListener);
-    socket.on("gameSettingsEnabled", gameSettingsEnabledListener);
+        // Event handlers for the line and the deleteLine events are set up for the Socket.IO connection.
+        const gameSettingsInfoListener = (info: IGameSettingsInfo) => {
+            setLineLength(info["lineLength"]);
+            setNRounds(info["nRounds"]);
+            setNPoems(info["nPoems"]);
+        };
 
-    socket.emit("getSettingsEnabled");   // initial populate
-    socket.emit("getGameSettingsInfo");  // initial populate
+        const gameSettingsEnabledListener = (enabled: boolean) => {
+            setSettingsEnabled(enabled);
+        };
 
-    return () => {
-      socket.off("gameSettingsInfo", gameSettingsInfoListener);
-      socket.off("gameSettingsEnabled", gameSettingsEnabledListener);
-    };
-  }, [ socket ]);
+        socket.on("gameSettingsInfo", gameSettingsInfoListener);
+        socket.on("gameSettingsEnabled", gameSettingsEnabledListener);
 
-  return (
-    <div className={"gameSettings"} style={{textAlign: "center"}}>
-      <h2>Game settings:</h2>
-      <Stack
-        spacing={2}
-        direction="column"
-        style={{ alignItems: "center" }}
-      >
-        <div>
-          {"Line Length: "}
-          <ToggleButtonGroup
-            value={lineLength}
-            exclusive
-            onChange={handleLineLength}
-            disabled={!settingsEnabled}
-          >
-            <ToggleButton value="short">Short</ToggleButton>
-            <ToggleButton value="long">Long</ToggleButton>
-          </ToggleButtonGroup>
+        socket.emit("getSettingsEnabled");   // initial populate
+        socket.emit("getGameSettingsInfo");  // initial populate
+
+        return () => {
+            socket.off("gameSettingsInfo", gameSettingsInfoListener);
+            socket.off("gameSettingsEnabled", gameSettingsEnabledListener);
+        };
+    }, [ socket ]);
+
+    return (
+        <div className={"gameSettings"} style={{ textAlign: "center" }}>
+            <h2>Game settings:</h2>
+            <Stack
+                spacing={2}
+                direction="column"
+                style={{ alignItems: "center" }}
+            >
+                <div>
+                    {"Line Length: "}
+                    <ToggleButtonGroup
+                        value={lineLength}
+                        exclusive
+                        onChange={handleLineLength}
+                        disabled={!settingsEnabled}
+                    >
+                        <ToggleButton value="short">Short</ToggleButton>
+                        <ToggleButton value="long">Long</ToggleButton>
+                    </ToggleButtonGroup>
+                </div>
+
+                <div>
+                    {"Rounds: "}
+                    <ToggleButtonGroup
+                        value={nRounds}
+                        exclusive
+                        onChange={handleNRounds}
+                        disabled={!settingsEnabled}
+                    >
+                        <ToggleButton value={2}>2</ToggleButton>
+                        <ToggleButton value={3}>3</ToggleButton>
+                        <ToggleButton value={4}>4</ToggleButton>
+                    </ToggleButtonGroup>
+                </div>
+
+                <div>
+                    {"Poems: "}
+                    <ToggleButtonGroup
+                        value={nPoems}
+                        exclusive
+                        onChange={handleNPoems}
+                        disabled={!settingsEnabled}
+                    >
+                        <ToggleButton value={1}>1</ToggleButton>
+                        <ToggleButton value={2}>2</ToggleButton>
+                        <ToggleButton value={3}>3</ToggleButton>
+                        <ToggleButton value={4}>4</ToggleButton>
+                    </ToggleButtonGroup>
+                </div>
+
+                <Button
+                    disabled={!settingsEnabled}
+                    onClick={handlePressStartGameButton}
+                    variant="contained"
+                >
+                    Start Game
+                </Button>
+            </Stack>
         </div>
-
-        <div>
-          {"Rounds: "}
-          <ToggleButtonGroup
-            value={nRounds}
-            exclusive
-            onChange={handleNRounds}
-            disabled={!settingsEnabled}
-          >
-            <ToggleButton value={2}>2</ToggleButton>
-            <ToggleButton value={3}>3</ToggleButton>
-            <ToggleButton value={4}>4</ToggleButton>
-          </ToggleButtonGroup>
-        </div>
-
-        <div>
-          {"Poems: "}
-          <ToggleButtonGroup
-            value={nPoems}
-            exclusive
-            onChange={handleNPoems}
-            disabled={!settingsEnabled}
-          >
-            <ToggleButton value={1}>1</ToggleButton>
-            <ToggleButton value={2}>2</ToggleButton>
-            <ToggleButton value={3}>3</ToggleButton>
-            <ToggleButton value={4}>4</ToggleButton>
-          </ToggleButtonGroup>
-        </div>
-
-        <Button
-          disabled={!settingsEnabled}
-          onClick={handlePressStartGameButton}
-          variant="contained"
-        >
-          Start Game
-        </Button>
-      </Stack>
-    </div>
-  );
+    );
 }
 
 export default GameSettings;

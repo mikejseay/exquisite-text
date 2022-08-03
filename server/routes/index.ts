@@ -1,22 +1,12 @@
-import {
-  NextFunction,
-  Response,
-  Request,
-} from 'express';
+import { Response } from "express";
 
 import { express } from "../app";
 
 const router = express.Router();
 
 /* GET home page. */
-router.get('/', function(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) {
-  res.render('index', { title: 'Express' });
-  // res.send(req.body);
-  // res.json({ title: 'Express' });
+router.get("/", function (res: Response) {
+    res.render("index", { title: "Express" });
 });
 
 module.exports = router;
