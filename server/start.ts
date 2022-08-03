@@ -56,8 +56,8 @@ const httpServer = http.createServer(app);
 const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(httpServer, {
     cors: {
         origin: "*",
-        methods: ["GET", "POST"]
-    }
+        methods: [ "GET", "POST" ],
+    },
 });
 
 // the socket.io server which will handle socket-based messages
@@ -116,16 +116,16 @@ function onError(error: { syscall: string; code: string; }) {
 
     // handle specific listen errors with friendly messages
     switch (error.code) {
-        case "EACCES":
-            console.error(bind + " requires elevated privileges");
-            process.exit(1);
-            break;
-        case "EADDRINUSE":
-            console.error(bind + " is already in use");
-            process.exit(1);
-            break;
-        default:
-            throw error;
+    case "EACCES":
+        console.error(bind + " requires elevated privileges");
+        process.exit(1);
+        break;
+    case "EADDRINUSE":
+        console.error(bind + " is already in use");
+        process.exit(1);
+        break;
+    default:
+        throw error;
     }
 }
 

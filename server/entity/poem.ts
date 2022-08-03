@@ -1,6 +1,7 @@
 const {
     DataTypes,
     Sequelize,
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 } = require("sequelize");
 
 const isProduction = process.env.NODE_ENV === "production";
@@ -15,10 +16,11 @@ export const pgSequelConn = new Sequelize(
             dialectOptions: {
                 ssl: {
                     require: true,
-                    rejectUnauthorized: false
-                }
-            }
-        } : {}
+                    rejectUnauthorized: false,
+                },
+            },
+        }
+        : {},
 );
 
 export const Poem = pgSequelConn.define(
@@ -36,5 +38,5 @@ export const Poem = pgSequelConn.define(
     },
     {
         // Other model options go here
-    }
+    },
 );

@@ -16,7 +16,7 @@ import {
     IPoem,
     LineLength,
     ServerToClientEvents,
-    SocketData
+    SocketData,
 } from "../src/types";
 
 const db = require("./queries");
@@ -39,7 +39,7 @@ async function populatePoems() {
             id,
             createdAt,
             title,
-            content
+            content,
         });
     }
 }
@@ -100,7 +100,7 @@ class Room {
     currentUserTableInfo() {
         return {
             editors: this.editorNames,
-            spectators: this.spectatorNames
+            spectators: this.spectatorNames,
         };
     }
 
@@ -127,8 +127,8 @@ class Room {
         }
 
         // should tell editors to navigate to /game and spectators to /spectate
-        this.io.in(this.roomID + "_Editors").emit("navigate", "/game")
-        this.io.in(this.roomID + "_Spectators").emit("navigate", "/spectate")
+        this.io.in(this.roomID + "_Editors").emit("navigate", "/game");
+        this.io.in(this.roomID + "_Spectators").emit("navigate", "/spectate");
     }
 
 }
@@ -150,7 +150,7 @@ class Member {
         hostSocket: Socket,
         roomID: string,
         deviceID: string,
-        name: string
+        name: string,
     ) {
         this.io = io;
         this.socket = hostSocket;
@@ -270,7 +270,7 @@ class Editor extends Member {
         hostSocket: Socket,
         roomID: string,
         deviceID: string,
-        name: string
+        name: string,
     ) {
         super(io, hostSocket, roomID, deviceID, name);
         this.targetEditorID = "";
@@ -305,7 +305,7 @@ class Editor extends Member {
         this.socket.on("getLineEdit", () => this.requestLineEdit()); // initial populate
         this.socket.on("lineEdit", (value) => this.handleLineEdit(value));  //whenever the input box is edited.
         this.socket.on("getEditorActive", () => this.requestActivity());
-        this.socket.on("passTurn", (firstPart, secondPart) => this.handlePassTurn(firstPart, secondPart))
+        this.socket.on("passTurn", (firstPart, secondPart) => this.handlePassTurn(firstPart, secondPart));
         this.socket.on("lastLine", (value) => this.handleLastLine(value)); // whenever a new line has been submitted into the poem.
         this.socket.on("getLastLineStatus", () => this.requestLastLineStatus());
     }
@@ -388,7 +388,7 @@ class Editor extends Member {
         const thisRoom = roomIDToRoom.get(this.roomID);
         const poemToPass = this.poemQueue.shift();
         if (isNil(poemToPass)) {
-            return
+            return;
         }
 
         poemToPass.submitLine(firstPart);
@@ -411,7 +411,7 @@ class Editor extends Member {
         console.log("handleLastLine");
         const poemToPass = this.poemQueue.shift();
         if (isNil(poemToPass)) {
-            return
+            return;
         }
         poemToPass.lines.push(lastPart);
 
@@ -439,7 +439,7 @@ class Editor extends Member {
             id: uuidv4(),
             content: poemString,
             createdAt: new Date(),
-            title: `exquisite text #${Math.round(Math.random() * 100)}`
+            title: `exquisite text #${Math.round(Math.random() * 100)}`,
         };
         poems.add(poem);
 
@@ -577,9 +577,9 @@ function socketFunctionality(io: Server<ClientToServerEvents, ServerToClientEven
         socket.on("createGameHost", (roomID) => {
             console.log("createGameHost for ", socket.id, "joining", roomID);
             // device doesn't matter for host
-            const thisHost = new Host(io, socket, roomID, socketIDToDeviceID[socket.id], "HOST")
+            const thisHost = new Host(io, socket, roomID, socketIDToDeviceID[socket.id], "HOST");
             thisHost.joinRoom();
-            const thisRoom = new Room(io, socket, roomID)
+            const thisRoom = new Room(io, socket, roomID);
             roomIDToRoom.set(roomID, thisRoom);
             console.log("room", roomID, "created with ", socket.id, "as host");
         });
@@ -589,7 +589,7 @@ function socketFunctionality(io: Server<ClientToServerEvents, ServerToClientEven
             if (!roomIDToRoom.has(roomID)) {
                 console.log(roomID, "does not exist");
                 io.to(socket.id).emit("joinError", "Room does not exist.");
-                return
+                return;
             }
 
             const deviceID = socketIDToDeviceID[socket.id];
@@ -602,10 +602,12 @@ function socketFunctionality(io: Server<ClientToServerEvents, ServerToClientEven
                 if (targetRoom.editors.size >= maxEditors) {
                     console.log("trying to join as editor but it's already full");
                     io.to(socket.id).emit("joinError", "Writer's room full. Join as spectator?");
-                    return
+                    return;
                 }
 
-                const useEditorClass = (targetRoom.editors.size === 0 ? VIPEditor : Editor);
+                const useEditorClass = (targetRoom.editors.size === 0
+                    ? VIPEditor
+                    : Editor);
                 const thisEditor = new useEditorClass(io, socket, roomID, deviceID, name);
                 thisEditor.joinRoom();
                 targetRoom.addEditor(deviceID, thisEditor);
@@ -614,7 +616,7 @@ function socketFunctionality(io: Server<ClientToServerEvents, ServerToClientEven
                 thisSpectator.joinRoom();
                 targetRoom.addSpectator(deviceID, thisSpectator);
             }
-        })
+        });
     });
 }
 
