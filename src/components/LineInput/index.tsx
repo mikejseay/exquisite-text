@@ -357,7 +357,11 @@ const LineInput = () => {
     // might not be necessary, but it's kind of nice
     // note we use passEnabledRef instead of passEnabled because it gets the current value
         if (passEnabledRef.current && (ctrlKey || metaKey) && (key === "Enter" || charCode === 13)) {
-            passTurn();
+            if (onLastLine) {
+                completePoem();
+            } else {
+                passTurn();
+            }
         }
     }
 

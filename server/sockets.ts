@@ -220,7 +220,7 @@ class Member {
     }
 
     disconnecting() {
-        console.log("socket disconnecting from", this.socket.rooms);
+        console.log("socket", this.socket.id, " disconnecting from", this.socket.rooms);
     }
 
     sendPoem(poem: IPoem) {
@@ -370,7 +370,7 @@ class Editor extends Member {
         if (thisPoem) {
             const weThinkCurrentLength = thisPoem.lines.length;
             console.log("we think the poem has ", weThinkCurrentLength, "of", thisPoem.targetLines - 2);
-            return weThinkCurrentLength === (thisPoem.targetLines - 2);
+            return weThinkCurrentLength >= (thisPoem.targetLines - 2);
         } else {
             return false;
         }
@@ -580,15 +580,14 @@ function sockets(io: Server<ClientToServerEvents, ServerToClientEvents, InterSer
                 } else {
                     targetView = "/";
                 }
-                const oldSocket = theMember.socket;
-                const oldRooms = theMember.socket.rooms;
-                io.to(oldSocket.id).emit("navigate", "/disconnected"); // send to disconnect page
-                oldRooms.delete(oldRooms.values().next().value); // delete first element (old socket id)
-                oldSocket.disconnect(); // force disconnect
-                socket.join(Array.from(oldRooms)); // re-join the same rooms
-                theMember.socket = socket; // connect the new socket in preference of the old
-                theMember.setReceive(); // re-establish server-side listeners
-                io.to(socket.id).emit("navigate", targetView); // force navigate
+                // if the socket is still connected, send them to disconnected view
+                io.to(theMember.socket.id).emit("navigate", "/disconnected");
+                theMember.socket.disconnect(); // force disconnect
+                delete theMember.socket;
+                theMember.socket = socket; // connect the new socket
+                theMember.joinRoom();    // re-join the correct rooms
+                // theMember.setReceive(); // amazingly, this isn't necessary...
+                io.to(socket.id).emit("navigate", targetView); // navigate to correct view
             } // else this device isn't in a room yet, nothing to do
 
             socketIDToDeviceID[socket.id] = deviceID; // since socket is always uuid, won't overwrite
