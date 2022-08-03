@@ -5,13 +5,13 @@ import Modal from "@mui/material/Modal";
 import * as React from "react";
 
 import { modalContent, modalTitle, tutorial } from "./styles";
-import exampleGif from '../../assets/images/exquisiteExample.gif';
+import exampleGif from "../../assets/images/exquisiteExample.gif";
 
 const Tutorial = () => {
   // check if the user's visited the page before
-  const firstVisit = !localStorage.getItem('visited');
+  const firstVisit = !localStorage.getItem("visited");
   if (firstVisit) {
-    localStorage.setItem('visited', 'yes');
+    localStorage.setItem("visited", "yes");
   }
 
   // if first visit, the help modal will be initially open

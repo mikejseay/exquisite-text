@@ -1,25 +1,25 @@
-import ReactDOM from 'react-dom/client';
+import ReactDOM from "react-dom/client";
 import {
   BrowserRouter,
   Routes,
   Route
 } from "react-router-dom";
 
-import './index.css';
-import App from './components/App';
+import "./index.css";
+import App from "./components/App";
 import Game from "./screens/Game"
 import Host from "./screens/Host"
 import Join from "./screens/Join"
 import Lobby from "./screens/Lobby"
 import Spectate from "./screens/Spectate"
 import Disconnected from "./screens/Disconnected"
-import reportWebVitals from './reportWebVitals';
+import reportWebVitals from "./reportWebVitals";
 
 const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+  document.getElementById("root") as HTMLElement
 );
 const noMatchRouteElement = <main style={{ textAlign: "center" }}>
-  <p>There's nothing here!</p>
+  <p>There"s nothing here!</p>
 </main>
 
 root.render(

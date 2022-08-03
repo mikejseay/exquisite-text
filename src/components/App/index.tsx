@@ -58,11 +58,11 @@ export default function App() {
     socket.emit("recognizeDevice", uuidv4());
   } else {
     // check if this device (browser) has visited the page before
-    const firstVisit = !localStorage.getItem('device');
+    const firstVisit = !localStorage.getItem("device");
     if (firstVisit) {
-      localStorage.setItem('device', uuidv4());
+      localStorage.setItem("device", uuidv4());
     }
-    const deviceID = localStorage.getItem('device');
+    const deviceID = localStorage.getItem("device");
     if (!isNil(deviceID)) {
       socket.emit("recognizeDevice", deviceID);
     }
