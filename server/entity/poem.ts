@@ -9,7 +9,15 @@ const connectionString = `postgres://${process.env.PG_USER}:${process.env.PG_PAS
 export const pgSequelConn = new Sequelize(
   isProduction && process.env.DATABASE_URL
     ? process.env.DATABASE_URL
-    : connectionString
+    : connectionString,
+  {
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    }
+  }
 );
 
 export const Poem = pgSequelConn.define(
