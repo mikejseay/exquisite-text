@@ -106,9 +106,7 @@ const LineInput = () => {
 
     const [ onLastLine, setOnLastLine ] = React.useState<boolean>(false);
     const [ lineInputVisible, setLineInputVisible ] = React.useState<boolean>(true);
-    const [ poemDoneAccordionVisible, setPoemDoneAccordionVisible ] =
-    React.useState<boolean>(true);
-    const [ donePoemEnabled, setDonePoem ] = React.useState<boolean>(true);
+    const [ poemDoneVisible, setPoemDoneVisible ] = React.useState<boolean>(true);
 
     const [ helpMessage, setHelpMessage ] = React.useState<string>("");
     const [ inputErrorMsg, setInputErrorMsg ] = React.useState<string>(lineSepString);
@@ -138,12 +136,12 @@ const LineInput = () => {
             if (editorActiveFromServer) {
                 setLineInputVisible(true);
                 setHelpMessage("Complete a line of poetry.");
-                setPoemDoneAccordionVisible(true);
+                setPoemDoneVisible(true);
             } else {
                 setLineInputVisible(false);
                 setHelpMessage("Your friend is writing 👇");
                 setPassEnabled(false);
-                setPoemDoneAccordionVisible(false);
+                setPoemDoneVisible(false);
             }
         };
 
@@ -351,7 +349,7 @@ const LineInput = () => {
         setPassEnabled(false);
         // setHelpMessage("Poem completed! Open it at the bottom of the page.\n" +
         //   "If you'd like to play again, make a new room.");
-        setPoemDoneAccordionVisible(false);
+        setPoemDoneVisible(false);
     }
 
     function handleKeyDown({ charCode, key, ctrlKey, metaKey }: React.KeyboardEvent) {
@@ -388,80 +386,83 @@ const LineInput = () => {
                     className={"input-box"}
                     style={inputBox}
                 >
-                    {lineInputVisible ? (
-                        <div
-                            className={"active-input"}
-                            style={activeInput}
-                            onMouseOver={() => {
-                                const target = document.getElementById("hoverSensitiveSpan") as HTMLElement;
-                                if (!isNil(underlineSpanHover.borderBottom)) {
-                                    target.style.borderBottom = underlineSpanHover.borderBottom as string;
-                                }
-                            }}
-                            onMouseOut={() => {
-                                const target = document.getElementById("hoverSensitiveSpan") as HTMLElement;
-                                if (!isNil(underlineSpan.borderBottom)) {
-                                    target.style.borderBottom = underlineSpan.borderBottom as string;
-                                }
-                            }}
-                        >
+                    {lineInputVisible
+                        ?
+                        (
                             <div
-                                className={"underline-suggestion"}
-                                style={underlineSuggestionDiv}
+                                className={"active-input"}
+                                style={activeInput}
+                                onMouseOver={() => {
+                                    const target = document.getElementById("hoverSensitiveSpan") as HTMLElement;
+                                    if (!isNil(underlineSpanHover.borderBottom)) {
+                                        target.style.borderBottom = underlineSpanHover.borderBottom as string;
+                                    }
+                                }}
+                                onMouseOut={() => {
+                                    const target = document.getElementById("hoverSensitiveSpan") as HTMLElement;
+                                    if (!isNil(underlineSpan.borderBottom)) {
+                                        target.style.borderBottom = underlineSpan.borderBottom as string;
+                                    }
+                                }}
                             >
-                                <span
-                                    id={"hoverSensitiveSpan"}
-                                    style={underlineSpan}
-                                >
-                                    {onSecondLine
-                                        ? (
-                                            "  ".repeat(idealCharsOnLineOne + 3) + "\n" + "  ".repeat(idealCharsOnLineTwo + 3)
-                                        )
-                                        : (
-                                            "  ".repeat(idealCharsOnLineOne + 3)
-                                        )}
-                                </span>
-                            </div>
-                            <textarea
-                                className={"poem-input"}
-                                ref={textareaRef}
-                                value={poemInput}
-                                style={poemInputStyle}
-                                onChange={handlePoemBodyChange}
-                                // onKeyPress={handleKeypress}
-                                onKeyDown={handleKeyDown}
-                                rows={2}
-                                autoFocus={true}
-                                readOnly={false}
-                                onFocus={() =>
-                                    !isNil(textareaRef) && !isNil(textareaRef.current)
-                                        ? textareaRef.current.setSelectionRange(-1, -1)
-                                        : {}
-                                }
-                            > </textarea>
-                        </div>
-                    ) : (
-                        <div
-                            className={"inactive-input"}
-                            style={inactiveInput}
-                        >
-                            <div
-                                className={"text-spacer"}
-                                data-autofocus={true}
-                                style={textSpacer}
-                            >
-                                <span
-                                    style={spacingSpan}
-                                >
-                                    {poemInputSpectate.replaceAll(/[^\n]/g, "*")}
-                                </span>
                                 <div
-                                    id="caret"
-                                    style={caret}
-                                > </div>
+                                    className={"underline-suggestion"}
+                                    style={underlineSuggestionDiv}
+                                >
+                                    <span
+                                        id={"hoverSensitiveSpan"}
+                                        style={underlineSpan}
+                                    >
+                                        {onSecondLine
+                                            ? (
+                                                "  ".repeat(idealCharsOnLineOne + 3) + "\n" + "  ".repeat(idealCharsOnLineTwo + 3)
+                                            )
+                                            : (
+                                                "  ".repeat(idealCharsOnLineOne + 3)
+                                            )}
+                                    </span>
+                                </div>
+                                <textarea
+                                    className={"poem-input"}
+                                    ref={textareaRef}
+                                    value={poemInput}
+                                    style={poemInputStyle}
+                                    onChange={handlePoemBodyChange}
+                                    // onKeyPress={handleKeypress}
+                                    onKeyDown={handleKeyDown}
+                                    rows={2}
+                                    autoFocus={true}
+                                    readOnly={false}
+                                    onFocus={() =>
+                                        !isNil(textareaRef) && !isNil(textareaRef.current)
+                                            ? textareaRef.current.setSelectionRange(-1, -1)
+                                            : {}
+                                    }
+                                > </textarea>
                             </div>
-                        </div>
-                    )}
+                        ) :
+                        (
+                            <div
+                                className={"inactive-input"}
+                                style={inactiveInput}
+                            >
+                                <div
+                                    className={"text-spacer"}
+                                    data-autofocus={true}
+                                    style={textSpacer}
+                                >
+                                    <span
+                                        style={spacingSpan}
+                                    >
+                                        {poemInputSpectate.replaceAll(/[^\n]/g, "*")}
+                                    </span>
+                                    <div
+                                        id="caret"
+                                        style={caret}
+                                    > </div>
+                                </div>
+                            </div>
+                        )}
                 </div>
                 <div className={"pass-button-container"}>
                     <div
@@ -481,7 +482,7 @@ const LineInput = () => {
                         </Button>
                     </div>
                 </div>
-                {poemDoneAccordionVisible && (
+                {poemDoneVisible && (
                     <div
                         className={"done-poem-accordion"}
                     >
@@ -496,20 +497,18 @@ const LineInput = () => {
                                     style={donePoemAccordionTitle}
                                 >
                                     <Typography>
-                                        <strong>Does the poem seem like it's done?</strong>
+                                        <strong>Does the poem seem like it is done?</strong>
                                     </Typography>
                                 </div>
                             </AccordionSummary>
                             <AccordionDetails>
-                                {/*<Typography>*/}
                                 <div
                                     className={"done-poem-accordion-text"}
                                     style={donePoemAccordionText}
                                 >
-                  Only press this button if you're absolutely certain the poem
+                  Only press this button if you are absolutely certain the poem
                   is done!
                                 </div>
-                                {/*</Typography>*/}
                                 <div
                                     className={"done-poem-button"}
                                     style={donePoemButton}
@@ -517,7 +516,6 @@ const LineInput = () => {
                                     <Button
                                         variant={"contained"}
                                         onClick={completePoem}
-                                        disabled={!donePoemEnabled}
                                     >
                     Complete Poem
                                     </Button>

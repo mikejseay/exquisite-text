@@ -30,17 +30,17 @@ function UserTable() {
         <div className={"userTable"} style={{textAlign: "center"}}>
             <div className={"editors"}>
                 <h2>Editors:</h2>
-                {editorArr.map((name) => {
+                {editorArr.map((name, nameIndex) => {
                     return (
-                        <p>{name}</p>
+                        <p key={nameIndex}>{name}</p>
                     );
                 })}
             </div>
             <div className={"spectators"}>
                 <h2>Spectators:</h2>
-                {spectatorArr.map((name) => {
+                {spectatorArr.map((name, nameIndex) => {
                     return (
-                        <p>{name}</p>
+                        <p key={nameIndex}>{name}</p>
                     );
                 })}
             </div>

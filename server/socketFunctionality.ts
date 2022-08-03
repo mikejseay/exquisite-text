@@ -18,9 +18,8 @@ import {
     ServerToClientEvents,
     SocketData,
 } from "../src/types";
-
-const db = require("./queries");
-const uuidv4 = require("uuid").v4; // a function that generates a random uuid for lines
+import { returnPoems, storePoem } from "./queries";
+import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid for lines
 
 const retrieveNPoemsAtStart = 1;
 const maxEditors = 4;
@@ -33,7 +32,7 @@ const defaultGameSettings: IGameSettingsInfo = {
 
 // this function grabs some old poems to have something to show the users
 async function populatePoems() {
-    const dbPoems = await db.returnPoems(retrieveNPoemsAtStart);
+    const dbPoems = await returnPoems(retrieveNPoemsAtStart) as Array<IPoem>;
     for (const { id, createdAt, title, content } of dbPoems) {
         poems.add({
             id,
@@ -62,7 +61,7 @@ class Room {
     roomID: string;
 
     editors: Map<string, Editor>;
-    spectators: Map<any, any>;
+    spectators: Map<string, Spectator>;
     editorNames: Array<string>;
     spectatorNames: Array<string>;
     gameSettings: IGameSettingsInfo;
@@ -85,13 +84,13 @@ class Room {
         this.nPoemsInRotation = 0;
     }
 
-    addEditor(deviceUUID: string, editorObj: any) {
+    addEditor(deviceUUID: string, editorObj: Editor) {
         this.editors.set(deviceUUID, editorObj);
         this.editorNames.push(editorObj.name);
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }
 
-    addSpectator(deviceUUID: string, spectatorObj: any) {
+    addSpectator(deviceUUID: string, spectatorObj: Spectator) {
         this.spectators.set(deviceUUID, spectatorObj);
         this.spectatorNames.push(spectatorObj.name);
         this.sendCurrentUserTableInfo(); // give the room updated user info
@@ -352,9 +351,11 @@ class Editor extends Member {
 
     currentlyOnLastLine() {
         const thisPoem = this.poemQueue[0];
+        console.log("currentlyOnLastLine", thisPoem);
         if (thisPoem) {
-            console.log("we think the poem has ", thisPoem.lines.length, "of", thisPoem.targetLines - 2);
-            return thisPoem.lines.length === (thisPoem.targetLines - 2);
+            const weThinkCurrentLength = thisPoem.lines.length;
+            console.log("we think the poem has ", weThinkCurrentLength, "of", thisPoem.targetLines - 2);
+            return weThinkCurrentLength === (thisPoem.targetLines - 2);
         } else {
             return false;
         }
@@ -369,6 +370,7 @@ class Editor extends Member {
         if (this.hasPoemInQueue()) {
             this.io.to(this.socket.id).emit("lineEdit", this.poemQueue[0].halfLine);
             const thisPoem = this.poemQueue[0];
+            console.log("we think the poem has", thisPoem.lines.length, "submissions so far");
 
             if (thisPoem.lines.length === (thisPoem.targetLines - 2)) {
                 this.io.to(this.socket.id).emit("lastLine", true);
@@ -408,7 +410,7 @@ class Editor extends Member {
     }
 
     handleLastLine(lastPart: string) {
-        console.log("handleLastLine");
+        console.log("handleLastLine in ", this.name);
         const poemToPass = this.poemQueue.shift();
         if (isNil(poemToPass)) {
             return;
@@ -444,7 +446,7 @@ class Editor extends Member {
         poems.add(poem);
 
         // add the poem to the database
-        db.storePoem(poem);
+        storePoem(poem);
 
         // broadcast the poem via sockets
         this.sendPoem(poem);
@@ -492,7 +494,7 @@ class Poem {
     io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
     roomID: string;
 
-    // any edit of lines or halfline (e.g. submitLine, handleLineEdit)
+    // any edit of lines or half-line (e.g. submitLine, handleLineEdit)
     // will send a message to the Spectators in the roomID
 
     constructor(
@@ -534,7 +536,7 @@ function socketFunctionality(io: Server<ClientToServerEvents, ServerToClientEven
             // socketToDeviceID.set(socket, deviceID); // since socket is always uuid, won't overwrite
             // deviceIDToSocket.set(deviceID, socket); // will overwrite previous
 
-            const deviceInARoom = deviceIDToRoomID.hasOwnProperty(deviceID);
+            const deviceInARoom = Object.prototype.hasOwnProperty.call(deviceIDToRoomID, deviceID);
             if (deviceInARoom) {
                 // try to reconnect them to that room in the correct role
                 const roomID = deviceIDToRoomID[deviceID];
@@ -593,9 +595,6 @@ function socketFunctionality(io: Server<ClientToServerEvents, ServerToClientEven
             }
 
             const deviceID = socketIDToDeviceID[socket.id];
-            // const deviceInARoom = deviceIDToRoomID.hasOwnProperty(deviceID);
-            // if (deviceInARoom) {
-            // }
             deviceIDToRoomID[deviceID] = roomID;
             const targetRoom = roomIDToRoom.get(roomID);
             if (role === "Editor") {
@@ -620,4 +619,4 @@ function socketFunctionality(io: Server<ClientToServerEvents, ServerToClientEven
     });
 }
 
-module.exports = socketFunctionality;
+export default socketFunctionality;

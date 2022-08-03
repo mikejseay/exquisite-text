@@ -34,4 +34,4 @@ app.use(express.static(path.join(__dirname, targetDir)));
 app.use("/", indexRouter);                      // sets the router for the root page /
 app.use("/users", usersRouter);                 // sets the router for the /users page
 
-module.exports = app;
+export default app;

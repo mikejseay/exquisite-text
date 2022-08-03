@@ -31,10 +31,6 @@ export interface IUserInfo {
     turnsAway: number;
 }
 
-export interface ILines {
-    [id: string]: ILine;
-}
-
 export interface ILine {
     id: Key;
     user: IUserInfo;
@@ -89,7 +85,7 @@ export interface ClientToServerEvents {
 
     recognizeDevice: (a: string) => void;
     createGameHost: (a: string) => void;
-    joinGameAs: (a: string, b: string, c:string) => void;
+    joinGameAs: (a: string, b: string, c: string) => void;
     getUserTableInfo: () => void;
     getGameSettingsInfo: () => void;
     getLastLineStatus: () => void;
@@ -102,8 +98,9 @@ export interface ClientToServerEvents {
 }
 
 export interface InterServerEvents {
+    ping: () => void;
 }
 
 export interface SocketData {
+    name: string;
 }
-

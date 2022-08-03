@@ -25,7 +25,7 @@ import type {
     ServerToClientEvents,
 } from "../../types";
 
-const uuidv4 = require("uuid").v4;
+import { v4 as uuidv4 } from "uuid";
 
 const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
 const serverPath: URL["pathname"] | URL["href"] = isDevelopment

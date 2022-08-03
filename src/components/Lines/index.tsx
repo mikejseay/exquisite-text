@@ -52,7 +52,7 @@ const Lines = () => {
             }
         }>
             {lines.map((lineArray, poemIndex) => {
-                return <div style={{ marginBottom: "2em" }}>
+                return <div style={{ marginBottom: "2em" }} key={poemIndex}>
                     <div>{
                         lineArray.join("\n")
                     }</div>
