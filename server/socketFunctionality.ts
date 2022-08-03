@@ -7,6 +7,7 @@ import {
     Server,
     Socket,
 } from "socket.io";
+import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid for lines
 
 import {
     ClientToServerEvents,
@@ -18,8 +19,10 @@ import {
     ServerToClientEvents,
     SocketData,
 } from "../src/types";
-import { returnPoems, storePoem } from "./queries";
-import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid for lines
+import {
+    returnPoems,
+    storePoem,
+} from "./queries";
 
 const retrieveNPoemsAtStart = 1;
 const maxEditors = 4;
