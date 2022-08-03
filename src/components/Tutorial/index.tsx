@@ -41,9 +41,9 @@ const Tutorial = () => {
               secret.</p>
                         <p>Then, press Return ⏎.</p>
                         <p> </p>
-                        <img src={exampleGif} alt="Example"/>
+                        <img src={exampleGif} alt="Example" />
                         <p>On the second line, write a short fragment. The next player will see this part, so give them a &apos;prompt&apos; to carry onward!</p>
-                        <p>When you&apos;ve written enough on the second line, press the &apos;Pass Turn&apos; button that will appear.</p>
+                        <p>When you&apos;ve written enough on the second line, press the &apos;Pass Turn&apos; button that will become enabled.</p>
                         <p>Express your creativity! Give your collaborator a tricky prompt!</p>
                         <p>If you feel the poem has been finished, press the &apos;Complete Poem&apos; button.</p>
                     </div>

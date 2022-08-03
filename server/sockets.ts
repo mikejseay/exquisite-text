@@ -526,7 +526,7 @@ class Poem {
 }
 
 // The module exports a single function poem that takes the Socket.IO server instance as a parameter.
-function socketFunctionality(io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>) {
+function sockets(io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>) {
 
     // connection is a reserved name for a socket event when someone connects
     io.on("connection", (socket) => {
@@ -622,4 +622,4 @@ function socketFunctionality(io: Server<ClientToServerEvents, ServerToClientEven
     });
 }
 
-export default socketFunctionality;
+export default sockets;
