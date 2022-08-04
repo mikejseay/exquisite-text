@@ -52,5 +52,9 @@ module.exports = {
             "error",
             "always",
         ],
+        "sort-keys": [
+            "error",
+            "always",
+        ],
     },
 };
