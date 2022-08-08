@@ -33,8 +33,8 @@ function GameState() {
                 anchorEl={anchorEl}
                 onClose={handleClose}
                 anchorOrigin={{
-                    vertical: "bottom",
                     horizontal: "left",
+                    vertical: "bottom",
                 }}
             >
                 There would be user info here once the user has:

@@ -55,7 +55,6 @@ module.exports = {
         ],
         "sort-keys": [
             "error",
-            "always",
         ],
     },
 };
