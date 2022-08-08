@@ -1,18 +1,18 @@
 import * as React from "react";
 
 export const inputBox: React.CSSProperties = {
-    width: "100%",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     marginBottom: "1em",
+    width: "100%",
 };
 
 export const activeInput: React.CSSProperties = {
-    margin: "auto",
-    width: "100%",
-    maxWidth: "60ch",
     display: "grid",
+    margin: "auto",
+    maxWidth: "60ch",
+    width: "100%",
 };
 
 export const donePoemAccordionTitle: React.CSSProperties = {
@@ -20,14 +20,14 @@ export const donePoemAccordionTitle: React.CSSProperties = {
 };
 
 export const underlineSuggestionDiv: React.CSSProperties = {
-    zIndex: 1,
-    whiteSpace: "pre",
-    gridRowStart: 1,
     gridColumnStart: 1,
+    gridRowStart: 1,
+    lineHeight: "150%",
     padding: "0",
     textAlign: "center",
-    lineHeight: "150%",
     userSelect: "none",
+    whiteSpace: "pre",
+    zIndex: 1,
 };
 
 export const underlineSpan: React.CSSProperties = {
@@ -41,30 +41,30 @@ export const underlineSpanHover: React.CSSProperties = {
 };
 
 export const poemInputStyle: React.CSSProperties = {
-    outline: "none",
+    // backgroundImage: "linear-gradient(to right, #ffffff, #eeeeee)",
+    // border: "1px #eeeeee solid",
+    // boxShadow: "0.1em 0.1em 0.5em #bbbbbb",
+    background: "transparent",
+    border: "none",
+    borderRadius: "0.75em",
+    boxShadow: "none",
+    cursor: "text",
+    display: "block",
     fontFamily: "'Esteban', serif",
     fontSize: "18px",
-    textAlign: "center",
-    resize: "none",
+    gridColumnStart: 1,
+    gridRowStart: 1,
     lineHeight: "150%",
-    cursor: "text",
-    border: "none",
-    // border: "1px #eeeeee solid",
-    // backgroundImage: "linear-gradient(to right, #ffffff, #eeeeee)",
-    // boxShadow: "0.1em 0.1em 0.5em #bbbbbb",
-    boxShadow: "none",
-    borderRadius: "0.75em",
+    margin: "auto",
+    maxWidth: "60ch",
+    outline: "none",
+    overflowX: "hidden",
     padding: "0",
+    resize: "none",
+    textAlign: "center",
     whiteSpace: "pre",
     width: "100%",
-    maxWidth: "60ch",
-    overflowX: "hidden",
-    margin: "auto",
-    display: "block",
     zIndex: 2,
-    gridRowStart: 1,
-    gridColumnStart: 1,
-    background: "transparent",
 };
 
 export const spacingSpan: React.CSSProperties = {
@@ -72,29 +72,29 @@ export const spacingSpan: React.CSSProperties = {
 };
 
 export const textSpacer: React.CSSProperties = {
-    whiteSpace: "pre",
     color: "white",
     margin: "auto",
-    width: "auto",
     textAlign: "center",
+    whiteSpace: "pre",
+    width: "auto",
 };
 
 export const errorMessage: React.CSSProperties = {
-    fontSize: "small",
     color: "red",
-    whiteSpace: "pre-line",
+    fontSize: "small",
     textAlign: "center",
+    whiteSpace: "pre-line",
 };
 
 export const passButton: React.CSSProperties = {
-    minHeight: "40px",
     marginBottom: "1em",
+    minHeight: "40px",
 };
 
 export const helpMessageStyle: React.CSSProperties = {
     fontFamily: "sans-serif",
-    whiteSpace: "pre-line",
     height: "1.2em",
+    whiteSpace: "pre-line",
 };
 
 export const donePoemButton: React.CSSProperties = {
@@ -102,8 +102,8 @@ export const donePoemButton: React.CSSProperties = {
 };
 
 export const donePoemAccordionText: React.CSSProperties = {
-    marginBottom: "1em",
     fontFamily: "sans-serif",
+    marginBottom: "1em",
 };
 
 export const lineInputContainer: React.CSSProperties = {
@@ -112,29 +112,29 @@ export const lineInputContainer: React.CSSProperties = {
 };
 
 export const mainInputContainer: React.CSSProperties = {
-    height: "100%",
-    width: "100%",
+    alignItems: "center",
     display: "flex",
     flexDirection: "column",
     flexWrap: "nowrap",
+    height: "100%",
     justifyContent: "space-between",
-    alignItems: "center",
+    width: "100%",
 };
 
 export const inactiveInput: React.CSSProperties = {
-    marginTop: "1em",
-    width: "100%",
     display: "flex",
     flexDirection: "row",
     justifyContent: "center",
+    marginTop: "1em",
+    width: "100%",
 };
 
 export const caret: React.CSSProperties = {
-    display: "inline-block",
+    animationDuration: "1s",
+    animationIterationCount: "infinite",
+    animationName: "blink",
     background: "black",
+    display: "inline-block",
     height: "20px",
     width: "1px",
-    animationDuration: "1s",
-    animationName: "blink",
-    animationIterationCount: "infinite",
 };

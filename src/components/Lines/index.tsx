@@ -44,11 +44,11 @@ const Lines = () => {
     return (
         <div style={
             {
-                whiteSpace: "pre-line",
-                textAlign: "center",
                 fontFamily: "'Esteban', serif",
                 fontSize: "18px",
                 marginTop: "1em",
+                textAlign: "center",
+                whiteSpace: "pre-line",
             }
         }>
             {lines.map((lineArray, poemIndex) => {

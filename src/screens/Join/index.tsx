@@ -113,7 +113,13 @@ export default function Join() {
           Spectate
                 </Button>
             </Stack>
-            <div className={"joinErrorMessage"} style={{ color: "red", textAlign: "center", marginTop: "1em" }}>
+            <div
+                className={"joinErrorMessage"}
+                style={{
+                    color: "red",
+                    marginTop: "1em",
+                    textAlign: "center",
+                }}>
                 {joinErrorMessage}
             </div>
         </div>
