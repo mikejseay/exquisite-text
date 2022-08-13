@@ -48,7 +48,10 @@ const GameSnack = () => {
 
     return (
         <Snackbar
-            anchorOrigin={{ horizontal: "center", vertical: "bottom" }}
+            anchorOrigin={{
+                horizontal: "center",
+                vertical: "bottom",
+            }}
             open={snackOpen}
             onClose={handleClose}
             message={snackMessage}
