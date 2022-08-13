@@ -5,6 +5,7 @@ export const tutorial = {
     border: "2px solid #000",
     boxShadow: "24",
     left: "50%",
+    maxWidth: "90%",
     p: "4",
     padding: "2em",
     position: "absolute",
@@ -22,4 +23,11 @@ export const modalContent = {
 export const modalTitle = {
     fontSize: "17px",
     textAlign: "center",
+} as React.CSSProperties;
+
+export const modalExampleGif = {
+    display: "block",
+    marginLeft: "auto",
+    marginRight: "auto",
+    maxWidth: "90%",
 } as React.CSSProperties;

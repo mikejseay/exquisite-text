@@ -4,7 +4,12 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import Modal from "@mui/material/Modal";
 import * as React from "react";
 
-import { modalContent, modalTitle, tutorial } from "./styles";
+import {
+    modalContent,
+    modalExampleGif,
+    modalTitle,
+    tutorial,
+} from "./styles";
 import exampleGif from "../../assets/images/exquisiteExample.gif";
 
 const Tutorial = () => {
@@ -30,7 +35,10 @@ const Tutorial = () => {
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
             >
-                <Box sx={tutorial}>
+                <Box
+                    onClick={handleHelpClose}
+                    sx={tutorial}
+                >
                     <div style={modalTitle}>
                         <strong>HOW TO PLAY</strong>
                     </div>
@@ -41,7 +49,11 @@ const Tutorial = () => {
               secret.</p>
                         <p>Then, press Return ⏎.</p>
                         <p> </p>
-                        <img src={exampleGif} alt="Example" />
+                        <img
+                            alt="Example"
+                            style={modalExampleGif}
+                            src={exampleGif}
+                        />
                         <p>On the second line, write a short fragment. The next player will see this part, so give them a &apos;prompt&apos; to carry onward!</p>
                         <p>When you&apos;ve written enough on the second line, press the &apos;Pass Turn&apos; button that will become enabled.</p>
                         <p>Express your creativity! Give your collaborator a tricky prompt!</p>
