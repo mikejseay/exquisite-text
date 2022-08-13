@@ -95,6 +95,7 @@ export interface ClientToServerEvents {
     getEditorActive: () => void;
     passTurn: (a: string, b: string) => void;
     lastLine: (a: string) => void;
+    leave: () => void;
 }
 
 export interface InterServerEvents {

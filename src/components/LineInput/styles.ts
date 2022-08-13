@@ -15,7 +15,7 @@ export const activeInput: React.CSSProperties = {
     width: "100%",
 };
 
-export const donePoemAccordionTitle: React.CSSProperties = {
+export const accordionTitle: React.CSSProperties = {
     margin: "auto",
 };
 
@@ -97,11 +97,11 @@ export const helpMessageStyle: React.CSSProperties = {
     whiteSpace: "pre-line",
 };
 
-export const donePoemButton: React.CSSProperties = {
+export const accordionButton: React.CSSProperties = {
     textAlign: "center",
 };
 
-export const donePoemAccordionText: React.CSSProperties = {
+export const accordionText: React.CSSProperties = {
     fontFamily: "sans-serif",
     marginBottom: "1em",
 };

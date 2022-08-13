@@ -13,9 +13,9 @@ import "./LineInput.css";
 import {
     activeInput,
     caret,
-    donePoemAccordionText,
-    donePoemAccordionTitle,
-    donePoemButton,
+    accordionText,
+    accordionTitle,
+    accordionButton,
     errorMessage,
     helpMessageStyle,
     inactiveInput,
@@ -499,7 +499,7 @@ const LineInput = () => {
                             >
                                 <div
                                     className={"done-poem-accordion-title"}
-                                    style={donePoemAccordionTitle}
+                                    style={accordionTitle}
                                 >
                                     <Typography>
                                         <strong>Does the poem seem like it is done?</strong>
@@ -509,14 +509,14 @@ const LineInput = () => {
                             <AccordionDetails>
                                 <div
                                     className={"done-poem-accordion-text"}
-                                    style={donePoemAccordionText}
+                                    style={accordionText}
                                 >
                   Only press this button if you are absolutely certain the poem
                   is done!
                                 </div>
                                 <div
                                     className={"done-poem-button"}
-                                    style={donePoemButton}
+                                    style={accordionButton}
                                 >
                                     <Button
                                         variant={"contained"}

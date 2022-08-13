@@ -28,8 +28,8 @@ const retrieveNPoemsAtStart = 1;
 const maxEditors = 4;
 const defaultGameSettings: IGameSettingsInfo = {
     lineLength: LineLength.short,
-    nRounds: 2,
     nPoems: 1,
+    nRounds: 2,
 };
 
 
@@ -38,17 +38,17 @@ async function populatePoems() {
     const dbPoems = await returnPoems(retrieveNPoemsAtStart) as Array<IPoem>;
     for (const { id, createdAt, title, content } of dbPoems) {
         poems.add({
-            id,
-            createdAt,
-            title,
             content,
+            createdAt,
+            id,
+            title,
         });
     }
 }
 populatePoems();
 
 // New global data structures
-const socketIDToDeviceID: IObjectStringToString = {};  // unique on socket. can have multiple devices on socket
+const socketIDToDeviceID: IObjectStringToString = {};
 const deviceIDToSocketID: IObjectStringToString = {};  // unique on device. only latest is present
 const deviceIDToRoomID: IObjectStringToString = {};
 const roomIDToRoom: Map<string, any> = new Map();
@@ -62,8 +62,8 @@ class Room {
 
     editors: Map<string, Editor>;
     spectators: Map<string, Spectator>;
-    editorNames: Array<string>;
-    spectatorNames: Array<string>;
+    // editorNames: Array<string>;
+    // spectatorNames: Array<string>;
     gameSettings: IGameSettingsInfo;
     gameOngoing: boolean;
     nPoemsInRotation: number;
@@ -79,8 +79,8 @@ class Room {
 
         this.editors = new Map();    // deviceID to editorObj
         this.spectators = new Map(); // deviceID to spectatorObj
-        this.editorNames = [];       // deviceID to editorObj
-        this.spectatorNames = [];    // deviceID to spectatorObj
+        // this.editorNames = [];       // deviceID to editorObj
+        // this.spectatorNames = [];    // deviceID to spectatorObj
         this.gameSettings = defaultGameSettings;
         this.gameOngoing = false;
         this.nPoemsInRotation = 0;
@@ -88,20 +88,38 @@ class Room {
 
     addEditor(deviceUUID: string, editorObj: Editor) {
         this.editors.set(deviceUUID, editorObj);
-        this.editorNames.push(editorObj.name);
+        // this.editorNames.push(editorObj.name);
+        this.sendCurrentUserTableInfo(); // give the room updated user info
+    }
+
+    removeEditor(deviceUUID: string) {
+        this.editors.delete(deviceUUID);
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }
 
     addSpectator(deviceUUID: string, spectatorObj: Spectator) {
         this.spectators.set(deviceUUID, spectatorObj);
-        this.spectatorNames.push(spectatorObj.name);
+        // this.spectatorNames.push(spectatorObj.name);
+        this.sendCurrentUserTableInfo(); // give the room updated user info
+    }
+
+    removeSpectator(deviceUUID: string) {
+        this.spectators.delete(deviceUUID);
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }
 
     currentUserTableInfo() {
+        const editorNameArr: Array<string> = [];
+        const spectatorNameArr: Array<string> = [];
+        for (const thisEditor of this.editors.values()) {
+            editorNameArr.push(thisEditor.name);
+        }
+        for (const thisSpectator of this.spectators.values()) {
+            spectatorNameArr.push(thisSpectator.name);
+        }
         return {
-            editors: this.editorNames,
-            spectators: this.spectatorNames,
+            editors: editorNameArr,
+            spectators: spectatorNameArr,
         };
     }
 
@@ -133,6 +151,12 @@ class Room {
         this.gameOngoing = true;
     }
 
+    reorganizeEditors() {
+        for (const thisEditor of this.editors.values()) {
+            thisEditor.prepareForGame();
+        }
+    }
+
 }
 
 class Member {
@@ -149,13 +173,13 @@ class Member {
 
     constructor(
         io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
-        hostSocket: Socket,
+        socket: Socket,
         roomID: string,
         deviceID: string,
         name: string,
     ) {
         this.io = io;
-        this.socket = hostSocket;
+        this.socket = socket;
         this.roomID = roomID;
         this.deviceID = deviceID;
         this.name = name;
@@ -164,6 +188,14 @@ class Member {
     joinRoom() {
         this.socket.join(this.roomID);
         this.setReceive(); // listen for certain messages from client
+    }
+
+    leaveRoom() {
+        console.log(this.name, " leaving ", this. roomID);
+        this.io.to(this.socket.id).emit("navigate", "/"); // navigate home (if possible)
+        delete deviceIDToRoomID[this.deviceID];
+        this.socket.leave(this.roomID);
+        this.unsetReceive(); // remove listeners
     }
 
     // setSend
@@ -180,10 +212,23 @@ class Member {
         this.socket.on("getGameSettingsInfo", () => this.requestGameSettingsInfo());
         this.socket.on("getSettingsEnabled", () => this.requestSettingsEnabled());
         this.socket.on("getPoems", () => this.getPoems()); // initial load
+        this.socket.on("leave", () => this.leaveRoom());
 
         // These are all reserved events
         this.socket.on("disconnect", () => this.disconnect());
         this.socket.on("disconnecting", () => this.disconnecting());
+    }
+
+    unsetReceive() {
+        this.socket.off("getUserTableInfo", () => this.requestUserTableInfo());
+        this.socket.off("getGameSettingsInfo", () => this.requestGameSettingsInfo());
+        this.socket.off("getSettingsEnabled", () => this.requestSettingsEnabled());
+        this.socket.off("getPoems", () => this.getPoems()); // initial load
+        this.socket.off("leave", () => this.leaveRoom());
+
+        // These are all reserved events
+        this.socket.off("disconnect", () => this.disconnect());
+        this.socket.off("disconnecting", () => this.disconnecting());
     }
 
     requestUserTableInfo() {
@@ -204,6 +249,10 @@ class Member {
     }
 
     disconnect() {
+        // note this could be called by something as simple as closing the tab
+        // therefore we don't want to boot someone from the game based on this
+        // however if they are AFK, etc, we should do those things
+
         console.log(this.socket.id, "disconnected");
 
         // socketIDToDeviceID
@@ -258,6 +307,13 @@ class Spectator extends Member {
         this.socket.join(this.roomID + "_Spectators");
     }
 
+    leaveRoom() {
+        super.leaveRoom();
+        this.socket.leave(this.roomID + "_Spectators");
+        const thisRoom = roomIDToRoom.get(this.roomID);
+        thisRoom.removeSpectator(this.deviceID);
+    }
+
     setReceive() {
         super.setReceive();
         this.socket.on("getLines", () => this.getAllPoemLines());
@@ -308,6 +364,23 @@ class Editor extends Member {
     joinRoom() {
         super.joinRoom();
         this.socket.join(this.roomID + "_Editors");
+    }
+
+    leaveRoom() {
+        super.leaveRoom();
+        this.socket.leave(this.roomID + "_Editors");
+        const thisRoom = roomIDToRoom.get(this.roomID);
+        thisRoom.removeEditor(this.deviceID);
+
+        // hand off any poems in your queue to the next person
+        const nextEditor = thisRoom.editors.get(this.targetEditorID);
+        nextEditor.poemQueue.push(...this.poemQueue);
+        if (!nextEditor.isCurrentlyEditing) {
+            nextEditor.possibleStartNewTurn();
+        }
+
+        // trigger the room to reorganize the editors
+        thisRoom.reorganizeEditors();
     }
 
     // setSend
@@ -456,9 +529,9 @@ class Editor extends Member {
     handlePoem(poemString: string) {
 
         const poem: IPoem = {
-            id: uuidv4(),
             content: poemString,
             createdAt: new Date(),
+            id: uuidv4(),
             title: `exquisite text #${Math.round(Math.random() * 100)}`,
         };
         poems.add(poem);
@@ -475,6 +548,20 @@ class VIPEditor extends Editor {
     joinRoom() {
         super.joinRoom();
         this.socket.join(this.roomID + "_VIP");
+    }
+
+    leaveRoom() {
+        // super.leaveRoom();
+        // this.socket.leave(this.roomID + "_VIP");
+        //
+        // // should make the next editor in line become VIP...
+        // const thisRoom = roomIDToRoom.get(this.roomID);
+        // const nextEditor = thisRoom.editors.get(this.targetEditorID);
+        // nextEditor.becomeVIP();  // or something
+
+        // TODO: implement VIP leaves the room
+        // only tricky if we are still in the lobby...
+        console.log("Having the VIP leave the room is not implemented yet.");
     }
 
     setReceive() {
