@@ -11,6 +11,9 @@ import * as React from "react";
 import { useSocket } from "../App";
 import "./LineInput.css";
 import {
+    accordionButton,
+    accordionText,
+    accordionTitle,
     activeInput,
     caret,
     errorMessage,
