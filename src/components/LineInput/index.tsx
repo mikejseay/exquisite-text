@@ -13,9 +13,6 @@ import "./LineInput.css";
 import {
     activeInput,
     caret,
-    accordionText,
-    accordionTitle,
-    accordionButton,
     errorMessage,
     helpMessageStyle,
     inactiveInput,
