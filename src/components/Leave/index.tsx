@@ -25,8 +25,8 @@ function Leave() {
         <div className={"leave-game-accordion"} style={{ marginTop: "1em" }}>
             <Accordion>
                 <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
                     aria-controls="panel1a-content"
+                    expandIcon={<ExpandMoreIcon />}
                     id="panel1a-header"
                 >
                     <div
