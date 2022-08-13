@@ -39,7 +39,7 @@ async function returnPoems(nPoems: number) {
 
 async function storePoem({ title, content }: IPoem) {
     try {
-        await Poem.create({ title, content });
+        await Poem.create({ content, title });
     } catch ({ stack }) {
         console.log(stack);
     }

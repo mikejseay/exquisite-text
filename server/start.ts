@@ -57,8 +57,8 @@ const httpServer = createServer(app);
 
 const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(httpServer, {
     cors: {
-        origin: "*",
         methods: [ "GET", "POST" ],
+        origin: "*",
     },
 });
 

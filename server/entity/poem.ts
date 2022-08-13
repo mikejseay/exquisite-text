@@ -14,8 +14,8 @@ export const pgSequelConn = new Sequelize(
         ? {
             dialectOptions: {
                 ssl: {
-                    require: true,
                     rejectUnauthorized: false,
+                    require: true,
                 },
             },
         }
@@ -26,13 +26,13 @@ export const Poem = pgSequelConn.define(
     "Poem",
     {
         // Model attributes are defined here
-        title: {
-            type: DataTypes.TEXT,
-            allowNull: false,
-        },
         content: {
-            type: DataTypes.TEXT,
             allowNull: false,
+            type: DataTypes.TEXT,
+        },
+        title: {
+            allowNull: false,
+            type: DataTypes.TEXT,
         },
     },
     {
