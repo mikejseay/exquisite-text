@@ -35,14 +35,14 @@ function Settings() {
                 <SettingsIcon />
             </IconButton>
             <Popover
-                id={id}
-                open={isOpen}
                 anchorEl={anchorEl}
-                onClose={handleClose}
                 anchorOrigin={{
                     horizontal: "left",
                     vertical: "bottom",
                 }}
+                id={id}
+                onClose={handleClose}
+                open={isOpen}
             >
                 {/*<Leave />*/}
                 {/*<Button*/}
