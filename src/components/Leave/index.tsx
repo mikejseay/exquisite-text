@@ -1,13 +1,18 @@
-import Button from "@mui/material/Button";
 import * as React from "react";
-
-import { useSocket } from "../App";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
+import Button from "@mui/material/Button";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { accordionText, accordionTitle, accordionButton } from "../LineInput/styles";
+
 import Typography from "@mui/material/Typography";
 import AccordionDetails from "@mui/material/AccordionDetails";
+
+import { useSocket } from "../App";
+import {
+    accordionButton,
+    accordionText,
+    accordionTitle,
+} from "../LineInput/styles";
 
 function Leave() {
     const { socket } = useSocket();
