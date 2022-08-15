@@ -31,7 +31,9 @@ import {
 } from "../../types";
 import WarningIcon from "@mui/icons-material/Warning";
 import Stack from "@mui/material/Stack";
-import Popper from "@mui/material/Popper";
+import Box from "@mui/material/Box";
+import { ClickAwayListener } from "@mui/material";
+import { SxProps } from "@mui/system";
 
 // if activeEditor, the letters are visible and textarea is editable
 // if inactiveEditor, the letters are invisible, and textarea is not editable
@@ -86,19 +88,30 @@ const lineConstraints: ILineConstraintDict = {
 const LineInput = () => {
     const { socket } = useSocket();
 
-    const [ anchorEl, setAnchorEl ] = React.useState<null | HTMLElement>(null);
-    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorEl(anchorEl
-            ? null
-            : event.currentTarget);
+    const handleLeave = () => {
+        socket.emit("leave");
     };
-    const handleClose = () => {
-        setAnchorEl(null);
+    const [ open, setOpen ] = React.useState(false);
+    const handleClick = () => {
+        setOpen((prev) => !prev);
     };
-    const open = Boolean(anchorEl);
-    const id = open
-        ? "simple-popper"
-        : undefined;
+    const handleClickAway = () => {
+        setOpen(false);
+    };
+    const styles: SxProps = {
+        position: "absolute",
+        top: 60,
+        right: 0,
+        left: 0,
+        zIndex: 1,
+        border: "1px solid",
+        p: 1,
+        bgcolor: "background.paper",
+        width: 170,
+        marginRight: 0,
+        marginLeft: "auto",
+        fontFamily: "sans-serif",
+    };
 
     const [ lineLength, setLineLength ] = React.useState<LineLength>(LineLength.short);
     const [ minCharsOnLineOne, setMinCharsOnLineOne ] = React.useState<number>(lineConstraints[LineLength.short]["minCharsOnLineOne"]);
@@ -498,28 +511,32 @@ const LineInput = () => {
                         </Button>
                     </div>
                 </div>
-                <Fab
-                    size="small"
-                    color="primary"
-                    aria-label="complete"
-                    sx={{position: "absolute", right: "60px", top: "10px"}}
-                    onClick={handleClick}
-                    disabled={!poemDoneVisible}
-                >
-                    <PlaylistAddCheckIcon />
-                </Fab>
-                <Popper
-                    anchorEl={anchorEl}
-                    id={id}
-                    open={open}
-                >
-                    <p style={{margin: "1em"}}><WarningIcon />
-                        Want to complete the poem early?</p>
-                    <Stack spacing={2} direction="row" style={{ justifyContent: "center", marginBottom: "1em" }}>
-                        <Button variant="outlined" onClick={handleClose}>No</Button>
-                        <Button variant="contained" onClick={completePoem}>Yes</Button>
-                    </Stack>
-                </Popper>
+                <ClickAwayListener onClickAway={handleClickAway}>
+                    <Box>
+                        <Fab
+                            size="small"
+                            color="primary"
+                            aria-label="complete"
+                            sx={{ position: "absolute", right: "60px", top: "10px" }}
+                            onClick={handleClick}
+                            disabled={!poemDoneVisible}
+                        >
+                            <PlaylistAddCheckIcon />
+                        </Fab>
+                        {open
+                            ? (
+                                <Box sx={styles}>
+                                    <p style={{ margin: "0 0 0.5em 0" }}><WarningIcon />
+                                        Want to complete the poem early?</p>
+                                    <Stack spacing={2} direction="row" style={{ justifyContent: "center" }}>
+                                        <Button variant="outlined" onClick={handleClickAway}>No</Button>
+                                        <Button variant="contained" onClick={completePoem}>Yes</Button>
+                                    </Stack>
+                                </Box>
+                            )
+                            : null}
+                    </Box>
+                </ClickAwayListener>
             </div>
         </div>
     );
