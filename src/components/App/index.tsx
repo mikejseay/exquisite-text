@@ -72,7 +72,7 @@ export default function App() {
         <div style={possibleSocket}>
             <div style={app}>
                 <header style={appHeader}>
-                    <Menu />
+                    {/*<Menu />*/}
                     <Tutorial />
                     <div style={appTitle}>Exquisite Text</div>
                     {/*<GameState />*/}
