@@ -5,7 +5,7 @@ import {
 } from "../LineInput/styles";
 import LogoutIcon from "@mui/icons-material/Logout";
 import Fab from "@mui/material/Fab";
-import Popover from "@mui/material/Popover";
+import Popper from "@mui/material/Popper";
 import WarningIcon from "@mui/icons-material/Warning";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
@@ -17,16 +17,18 @@ function Leave() {
         socket.emit("leave");
     };
 
-    const [ anchorEl, setAnchorEl ] = React.useState<Element | null>(null);
-    const handleClick = (event: { currentTarget: React.SetStateAction<Element | null> }) => {
-        setAnchorEl(event.currentTarget);
+    const [ anchorEl, setAnchorEl ] = React.useState<null | HTMLElement>(null);
+    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorEl(anchorEl
+            ? null
+            : event.currentTarget);
     };
     const handleClose = () => {
         setAnchorEl(null);
     };
-    const isOpen = Boolean(anchorEl);
-    const id = isOpen
-        ? "simple-popover"
+    const open = Boolean(anchorEl);
+    const id = open
+        ? "simple-popper"
         : undefined;
 
     return (
@@ -40,15 +42,10 @@ function Leave() {
             >
                 <LogoutIcon />
             </Fab>
-            <Popover
+            <Popper
                 anchorEl={anchorEl}
-                anchorOrigin={{
-                    horizontal: "left",
-                    vertical: "bottom",
-                }}
                 id={id}
-                onClose={handleClose}
-                open={isOpen}
+                open={open}
             >
                 <p style={{margin: "1em"}}><WarningIcon />
                     Want to leave the room?</p>
@@ -56,7 +53,7 @@ function Leave() {
                     <Button variant="outlined" onClick={handleClose}>No</Button>
                     <Button variant="contained" onClick={handleLeave}>Yes</Button>
                 </Stack>
-            </Popover>
+            </Popper>
         </div>
     );
 }

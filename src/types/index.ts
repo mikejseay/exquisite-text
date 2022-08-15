@@ -54,7 +54,6 @@ export interface IObjectStringToString {
 }
 
 export interface ServerToClientEvents {
-    clearLines: () => void;
     line: (a: ILine) => void;
     lineEdit: (a: string) => void;
     lineEditSize: (a: number, b: number) => void;
@@ -79,7 +78,6 @@ export interface ClientToServerEvents {
     lineEdit: (a: string) => void;
     line: (a: string) => void;
     poemDone: () => void;
-    clearLines: () => void;
     getLines: () => void;
     getPoems: () => void;
 

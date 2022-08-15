@@ -315,26 +315,17 @@ class Spectator extends Member {
     setReceive() {
         super.setReceive();
         this.socket.on("getLines", () => this.getAllPoemLines());
-        // this.socket.on("clearLines", () => this.clearLines());
     }
 
     unsetReceive() {
-        console.log("spectator unset reached for", this.name);
         super.unsetReceive();
         this.socket.removeAllListeners("getLines");
-        // this.socket.removeAllListeners("clearLines", () => this.clearLines());
-    }
-
-    clearLines() {
-        this.io.to(this.socket.id).emit("clearLines");
     }
 
     getAllPoemLines() {
         const thisRoom = roomIDToRoom.get(this.roomID);
         for (const thisEditor of thisRoom.editors.values()) {
-            console.log("sending", thisEditor.name);
             for (const thisPoem of thisEditor.poemQueue) {
-                console.log("sending", thisEditor.name, "poem", thisPoem.poemID);
                 thisPoem.sendAllLinesTo(this.socket.id);
             }
         }
@@ -463,7 +454,6 @@ class Editor extends Member {
 
     currentlyOnLastLine() {
         const thisPoem = this.poemQueue[0];
-        console.log(this.name, "currentlyOnLastLine");
         if (thisPoem) {
             const weThinkCurrentLength = thisPoem.lines.length;
             console.log("we think the poem has ", weThinkCurrentLength, "of", thisPoem.targetLines - 2);

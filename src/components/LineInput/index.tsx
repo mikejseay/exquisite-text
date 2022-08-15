@@ -31,7 +31,7 @@ import {
 } from "../../types";
 import WarningIcon from "@mui/icons-material/Warning";
 import Stack from "@mui/material/Stack";
-import Popover from "@mui/material/Popover";
+import Popper from "@mui/material/Popper";
 
 // if activeEditor, the letters are visible and textarea is editable
 // if inactiveEditor, the letters are invisible, and textarea is not editable
@@ -85,16 +85,19 @@ const lineConstraints: ILineConstraintDict = {
 
 const LineInput = () => {
     const { socket } = useSocket();
-    const [ anchorEl, setAnchorEl ] = React.useState<Element | null>(null);
-    const handleClick = (event: { currentTarget: React.SetStateAction<Element | null> }) => {
-        setAnchorEl(event.currentTarget);
+
+    const [ anchorEl, setAnchorEl ] = React.useState<null | HTMLElement>(null);
+    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorEl(anchorEl
+            ? null
+            : event.currentTarget);
     };
     const handleClose = () => {
         setAnchorEl(null);
     };
-    const isOpen = Boolean(anchorEl);
-    const id = isOpen
-        ? "simple-popover"
+    const open = Boolean(anchorEl);
+    const id = open
+        ? "simple-popper"
         : undefined;
 
     const [ lineLength, setLineLength ] = React.useState<LineLength>(LineLength.short);
@@ -505,15 +508,10 @@ const LineInput = () => {
                 >
                     <PlaylistAddCheckIcon />
                 </Fab>
-                <Popover
+                <Popper
                     anchorEl={anchorEl}
-                    anchorOrigin={{
-                        horizontal: "left",
-                        vertical: "bottom",
-                    }}
                     id={id}
-                    onClose={handleClose}
-                    open={isOpen}
+                    open={open}
                 >
                     <p style={{margin: "1em"}}><WarningIcon />
                         Want to complete the poem early?</p>
@@ -521,7 +519,7 @@ const LineInput = () => {
                         <Button variant="outlined" onClick={handleClose}>No</Button>
                         <Button variant="contained" onClick={completePoem}>Yes</Button>
                     </Stack>
-                </Popover>
+                </Popper>
             </div>
         </div>
     );
