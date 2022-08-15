@@ -26,7 +26,7 @@ code {
 
 @media (prefers-color-scheme: dark) {
     body {
-        filter: invert(100%);
+        filter: invert(100%) hue-rotate(2.25rad);
         background-color: #000;
     }
 }
