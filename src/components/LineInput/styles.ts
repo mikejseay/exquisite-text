@@ -15,6 +15,11 @@ export const activeInput: React.CSSProperties = {
     width: "100%",
 };
 
+export const accordionDiv: React.CSSProperties = {
+    margin: "1em auto",
+    maxWidth: "24em",
+};
+
 export const accordionTitle: React.CSSProperties = {
     margin: "auto",
 };
@@ -95,15 +100,6 @@ export const helpMessageStyle: React.CSSProperties = {
     fontFamily: "sans-serif",
     height: "1.2em",
     whiteSpace: "pre-line",
-};
-
-export const accordionButton: React.CSSProperties = {
-    textAlign: "center",
-};
-
-export const accordionText: React.CSSProperties = {
-    fontFamily: "sans-serif",
-    marginBottom: "1em",
 };
 
 export const lineInputContainer: React.CSSProperties = {

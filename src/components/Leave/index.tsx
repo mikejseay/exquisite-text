@@ -1,63 +1,62 @@
 import * as React from "react";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import Button from "@mui/material/Button";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-
-import Typography from "@mui/material/Typography";
-import AccordionDetails from "@mui/material/AccordionDetails";
-
 import { useSocket } from "../App";
 import {
-    accordionButton,
-    accordionText,
-    accordionTitle,
+    accordionDiv,
 } from "../LineInput/styles";
+import LogoutIcon from "@mui/icons-material/Logout";
+import Fab from "@mui/material/Fab";
+import Popover from "@mui/material/Popover";
+import WarningIcon from "@mui/icons-material/Warning";
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
 
 function Leave() {
     const { socket } = useSocket();
 
-    const handleLeaveButton = () => {
+    const handleLeave = () => {
         socket.emit("leave");
     };
 
+    const [ anchorEl, setAnchorEl ] = React.useState<Element | null>(null);
+    const handleClick = (event: { currentTarget: React.SetStateAction<Element | null> }) => {
+        setAnchorEl(event.currentTarget);
+    };
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+    const isOpen = Boolean(anchorEl);
+    const id = isOpen
+        ? "simple-popover"
+        : undefined;
+
     return (
-        <div className={"leave-game-accordion"} style={{ marginTop: "1em" }}>
-            <Accordion>
-                <AccordionSummary
-                    aria-controls="panel1a-content"
-                    expandIcon={<ExpandMoreIcon />}
-                    id="panel1a-header"
-                >
-                    <div
-                        className={"leave-game-accordion-title"}
-                        style={accordionTitle}
-                    >
-                        <Typography>
-                            <strong>Need to leave the game early?</strong>
-                        </Typography>
-                    </div>
-                </AccordionSummary>
-                <AccordionDetails>
-                    <div
-                        className={"leave-game-accordion-text"}
-                        style={accordionText}
-                    >
-                        Only press this button if you are absolutely certain you want to leave!
-                    </div>
-                    <div
-                        className={"leave-game-button"}
-                        style={accordionButton}
-                    >
-                        <Button
-                            onClick={handleLeaveButton}
-                            variant="contained"
-                        >
-                            Leave Game
-                        </Button>
-                    </div>
-                </AccordionDetails>
-            </Accordion>
+        <div className={"leave-game-accordion"} style={accordionDiv}>
+            <Fab
+                size="small"
+                color="secondary"
+                aria-label="logout"
+                sx={{position: "absolute", right: "10px", top: "10px"}}
+                onClick={handleClick}
+            >
+                <LogoutIcon />
+            </Fab>
+            <Popover
+                anchorEl={anchorEl}
+                anchorOrigin={{
+                    horizontal: "left",
+                    vertical: "bottom",
+                }}
+                id={id}
+                onClose={handleClose}
+                open={isOpen}
+            >
+                <p style={{margin: "1em"}}><WarningIcon />
+                    Want to leave the room?</p>
+                <Stack spacing={2} direction="row" style={{ justifyContent: "center", marginBottom: "1em" }}>
+                    <Button variant="outlined" onClick={handleClose}>No</Button>
+                    <Button variant="contained" onClick={handleLeave}>Yes</Button>
+                </Stack>
+            </Popover>
         </div>
     );
 }

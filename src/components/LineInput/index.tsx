@@ -1,19 +1,13 @@
 /* eslint-disable sort-keys */
-import Accordion from "@mui/material/Accordion";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import AccordionSummary from "@mui/material/AccordionSummary";
 import Button from "@mui/material/Button";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import Typography from "@mui/material/Typography";
+import Fab from "@mui/material/Fab";
+import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 import isNil from "lodash/isNil";
 import * as React from "react";
 
 import { useSocket } from "../App";
 import "./LineInput.css";
 import {
-    accordionButton,
-    accordionText,
-    accordionTitle,
     activeInput,
     caret,
     errorMessage,
@@ -35,6 +29,9 @@ import {
     IGameSettingsInfo,
     LineLength,
 } from "../../types";
+import WarningIcon from "@mui/icons-material/Warning";
+import Stack from "@mui/material/Stack";
+import Popover from "@mui/material/Popover";
 
 // if activeEditor, the letters are visible and textarea is editable
 // if inactiveEditor, the letters are invisible, and textarea is not editable
@@ -88,6 +85,17 @@ const lineConstraints: ILineConstraintDict = {
 
 const LineInput = () => {
     const { socket } = useSocket();
+    const [ anchorEl, setAnchorEl ] = React.useState<Element | null>(null);
+    const handleClick = (event: { currentTarget: React.SetStateAction<Element | null> }) => {
+        setAnchorEl(event.currentTarget);
+    };
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+    const isOpen = Boolean(anchorEl);
+    const id = isOpen
+        ? "simple-popover"
+        : undefined;
 
     const [ lineLength, setLineLength ] = React.useState<LineLength>(LineLength.short);
     const [ minCharsOnLineOne, setMinCharsOnLineOne ] = React.useState<number>(lineConstraints[LineLength.short]["minCharsOnLineOne"]);
@@ -487,48 +495,33 @@ const LineInput = () => {
                         </Button>
                     </div>
                 </div>
-                {poemDoneVisible && (
-                    <div
-                        className={"done-poem-accordion"}
-                    >
-                        <Accordion>
-                            <AccordionSummary
-                                expandIcon={<ExpandMoreIcon />}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
-                            >
-                                <div
-                                    className={"done-poem-accordion-title"}
-                                    style={accordionTitle}
-                                >
-                                    <Typography>
-                                        <strong>Does the poem seem like it is done?</strong>
-                                    </Typography>
-                                </div>
-                            </AccordionSummary>
-                            <AccordionDetails>
-                                <div
-                                    className={"done-poem-accordion-text"}
-                                    style={accordionText}
-                                >
-                  Only press this button if you are absolutely certain the poem
-                  is done!
-                                </div>
-                                <div
-                                    className={"done-poem-button"}
-                                    style={accordionButton}
-                                >
-                                    <Button
-                                        variant={"contained"}
-                                        onClick={completePoem}
-                                    >
-                    Complete Poem
-                                    </Button>
-                                </div>
-                            </AccordionDetails>
-                        </Accordion>
-                    </div>
-                )}
+                <Fab
+                    size="small"
+                    color="primary"
+                    aria-label="complete"
+                    sx={{position: "absolute", right: "60px", top: "10px"}}
+                    onClick={handleClick}
+                    disabled={!poemDoneVisible}
+                >
+                    <PlaylistAddCheckIcon />
+                </Fab>
+                <Popover
+                    anchorEl={anchorEl}
+                    anchorOrigin={{
+                        horizontal: "left",
+                        vertical: "bottom",
+                    }}
+                    id={id}
+                    onClose={handleClose}
+                    open={isOpen}
+                >
+                    <p style={{margin: "1em"}}><WarningIcon />
+                        Want to complete the poem early?</p>
+                    <Stack spacing={2} direction="row" style={{ justifyContent: "center", marginBottom: "1em" }}>
+                        <Button variant="outlined" onClick={handleClose}>No</Button>
+                        <Button variant="contained" onClick={completePoem}>Yes</Button>
+                    </Stack>
+                </Popover>
             </div>
         </div>
     );

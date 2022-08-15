@@ -10,9 +10,7 @@ import {
 } from "socket.io-client";
 import { v4 as uuidv4 } from "uuid";
 
-import GameState from "../GameState";
 import Tutorial from "../Tutorial";
-import Settings from "../Settings";
 import Menu from "../Menu";
 import {
     appHeader,
@@ -77,8 +75,8 @@ export default function App() {
                     <Menu />
                     <Tutorial />
                     <div style={appTitle}>Exquisite Text</div>
-                    <GameState />
-                    <Settings />
+                    {/*<GameState />*/}
+                    {/*<Settings />*/}
                 </header>
                 <Outlet context={{ socket }} />
             </div>

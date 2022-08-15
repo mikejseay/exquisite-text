@@ -319,6 +319,11 @@ class Spectator extends Member {
         this.socket.on("getLines", () => this.getAllPoemLines());
     }
 
+    unsetReceive() {
+        super.unsetReceive();
+        this.socket.off("getLines", () => this.getAllPoemLines());
+    }
+
     getAllPoemLines() {
         const thisRoom = roomIDToRoom.get(this.roomID);
         for (const thisEditor of thisRoom.editors.values()) {
@@ -373,10 +378,12 @@ class Editor extends Member {
         thisRoom.removeEditor(this.deviceID);
 
         // hand off any poems in your queue to the next person
-        const nextEditor = thisRoom.editors.get(this.targetEditorID);
-        nextEditor.poemQueue.push(...this.poemQueue);
-        if (!nextEditor.isCurrentlyEditing) {
-            nextEditor.possibleStartNewTurn();
+        if (thisRoom.gameOngoing) {
+            const nextEditor = thisRoom.editors.get(this.targetEditorID);
+            nextEditor.poemQueue.push(...this.poemQueue);
+            if (!nextEditor.isCurrentlyEditing) {
+                nextEditor.possibleStartNewTurn();
+            }
         }
 
         // trigger the room to reorganize the editors
@@ -395,6 +402,16 @@ class Editor extends Member {
         this.socket.on("passTurn", (firstPart, secondPart) => this.handlePassTurn(firstPart, secondPart));
         this.socket.on("lastLine", (value) => this.handleLastLine(value)); // whenever a new line has been submitted into the poem.
         this.socket.on("getLastLineStatus", () => this.requestLastLineStatus());
+    }
+
+    unsetReceive() {
+        super.unsetReceive();
+        this.socket.off("getLineEdit", () => this.requestLineEdit()); // initial populate
+        this.socket.off("lineEdit", (value) => this.handleLineEdit(value));  //whenever the input box is edited.
+        this.socket.off("getEditorActive", () => this.requestActivity());
+        this.socket.off("passTurn", (firstPart, secondPart) => this.handlePassTurn(firstPart, secondPart));
+        this.socket.off("lastLine", (value) => this.handleLastLine(value)); // whenever a new line has been submitted into the poem.
+        this.socket.off("getLastLineStatus", () => this.requestLastLineStatus());
     }
 
     requestLineEdit() {
@@ -568,6 +585,12 @@ class VIPEditor extends Editor {
         super.setReceive();
         this.socket.on("alterGameSettings", (value) => this.alterGameSettings(value));
         this.socket.on("startGame", () => this.broadcastStartGame());
+    }
+
+    unsetReceive() {
+        super.unsetReceive();
+        this.socket.off("alterGameSettings", (value) => this.alterGameSettings(value));
+        this.socket.off("startGame", () => this.broadcastStartGame());
     }
 
     alterGameSettings(gameSettings: IGameSettingsInfo) {
