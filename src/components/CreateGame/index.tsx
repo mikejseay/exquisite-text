@@ -37,9 +37,9 @@ function CreateGame() {
                 <Box>
                     <Fab
                         size="small"
-                        color="secondary"
+                        color="primary"
                         aria-label="new"
-                        sx={{position: "absolute", left: "55px", top: "10px"}}
+                        sx={{position: "absolute", left: "54px", top: "10px"}}
                         onClick={handleClick}
                     >
                         <GamepadIcon />

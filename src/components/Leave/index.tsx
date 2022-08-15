@@ -28,8 +28,7 @@ function Leave() {
     const styles: SxProps = {
         position: "absolute",
         top: 60,
-        right: 0,
-        left: 0,
+        right: 10,
         zIndex: 1,
         border: "1px solid",
         p: 1,
