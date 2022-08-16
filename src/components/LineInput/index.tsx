@@ -1,19 +1,13 @@
 /* eslint-disable sort-keys */
-import Accordion from "@mui/material/Accordion";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import AccordionSummary from "@mui/material/AccordionSummary";
 import Button from "@mui/material/Button";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import Typography from "@mui/material/Typography";
+import Fab from "@mui/material/Fab";
+import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 import isNil from "lodash/isNil";
 import * as React from "react";
 
 import { useSocket } from "../App";
 import "./LineInput.css";
 import {
-    accordionButton,
-    accordionText,
-    accordionTitle,
     activeInput,
     caret,
     errorMessage,
@@ -35,6 +29,11 @@ import {
     IGameSettingsInfo,
     LineLength,
 } from "../../types";
+import WarningIcon from "@mui/icons-material/Warning";
+import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
+import { ClickAwayListener } from "@mui/material";
+import { SxProps } from "@mui/system";
 
 // if activeEditor, the letters are visible and textarea is editable
 // if inactiveEditor, the letters are invisible, and textarea is not editable
@@ -88,6 +87,30 @@ const lineConstraints: ILineConstraintDict = {
 
 const LineInput = () => {
     const { socket } = useSocket();
+
+    const handleLeave = () => {
+        socket.emit("leave");
+    };
+    const [ open, setOpen ] = React.useState(false);
+    const handleClick = () => {
+        setOpen((prev) => !prev);
+    };
+    const handleClickAway = () => {
+        setOpen(false);
+    };
+    const styles: SxProps = {
+        position: "absolute",
+        top: 80,
+        right: "calc(50vw - 40ch - 10px)",
+        zIndex: 1,
+        border: "1px solid",
+        p: 1,
+        bgcolor: "background.paper",
+        width: 170,
+        marginRight: 0,
+        marginLeft: "auto",
+        fontFamily: "sans-serif",
+    };
 
     const [ lineLength, setLineLength ] = React.useState<LineLength>(LineLength.short);
     const [ minCharsOnLineOne, setMinCharsOnLineOne ] = React.useState<number>(lineConstraints[LineLength.short]["minCharsOnLineOne"]);
@@ -487,48 +510,32 @@ const LineInput = () => {
                         </Button>
                     </div>
                 </div>
-                {poemDoneVisible && (
-                    <div
-                        className={"done-poem-accordion"}
-                    >
-                        <Accordion>
-                            <AccordionSummary
-                                expandIcon={<ExpandMoreIcon />}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
-                            >
-                                <div
-                                    className={"done-poem-accordion-title"}
-                                    style={accordionTitle}
-                                >
-                                    <Typography>
-                                        <strong>Does the poem seem like it is done?</strong>
-                                    </Typography>
-                                </div>
-                            </AccordionSummary>
-                            <AccordionDetails>
-                                <div
-                                    className={"done-poem-accordion-text"}
-                                    style={accordionText}
-                                >
-                  Only press this button if you are absolutely certain the poem
-                  is done!
-                                </div>
-                                <div
-                                    className={"done-poem-button"}
-                                    style={accordionButton}
-                                >
-                                    <Button
-                                        variant={"contained"}
-                                        onClick={completePoem}
-                                    >
-                    Complete Poem
-                                    </Button>
-                                </div>
-                            </AccordionDetails>
-                        </Accordion>
-                    </div>
-                )}
+                <ClickAwayListener onClickAway={handleClickAway}>
+                    <Box>
+                        <Fab
+                            size="small"
+                            color="primary"
+                            aria-label="complete"
+                            sx={{ position: "absolute", right: "calc(50vw - 40ch - 10px)", top: "20px" }}
+                            onClick={handleClick}
+                            disabled={!poemDoneVisible}
+                        >
+                            <PlaylistAddCheckIcon />
+                        </Fab>
+                        {open
+                            ? (
+                                <Box sx={styles}>
+                                    <p style={{ margin: "0 0 0.5em 0" }}><WarningIcon />
+                                        Want to complete the poem early?</p>
+                                    <Stack spacing={2} direction="row" style={{ justifyContent: "center" }}>
+                                        <Button variant="outlined" onClick={handleClickAway}>No</Button>
+                                        <Button variant="contained" onClick={completePoem}>Yes</Button>
+                                    </Stack>
+                                </Box>
+                            )
+                            : null}
+                    </Box>
+                </ClickAwayListener>
             </div>
         </div>
     );

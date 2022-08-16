@@ -220,15 +220,13 @@ class Member {
     }
 
     unsetReceive() {
-        this.socket.off("getUserTableInfo", () => this.requestUserTableInfo());
-        this.socket.off("getGameSettingsInfo", () => this.requestGameSettingsInfo());
-        this.socket.off("getSettingsEnabled", () => this.requestSettingsEnabled());
-        this.socket.off("getPoems", () => this.getPoems()); // initial load
-        this.socket.off("leave", () => this.leaveRoom());
-
-        // These are all reserved events
-        this.socket.off("disconnect", () => this.disconnect());
-        this.socket.off("disconnecting", () => this.disconnecting());
+        this.socket.removeAllListeners("getUserTableInfo");
+        this.socket.removeAllListeners("getGameSettingsInfo");
+        this.socket.removeAllListeners("getSettingsEnabled");
+        this.socket.removeAllListeners("getPoems");
+        this.socket.removeAllListeners("leave");
+        this.socket.removeAllListeners("disconnect");
+        this.socket.removeAllListeners("disconnecting");
     }
 
     requestUserTableInfo() {
@@ -319,6 +317,11 @@ class Spectator extends Member {
         this.socket.on("getLines", () => this.getAllPoemLines());
     }
 
+    unsetReceive() {
+        super.unsetReceive();
+        this.socket.removeAllListeners("getLines");
+    }
+
     getAllPoemLines() {
         const thisRoom = roomIDToRoom.get(this.roomID);
         for (const thisEditor of thisRoom.editors.values()) {
@@ -373,10 +376,12 @@ class Editor extends Member {
         thisRoom.removeEditor(this.deviceID);
 
         // hand off any poems in your queue to the next person
-        const nextEditor = thisRoom.editors.get(this.targetEditorID);
-        nextEditor.poemQueue.push(...this.poemQueue);
-        if (!nextEditor.isCurrentlyEditing) {
-            nextEditor.possibleStartNewTurn();
+        if (thisRoom.gameOngoing) {
+            const nextEditor = thisRoom.editors.get(this.targetEditorID);
+            nextEditor.poemQueue.push(...this.poemQueue);
+            if (!nextEditor.isCurrentlyEditing) {
+                nextEditor.possibleStartNewTurn();
+            }
         }
 
         // trigger the room to reorganize the editors
@@ -395,6 +400,16 @@ class Editor extends Member {
         this.socket.on("passTurn", (firstPart, secondPart) => this.handlePassTurn(firstPart, secondPart));
         this.socket.on("lastLine", (value) => this.handleLastLine(value)); // whenever a new line has been submitted into the poem.
         this.socket.on("getLastLineStatus", () => this.requestLastLineStatus());
+    }
+
+    unsetReceive() {
+        super.unsetReceive();
+        this.socket.removeAllListeners("getLineEdit");
+        this.socket.removeAllListeners("lineEdit");
+        this.socket.removeAllListeners("getEditorActive");
+        this.socket.removeAllListeners("passTurn");
+        this.socket.removeAllListeners("lastLine");
+        this.socket.removeAllListeners("getLastLineStatus");
     }
 
     requestLineEdit() {
@@ -439,7 +454,6 @@ class Editor extends Member {
 
     currentlyOnLastLine() {
         const thisPoem = this.poemQueue[0];
-        console.log(this.name, "currentlyOnLastLine");
         if (thisPoem) {
             const weThinkCurrentLength = thisPoem.lines.length;
             console.log("we think the poem has ", weThinkCurrentLength, "of", thisPoem.targetLines - 2);
@@ -568,6 +582,12 @@ class VIPEditor extends Editor {
         super.setReceive();
         this.socket.on("alterGameSettings", (value) => this.alterGameSettings(value));
         this.socket.on("startGame", () => this.broadcastStartGame());
+    }
+
+    unsetReceive() {
+        super.unsetReceive();
+        this.socket.removeAllListeners("alterGameSettings");
+        this.socket.removeAllListeners("startGame");
     }
 
     alterGameSettings(gameSettings: IGameSettingsInfo) {

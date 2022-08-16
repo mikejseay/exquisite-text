@@ -4,11 +4,11 @@ import GameTransition from "../../components/GameTransition";
 import Leave from "../../components/Leave";
 import LineInput from "../../components/LineInput";
 import Poems from "../../components/Poems";
-import { appBody } from "./styles";
+import { gameContainer } from "./styles";
 
 function Game() {
     return (
-        <div style={appBody}>
+        <div style={gameContainer} className={"game-container"}>
             <LineInput />
             <Leave />
             <Poems />

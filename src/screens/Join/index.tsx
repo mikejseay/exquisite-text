@@ -5,6 +5,7 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { useSocket } from "../../components/App";
+import CreateGame from "../../components/CreateGame";
 
 export default function Join() {
     const navigate = useNavigate();
@@ -122,6 +123,7 @@ export default function Join() {
                 }}>
                 {joinErrorMessage}
             </div>
+            <CreateGame />
         </div>
     );
 }
