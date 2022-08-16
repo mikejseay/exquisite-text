@@ -11,7 +11,7 @@ import {
 import { v4 as uuidv4 } from "uuid";
 
 import Tutorial from "../Tutorial";
-import Menu from "../Menu";
+// import Menu from "../Menu";
 import {
     appHeader,
     appTitle,
@@ -23,6 +23,8 @@ import type {
     ClientToServerEvents,
     ServerToClientEvents,
 } from "../../types";
+import Paper from "@mui/material/Paper";
+
 
 const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
 const serverPath: URL["pathname"] | URL["href"] = isDevelopment
@@ -69,8 +71,8 @@ export default function App() {
     }
 
     return (
-        <div style={possibleSocket}>
-            <div style={app}>
+        <div style={possibleSocket} className={"possible-socket"}>
+            <Paper elevation={3} style={app} className={"app-container"}>
                 <header style={appHeader}>
                     {/*<Menu />*/}
                     <Tutorial />
@@ -79,7 +81,7 @@ export default function App() {
                     {/*<Settings />*/}
                 </header>
                 <Outlet context={{ socket }} />
-            </div>
+            </Paper>
         </div>
     );
 }

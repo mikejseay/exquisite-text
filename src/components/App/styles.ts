@@ -18,13 +18,15 @@ export const appTitle: React.CSSProperties = {
 };
 
 export const app: React.CSSProperties = {
-    height: "100%",
-    margin: "0 auto",
-    width: "100%",
+    height: "calc(100vh - 16px)",
+    width: "calc(100vw - 16px)",
+    maxWidth: "90ch",
+    margin: "auto",
 };
 
 export const possibleSocket: React.CSSProperties = {
+    display: "flex",
     height: "100%",
     margin: "0 auto",
-    width: "100%",
+    // width: "calc(100vw - 1px)",
 };

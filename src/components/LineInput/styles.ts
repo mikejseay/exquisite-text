@@ -13,11 +13,14 @@ export const activeInput: React.CSSProperties = {
     margin: "auto",
     maxWidth: "60ch",
     width: "100%",
+    // position: "fixed",
+    // left: "50%",
+    // transform: "translateX(-50%)",
 };
 
 export const accordionDiv: React.CSSProperties = {
     margin: "1em auto",
-    maxWidth: "24em",
+    maxWidth: "60ch",
 };
 
 export const accordionTitle: React.CSSProperties = {
@@ -104,7 +107,7 @@ export const helpMessageStyle: React.CSSProperties = {
 
 export const lineInputContainer: React.CSSProperties = {
     marginTop: "2em",
-    width: "100%",
+    // width: "100%",
 };
 
 export const mainInputContainer: React.CSSProperties = {
@@ -112,9 +115,9 @@ export const mainInputContainer: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
     flexWrap: "nowrap",
-    height: "100%",
+    // height: "100%",
     justifyContent: "space-between",
-    width: "100%",
+    // width: "100%",
 };
 
 export const inactiveInput: React.CSSProperties = {

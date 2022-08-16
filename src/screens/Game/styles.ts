@@ -1,13 +1,13 @@
 import * as React from "react";
 
-export const appBody: React.CSSProperties = {
+export const gameContainer: React.CSSProperties = {
     alignItems: "center",
     display: "flex",
     flexDirection: "column",
     flexWrap: "nowrap",
     fontFamily: "'Esteban', serif",
     fontSize: "18px",
-    height: "calc(100vh - 60px)",
+    height: "calc(100vh - 76px)",
     justifyContent: "flex-start",
-    width: "99vw",
+    // width: "99vw",
 };

@@ -19,8 +19,8 @@ function CreateGame() {
     };
     const styles: SxProps = {
         position: "absolute",
-        top: 60,
-        left: 10,
+        top: 80,
+        left: "calc(50vw - 40ch - 10px)",
         zIndex: 1,
         border: "1px solid",
         p: 1,
@@ -39,7 +39,7 @@ function CreateGame() {
                         size="small"
                         color="primary"
                         aria-label="new"
-                        sx={{position: "absolute", left: "54px", top: "10px"}}
+                        sx={{position: "absolute", left: "calc(50vw - 40ch - 20px)", top: "20px"}}
                         onClick={handleClick}
                     >
                         <GamepadIcon />

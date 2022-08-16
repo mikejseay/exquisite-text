@@ -100,8 +100,8 @@ const LineInput = () => {
     };
     const styles: SxProps = {
         position: "absolute",
-        top: 60,
-        right: 60,
+        top: 80,
+        right: "calc(50vw - 40ch - 10px)",
         zIndex: 1,
         border: "1px solid",
         p: 1,
@@ -516,7 +516,7 @@ const LineInput = () => {
                             size="small"
                             color="primary"
                             aria-label="complete"
-                            sx={{ position: "absolute", right: "60px", top: "10px" }}
+                            sx={{ position: "absolute", right: "calc(50vw - 40ch - 10px)", top: "20px" }}
                             onClick={handleClick}
                             disabled={!poemDoneVisible}
                         >
