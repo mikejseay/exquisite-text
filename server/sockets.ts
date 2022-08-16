@@ -253,6 +253,12 @@ class Member {
 
         console.log(this.socket.id, "disconnected");
 
+        // if in the room but the game hasn't started yet (lobby), remove them
+        const thisRoom = roomIDToRoom.get(this.roomID);
+        if (!thisRoom.gameOngoing) {
+            this.leaveRoom();
+        }
+
         // socketIDToDeviceID
         // deviceIDToSocketID
         // roomIDToRoom
@@ -351,6 +357,7 @@ class Editor extends Member {
         this.turnPosition = 0;
         this.poemQueue = [];
         this.isCurrentlyEditing = false;
+        this.lastActivity = new Date();
     }
 
     prepareForGame() {
