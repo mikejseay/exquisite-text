@@ -38,7 +38,7 @@ const checkActivityInterval = 30000; // ms
 async function populatePoems() {
     const dbPoems = await returnPoems(retrieveNPoemsAtStart) as Array<IPoem>;
     for (const { id, createdAt, title, content } of dbPoems) {
-        poems.add({
+        publicPoems.add({
             content,
             createdAt,
             id,
@@ -53,7 +53,8 @@ const socketIDToDeviceID: IObjectStringToString = {};
 const deviceIDToSocketID: IObjectStringToString = {};  // unique on device. only latest is present
 const deviceIDToRoomID: IObjectStringToString = {};
 const roomIDToRoom: Map<string, any> = new Map();
-const poems: Set<IPoem> = new Set();
+const roomIDToHost: Map<string, Host> = new Map();
+const publicPoems: Set<IPoem> = new Set();
 
 class Room {
     // represents a socket.io room and a game of Exquisite Text
@@ -68,6 +69,7 @@ class Room {
     gameSettings: IGameSettingsInfo;
     gameOngoing: boolean;
     nPoemsInRotation: number;
+    activityInterval: any;
 
     constructor(
         io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
@@ -87,7 +89,7 @@ class Room {
         this.nPoemsInRotation = 0;
 
         // check user activity every 30 seconds
-        setInterval(this.checkActivity.bind(this), checkActivityInterval);
+        this.activityInterval = setInterval(this.checkActivity.bind(this), checkActivityInterval);
     }
 
     addEditor(deviceUUID: string, editorObj: Editor) {
@@ -163,7 +165,7 @@ class Room {
 
     checkActivity() {
         const currentTime = Date.now();
-        console.log("checking activity at", currentTime);
+        console.log(this.roomID, "checking activity at", currentTime);
         for (const thisSpectator of this.spectators.values()) {
             if (!thisSpectator.connected && (currentTime - thisSpectator.lastActivity) > activityTimeout) {
                 thisSpectator.leaveRoom();
@@ -177,7 +179,6 @@ class Room {
             }
         }
     }
-
 }
 
 class Member {
@@ -283,12 +284,14 @@ class Member {
 
         // if in the room but the game hasn't started yet (lobby), remove them
         const thisRoom = roomIDToRoom.get(this.roomID);
-        if (!thisRoom.gameOngoing) {
+        if (!isNil(thisRoom) && !thisRoom.gameOngoing) {
             this.leaveRoom();
         }
 
         // socketIDToDeviceID
+        delete socketIDToDeviceID[this.socket.id];
         // deviceIDToSocketID
+        delete deviceIDToSocketID[this.deviceID];
         // roomIDToRoom
 
         // do cleanup intelligently
@@ -312,7 +315,7 @@ class Member {
 
     getPoems() {
         // this is used to bring a new user up to date on what's happening
-        poems.forEach((poem) => this.sendPoem(poem));
+        publicPoems.forEach((poem) => this.sendPoem(poem));
     }
 
 }
@@ -573,13 +576,38 @@ class Editor extends Member {
         // if all editors' poem queues are empty
         // remove each of the editor/spectator deviceIDs from deviceIDToRoomID
         if (thisRoom.nPoemsInRotation === 0) {
-            console.log("no poems left to finish; forget everyone's device");
-            for (const editorID of thisRoom.editors.keys()) {
+            console.log("no poems left to finish; forget everyone's device, delete room and poem globals");
+            thisRoom.gameOngoing = false;
+            for (const [ editorID, thisEditor ] of thisRoom.editors.entries()) {
                 delete deviceIDToRoomID[editorID];
+                // since thisRoom.editors is a map from editor's device ID to the Member this should delete the object
+                // including its socket?
+                thisEditor.connected = false;
+                delete deviceIDToRoomID[editorID];
+                thisEditor.socket.leave(this.roomID);
+                thisEditor.unsetReceive();
+                delete socketIDToDeviceID[thisEditor.socket.id];
+                delete deviceIDToSocketID[editorID];
+                thisRoom.editors.delete(editorID);
             }
-            for (const spectatorID of thisRoom.spectators.keys()) {
+            for (const [ spectatorID, thisSpectator ] of thisRoom.spectators.entries()) {
                 delete deviceIDToRoomID[spectatorID];
+                thisSpectator.connected = false;
+                delete deviceIDToRoomID[spectatorID];
+                thisSpectator.socket.leave(this.roomID);
+                thisSpectator.unsetReceive();
+                delete socketIDToDeviceID[thisSpectator.socket.id];
+                delete deviceIDToSocketID[spectatorID];
+                thisRoom.spectators.delete(spectatorID);
             }
+            clearInterval(thisRoom.activityInterval);
+            roomIDToHost.delete(this.roomID);
+            roomIDToRoom.delete(this.roomID);
+            // console.log("deviceIDToRoomID", deviceIDToRoomID);
+            // console.log("roomIDToHost", roomIDToHost);
+            // console.log("roomIDToRoom", roomIDToRoom);
+            // console.log("thisRoom.editors", thisRoom.editors);
+            // console.log("thisRoom.spectators", thisRoom.spectators);
         }
     }
 
@@ -591,13 +619,16 @@ class Editor extends Member {
             id: uuidv4(),
             title: `exquisite text #${Math.round(Math.random() * 100)}`,
         };
-        poems.add(poem);
+        publicPoems.add(poem);
 
         // add the poem to the database
         storePoem(poem);
 
-        // broadcast the poem via sockets
+        // broadcast the poem to room members via sockets
         this.sendPoem(poem);
+
+        // delete the global var from public view
+        publicPoems.delete(poem);
     }
 }
 
@@ -707,6 +738,8 @@ function sockets(io: Server<ClientToServerEvents, ServerToClientEvents, InterSer
         // When a client requests a connection, the callback will create a new Connection instance
         // and pass the Socket.IO server instance and the new socket to the constructor.
 
+        // This establishes the callbacks that every socket should have access to.
+
         socket.on("recognizeDevice", (deviceID) => {
 
             console.log("new socket", socket.id, "from device", deviceID);
@@ -749,6 +782,7 @@ function sockets(io: Server<ClientToServerEvents, ServerToClientEvents, InterSer
             // notice we don't add the host device to deviceIDToRoomID
             const thisHost = new Host(io, socket, roomID, socketIDToDeviceID[socket.id], "HOST");
             thisHost.joinRoom();
+            roomIDToHost.set(roomID, thisHost);
             const thisRoom = new Room(io, socket, roomID);
             roomIDToRoom.set(roomID, thisRoom);
             console.log("room", roomID, "created with ", socket.id, "as host");

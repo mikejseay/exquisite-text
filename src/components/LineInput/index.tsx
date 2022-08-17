@@ -88,9 +88,6 @@ const lineConstraints: ILineConstraintDict = {
 const LineInput = () => {
     const { socket } = useSocket();
 
-    const handleLeave = () => {
-        socket.emit("leave");
-    };
     const [ open, setOpen ] = React.useState(false);
     const handleClick = () => {
         setOpen((prev) => !prev);
