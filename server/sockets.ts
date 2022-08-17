@@ -31,7 +31,8 @@ const defaultGameSettings: IGameSettingsInfo = {
     nPoems: 1,
     nRounds: 2,
 };
-
+const activityTimeout = 180000; // ms
+const checkActivityInterval = 30000; // ms
 
 // this function grabs some old poems to have something to show the users
 async function populatePoems() {
@@ -84,6 +85,9 @@ class Room {
         this.gameSettings = defaultGameSettings;
         this.gameOngoing = false;
         this.nPoemsInRotation = 0;
+
+        // check user activity every 30 seconds
+        setInterval(this.checkActivity.bind(this), checkActivityInterval);
     }
 
     addEditor(deviceUUID: string, editorObj: Editor) {
@@ -157,6 +161,23 @@ class Room {
         }
     }
 
+    checkActivity() {
+        const currentTime = Date.now();
+        console.log("checking activity at", currentTime);
+        for (const thisSpectator of this.spectators.values()) {
+            if (!thisSpectator.connected && (currentTime - thisSpectator.lastActivity) > activityTimeout) {
+                thisSpectator.leaveRoom();
+                console.log("booting", thisSpectator.name, "based on inactivity");
+            }
+        }
+        for (const thisEditor of this.editors.values()) {
+            if (thisEditor.isCurrentlyEditing && ((currentTime - thisEditor.lastActivity) > activityTimeout)) {
+                thisEditor.leaveRoom();
+                console.log("booting", thisEditor.name, "based on inactivity");
+            }
+        }
+    }
+
 }
 
 class Member {
@@ -170,6 +191,8 @@ class Member {
     roomID: string;
     deviceID: string;
     name: string;
+    lastActivity: number;
+    connected: boolean;
 
     constructor(
         io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
@@ -183,14 +206,18 @@ class Member {
         this.roomID = roomID;
         this.deviceID = deviceID;
         this.name = name;
+        this.lastActivity = Date.now(); // current time since epoch in ms
+        this.connected = true;
     }
 
     joinRoom() {
+        this.connected = true;
         this.socket.join(this.roomID);
         this.setReceive(); // listen for certain messages from client
     }
 
     leaveRoom() {
+        this.connected = false;
         console.log(this.name, " leaving ", this. roomID);
         this.io.to(this.socket.id).emit("navigate", "/"); // navigate home (if possible)
         delete deviceIDToRoomID[this.deviceID];
@@ -252,6 +279,7 @@ class Member {
         // however if they are AFK, etc, we should do those things
 
         console.log(this.socket.id, "disconnected");
+        this.connected = false;
 
         // if in the room but the game hasn't started yet (lobby), remove them
         const thisRoom = roomIDToRoom.get(this.roomID);
@@ -336,6 +364,11 @@ class Spectator extends Member {
             }
         }
     }
+
+    disconnect() {
+        this.lastActivity = Date.now(); // refresh activity
+        super.disconnect();
+    }
 }
 
 class Editor extends Member {
@@ -357,7 +390,6 @@ class Editor extends Member {
         this.turnPosition = 0;
         this.poemQueue = [];
         this.isCurrentlyEditing = false;
-        this.lastActivity = new Date();
     }
 
     prepareForGame() {
@@ -441,6 +473,9 @@ class Editor extends Member {
         // for the spectator, TBD
 
         // for now, only send to the next Editor in line (each watches who are behind them)
+
+        this.lastActivity = Date.now();  // they typed = active
+
         const thisRoom = roomIDToRoom.get(this.roomID);
         this.io.to(thisRoom.editors.get(this.targetEditorID).socket.id).emit("lineEditorWatch", value);
 
@@ -477,6 +512,7 @@ class Editor extends Member {
 
     possibleStartNewTurn() {
         if (this.hasPoemInQueue()) {
+            this.lastActivity = Date.now(); // give them some time to type
             this.io.to(this.socket.id).emit("lineEdit", this.poemQueue[0].halfLine);
             const thisPoem = this.poemQueue[0];
             console.log("we think the poem has", thisPoem.lines.length, "submissions so far");
