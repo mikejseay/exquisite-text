@@ -25,7 +25,14 @@ const Tutorial = () => {
     const handleHelpClose = () => setHelpOpen(false);
 
     return (
-        <div className={".mui-fixed"} style={{ position: "absolute", right: "calc(50vw + 40ch - 10px)", top: "16px" }}>
+        <div
+            className={".mui-fixed"}
+            style={{
+                position: "absolute",
+                left: "5px",
+                top: "5px",
+            }}
+        >
             <IconButton aria-label="info" onClick={handleHelpOpen} size={"large"}>
                 <InfoOutlinedIcon />
             </IconButton>

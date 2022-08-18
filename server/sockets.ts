@@ -64,12 +64,10 @@ class Room {
 
     editors: Map<string, Editor>;
     spectators: Map<string, Spectator>;
-    // editorNames: Array<string>;
-    // spectatorNames: Array<string>;
     gameSettings: IGameSettingsInfo;
     gameOngoing: boolean;
     nPoemsInRotation: number;
-    activityInterval: any;
+    activityInterval: ReturnType<typeof setInterval>;
 
     constructor(
         io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
@@ -82,8 +80,6 @@ class Room {
 
         this.editors = new Map();    // deviceID to editorObj
         this.spectators = new Map(); // deviceID to spectatorObj
-        // this.editorNames = [];       // deviceID to editorObj
-        // this.spectatorNames = [];    // deviceID to spectatorObj
         this.gameSettings = defaultGameSettings;
         this.gameOngoing = false;
         this.nPoemsInRotation = 0;
@@ -94,7 +90,6 @@ class Room {
 
     addEditor(deviceUUID: string, editorObj: Editor) {
         this.editors.set(deviceUUID, editorObj);
-        // this.editorNames.push(editorObj.name);
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }
 
@@ -105,7 +100,6 @@ class Room {
 
     addSpectator(deviceUUID: string, spectatorObj: Spectator) {
         this.spectators.set(deviceUUID, spectatorObj);
-        // this.spectatorNames.push(spectatorObj.name);
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }
 
