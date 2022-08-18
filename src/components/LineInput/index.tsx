@@ -88,9 +88,6 @@ const lineConstraints: ILineConstraintDict = {
 const LineInput = () => {
     const { socket } = useSocket();
 
-    const handleLeave = () => {
-        socket.emit("leave");
-    };
     const [ open, setOpen ] = React.useState(false);
     const handleClick = () => {
         setOpen((prev) => !prev);
@@ -100,8 +97,8 @@ const LineInput = () => {
     };
     const styles: SxProps = {
         position: "absolute",
-        top: 80,
-        right: "calc(50vw - 40ch - 10px)",
+        top: 60,
+        right: 65,
         zIndex: 1,
         border: "1px solid",
         p: 1,
@@ -516,7 +513,7 @@ const LineInput = () => {
                             size="small"
                             color="primary"
                             aria-label="complete"
-                            sx={{ position: "absolute", right: "calc(50vw - 40ch - 10px)", top: "20px" }}
+                            sx={{ position: "absolute", right: "64px", top: "10px"}}
                             onClick={handleClick}
                             disabled={!poemDoneVisible}
                         >

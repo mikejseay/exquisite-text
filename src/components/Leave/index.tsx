@@ -27,8 +27,8 @@ function Leave() {
     };
     const styles: SxProps = {
         position: "absolute",
-        top: 80,
-        right: "calc(50vw - 40ch - 60px)",
+        top: 60,
+        right: 20,
         zIndex: 1,
         border: "1px solid",
         p: 1,
@@ -47,7 +47,7 @@ function Leave() {
                         size="small"
                         color="secondary"
                         aria-label="logout"
-                        sx={{position: "absolute", right: "calc(50vw - 40ch - 60px)", top: "20px"}}
+                        sx={{position: "absolute", right: "15px", top: "10px"}}
                         onClick={handleClick}
                     >
                         <LogoutIcon />
