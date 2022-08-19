@@ -23,6 +23,9 @@ export const modalContent = {
 export const modalTitle = {
     fontSize: "17px",
     textAlign: "center",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
 } as React.CSSProperties;
 
 export const modalExampleGif = {
