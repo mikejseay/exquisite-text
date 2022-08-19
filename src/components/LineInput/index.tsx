@@ -131,7 +131,16 @@ const LineInput = () => {
 
     const [ helpMessage, setHelpMessage ] = React.useState<string>("");
     const [ inputErrorMsg, setInputErrorMsg ] = React.useState<string>(lineSepString);
-    const textareaRef = React.useRef() as React.MutableRefObject<HTMLTextAreaElement | null>;
+    const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+    React.useEffect(() => {
+        if (lineInputVisible) {
+            if (!isNil(textareaRef) && !isNil(textareaRef.current)) {
+                textareaRef.current.focus();
+                textareaRef.current.setSelectionRange(-1, -1);
+            }
+        }
+    }, [ lineInputVisible ]);
 
     React.useEffect(() => {
         const lineEditListener = (lineEdit: string) => {
@@ -456,13 +465,13 @@ const LineInput = () => {
                                     // onKeyPress={handleKeypress}
                                     onKeyDown={handleKeyDown}
                                     rows={2}
-                                    autoFocus={true}
+                                    autoFocus={true} // this only on initial page load
                                     readOnly={false}
-                                    onFocus={() =>
-                                        !isNil(textareaRef) && !isNil(textareaRef.current)
-                                            ? textareaRef.current.setSelectionRange(-1, -1)
-                                            : {}
-                                    }
+                                    // onFocus={() =>
+                                    //     !isNil(textareaRef) && !isNil(textareaRef.current)
+                                    //         ? textareaRef.current.setSelectionRange(-1, -1)
+                                    //         : {}
+                                    // }
                                 > </textarea>
                             </div>
                         ) :
