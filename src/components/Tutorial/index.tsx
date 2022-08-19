@@ -1,5 +1,6 @@
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import Modal from "@mui/material/Modal";
 import * as React from "react";
@@ -47,7 +48,11 @@ const Tutorial = () => {
                     sx={tutorial}
                 >
                     <div style={modalTitle}>
-                        <strong>HOW TO PLAY</strong>
+                        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+                        <p><strong>HOW TO PLAY</strong></p>
+                        <IconButton onClick={handleHelpClose}>
+                            <CloseIcon />
+                        </IconButton>
                     </div>
                     <div style={modalContent}>
                         <p>Exquisite Text is a collaborative writing game.</p>
