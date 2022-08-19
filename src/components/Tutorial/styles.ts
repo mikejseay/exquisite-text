@@ -21,11 +21,11 @@ export const modalContent = {
 } as React.CSSProperties;
 
 export const modalTitle = {
-    fontSize: "17px",
-    textAlign: "center",
-    display: "flex",
-    justifyContent: "space-between",
     alignItems: "center",
+    display: "flex",
+    fontSize: "17px",
+    justifyContent: "space-between",
+    textAlign: "center",
 } as React.CSSProperties;
 
 export const modalExampleGif = {
