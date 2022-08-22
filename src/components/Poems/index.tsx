@@ -20,7 +20,7 @@ function Poems() {
     const { socket } = useSocket();
     // The poems state is a plain object that contains each poem indexed by the poem ID.
     // Using React hooks, this state is updated inside the event handlers to reflect the changes provided by the server.
-    const [ poems, setPoems ] = React.useState<IPoems>({} as IPoems);
+    const [ poems, setPoems ] = React.useState<IPoems>({});
 
     React.useEffect(() => {
     // Event handlers for the poem and the deletePoem events are set up for the Socket.IO connection.

@@ -14,6 +14,7 @@ export enum LineLength {
 export interface IUserTableInfo {
     editors: Array<string>;
     spectators: Array<string>;
+    editorColors: Record<string, string>;
 }
 
 export interface IGameSettingsInfo {
@@ -31,12 +32,12 @@ export interface IUserInfo {
     turnsAway: number;
 }
 
-export interface ILine {
-    id: Key;
-    user: IUserInfo;
-    value: string;
-    createdAt: Date;
-}
+// export interface ILine {
+//     id: Key;
+//     user: IUserInfo;
+//     value: string;
+//     createdAt: Date;
+// }
 
 export interface IPoems {
     [id: string]: IPoem;
@@ -49,15 +50,26 @@ export interface IPoem {
     title: string;
 }
 
+export interface ILine {
+    poemID: string;
+    lineIndex: number;
+    content: string;
+    authorDevice: string;
+    passerDevice: string;
+    editLength: number;
+    addedAt: Date;
+}
+
 export interface IObjectStringToString {
     [key: string]: string;
 }
 
 export interface ServerToClientEvents {
-    line: (a: ILine) => void;
+    // line: (a: ILine) => void;
     lineEdit: (a: string) => void;
     lineEditSize: (a: number, b: number) => void;
     poem: (a: IPoem) => void;
+    poemLines: (a: ILine[]) => void;
 
     joinError: (a: string) => void;
     joinSuccess: () => void;
@@ -80,7 +92,7 @@ export interface ClientToServerEvents {
     poemDone: () => void;
     getLines: () => void;
     getPoems: () => void;
-
+    getPoemLines: () => void;
     recognizeDevice: (a: string) => void;
     createGameHost: (a: string) => void;
     joinGameAs: (a: string, b: string, c: string) => void;
