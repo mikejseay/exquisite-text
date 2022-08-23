@@ -2,8 +2,10 @@ import {
     pgSequelConn,
     Poem,
 } from "./entity/poem";
-
-import { IPoem } from "../src/types";
+import {
+    Line,
+} from "./entity/line";
+import { IPoem, ILine } from "../src/types";
 
 (async () => {
     try {
@@ -17,6 +19,7 @@ import { IPoem } from "../src/types";
 async function returnPoems(nPoems: number) {
     try {
         await Poem.sync();  // make sure the table exists
+        await Line.sync();  // make sure the table exists
         return await Poem.findAll({
             attributes: [
                 "id",
@@ -45,7 +48,16 @@ async function storePoem({ title, content }: IPoem) {
     }
 }
 
+async function storeLine({poemID, lineIndex, content, authorDevice, passerDevice, editLength, addedAt}: ILine) {
+    try {
+        await Line.create({poemID, lineIndex, content, authorDevice, passerDevice, editLength, addedAt});
+    } catch ({ stack }) {
+        console.log(stack);
+    }
+}
+
 export {
     returnPoems,
     storePoem,
+    storeLine,
 };

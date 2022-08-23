@@ -9,9 +9,6 @@ const Lines = () => {
     const [ lineEdits, setLineEdits ] = React.useState<Array<string>>([ "", "", "", "" ]);
 
     React.useEffect(() => {
-        // const clearLinesListener = () => {
-        //     setLines([ [], [], [], [] ]);
-        // };
 
         const lineSpectatorListener = (poemIndex: number, line: string) => {
             setLines(prevLines => {
@@ -32,10 +29,7 @@ const Lines = () => {
 
         socket.on("lineSpectator", lineSpectatorListener);
         socket.on("lineEditSpectator", lineEditSpectatorListener);
-        // socket.on("clearLines", clearLinesListener);
 
-        // tells the server for this client to do getLines
-        // since this is client-side, it only happens for this client
         setLines([ [], [], [], [] ]);
         socket.emit("getLines");
 

@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid 
 import {
     ClientToServerEvents,
     IGameSettingsInfo,
+    ILine,
     InterServerEvents,
     IObjectStringToString,
     IPoem,
@@ -22,6 +23,7 @@ import {
 import {
     returnPoems,
     storePoem,
+    storeLine,
 } from "./queries";
 
 const retrieveNPoemsAtStart = 1;
@@ -33,6 +35,7 @@ const defaultGameSettings: IGameSettingsInfo = {
 };
 const activityTimeout = 180000; // ms
 const checkActivityInterval = 30000; // ms
+const editorColorArr = [ "#4F71BE", "#B86029", "#A9D18E", "#B89230" ];
 
 // this function grabs some old poems to have something to show the users
 async function populatePoems() {
@@ -111,8 +114,10 @@ class Room {
     currentUserTableInfo() {
         const editorNameArr: Array<string> = [];
         const spectatorNameArr: Array<string> = [];
+        const editorColorObj: Record<string, string> = {};
         for (const thisEditor of this.editors.values()) {
             editorNameArr.push(thisEditor.name);
+            editorColorObj[thisEditor.deviceID] = editorColorArr[thisEditor.turnPosition];
         }
         for (const thisSpectator of this.spectators.values()) {
             spectatorNameArr.push(thisSpectator.name);
@@ -120,6 +125,7 @@ class Room {
         return {
             editors: editorNameArr,
             spectators: spectatorNameArr,
+            editorColors: editorColorObj,
         };
     }
 
@@ -137,7 +143,7 @@ class Room {
         for (const thisEditor of this.editors.values()) {
             thisEditor.prepareForGame();
             if (nPoemsToHandOut > 0) {
-                const thisPoem = new Poem(targetLines, poemIndex, this.io, this.roomID);
+                const thisPoem = new Poem(targetLines, poemIndex, this.io, this.roomID); // creates Poem object
                 thisEditor.poemQueue.push(thisPoem);
                 thisEditor.isCurrentlyEditing = true;
                 nPoemsToHandOut--;
@@ -234,6 +240,7 @@ class Member {
         this.socket.on("getGameSettingsInfo", () => this.requestGameSettingsInfo());
         this.socket.on("getSettingsEnabled", () => this.requestSettingsEnabled());
         this.socket.on("getPoems", () => this.getPoems()); // initial load
+        this.socket.on("getPoemLines", () => this.getPoems()); // initial load
         this.socket.on("leave", () => this.leaveRoom());
 
         // These are all reserved events
@@ -271,7 +278,7 @@ class Member {
     disconnect() {
         // note this could be called by something as simple as closing the tab
         // therefore we don't want to boot someone from the game based on this
-        // however if they are AFK, etc, we should do those things
+        // however if they are AFK, etc., we should do those things
 
         console.log(this.socket.id, "disconnected");
         this.connected = false;
@@ -305,6 +312,12 @@ class Member {
         // crucial method that sends the poem to all users
         // make sure the correct members receive this
         this.io.in(this.roomID).emit("poem", poem);
+    }
+
+    sendPoemAsLines(poemObj: Poem) {
+        // crucial method that sends the poem to all users
+        // make sure the correct members receive this
+        this.io.in(this.roomID).emit("poemLines", Array.from(poemObj.lines));
     }
 
     getPoems() {
@@ -494,9 +507,9 @@ class Editor extends Member {
     currentlyOnLastLine() {
         const thisPoem = this.poemQueue[0];
         if (thisPoem) {
-            const weThinkCurrentLength = thisPoem.lines.length;
-            console.log("we think the poem has ", weThinkCurrentLength, "of", thisPoem.targetLines - 2);
-            return weThinkCurrentLength >= (thisPoem.targetLines - 2);
+            const currentLength = thisPoem.lines.size;
+            console.log("we think the poem has ", currentLength, "of", thisPoem.targetLines - 2);
+            return currentLength >= (thisPoem.targetLines - 2);
         } else {
             return false;
         }
@@ -512,9 +525,9 @@ class Editor extends Member {
             this.lastActivity = Date.now(); // give them some time to type
             this.io.to(this.socket.id).emit("lineEdit", this.poemQueue[0].halfLine);
             const thisPoem = this.poemQueue[0];
-            console.log("we think the poem has", thisPoem.lines.length, "submissions so far");
+            console.log("we think the poem has", thisPoem.lines.size, "submissions so far");
 
-            if (thisPoem.lines.length === (thisPoem.targetLines - 2)) {
+            if (thisPoem.lines.size === (thisPoem.targetLines - 2)) {
                 this.io.to(this.socket.id).emit("lastLine", true);
             } else {
                 this.io.to(this.socket.id).emit("lastLine", false);
@@ -535,9 +548,8 @@ class Editor extends Member {
             return;
         }
 
-        poemToPass.submitLine(firstPart);
+        poemToPass.submitLine(this.deviceID, firstPart, secondPart);
         poemToPass.lineWasEdited(secondPart);
-        poemToPass.halfLine = secondPart;
         // should be a reference!!!
         const nextEditor = thisRoom.editors.get(this.targetEditorID);
         nextEditor.poemQueue.push(poemToPass);
@@ -557,13 +569,17 @@ class Editor extends Member {
         if (isNil(poemToPass)) {
             return;
         }
-        poemToPass.lines.push(lastPart);
+        poemToPass.lines.add({
+            poemID: poemToPass.poemID,
+            lineIndex: poemToPass.lines.size,
+            content: lastPart,
+            authorDevice: this.deviceID,
+            passerDevice: poemToPass.mostRecentEditor,  // previous editor, starts at ""
+            editLength: poemToPass.halfLine.length,     // previous line length, starts at 0
+            addedAt: new Date(),
+        });
 
-        let poemString = "";
-        for (const line of poemToPass.lines) {
-            poemString += line + "\n";
-        }
-        this.handlePoem(poemString);
+        this.handlePoem(poemToPass);
 
         const thisRoom = roomIDToRoom.get(this.roomID);
         thisRoom.nPoemsInRotation--;
@@ -605,7 +621,12 @@ class Editor extends Member {
         }
     }
 
-    handlePoem(poemString: string) {
+    handlePoem(poemObj: Poem) {
+
+        let poemString = "";
+        for (const line of poemObj.lines) {
+            poemString += line.content + "\n";
+        }
 
         const poem: IPoem = {
             content: poemString,
@@ -619,7 +640,9 @@ class Editor extends Member {
         storePoem(poem);
 
         // broadcast the poem to room members via sockets
-        this.sendPoem(poem);
+        // this.sendPoem(poem);
+        // try out the new view
+        this.sendPoemAsLines(poemObj);
 
         // delete the global var from public view
         publicPoems.delete(poem);
@@ -679,13 +702,14 @@ class VIPEditor extends Editor {
 class Poem {
     // represents a single poem
 
-    lines: Array<string>;
-    halfLine: string;
-    poemID: string;
     targetLines: number;
     poemIndex: number;
     io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
     roomID: string;
+    poemID: string;
+    halfLine: string;
+    mostRecentEditor: string;
+    lines: Set<ILine>;
 
     // any edit of lines or half-line (e.g. submitLine, handleLineEdit)
     // will send a message to the Spectators in the roomID
@@ -700,14 +724,27 @@ class Poem {
         this.poemIndex = poemIndex;
         this.io = io;
         this.roomID = roomID;
-        this.lines = [];
-        this.halfLine = "";
         this.poemID = uuidv4();
+        this.halfLine = "";
+        this.mostRecentEditor = "";
+        this.lines = new Set<ILine>();
     }
 
-    submitLine(line: string) {
-        this.lines.push(line);
-        this.io.in(this.roomID + "_Spectators").emit("lineSpectator", this.poemIndex, line);
+    submitLine(authorID: string, firstPart: string, secondPart: string) {
+        const myLine = {
+            poemID: this.poemID,
+            lineIndex: this.lines.size,
+            content: firstPart,
+            authorDevice: authorID,
+            passerDevice: this.mostRecentEditor,  // previous editor, starts at ""
+            editLength: this.halfLine.length,     // previous line length, starts at 0
+            addedAt: new Date(),
+        };
+        this.lines.add(myLine);
+        storeLine(myLine);
+        this.mostRecentEditor = authorID;
+        this.halfLine = secondPart;
+        this.io.in(this.roomID + "_Spectators").emit("lineSpectator", this.poemIndex, firstPart);
     }
 
     lineWasEdited(value: string) {
@@ -716,7 +753,7 @@ class Poem {
 
     sendAllLinesTo(socketID: string) {
         // this is used to bring a new spectator up to date
-        this.lines.forEach((line) => this.sendLine(line, socketID));
+        this.lines.forEach((line) => this.sendLine(line.content, socketID));
     }
 
     sendLine(line: string, socketID: string) {
