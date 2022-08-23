@@ -4,7 +4,7 @@ import GameTransition from "../../components/GameTransition";
 import Leave from "../../components/Leave";
 import LineInput from "../../components/LineInput";
 // import Poems from "../../components/Poems";
-import PoemLines from "../../components/PoemLines";
+import PoemsLines from "../../components/PoemsLines";
 import { gameContainer } from "./styles";
 
 function Game() {
@@ -12,7 +12,7 @@ function Game() {
         <div style={gameContainer} className={"game-container"}>
             <LineInput />
             <Leave />
-            <PoemLines />
+            <PoemsLines />
             {/*<Poems />*/}
             <GameTransition />
         </div>

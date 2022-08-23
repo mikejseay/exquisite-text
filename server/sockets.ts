@@ -35,7 +35,7 @@ const defaultGameSettings: IGameSettingsInfo = {
 };
 const activityTimeout = 180000; // ms
 const checkActivityInterval = 30000; // ms
-const editorColorArr = [ "blue", "green", "red", "orange" ];
+const editorColorArr = [ "#4F71BE", "#B86029", "#A9D18E", "#B89230" ];
 
 // this function grabs some old poems to have something to show the users
 async function populatePoems() {

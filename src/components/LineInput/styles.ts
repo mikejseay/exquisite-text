@@ -23,10 +23,6 @@ export const accordionDiv: React.CSSProperties = {
     maxWidth: "60ch",
 };
 
-export const accordionTitle: React.CSSProperties = {
-    margin: "auto",
-};
-
 export const underlineSuggestionDiv: React.CSSProperties = {
     gridColumnStart: 1,
     gridRowStart: 1,
