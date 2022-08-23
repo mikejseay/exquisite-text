@@ -1,14 +1,10 @@
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import * as React from "react";
 
 import { useSocket } from "../App";
+import { Poem } from "../Poem";
+
 import {
     poemsBody,
-    poemFont,
-    poemTitle,
 } from "./styles";
 
 import {
@@ -16,7 +12,7 @@ import {
     IPoems,
 } from "../../types";
 
-function Poems() {
+function Poems(): JSX.Element {
     const { socket } = useSocket();
     // The poems state is a plain object that contains each poem indexed by the poem ID.
     // Using React hooks, this state is updated inside the event handlers to reflect the changes provided by the server.
@@ -50,26 +46,8 @@ function Poems() {
             {[ ...Object.values(poems) ]
                 .sort((a, b) => Number(a.createdAt) - Number(b.createdAt))
                 .map((poem) => (
-                    <div key={poem.id} className="poem-container">
-                        <Accordion>
-                            <AccordionSummary
-                                expandIcon={<ExpandMoreIcon />}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
-                            >
-                                <div style={poemTitle} className={"poem-title"}>
-                                    <strong>{poem.title}</strong>
-                                </div>
-                            </AccordionSummary>
-                            <AccordionDetails>
-                                <div
-                                    className={"poem"}
-                                    style={poemFont}
-                                >
-                                    {poem.content}
-                                </div>
-                            </AccordionDetails>
-                        </Accordion>
+                    <div key={poem.id} >
+                        <Poem poem={poem} />
                     </div>
                 ))}
         </div>
