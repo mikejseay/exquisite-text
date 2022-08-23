@@ -1,7 +1,7 @@
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
-import CopyAllIcon from "@mui/icons-material/CopyAll";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import IconButton from "@mui/material/IconButton";
 import React from "react";
@@ -10,7 +10,7 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 import {
     poemFont,
     poemTitle,
-} from "../Poem/styles";
+} from "./styles";
 
 import { IPoem } from "../../types";
 
@@ -37,9 +37,12 @@ export function Poem({ poem }: { poem: IPoem }): JSX.Element {
                         {poem.content}
                     </div>
                     <CopyToClipboard text={poem.content}
-                        onCopy={() => setIsCopied(true)}>
+                        onCopy={() => {
+                            setIsCopied(true);
+                            setTimeout(() => setIsCopied(false), 3000);
+                        }}>
                         <IconButton>
-                            <CopyAllIcon />
+                            <ContentCopyIcon />
                         </IconButton>
                     </CopyToClipboard>
                     {copyStatus}
