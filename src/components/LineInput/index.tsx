@@ -2,6 +2,12 @@
 import Button from "@mui/material/Button";
 import Fab from "@mui/material/Fab";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
+import WarningIcon from "@mui/icons-material/Warning";
+import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
+import LinearProgress from "@mui/material/LinearProgress";
+import { ClickAwayListener } from "@mui/material";
+import { SxProps } from "@mui/system";
 import isNil from "lodash/isNil";
 import * as React from "react";
 
@@ -29,11 +35,6 @@ import {
     IGameSettingsInfo,
     LineLength,
 } from "../../types";
-import WarningIcon from "@mui/icons-material/Warning";
-import Stack from "@mui/material/Stack";
-import Box from "@mui/material/Box";
-import { ClickAwayListener } from "@mui/material";
-import { SxProps } from "@mui/system";
 
 // if activeEditor, the letters are visible and textarea is editable
 // if inactiveEditor, the letters are invisible, and textarea is not editable
@@ -108,7 +109,7 @@ const LineInput = () => {
         marginLeft: "auto",
         fontFamily: "sans-serif",
     };
-
+    const totalTurnTime = 120;
     const [ lineLength, setLineLength ] = React.useState<LineLength>(LineLength.short);
     const [ minCharsOnLineOne, setMinCharsOnLineOne ] = React.useState<number>(lineConstraints[LineLength.short]["minCharsOnLineOne"]);
     const [ maxCharsOnLineOne, setMaxCharsOnLineOne ] = React.useState<number>(lineConstraints[LineLength.short]["maxCharsOnLineOne"]);
@@ -116,6 +117,8 @@ const LineInput = () => {
     const [ maxCharsOnLineTwo, setMaxCharsOnLineTwo ] = React.useState<number>(lineConstraints[LineLength.short]["maxCharsOnLineTwo"]);
     const [ idealCharsOnLineOne, setIdealCharsOnLineOne ] = React.useState<number>(lineConstraints[LineLength.short]["idealCharsOnLineOne"]);
     const [ idealCharsOnLineTwo, setIdealCharsOnLineTwo ] = React.useState<number>(lineConstraints[LineLength.short]["idealCharsOnLineTwo"]);
+    const [ turnTimer, setTurnTimer ] = React.useState<number>(100);
+    const [ seconds, setSeconds ] = React.useState<number>(totalTurnTime);
 
     const lineSepString = "\n";
 
@@ -141,6 +144,18 @@ const LineInput = () => {
             }
         }
     }, [ lineInputVisible ]);
+    
+    React.useEffect(() => {
+        const myInterval = setInterval(() => {
+            if (seconds > 0) {
+                setSeconds(seconds - 1);
+                setTurnTimer((seconds - 1) / totalTurnTime * 100);
+            }
+        }, 1000);
+        return ()=> {
+            clearInterval(myInterval);
+        };
+    });
 
     React.useEffect(() => {
         const lineEditListener = (lineEdit: string) => {
@@ -514,6 +529,13 @@ const LineInput = () => {
                                 ? "Complete Poem"
                                 : "Pass"}
                         </Button>
+                        <LinearProgress
+                            sx={{
+                                borderRadius: "4px",
+                            }}
+                            value={turnTimer}
+                            variant="determinate"
+                        />
                     </div>
                 </div>
                 <ClickAwayListener onClickAway={handleClickAway}>
