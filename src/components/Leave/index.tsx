@@ -1,8 +1,5 @@
 import * as React from "react";
 import { useSocket } from "../App";
-import {
-    accordionDiv,
-} from "../LineInput/styles";
 import LogoutIcon from "@mui/icons-material/Logout";
 import Fab from "@mui/material/Fab";
 import WarningIcon from "@mui/icons-material/Warning";
@@ -10,7 +7,7 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import { ClickAwayListener } from "@mui/material";
-import { SxProps } from "@mui/system";
+import { leaveFAB, leaveConfirmBox } from "./styles";
 
 function Leave() {
     const { socket } = useSocket();
@@ -25,36 +22,24 @@ function Leave() {
     const handleClickAway = () => {
         setOpen(false);
     };
-    const styles: SxProps = {
-        position: "absolute",
-        top: 60,
-        right: 20,
-        zIndex: 1,
-        border: "1px solid",
-        p: 1,
-        bgcolor: "background.paper",
-        width: 170,
-        marginRight: 0,
-        marginLeft: "auto",
-        fontFamily: "sans-serif",
-    };
+
 
     return (
-        <div className={"leave-game-accordion"} style={accordionDiv}>
+        <React.Fragment>
             <ClickAwayListener onClickAway={handleClickAway}>
                 <Box>
                     <Fab
                         size="small"
                         color="secondary"
                         aria-label="logout"
-                        sx={{position: "absolute", right: "15px", top: "10px"}}
+                        sx={leaveFAB}
                         onClick={handleClick}
                     >
                         <LogoutIcon />
                     </Fab>
                     {open
                         ? (
-                            <Box sx={styles}>
+                            <Box sx={leaveConfirmBox}>
                                 <p style={{ margin: "0 0 0.5em 0" }}><WarningIcon />
                                     Want to leave the room?</p>
                                 <Stack spacing={2} direction="row"
@@ -67,7 +52,7 @@ function Leave() {
                         : null}
                 </Box>
             </ClickAwayListener>
-        </div>
+        </React.Fragment>
     );
 }
 

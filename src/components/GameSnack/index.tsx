@@ -1,9 +1,8 @@
-import Snackbar from "@mui/material/Snackbar";
 import * as React from "react";
-
+import Snackbar from "@mui/material/Snackbar";
 import { useSocket } from "../App";
-
 import type { IUserInfo } from "../../types";
+import { shortDur } from "../../constants";
 
 const GameSnack = () => {
     const { socket } = useSocket();
@@ -16,14 +15,14 @@ const GameSnack = () => {
         function userInfoListener(userInfo: IUserInfo) {
             if (userInfo["role"] === "activeEditor") {
                 document.title = "Your turn!";
-                setTimeout(() => (document.title = "Exquisite Text"), 3000);
+                setTimeout(() => (document.title = "Exquisite Text"), shortDur);
                 snackBasedOnTurnsAway(userInfo["turnsAway"]);
                 setSnackOpen(true);
-                setTimeout(() => setSnackOpen(false), 3000);
+                setTimeout(() => setSnackOpen(false), shortDur);
             } else if (userInfo["role"] === "inactiveEditor") {
                 snackBasedOnTurnsAway(userInfo["turnsAway"]);
                 setSnackOpen(true);
-                setTimeout(() => setSnackOpen(false), 3000);
+                setTimeout(() => setSnackOpen(false), shortDur);
             }
         }
 

@@ -1,12 +1,24 @@
-/* eslint-disable sort-keys */
+import * as React from "react";
+import isNil from "lodash/isNil";
 import Button from "@mui/material/Button";
 import Fab from "@mui/material/Fab";
+import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
+import { ClickAwayListener } from "@mui/material";
+import WarningIcon from "@mui/icons-material/Warning";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
-import isNil from "lodash/isNil";
-import * as React from "react";
 
 import { useSocket } from "../App";
-import "./LineInput.css";
+import {
+    IGameSettingsInfo,
+    LineLength,
+} from "../../types";
+import {
+    lineSepString,
+    lineConstraints,
+} from "../../constants";
+import { shortDur } from "../../constants";
+import { useStateRef } from "../../helpers";
 import {
     activeInput,
     caret,
@@ -23,67 +35,10 @@ import {
     underlineSpan,
     underlineSpanHover,
     underlineSuggestionDiv,
+    completeConfirmBox,
+    completeFAB,
 } from "./styles";
-
-import {
-    IGameSettingsInfo,
-    LineLength,
-} from "../../types";
-import WarningIcon from "@mui/icons-material/Warning";
-import Stack from "@mui/material/Stack";
-import Box from "@mui/material/Box";
-import { ClickAwayListener } from "@mui/material";
-import { SxProps } from "@mui/system";
-
-// if activeEditor, the letters are visible and textarea is editable
-// if inactiveEditor, the letters are invisible, and textarea is not editable
-// if spectator, the letters are visible, but the textarea is not editable
-
-// this function allows us to get the most current value of a state variable
-// with the third output argument "ref"
-// https://stackoverflow.com/questions/53845595/wrong-react-hooks-behaviour-with-event-listener
-function useStateRef(initialValue: boolean) {
-    const [ value, setValue ] = React.useState(initialValue);
-    const ref = React.useRef(value);
-
-    React.useEffect(() => {
-        ref.current = value;
-    }, [ value ]);
-
-    return [ value, setValue, ref ] as const;
-}
-
-export interface ILineConstraints {
-  minCharsOnLineOne: number;
-  maxCharsOnLineOne: number;
-  minCharsOnLineTwo: number;
-  maxCharsOnLineTwo: number;
-  idealCharsOnLineOne: number;
-  idealCharsOnLineTwo: number;
-}
-
-export type ILineConstraintDict = {
-  [key in LineLength]: ILineConstraints;
-}
-
-const lineConstraints: ILineConstraintDict = {
-    long: {
-        minCharsOnLineOne: 30,
-        maxCharsOnLineOne: 70,
-        minCharsOnLineTwo: 18,
-        maxCharsOnLineTwo: 36,
-        idealCharsOnLineOne: 60,
-        idealCharsOnLineTwo: 30,
-    },
-    short: {
-        minCharsOnLineOne: 20,
-        maxCharsOnLineOne: 50,
-        minCharsOnLineTwo: 12,
-        maxCharsOnLineTwo: 24,
-        idealCharsOnLineOne: 40,
-        idealCharsOnLineTwo: 20,
-    },
-};
+import "./LineInput.css";
 
 const LineInput = () => {
     const { socket } = useSocket();
@@ -95,19 +50,6 @@ const LineInput = () => {
     const handleClickAway = () => {
         setOpen(false);
     };
-    const styles: SxProps = {
-        position: "absolute",
-        top: 60,
-        right: 65,
-        zIndex: 1,
-        border: "1px solid",
-        p: 1,
-        bgcolor: "background.paper",
-        width: 170,
-        marginRight: 0,
-        marginLeft: "auto",
-        fontFamily: "sans-serif",
-    };
 
     const [ lineLength, setLineLength ] = React.useState<LineLength>(LineLength.short);
     const [ minCharsOnLineOne, setMinCharsOnLineOne ] = React.useState<number>(lineConstraints[LineLength.short]["minCharsOnLineOne"]);
@@ -117,8 +59,6 @@ const LineInput = () => {
     const [ idealCharsOnLineOne, setIdealCharsOnLineOne ] = React.useState<number>(lineConstraints[LineLength.short]["idealCharsOnLineOne"]);
     const [ idealCharsOnLineTwo, setIdealCharsOnLineTwo ] = React.useState<number>(lineConstraints[LineLength.short]["idealCharsOnLineTwo"]);
 
-    const lineSepString = "\n";
-
     const [ poemInput, setPoemInput ] = React.useState<string>("");
     const [ poemInputSpectate, setPoemInputSpectate ] = React.useState<string>("");
 
@@ -126,21 +66,22 @@ const LineInput = () => {
     const [ onSecondLine, setOnSecondLine ] = React.useState<boolean>(false);
 
     const [ onLastLine, setOnLastLine ] = React.useState<boolean>(false);
-    const [ lineInputVisible, setLineInputVisible ] = React.useState<boolean>(true);
+    const [ textAreaVisible, setTextAreaVisible ] = React.useState<boolean>(true);
     const [ poemDoneVisible, setPoemDoneVisible ] = React.useState<boolean>(true);
 
     const [ helpMessage, setHelpMessage ] = React.useState<string>("");
     const [ inputErrorMsg, setInputErrorMsg ] = React.useState<string>(lineSepString);
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
+    // places the text cursor at the end of the current content of the textarea when it becomes visible
     React.useEffect(() => {
-        if (lineInputVisible) {
+        if (textAreaVisible) {
             if (!isNil(textareaRef) && !isNil(textareaRef.current)) {
                 textareaRef.current.focus();
                 textareaRef.current.setSelectionRange(-1, -1);
             }
         }
-    }, [ lineInputVisible ]);
+    }, [ textAreaVisible ]);
 
     React.useEffect(() => {
         const lineEditListener = (lineEdit: string) => {
@@ -164,11 +105,11 @@ const LineInput = () => {
 
         const editorActiveListener = (editorActiveFromServer: boolean) => {
             if (editorActiveFromServer) {
-                setLineInputVisible(true);
+                setTextAreaVisible(true);
                 setHelpMessage("Complete a line of poetry.");
                 setPoemDoneVisible(true);
             } else {
-                setLineInputVisible(false);
+                setTextAreaVisible(false);
                 setHelpMessage("Your friend is writing 👇");
                 setPassEnabled(false);
                 setPoemDoneVisible(false);
@@ -177,15 +118,14 @@ const LineInput = () => {
 
         // Event handlers for the line and the deleteLine events are set up for the Socket.IO connection.
         const gameSettingsInfoListener = (info: IGameSettingsInfo) => {
-            console.log("gameSettingsInfoListener", info);
-            const length = info["lineLength"];
-            setLineLength(length);
-            setMinCharsOnLineOne(lineConstraints[length]["minCharsOnLineOne"]);
-            setMaxCharsOnLineOne(lineConstraints[length]["maxCharsOnLineOne"]);
-            setMinCharsOnLineTwo(lineConstraints[length]["minCharsOnLineTwo"]);
-            setMaxCharsOnLineTwo(lineConstraints[length]["maxCharsOnLineTwo"]);
-            setIdealCharsOnLineOne(lineConstraints[length]["idealCharsOnLineOne"]);
-            setIdealCharsOnLineTwo(lineConstraints[length]["idealCharsOnLineTwo"]);
+            const useSettings = lineConstraints[info["lineLength"]];
+            setLineLength(info["lineLength"]);
+            setMinCharsOnLineOne(useSettings["minCharsOnLineOne"]);
+            setMaxCharsOnLineOne(useSettings["maxCharsOnLineOne"]);
+            setMinCharsOnLineTwo(useSettings["minCharsOnLineTwo"]);
+            setMaxCharsOnLineTwo(useSettings["maxCharsOnLineTwo"]);
+            setIdealCharsOnLineOne(useSettings["idealCharsOnLineOne"]);
+            setIdealCharsOnLineTwo(useSettings["idealCharsOnLineTwo"]);
         };
 
         // set up listeners
@@ -198,7 +138,7 @@ const LineInput = () => {
         // request initial populate on page load
         socket.emit("getLineEdit");
         socket.emit("getEditorActive");
-        socket.emit("getGameSettingsInfo");  // initial populate
+        socket.emit("getGameSettingsInfo");
         socket.emit("getLastLineStatus");
 
         return () => {
@@ -238,9 +178,9 @@ const LineInput = () => {
         }
     }
 
-    function sendNotification(msg: React.SetStateAction<string>) {
+    function displayError(msg: React.SetStateAction<string>) {
         setInputErrorMsg(msg);
-        setTimeout(() => setInputErrorMsg(lineSepString), 3000);
+        setTimeout(() => setInputErrorMsg(lineSepString), shortDur);
     }
 
     // handles any change to the textarea element. written to be as fast as possible, so a bit verbose
@@ -258,16 +198,12 @@ const LineInput = () => {
                 const useInput = lines[0].slice(0, maxCharsOnLineOne);
                 setPoemInput(useInput);
                 socket.emit("lineEdit", useInput);
-                sendNotification("First line maxed, press Enter/Return to go to next.");
-                // setMessageType(1);
-                // setProgress(useInput.length / s["idealCharsOnLineOne"]);
+                displayError("First line maxed, press Enter/Return to go to next.");
                 helpBasedOnProgress(1, useInput.length / idealCharsOnLineOne);
                 setPassEnabled(false);
             } else {
                 setPoemInput(evt.target.value);
                 socket.emit("lineEdit", evt.target.value);
-                // setMessageType(1);
-                // setProgress(evt.target.value.length / s["idealCharsOnLineOne"]);
                 helpBasedOnProgress(1, evt.target.value.length / idealCharsOnLineOne);
                 setPassEnabled(false);
             }
@@ -280,13 +216,10 @@ const LineInput = () => {
 
                 setOnSecondLine(true);
 
-                const useInput =
-          lines[0] + lineSepString + lines[1].slice(0, maxCharsOnLineTwo);
+                const useInput = lines[0] + lineSepString + lines[1].slice(0, maxCharsOnLineTwo);
                 setPoemInput(useInput);
                 socket.emit("lineEdit", useInput);
-                sendNotification("That's the max. When done, click pass.");
-                // setMessageType(2);
-                // setProgress(s["maxCharsOnLineTwo"] / s["idealCharsOnLineTwo"]);
+                displayError("That's the max. When done, click pass.");
                 helpBasedOnProgress(2, maxCharsOnLineTwo / idealCharsOnLineTwo);
                 setPassEnabled(true);
             } else if (lines[0].length < minCharsOnLineOne) {
@@ -296,9 +229,7 @@ const LineInput = () => {
 
                 setPoemInput(lines[0]);
                 socket.emit("lineEdit", lines[0]);
-                sendNotification("More on first line!");
-                // setMessageType(1);
-                // setProgress(lines[0].length / s["idealCharsOnLineOne"]);
+                displayError("More on first line!");
                 helpBasedOnProgress(1, lines[0].length / idealCharsOnLineOne);
                 setPassEnabled(false);
             } else {
@@ -308,32 +239,20 @@ const LineInput = () => {
 
                 setPoemInput(evt.target.value);
                 socket.emit("lineEdit", evt.target.value);
-                // setMessageType(2);
-                // setProgress(lines[1].length / s["idealCharsOnLineTwo"]);
                 helpBasedOnProgress(2, lines[1].length / idealCharsOnLineTwo);
-                setPassEnabled(
-                    lines[1].length >= minCharsOnLineTwo &&
-          lines[1].length <= maxCharsOnLineTwo,
-                );
+                setPassEnabled(lines[1].length >= minCharsOnLineTwo && lines[1].length <= maxCharsOnLineTwo);
             }
         } else {
             // more than 2 lines somehow (e.g. large copy-paste or press enter on line two)
 
             setOnSecondLine(true);
-
-            const useInput =
-        lines[0] + lineSepString + lines[1].slice(0, maxCharsOnLineTwo);
+            const useInput = lines[0] + lineSepString + lines[1].slice(0, maxCharsOnLineTwo);
             setPoemInput(useInput);
             socket.emit("lineEdit", useInput);
             const linesTwo = useInput.split(lineSepString);
-            sendNotification("Two lines only. If done click Pass.");
+            displayError("Two lines only. If done click Pass.");
             helpBasedOnProgress(2, linesTwo[1].length / idealCharsOnLineTwo);
-            // setMessageType(2);
-            // setProgress(s["maxCharsOnLineTwo"] / s["idealCharsOnLineTwo"]);
-            setPassEnabled(
-                linesTwo[1].length >= minCharsOnLineTwo &&
-        linesTwo[1].length <= maxCharsOnLineTwo,
-            );
+            setPassEnabled(linesTwo[1].length >= minCharsOnLineTwo && linesTwo[1].length <= maxCharsOnLineTwo);
         }
     }
 
@@ -375,7 +294,7 @@ const LineInput = () => {
         socket.emit("lineEdit", "");
         setOnSecondLine(false);
 
-        setLineInputVisible(false);
+        setTextAreaVisible(false);
         setPassEnabled(false);
         // setHelpMessage("Poem completed! Open it at the bottom of the page.\n" +
         //   "If you'd like to play again, make a new room.");
@@ -383,7 +302,7 @@ const LineInput = () => {
     }
 
     function handleKeyDown({ charCode, key, ctrlKey, metaKey }: React.KeyboardEvent) {
-    // it triggers by pressing macOS cmd + enter (13), when the "Done Line" button is enabled
+    // it triggers by pressing macOS cmd or ctrl + enter (13), when the "Done Line" button is enabled
     // might not be necessary, but it's kind of nice
     // note we use passEnabledRef instead of passEnabled because it gets the current value
         if (passEnabledRef.current && (ctrlKey || metaKey) && (key === "Enter" || charCode === 13)) {
@@ -420,7 +339,7 @@ const LineInput = () => {
                     className={"input-box"}
                     style={inputBox}
                 >
-                    {lineInputVisible
+                    {textAreaVisible
                         ?
                         (
                             <div
@@ -449,7 +368,7 @@ const LineInput = () => {
                                     >
                                         {onSecondLine
                                             ? (
-                                                "  ".repeat(idealCharsOnLineOne + 3) + "\n" + "  ".repeat(idealCharsOnLineTwo + 3)
+                                                "  ".repeat(idealCharsOnLineOne + 3) + lineSepString + "  ".repeat(idealCharsOnLineTwo + 3)
                                             )
                                             : (
                                                 "  ".repeat(idealCharsOnLineOne + 3)
@@ -462,16 +381,10 @@ const LineInput = () => {
                                     value={poemInput}
                                     style={poemInputStyle}
                                     onChange={handlePoemBodyChange}
-                                    // onKeyPress={handleKeypress}
                                     onKeyDown={handleKeyDown}
                                     rows={2}
                                     autoFocus={true} // this only on initial page load
                                     readOnly={false}
-                                    // onFocus={() =>
-                                    //     !isNil(textareaRef) && !isNil(textareaRef.current)
-                                    //         ? textareaRef.current.setSelectionRange(-1, -1)
-                                    //         : {}
-                                    // }
                                 > </textarea>
                             </div>
                         ) :
@@ -522,7 +435,7 @@ const LineInput = () => {
                             size="small"
                             color="primary"
                             aria-label="complete"
-                            sx={{ position: "absolute", right: "64px", top: "10px"}}
+                            sx={completeFAB}
                             onClick={handleClick}
                             disabled={!poemDoneVisible}
                         >
@@ -530,7 +443,7 @@ const LineInput = () => {
                         </Fab>
                         {open
                             ? (
-                                <Box sx={styles}>
+                                <Box sx={completeConfirmBox}>
                                     <p style={{ margin: "0 0 0.5em 0" }}><WarningIcon />
                                         Want to complete the poem early?</p>
                                     <Stack spacing={2} direction="row" style={{ justifyContent: "center" }}>

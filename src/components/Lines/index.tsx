@@ -1,6 +1,8 @@
 import * as React from "react";
 
 import { useSocket } from "../App";
+import { lineSepString } from "../../constants";
+import { spectatorLines } from "./styles";
 
 const Lines = () => {
     const { socket } = useSocket();
@@ -40,19 +42,11 @@ const Lines = () => {
     }, [ socket ]);
 
     return (
-        <div className={"lines-outer"} style={
-            {
-                fontFamily: "'Esteban', serif",
-                fontSize: "18px",
-                marginTop: "1em",
-                textAlign: "center",
-                whiteSpace: "pre-line",
-            }
-        }>
+        <div className={"lines-outer"} style={spectatorLines}>
             {lines.map((lineArray, poemIndex) => {
                 return <div className={"lines-inner"} style={{ marginBottom: "2em" }} key={poemIndex}>
                     <div className={"lines-array"}>{
-                        lineArray.join("\n")
+                        lineArray.join(lineSepString)
                     }</div>
                     <div className={"lines-edit"}>{lineEdits[poemIndex]}</div>
                 </div>;

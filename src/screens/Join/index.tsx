@@ -6,11 +6,10 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { useSocket } from "../../components/App";
 import CreateGame from "../../components/CreateGame";
+import { shortDur, roomCodeLength, maxNameChars } from "../../constants";
 
 export default function Join() {
     const navigate = useNavigate();
-    const roomCodeLength = 4;
-    const maxNameLength = 13;
 
     const { socket } = useSocket();
 
@@ -42,11 +41,10 @@ export default function Join() {
     React.useEffect(() => {
         const joinErrorListener = (errorMsg: string) => {
             setJoinErrorMessage(errorMsg);
-            setTimeout(() => setJoinErrorMessage(""), 3000);
+            setTimeout(() => setJoinErrorMessage(""), shortDur);
         };
 
         const navigateListener = (targetRoute: string) => {
-            console.log("received navigate message to", targetRoute);
             navigate(targetRoute);
         };
 
@@ -90,7 +88,7 @@ export default function Join() {
                         variant="standard"
                         value={name}
                         onChange={handleNameEntryChange}
-                        inputProps={{ maxLength: maxNameLength, style: { textTransform: "uppercase" } }}
+                        inputProps={{ maxLength: maxNameChars, style: { textTransform: "uppercase" } }}
                     />
                 </Box>
             </div>

@@ -4,12 +4,13 @@ import { useSocket } from "../../components/App";
 import UserTable from "../../components/UserTable";
 import GameSettings from "../../components/GameSettings";
 import { generateAlphaString } from "../../helpers";
+import { roomCodeLength } from "../../constants";
 
 export default function Host() {
     const { socket } = useSocket();
 
     const rootURL = window.location.host;
-    const roomID = generateAlphaString(4);
+    const roomID = generateAlphaString(roomCodeLength);
 
     socket.emit("createGameHost", roomID);
 

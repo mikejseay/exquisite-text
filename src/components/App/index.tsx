@@ -11,7 +11,6 @@ import {
 import { v4 as uuidv4 } from "uuid";
 
 import Tutorial from "../Tutorial";
-// import Menu from "../Menu";
 import {
     appHeader,
     appTitle,
@@ -55,7 +54,6 @@ export default function App() {
     // set this to true if you want to be able to connect to the game
     // multiple times from the same browser
     if (process.env.REACT_APP_DEBUG_SINGLE_BROWSER === "true") {
-        console.log("debug in single browser mode");
         // to debug I will send a random device id each time
         socket.emit("recognizeDevice", uuidv4());
     } else {
@@ -74,11 +72,8 @@ export default function App() {
         <div style={possibleSocket} className={"possible-socket"}>
             <Paper elevation={0} style={app} className={"app-container"}>
                 <header style={appHeader}>
-                    {/*<Menu />*/}
                     <Tutorial />
                     <div style={appTitle}>Exquisite Text</div>
-                    {/*<GameState />*/}
-                    {/*<Settings />*/}
                 </header>
                 <Outlet context={{ socket }} />
             </Paper>

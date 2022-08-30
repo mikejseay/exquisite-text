@@ -8,7 +8,6 @@ function GameTransition() {
 
     React.useEffect(() => {
         const navigateListener = (targetRoute: string) => {
-            console.log("received navigate message to", targetRoute);
             navigate(targetRoute);
         };
 
