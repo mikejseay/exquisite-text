@@ -6,8 +6,11 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import { ClickAwayListener } from "@mui/material";
-import { SxProps } from "@mui/system";
 import { Link as RouterLink } from "react-router-dom";
+import {
+    hostConfirmBox,
+    hostFAB,
+} from "./styles";
 
 function CreateGame() {
     const [ open, setOpen ] = React.useState(false);
@@ -16,19 +19,6 @@ function CreateGame() {
     };
     const handleClickAway = () => {
         setOpen(false);
-    };
-    const styles: SxProps = {
-        position: "absolute",
-        top: 60,
-        left: 55,
-        zIndex: 1,
-        border: "1px solid",
-        p: 1,
-        bgcolor: "background.paper",
-        width: 170,
-        marginRight: 0,
-        marginLeft: "auto",
-        fontFamily: "sans-serif",
     };
 
     return (
@@ -39,17 +29,14 @@ function CreateGame() {
                         size="small"
                         color="primary"
                         aria-label="new"
-                        sx={{position: "absolute",
-                            left: "55px",
-                            top: "10px",
-                        }}
+                        sx={hostFAB}
                         onClick={handleClick}
                     >
                         <GamepadIcon />
                     </Fab>
                     {open
                         ? (
-                            <Box sx={styles}>
+                            <Box sx={hostConfirmBox}>
                                 <p style={{ margin: "0 0 0.5em 0" }}><WarningIcon />
                                     Host new game?</p>
                                 <Stack spacing={2} direction="row"

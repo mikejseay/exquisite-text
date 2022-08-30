@@ -48,9 +48,9 @@ async function storePoem({ title, content }: IPoem) {
     }
 }
 
-async function storeLine({poemID, lineIndex, content, authorDevice, passerDevice, editLength, addedAt}: ILine) {
+async function storeLine({ poemID, lineIndex, content, authorDevice, passerDevice, editLength, addedAt }: ILine) {
     try {
-        await Line.create({poemID, lineIndex, content, authorDevice, passerDevice, editLength, addedAt});
+        await Line.create({ poemID, lineIndex, content, authorDevice, passerDevice, editLength, addedAt });
     } catch ({ stack }) {
         console.log(stack);
     }

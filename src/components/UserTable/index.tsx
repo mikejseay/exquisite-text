@@ -27,7 +27,7 @@ function UserTable() {
     }, [ socket ]);
 
     return (
-        <div className={"userTable"} style={{textAlign: "center"}}>
+        <div className={"userTable"} style={{ textAlign: "center" }}>
             <div className={"editors"}>
                 <h2>Editors:</h2>
                 {editorArr.map((name, nameIndex) => {

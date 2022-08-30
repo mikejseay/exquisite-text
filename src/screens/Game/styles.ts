@@ -1,4 +1,5 @@
 import * as React from "react";
+import { headerHeight } from "../../constants";
 
 export const gameContainer: React.CSSProperties = {
     alignItems: "center",
@@ -7,7 +8,6 @@ export const gameContainer: React.CSSProperties = {
     flexWrap: "nowrap",
     fontFamily: "'Esteban', serif",
     fontSize: "18px",
-    height: "calc(100vh - 76px)",
+    height: "calc(100vh - " + headerHeight.toString() + "px)",
     justifyContent: "flex-start",
-    // width: "99vw",
 };

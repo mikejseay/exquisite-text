@@ -1,4 +1,6 @@
 import * as React from "react";
+import { SxProps } from "@mui/system";
+import { FABDiameter, FABSpace } from "../../constants";
 
 export const inputBox: React.CSSProperties = {
     display: "flex",
@@ -16,11 +18,6 @@ export const activeInput: React.CSSProperties = {
     // position: "fixed",
     // left: "50%",
     // transform: "translateX(-50%)",
-};
-
-export const accordionDiv: React.CSSProperties = {
-    margin: "1em auto",
-    maxWidth: "60ch",
 };
 
 export const underlineSuggestionDiv: React.CSSProperties = {
@@ -103,7 +100,7 @@ export const helpMessageStyle: React.CSSProperties = {
 
 export const lineInputContainer: React.CSSProperties = {
     marginTop: "2em",
-    // width: "100%",
+    width: "100%",
 };
 
 export const mainInputContainer: React.CSSProperties = {
@@ -132,4 +129,24 @@ export const caret: React.CSSProperties = {
     display: "inline-block",
     height: "20px",
     width: "1px",
+};
+
+export const completeConfirmBox: SxProps = {
+    position: "absolute",
+    top: FABDiameter + 2 * FABSpace,
+    right: FABDiameter + 2 * FABSpace + 5,
+    zIndex: 3,
+    border: "1px solid",
+    p: 1,
+    bgcolor: "background.paper",
+    width: 170,
+    marginRight: 0,
+    marginLeft: "auto",
+    fontFamily: "sans-serif",
+};
+
+export const completeFAB: SxProps = {
+    position: "absolute",
+    right: FABDiameter + 2 * FABSpace + 5,
+    top: FABSpace,
 };

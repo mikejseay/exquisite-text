@@ -18,6 +18,7 @@ import {
     ILine,
     IUserTableInfo,
 } from "../../types";
+import { shortDur, lineSepString } from "../../constants";
 
 function PoemsLines() {
     const { socket } = useSocket();
@@ -69,10 +70,10 @@ function PoemsLines() {
                         </AccordionSummary>
                         <AccordionDetails>
                             <PoemLines poemLines={poemLines} editorColors={editorColors} />
-                            <CopyToClipboard text={poemLines.map(line => line.content).join("\n")}
+                            <CopyToClipboard text={poemLines.map(line => line.content).join(lineSepString)}
                                 onCopy={() => {
                                     setIsCopied(true);
-                                    setTimeout(() => setIsCopied(false), 3000);
+                                    setTimeout(() => setIsCopied(false), shortDur);
                                 }}>
                                 <IconButton>
                                     <ContentCopyIcon />

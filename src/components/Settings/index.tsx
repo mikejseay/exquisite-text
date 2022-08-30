@@ -2,9 +2,6 @@ import * as React from "react";
 import IconButton from "@mui/material/IconButton";
 import Popover from "@mui/material/Popover";
 import SettingsIcon from "@mui/icons-material/Settings";
-// import Leave from "../Leave";
-// import { useSocket } from "../App";
-// import Button from "@mui/material/Button";
 
 function Settings() {
     const [ anchorEl, setAnchorEl ] = React.useState<Element | null>(null);
@@ -18,12 +15,6 @@ function Settings() {
     const id = isOpen
         ? "simple-popover"
         : undefined;
-
-    // const { socket } = useSocket();
-    //
-    // const handleLeaveButton = () => {
-    //     socket.emit("leave");
-    // };
 
     return (
         <div className={"settings"}>
@@ -44,13 +35,6 @@ function Settings() {
                 onClose={handleClose}
                 open={isOpen}
             >
-                {/*<Leave />*/}
-                {/*<Button*/}
-                {/*    onClick={handleLeaveButton}*/}
-                {/*    variant="contained"*/}
-                {/*>*/}
-                {/*    Leave Game*/}
-                {/*</Button>*/}
                 Nothing yet :)
             </Popover>
         </div>

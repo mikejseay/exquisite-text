@@ -3,8 +3,6 @@ import Popover from "@mui/material/Popover";
 import PeopleIcon from "@mui/icons-material/People";
 import IconButton from "@mui/material/IconButton";
 
-import { marginLeftAuto } from "./styles";
-
 function GameState() {
     const [ anchorEl, setAnchorEl ] = React.useState<Element | null>(null);
     const handleClick = (event: { currentTarget: React.SetStateAction<Element | null> }) => {
@@ -19,7 +17,7 @@ function GameState() {
         : undefined;
 
     return (
-        <div style={marginLeftAuto}>
+        <div style={{ marginLeft: "auto" }}>
             <IconButton
                 aria-label="players"
                 onClick={handleClick}

@@ -3,12 +3,25 @@ import { Key } from "react";
 export enum Role {
     activeEditor = "activeEditor",
     inactiveEditor = "inactiveEditor",
-    spectator = "spectator",
+    // spectator = "spectator",
 }
 
 export enum LineLength {
     short = "short",
     long = "long",
+}
+
+export interface ILineConstraints {
+    minCharsOnLineOne: number;
+    maxCharsOnLineOne: number;
+    minCharsOnLineTwo: number;
+    maxCharsOnLineTwo: number;
+    idealCharsOnLineOne: number;
+    idealCharsOnLineTwo: number;
+}
+
+export type ILineConstraintDict = {
+    [key in LineLength]: ILineConstraints;
 }
 
 export interface IUserTableInfo {

@@ -1,11 +1,12 @@
 import * as React from "react";
+import { headerHeight } from "../../constants";
 
 export const appHeader: React.CSSProperties = {
     alignItems: "center",
     display: "flex",
     flexDirection: "row",
     flexWrap: "nowrap",
-    height: "60px",
+    height: headerHeight,
     justifyContent: "space-between",
 };
 
@@ -20,7 +21,7 @@ export const appTitle: React.CSSProperties = {
 export const app: React.CSSProperties = {
     height: "100%",
     width: "100%",
-    maxWidth: "90ch",
+    // maxWidth: "90ch",
     margin: "auto",
 };
 

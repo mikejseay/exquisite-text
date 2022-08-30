@@ -25,6 +25,7 @@ import {
     storePoem,
     storeLine,
 } from "./queries";
+import { lineSepString } from "../src/constants";
 
 const retrieveNPoemsAtStart = 1;
 const maxEditors = 4;
@@ -625,7 +626,7 @@ class Editor extends Member {
 
         let poemString = "";
         for (const line of poemObj.lines) {
-            poemString += line.content + "\n";
+            poemString += line.content + lineSepString;
         }
 
         const poem: IPoem = {

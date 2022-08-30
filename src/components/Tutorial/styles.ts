@@ -1,6 +1,14 @@
 import * as React from "react";
+import { FABSpace } from "../../constants";
+import { SxProps } from "@mui/system";
 
-export const tutorial = {
+export const tutorialButton: React.CSSProperties = {
+    position: "absolute",
+    left: FABSpace - 5,
+    top: FABSpace - 5,
+};
+
+export const tutorial: SxProps = {
     bgcolor: "background.paper",
     border: "2px solid #000",
     boxShadow: "24",
@@ -12,25 +20,25 @@ export const tutorial = {
     top: "50%",
     transform: "translate(-50%, -50%)",
     width: "65ch",
-} as React.CSSProperties;
+};
 
-export const modalContent = {
+export const modalContent: React.CSSProperties = {
     fontSize: "16px",
     marginRight: "auto",
     whiteSpace: "pre-line",
-} as React.CSSProperties;
+};
 
-export const modalTitle = {
+export const modalTitle: React.CSSProperties = {
     alignItems: "center",
     display: "flex",
     fontSize: "17px",
     justifyContent: "space-between",
     textAlign: "center",
-} as React.CSSProperties;
+};
 
-export const modalExampleGif = {
+export const modalExampleGif: React.CSSProperties = {
     display: "block",
     marginLeft: "auto",
     marginRight: "auto",
     maxWidth: "90%",
-} as React.CSSProperties;
+};

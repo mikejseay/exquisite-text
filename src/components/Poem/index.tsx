@@ -13,6 +13,7 @@ import {
 } from "./styles";
 
 import { IPoem } from "../../types";
+import { shortDur } from "../../constants";
 
 export function Poem({ poem }: { poem: IPoem }): JSX.Element {
     const [ isCopied, setIsCopied ] = React.useState<boolean>(false);
@@ -39,7 +40,7 @@ export function Poem({ poem }: { poem: IPoem }): JSX.Element {
                     <CopyToClipboard text={poem.content}
                         onCopy={() => {
                             setIsCopied(true);
-                            setTimeout(() => setIsCopied(false), 3000);
+                            setTimeout(() => setIsCopied(false), shortDur);
                         }}>
                         <IconButton>
                             <ContentCopyIcon />

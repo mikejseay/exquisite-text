@@ -10,6 +10,7 @@ import {
     modalExampleGif,
     modalTitle,
     tutorial,
+    tutorialButton,
 } from "./styles";
 import exampleGif from "../../assets/images/exquisiteExample.gif";
 
@@ -28,11 +29,7 @@ const Tutorial = () => {
     return (
         <div
             className={".mui-fixed"}
-            style={{
-                position: "absolute",
-                left: "5px",
-                top: "5px",
-            }}
+            style={tutorialButton}
         >
             <IconButton aria-label="info" onClick={handleHelpOpen} size={"large"}>
                 <InfoOutlinedIcon />
