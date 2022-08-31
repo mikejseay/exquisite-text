@@ -14,9 +14,7 @@ import {
     IGameSettingsInfo,
     ILine,
     InterServerEvents,
-    IObjectStringToString,
     IPoem,
-    LineLength,
     ServerToClientEvents,
     SocketData,
 } from "../src/types";
@@ -25,18 +23,16 @@ import {
     storePoem,
     storeLine,
 } from "./queries";
-import { lineSepString } from "../src/constants";
-
-const retrieveNPoemsAtStart = 1;
-const maxEditors = 4;
-const defaultGameSettings: IGameSettingsInfo = {
-    lineLength: LineLength.short,
-    nPoems: 1,
-    nRounds: 2,
-};
-const activityTimeout = 180000; // ms
-const checkActivityInterval = 30000; // ms
-const editorColorArr = [ "#4F71BE", "#B86029", "#A9D18E", "#B89230" ];
+import {
+    lineSepString,
+    retrieveNPoemsAtStart,
+    maxEditors,
+    defaultGameSettings,
+    maxMemberTimeSpentInactive,
+    maxRoomTimeSpentEmpty,
+    checkActivityInterval,
+    editorColorArr,
+} from "../src/constants";
 
 // this function grabs some old poems to have something to show the users
 async function populatePoems() {
@@ -53,9 +49,9 @@ async function populatePoems() {
 populatePoems();
 
 // New global data structures
-const socketIDToDeviceID: IObjectStringToString = {};
-const deviceIDToSocketID: IObjectStringToString = {};  // unique on device. only latest is present
-const deviceIDToRoomID: IObjectStringToString = {};
+const socketIDToDeviceID: Record<string, string> = {};
+const deviceIDToSocketID: Record<string, string> = {};  // unique on device. only latest is present
+const deviceIDToRoomID: Record<string, string> = {};
 const roomIDToRoom: Map<string, any> = new Map();
 const roomIDToHost: Map<string, Host> = new Map();
 const publicPoems: Set<IPoem> = new Set();
@@ -72,6 +68,7 @@ class Room {
     gameOngoing: boolean;
     nPoemsInRotation: number;
     activityInterval: ReturnType<typeof setInterval>;
+    createdAt: number;
 
     constructor(
         io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
@@ -90,6 +87,7 @@ class Room {
 
         // check user activity every 30 seconds
         this.activityInterval = setInterval(this.checkActivity.bind(this), checkActivityInterval);
+        this.createdAt = Date.now();
     }
 
     addEditor(deviceUUID: string, editorObj: Editor) {
@@ -167,18 +165,30 @@ class Room {
     checkActivity() {
         const currentTime = Date.now();
         console.log(this.roomID, "checking activity at", currentTime);
+        if (this.editors.size === 0 && this.spectators.size === 0 &&
+            (currentTime - this.createdAt) > maxRoomTimeSpentEmpty) {
+            console.log(this.roomID, "spent too long with no members, destroying");
+            this.selfDestruct();
+        }
         for (const thisSpectator of this.spectators.values()) {
-            if (!thisSpectator.connected && (currentTime - thisSpectator.lastActivity) > activityTimeout) {
+            if (!thisSpectator.connected && (currentTime - thisSpectator.lastActivity) > maxMemberTimeSpentInactive) {
                 thisSpectator.leaveRoom();
                 console.log("booting", thisSpectator.name, "based on inactivity");
             }
         }
         for (const thisEditor of this.editors.values()) {
-            if (thisEditor.isCurrentlyEditing && ((currentTime - thisEditor.lastActivity) > activityTimeout)) {
+            if (thisEditor.isCurrentlyEditing && ((currentTime - thisEditor.lastActivity) > maxMemberTimeSpentInactive)) {
                 thisEditor.leaveRoom();
                 console.log("booting", thisEditor.name, "based on inactivity");
             }
         }
+    }
+
+    selfDestruct() {
+        console.log(this.roomID, "self-destructing");
+        clearInterval(this.activityInterval);
+        roomIDToHost.delete(this.roomID);
+        roomIDToRoom.delete(this.roomID);
     }
 }
 
@@ -611,9 +621,7 @@ class Editor extends Member {
                 delete deviceIDToSocketID[spectatorID];
                 thisRoom.spectators.delete(spectatorID);
             }
-            clearInterval(thisRoom.activityInterval);
-            roomIDToHost.delete(this.roomID);
-            roomIDToRoom.delete(this.roomID);
+            thisRoom.selfDestruct();
             // console.log("deviceIDToRoomID", deviceIDToRoomID);
             // console.log("roomIDToHost", roomIDToHost);
             // console.log("roomIDToRoom", roomIDToRoom);

@@ -35,6 +35,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "nodemon --watch './**/*.ts' --exec ts-node start.ts"
+    "startwatch": "nodemon --watch './**/*.ts' --exec ts-node start.ts",
+    "start": "ts-node start.ts"
   }
 }

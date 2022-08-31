@@ -1,4 +1,8 @@
-import { ILineConstraintDict } from "../types";
+import {
+    IGameSettingsInfo,
+    ILineConstraintDict,
+    LineLength,
+} from "../types";
 
 export const roomCodeLength = 4;
 export const maxNameChars = 13;
@@ -29,3 +33,22 @@ export const lineConstraints: ILineConstraintDict = {
         idealCharsOnLineTwo: 20,
     },
 };
+
+// server constants
+
+export const retrieveNPoemsAtStart = 1;
+export const maxEditors = 4;
+export const defaultGameSettings: IGameSettingsInfo = {
+    lineLength: LineLength.short,
+    nPoems: 1,
+    nRounds: 2,
+};
+export const maxMemberTimeSpentInactive = 180000; // ms
+export const maxRoomTimeSpentEmpty = 300000; // ms
+export const checkActivityInterval = 30000; // ms
+export const editorColorArr = [
+    "#4F71BE",
+    "#B86029",
+    "#A9D18E",
+    "#B89230",
+];

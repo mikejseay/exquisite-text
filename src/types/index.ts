@@ -73,10 +73,6 @@ export interface ILine {
     addedAt: Date;
 }
 
-export interface IObjectStringToString {
-    [key: string]: string;
-}
-
 export interface ServerToClientEvents {
     // line: (a: ILine) => void;
     lineEdit: (a: string) => void;
