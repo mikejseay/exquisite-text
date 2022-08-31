@@ -13,25 +13,25 @@ import {
     ClientToServerEvents,
     IGameSettingsInfo,
     ILine,
-    InterServerEvents,
     IPoem,
+    InterServerEvents,
     ServerToClientEvents,
     SocketData,
 } from "../src/types";
 import {
     returnPoems,
-    storePoem,
     storeLine,
+    storePoem,
 } from "./queries";
 import {
-    lineSepString,
-    retrieveNPoemsAtStart,
-    maxEditors,
+    checkActivityInterval,
     defaultGameSettings,
+    editorColorArr,
+    lineSepString,
+    maxEditors,
     maxMemberTimeSpentInactive,
     maxRoomTimeSpentEmpty,
-    checkActivityInterval,
-    editorColorArr,
+    retrieveNPoemsAtStart,
 } from "../src/constants";
 
 // this function grabs some old poems to have something to show the users
@@ -165,10 +165,14 @@ class Room {
     checkActivity() {
         const currentTime = Date.now();
         console.log(this.roomID, "checking activity at", currentTime);
-        if (this.editors.size === 0 && this.spectators.size === 0 &&
-            (currentTime - this.createdAt) > maxRoomTimeSpentEmpty) {
+        if (
+            this.editors.size === 0
+            && this.spectators.size === 0
+            && (currentTime - this.createdAt) > maxRoomTimeSpentEmpty
+        ) {
             console.log(this.roomID, "spent too long with no members, destroying");
             this.selfDestruct();
+            return;
         }
         for (const thisSpectator of this.spectators.values()) {
             if (!thisSpectator.connected && (currentTime - thisSpectator.lastActivity) > maxMemberTimeSpentInactive) {
@@ -435,17 +439,25 @@ class Editor extends Member {
         const thisRoom = roomIDToRoom.get(this.roomID);
         thisRoom.removeEditor(this.deviceID);
 
-        // hand off any poems in your queue to the next person
-        if (thisRoom.gameOngoing) {
-            const nextEditor = thisRoom.editors.get(this.targetEditorID);
-            nextEditor.poemQueue.push(...this.poemQueue);
-            if (!nextEditor.isCurrentlyEditing) {
-                nextEditor.possibleStartNewTurn();
+        if (thisRoom.gameOngoing) {  // hand off any poems in your queue to the next person
+            if (thisRoom.editors.size > 0) {
+                const nextEditor = thisRoom.editors.get(this.targetEditorID);
+                nextEditor.poemQueue.push(...this.poemQueue);
+                if (!nextEditor.isCurrentlyEditing) {
+                    nextEditor.possibleStartNewTurn();
+                }
+                // trigger the room to reorganize the editors
+                thisRoom.reorganizeEditors();
+            } else {
+                console.log("there are no editors left after the game started, no way to continue.");
+                thisRoom.selfDestruct();
+            }
+        } else {  // if we are still in the lobby then tell first editor to check whether they are VIP
+            const firstEditor = thisRoom.editors.values().next().value;
+            if (!isNil(firstEditor)) {
+                firstEditor.requestSettingsEnabled();
             }
         }
-
-        // trigger the room to reorganize the editors
-        thisRoom.reorganizeEditors();
     }
 
     // setSend
@@ -460,6 +472,8 @@ class Editor extends Member {
         this.socket.on("passTurn", (firstPart, secondPart) => this.handlePassTurn(firstPart, secondPart));
         this.socket.on("lastLine", (value) => this.handleLastLine(value)); // whenever a new line has been submitted into the poem.
         this.socket.on("getLastLineStatus", () => this.requestLastLineStatus());
+        this.socket.on("alterGameSettings", (value) => this.alterGameSettings(value));
+        this.socket.on("startGame", () => this.broadcastStartGame());
     }
 
     unsetReceive() {
@@ -470,6 +484,8 @@ class Editor extends Member {
         this.socket.removeAllListeners("passTurn");
         this.socket.removeAllListeners("lastLine");
         this.socket.removeAllListeners("getLastLineStatus");
+        this.socket.removeAllListeners("alterGameSettings");
+        this.socket.removeAllListeners("startGame");
     }
 
     requestLineEdit() {
@@ -656,39 +672,6 @@ class Editor extends Member {
         // delete the global var from public view
         publicPoems.delete(poem);
     }
-}
-
-class VIPEditor extends Editor {
-    joinRoom() {
-        super.joinRoom();
-        this.socket.join(this.roomID + "_VIP");
-    }
-
-    leaveRoom() {
-        // super.leaveRoom();
-        // this.socket.leave(this.roomID + "_VIP");
-        //
-        // // should make the next editor in line become VIP...
-        // const thisRoom = roomIDToRoom.get(this.roomID);
-        // const nextEditor = thisRoom.editors.get(this.targetEditorID);
-        // nextEditor.becomeVIP();  // or something
-
-        // TODO: implement VIP leaves the room
-        // only tricky if we are still in the lobby...
-        console.log("Having the VIP leave the room is not implemented yet.");
-    }
-
-    setReceive() {
-        super.setReceive();
-        this.socket.on("alterGameSettings", (value) => this.alterGameSettings(value));
-        this.socket.on("startGame", () => this.broadcastStartGame());
-    }
-
-    unsetReceive() {
-        super.unsetReceive();
-        this.socket.removeAllListeners("alterGameSettings");
-        this.socket.removeAllListeners("startGame");
-    }
 
     alterGameSettings(gameSettings: IGameSettingsInfo) {
         console.log("alterGameSettings");
@@ -704,7 +687,12 @@ class VIPEditor extends Editor {
 
     requestSettingsEnabled() {
         console.log(this.name, "requestSettingsEnabled");
-        this.io.to(this.socket.id).emit("gameSettingsEnabled", true);
+        this.io.to(this.socket.id).emit("gameSettingsEnabled", this.isVIP());
+    }
+
+    isVIP() {
+        const thisRoom = roomIDToRoom.get(this.roomID);
+        return thisRoom.editors.keys().next().value === this.deviceID;
     }
 }
 
@@ -849,10 +837,7 @@ function sockets(io: Server<ClientToServerEvents, ServerToClientEvents, InterSer
                     return;
                 }
                 deviceIDToRoomID[deviceID] = roomID;
-                const useEditorClass = (targetRoom.editors.size === 0
-                    ? VIPEditor
-                    : Editor);
-                const thisEditor = new useEditorClass(io, socket, roomID, deviceID, name);
+                const thisEditor = new Editor(io, socket, roomID, deviceID, name);
                 thisEditor.joinRoom();
                 io.to(socket.id).emit("navigate", "/lobby");
                 targetRoom.addEditor(deviceID, thisEditor);

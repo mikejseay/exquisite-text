@@ -1,11 +1,13 @@
-import * as React from "react";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import { useSocket } from "../App";
-import { IGameSettingsInfo, LineLength } from "../../types";
+import * as React from "react";
+
 import { defaultGameSettings } from "../../constants";
+import { useSocket } from "../App";
+
+import { IGameSettingsInfo, LineLength } from "../../types";
 
 function GameSettings() {
     const { socket } = useSocket();
