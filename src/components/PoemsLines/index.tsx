@@ -10,15 +10,15 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 import { useSocket } from "../App";
 import PoemLines from "../PoemLines";
 import {
-    poemsBody,
     poemTitle,
+    poemsBody,
 } from "./styles";
 
 import {
     ILine,
     IUserTableInfo,
 } from "../../types";
-import { shortDur, lineSepString } from "../../constants";
+import { lineSepString, shortDur } from "../../constants";
 
 function PoemsLines() {
     const { socket } = useSocket();

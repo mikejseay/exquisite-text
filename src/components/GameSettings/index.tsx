@@ -4,6 +4,7 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import * as React from "react";
 
+import { defaultGameSettings } from "../../constants";
 import { useSocket } from "../App";
 
 import { IGameSettingsInfo, LineLength } from "../../types";
@@ -12,9 +13,9 @@ function GameSettings() {
     const { socket } = useSocket();
 
     const [ settingsEnabled, setSettingsEnabled ] = React.useState<boolean>(false);
-    const [ lineLength, setLineLength ] = React.useState<LineLength>(LineLength.short);
-    const [ nRounds, setNRounds ] = React.useState<number>(2);
-    const [ nPoems, setNPoems ] = React.useState<number>(1);
+    const [ lineLength, setLineLength ] = React.useState<LineLength>(defaultGameSettings.lineLength);
+    const [ nRounds, setNRounds ] = React.useState<number>(defaultGameSettings.nRounds);
+    const [ nPoems, setNPoems ] = React.useState<number>(defaultGameSettings.nPoems);
 
     // these will only ever take place for the VIP editor
     const handleLineLength = (event: React.MouseEvent<HTMLElement>, newLineLength: LineLength) => {

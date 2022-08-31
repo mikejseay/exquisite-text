@@ -1,11 +1,11 @@
 import {
-    pgSequelConn,
     Poem,
+    pgSequelConn,
 } from "./entity/poem";
 import {
     Line,
 } from "./entity/line";
-import { IPoem, ILine } from "../src/types";
+import { ILine, IPoem } from "../src/types";
 
 (async () => {
     try {

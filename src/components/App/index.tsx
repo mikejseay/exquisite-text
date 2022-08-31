@@ -5,16 +5,16 @@ import {
     useOutletContext,
 } from "react-router-dom";
 import {
-    io,
     Socket,
+    io,
 } from "socket.io-client";
 import { v4 as uuidv4 } from "uuid";
 
 import Tutorial from "../Tutorial";
 import {
+    app,
     appHeader,
     appTitle,
-    app,
     possibleSocket,
 } from "./styles";
 

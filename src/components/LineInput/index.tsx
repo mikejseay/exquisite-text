@@ -14,14 +14,16 @@ import {
     LineLength,
 } from "../../types";
 import {
-    lineSepString,
     lineConstraints,
+    lineSepString,
 } from "../../constants";
 import { shortDur } from "../../constants";
 import { useStateRef } from "../../helpers";
 import {
     activeInput,
     caret,
+    completeConfirmBox,
+    completeFAB,
     errorMessage,
     helpMessageStyle,
     inactiveInput,
@@ -35,8 +37,6 @@ import {
     underlineSpan,
     underlineSpanHover,
     underlineSuggestionDiv,
-    completeConfirmBox,
-    completeFAB,
 } from "./styles";
 import "./LineInput.css";
 
