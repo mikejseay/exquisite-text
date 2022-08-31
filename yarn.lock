@@ -7770,7 +7770,7 @@ prompts@^2.0.1, prompts@^2.4.2:
     kleur "^3.0.3"
     sisteransi "^1.0.5"
 
-prop-types@^15.6.2, prop-types@^15.8.1:
+prop-types@^15.5.10, prop-types@^15.6.2, prop-types@^15.8.1:
   version "15.8.1"
   resolved "https://registry.npmjs.org/prop-types/-/prop-types-15.8.1.tgz"
   integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
@@ -7910,6 +7910,17 @@ react-error-overlay@^6.0.11:
   version "6.0.11"
   resolved "https://registry.npmjs.org/react-error-overlay/-/react-error-overlay-6.0.11.tgz"
   integrity sha512-/6UZ2qgEyH2aqzYZgQPxEnz33NJ2gNsnHA2o5+o4wW9bLM/JYQitNP9xPhsXwC08hMMovfGe/8retsdDsczPRg==
+
+react-graph-vis@^1.0.7:
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/react-graph-vis/-/react-graph-vis-1.0.7.tgz#55b934100c5235e7cc0e8721646c21246e4b7d75"
+  integrity sha512-FI35zlBMKU22JEvG1ukd1DDwW185y4YrDvHm6Bom9EGdA+UNMrZrIV/lyPIRWPcRkzbKaA1w1NvOYcRApD4KdQ==
+  dependencies:
+    lodash "^4.17.15"
+    prop-types "^15.5.10"
+    uuid "^2.0.1"
+    vis-data "^7.1.2"
+    vis-network "^9.0.0"
 
 react-is@^16.13.1, react-is@^16.7.0:
   version "16.13.1"
@@ -9287,6 +9298,11 @@ utils-merge@1.0.1:
   resolved "https://registry.npmjs.org/utils-merge/-/utils-merge-1.0.1.tgz"
   integrity sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==
 
+uuid@^2.0.1:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-2.0.3.tgz#67e2e863797215530dff318e5bf9dcebfd47b21a"
+  integrity sha512-FULf7fayPdpASncVy4DLh3xydlXEJJpvIELjYjNeQWYUZ9pclcpvCZSr2gkmN2FrrGcI7G/cJsIEwk5/8vfXpg==
+
 uuid@^8.3.2:
   version "8.3.2"
   resolved "https://registry.npmjs.org/uuid/-/uuid-8.3.2.tgz"
@@ -9320,6 +9336,16 @@ vary@^1, vary@~1.1.2:
   version "1.1.2"
   resolved "https://registry.npmjs.org/vary/-/vary-1.1.2.tgz"
   integrity sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==
+
+vis-data@^7.1.2, vis-data@^7.1.4:
+  version "7.1.4"
+  resolved "https://registry.yarnpkg.com/vis-data/-/vis-data-7.1.4.tgz#90e5e796a79e1901de14c0808fb32a1a0735c1dc"
+  integrity sha512-usy+ePX1XnArNvJ5BavQod7YRuGQE1pjFl+pu7IS6rCom2EBoG0o1ZzCqf3l5US6MW51kYkLR+efxRbnjxNl7w==
+
+vis-network@^9.0.0, vis-network@^9.1.2:
+  version "9.1.2"
+  resolved "https://registry.yarnpkg.com/vis-network/-/vis-network-9.1.2.tgz#ddaca300a9764bbf1646a0aa03eb28fe55823ca8"
+  integrity sha512-BdapguKg7sk3NvdZaDsM7T6rNhOBFz0/F4ZScxctK4klRzQPLQPTEcmbioXaZhMkkgWymzBR3lFCxL1q+eYyAw==
 
 w3c-hr-time@^1.0.2:
   version "1.0.2"

@@ -3,12 +3,14 @@ import * as React from "react";
 import GameSettings from "../../components/GameSettings";
 import GameTransition from "../../components/GameTransition";
 import Leave from "../../components/Leave";
-import UserTable from "../../components/UserTable";
+import UserGraph from "../../components/UserGraph";
+// import UserTable from "../../components/UserTable";
 
 function Lobby() {
     return (
         <div >
-            <UserTable />
+            {/*<UserTable />*/}
+            <UserGraph />
             <GameSettings />
             <Leave />
             <GameTransition />

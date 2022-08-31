@@ -11,6 +11,22 @@ export enum LineLength {
     long = "long",
 }
 
+export interface INode {
+    id: number,
+    label: string,
+    color: string,
+}
+
+export interface IEdge {
+    from: number,
+    to: number,
+}
+
+export interface IGraph {
+    nodes: INode[],
+    edges: IEdge[],
+}
+
 export interface ILineConstraints {
     minCharsOnLineOne: number;
     maxCharsOnLineOne: number;

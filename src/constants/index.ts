@@ -11,7 +11,7 @@ export const FABSpace = 10;
 export const FABDiameter = 40;
 export const headerHeight = 60;
 
-export const shortDur = 3000;
+export const shortDur = 3000; // ms
 
 export const lineSepString = "\n";
 
@@ -43,12 +43,12 @@ export const defaultGameSettings: IGameSettingsInfo = {
     nPoems: 1,
     nRounds: 2,
 };
-export const maxMemberTimeSpentInactive = 180000; // ms
-export const maxRoomTimeSpentEmpty = 300000; // ms
-export const checkActivityInterval = 30000; // ms
+export const maxMemberTimeSpentInactive = 18000000; // ms
+export const maxRoomTimeSpentEmpty = 30000000; // ms
+export const checkActivityInterval = 3000000; // ms
 export const editorColorArr = [
-    "#4F71BE",
     "#B86029",
-    "#A9D18E",
+    "#4F71BE",
+    "#89BA4E",
     "#B89230",
 ];
