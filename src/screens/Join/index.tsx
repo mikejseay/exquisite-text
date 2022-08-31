@@ -6,7 +6,7 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { useSocket } from "../../components/App";
 import CreateGame from "../../components/CreateGame";
-import { shortDur, roomCodeLength, maxNameChars } from "../../constants";
+import { maxNameChars, roomCodeLength, shortDur } from "../../constants";
 
 export default function Join() {
     const navigate = useNavigate();
