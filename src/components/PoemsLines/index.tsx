@@ -13,14 +13,17 @@ import {
     poemTitle,
     poemsBody,
 } from "./styles";
+import {
+    lineSepString,
+    shortDur,
+} from "../../constants";
 
 import {
     ILine,
     IUserTableInfo,
 } from "../../types";
-import { lineSepString, shortDur } from "../../constants";
 
-function PoemsLines() {
+function PoemsLines(): JSX.Element {
     const { socket } = useSocket();
     const [ poemsLines, setPoemsLines ] = React.useState<Array<ILine[]>>([]);
     const [ editorColors, setEditorColors ] = React.useState<Record<string, string>>({});
@@ -56,7 +59,7 @@ function PoemsLines() {
 
     return (
         <div className={"poems-with-lines"} style={poemsBody}>
-            {poemsLines.map( (poemLines, poemLinesIndex) => (
+            {poemsLines.map((poemLines, poemLinesIndex) => (
                 <div key={poemLinesIndex} className="poem-container">
                     <Accordion>
                         <AccordionSummary

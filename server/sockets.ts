@@ -35,7 +35,7 @@ import {
 } from "../src/constants";
 
 // this function grabs some old poems to have something to show the users
-async function populatePoems() {
+async function populatePoems(retrieveNPoemsAtStart: number) {
     const dbPoems = await returnPoems(retrieveNPoemsAtStart) as Array<IPoem>;
     for (const { id, createdAt, title, content } of dbPoems) {
         publicPoems.add({
@@ -46,7 +46,7 @@ async function populatePoems() {
         });
     }
 }
-populatePoems();
+populatePoems(retrieveNPoemsAtStart);
 
 // New global data structures
 const socketIDToDeviceID: Record<string, string> = {};

@@ -12,6 +12,7 @@ import Game from "./screens/Game";
 import Host from "./screens/Host";
 import Join from "./screens/Join";
 import Lobby from "./screens/Lobby";
+import Library from "./screens/Library";
 import Spectate from "./screens/Spectate";
 import Disconnected from "./screens/Disconnected";
 import reportWebVitals from "./reportWebVitals";
@@ -34,6 +35,7 @@ root.render(
                 {/* definitely creates socket and room */}
                 <Route path="host" element={<Host />} />
 
+                <Route path="library" element={<Library />} />
                 {/* requires socket */}
                 <Route path="lobby" element={<Lobby />} />
                 <Route path="game" element={<Game />} />

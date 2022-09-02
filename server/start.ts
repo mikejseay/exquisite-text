@@ -139,6 +139,7 @@ function onListening() {
             ? "pipe " + address
             : "port " + address.port;
         debug("Listening on " + bind);
+        console.log(`Listening on :${bind}`);
     }
 }
 
