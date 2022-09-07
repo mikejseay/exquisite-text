@@ -8,3 +8,10 @@ export const poemFont: React.CSSProperties = {
 export const poemTitle: React.CSSProperties = {
     margin: "auto",
 };
+
+export const poemContainer: React.CSSProperties = {
+    margin: "auto",
+    maxWidth: "90ch",
+    textAlign: "center",
+};
+

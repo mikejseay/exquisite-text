@@ -11,6 +11,8 @@ import App from "./components/App";
 import Game from "./screens/Game";
 import Host from "./screens/Host";
 import Join from "./screens/Join";
+import Library from "./screens/Library";
+import Page from "./screens/Page";
 import Lobby from "./screens/Lobby";
 import Spectate from "./screens/Spectate";
 import Disconnected from "./screens/Disconnected";
@@ -38,6 +40,8 @@ root.render(
                 <Route path="lobby" element={<Lobby />} />
                 <Route path="game" element={<Game />} />
                 <Route path="spectate" element={<Spectate />} />
+                <Route path="library" element={<Library />} />
+                <Route path="page/:id" element={<Page />} />
                 <Route path="disconnected" element={<Disconnected />} />
                 <Route  // no match route
                     path="*"

@@ -45,7 +45,6 @@ function PoemsLines() {
         socket.on("poemLines", poemsLinesListener);
         socket.on("userTableInfo", userTableInfoListener);
 
-        // socket.emit("getPoemLines");
         socket.emit("getUserTableInfo"); // initial populate
 
         return () => {

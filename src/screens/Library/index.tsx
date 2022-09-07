@@ -1,10 +1,10 @@
 import * as React from "react";
 
-import { useSocket } from "../App";
-import { Poem } from "../Poem";
+import { useSocket } from "../../components/App";
+import { Poem } from "../../components/Poem";
 
 import {
-    poemsBody,
+    poemsContainer,
 } from "./styles";
 
 import {
@@ -12,14 +12,14 @@ import {
     IPoems,
 } from "../../types";
 
-function Poems(): JSX.Element {
+function Library() {
     const { socket } = useSocket();
     // The poems state is a plain object that contains each poem indexed by the poem ID.
     // Using React hooks, this state is updated inside the event handlers to reflect the changes provided by the server.
     const [ poems, setPoems ] = React.useState<IPoems>({});
 
     React.useEffect(() => {
-    // Event handlers for the poem and the deletePoem events are set up for the Socket.IO connection.
+        // Event handlers for the poem and the deletePoem events are set up for the Socket.IO connection.
         const poemListener = (poem: IPoem) => {
             setPoems((prevPoems) => {
                 const newPoems = { ...prevPoems };
@@ -29,9 +29,6 @@ function Poems(): JSX.Element {
         };
 
         socket.on("poem", poemListener);
-
-        // tells the server for this client to do getPoems
-        // since this is client-side, it only happens for this client
         socket.emit("getPoems");
 
         return () => {
@@ -40,18 +37,16 @@ function Poems(): JSX.Element {
     }, [ socket ]);
 
     return (
-    // The component then displays all poems sorted by the timestamp at which they were created.
-    // we can switch this so that it renders previous poems according to a view
-        <div style={poemsBody}>
+        // The component then displays all poems sorted by the timestamp at which they were created.
+        // we can switch this so that it renders previous poems according to a view
+        <div style={poemsContainer}>
             {[ ...Object.values(poems) ]
                 .sort((a, b) => Number(a.createdAt) - Number(b.createdAt))
                 .map((poem) => (
-                    <div key={poem.id} >
-                        <Poem poem={poem} />
-                    </div>
+                    <Poem key={poem.id} poem={poem} />
                 ))}
         </div>
     );
 }
 
-export default Poems;
+export default Library;

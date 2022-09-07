@@ -40,6 +40,31 @@ async function returnPoems(nPoems: number) {
     }
 }
 
+async function getPoem(poemID: number) {
+    try {
+        console.log("getPoem in queries");
+        return await Poem.findAll({
+            attributes: [
+                "id",
+                "createdAt",
+                "title",
+                "content",
+            ],
+            where: {
+                id: poemID,
+            },
+            order: [
+                [
+                    "createdAt",
+                    "DESC",
+                ],
+            ],
+        });
+    } catch ({ stack }) {
+        return stack;
+    }
+}
+
 async function storePoem({ title, content }: IPoem) {
     try {
         await Poem.create({ content, title });
@@ -57,6 +82,7 @@ async function storeLine({ poemID, lineIndex, content, authorDevice, passerDevic
 }
 
 export {
+    getPoem,
     returnPoems,
     storePoem,
     storeLine,

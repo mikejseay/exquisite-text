@@ -19,6 +19,7 @@ import {
     SocketData,
 } from "../src/types";
 import {
+    getPoem,
     returnPoems,
     storeLine,
     storePoem,
@@ -31,14 +32,14 @@ import {
     maxEditors,
     maxMemberTimeSpentInactive,
     maxRoomTimeSpentEmpty,
-    retrieveNPoemsAtStart,
+    nPoemsInLibrary,
 } from "../src/constants";
 
 // this function grabs some old poems to have something to show the users
-async function populatePoems() {
-    const dbPoems = await returnPoems(retrieveNPoemsAtStart) as Array<IPoem>;
+async function populateLibrary() {
+    const dbPoems = await returnPoems(nPoemsInLibrary) as Array<IPoem>;
     for (const { id, createdAt, title, content } of dbPoems) {
-        publicPoems.add({
+        libraryPoems.add({
             content,
             createdAt,
             id,
@@ -46,7 +47,13 @@ async function populatePoems() {
         });
     }
 }
-populatePoems();
+async function populatePage(poemID: number) {
+    const retrievedPoems = await getPoem(poemID) as Array<IPoem>;
+    console.log("populatePage", retrievedPoems);
+    return retrievedPoems[0];
+}
+
+populateLibrary();
 
 // New global data structures
 const socketIDToDeviceID: Record<string, string> = {};
@@ -54,7 +61,7 @@ const deviceIDToSocketID: Record<string, string> = {};  // unique on device. onl
 const deviceIDToRoomID: Record<string, string> = {};
 const roomIDToRoom: Map<string, any> = new Map();
 const roomIDToHost: Map<string, Host> = new Map();
-const publicPoems: Set<IPoem> = new Set();
+const libraryPoems: Set<IPoem> = new Set();
 
 class Room {
     // represents a socket.io room and a game of Exquisite Text
@@ -254,8 +261,6 @@ class Member {
         this.socket.on("getUserTableInfo", () => this.requestUserTableInfo());
         this.socket.on("getGameSettingsInfo", () => this.requestGameSettingsInfo());
         this.socket.on("getSettingsEnabled", () => this.requestSettingsEnabled());
-        this.socket.on("getPoems", () => this.getPoems()); // initial load
-        this.socket.on("getPoemLines", () => this.getPoems()); // initial load
         this.socket.on("leave", () => this.leaveRoom());
 
         // These are all reserved events
@@ -267,7 +272,6 @@ class Member {
         this.socket.removeAllListeners("getUserTableInfo");
         this.socket.removeAllListeners("getGameSettingsInfo");
         this.socket.removeAllListeners("getSettingsEnabled");
-        this.socket.removeAllListeners("getPoems");
         this.socket.removeAllListeners("leave");
         this.socket.removeAllListeners("disconnect");
         this.socket.removeAllListeners("disconnecting");
@@ -323,21 +327,10 @@ class Member {
         console.log("socket", this.socket.id, " disconnecting from", this.socket.rooms);
     }
 
-    sendPoem(poem: IPoem) {
-        // crucial method that sends the poem to all users
-        // make sure the correct members receive this
-        this.io.in(this.roomID).emit("poem", poem);
-    }
-
     sendPoemAsLines(poemObj: Poem) {
         // crucial method that sends the poem to all users
         // make sure the correct members receive this
         this.io.in(this.roomID).emit("poemLines", Array.from(poemObj.lines));
-    }
-
-    getPoems() {
-        // this is used to bring a new user up to date on what's happening
-        publicPoems.forEach((poem) => this.sendPoem(poem));
     }
 
 }
@@ -659,7 +652,6 @@ class Editor extends Member {
             id: uuidv4(),
             title: `exquisite text #${Math.round(Math.random() * 100)}`,
         };
-        publicPoems.add(poem);
 
         // add the poem to the database
         storePoem(poem);
@@ -668,9 +660,6 @@ class Editor extends Member {
         // this.sendPoem(poem);
         // try out the new view
         this.sendPoemAsLines(poemObj);
-
-        // delete the global var from public view
-        publicPoems.delete(poem);
     }
 
     alterGameSettings(gameSettings: IGameSettingsInfo) {
@@ -852,6 +841,16 @@ function sockets(io: Server<ClientToServerEvents, ServerToClientEvents, InterSer
                 }
                 targetRoom.addSpectator(deviceID, thisSpectator);
             }
+        });
+
+        socket.on("getPoems", () => {
+            libraryPoems.forEach((poem) => io.to(socket.id).emit("poem", poem));
+        });
+
+        socket.on("getPoemByID", async (poemID) => {
+            const retrievedPoem = await populatePage(poemID);
+            console.log("getPoemByID", retrievedPoem);
+            io.to(socket.id).emit("poem", retrievedPoem);
         });
     });
 }

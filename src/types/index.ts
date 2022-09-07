@@ -101,6 +101,7 @@ export interface ClientToServerEvents {
     poemDone: () => void;
     getLines: () => void;
     getPoems: () => void;
+    getPoemByID: (a: number) => void;
     getPoemLines: () => void;
     recognizeDevice: (a: string) => void;
     createGameHost: (a: string) => void;
