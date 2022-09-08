@@ -1,9 +1,7 @@
 import * as React from "react";
 import { useParams } from "react-router-dom";
 
-import { useSocket } from "../../components/App";
 import { Poem } from "../../components/Poem";
-
 import {
     poemsContainer,
 } from "./styles";
@@ -13,7 +11,6 @@ import {
 } from "../../types";
 
 function Page() {
-    const { socket } = useSocket();
     const { id } = useParams();
 
     // The poems state is a plain object that contains each poem indexed by the poem ID.
@@ -28,18 +25,21 @@ function Page() {
     );
 
     React.useEffect(() => {
-        // Event handlers for the poem and the deletePoem events are set up for the Socket.IO connection.
-        const poemListener = (poem: IPoem) => {
-            setPoem(poem);
-        };
-
-        socket.on("poem", poemListener);
-        socket.emit("getPoemByID", Number(id));
-
-        return () => {
-            socket.off("poem", poemListener);
-        };
-    }, [ socket ]);
+        async function fetchPoem() {
+            try {
+                const response = await fetch(
+                    `http://localhost:3000/poems/${id}`,
+                );
+                const json = await response.json();
+                console.log(json);
+                setPoem(json);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    
+        fetchPoem();
+    }, []);
 
     return (
         // The component then displays all poems sorted by the timestamp at which they were created.

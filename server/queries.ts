@@ -43,7 +43,7 @@ async function returnPoems(nPoems: number) {
 async function getPoem(poemID: number) {
     try {
         console.log("getPoem in queries");
-        return await Poem.findAll({
+        return await Poem.findOne({
             attributes: [
                 "id",
                 "createdAt",
