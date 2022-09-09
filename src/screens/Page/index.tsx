@@ -4,7 +4,7 @@ import isNil from "lodash/isNil";
 
 import { Poem } from "../../components/Poem";
 import { getPoemById } from "../../services/poems";
-import Poem404 from "../Poem404";
+import Poem404 from "../../components/Poem404";
 import { poemsContainer } from "./styles";
 
 import {
@@ -34,14 +34,14 @@ function Page(): JSX.Element {
             const fetchedPoem = await getPoemById(Number(id));
             setPoem(fetchedPoem);
         }
-    
+
         fetchPoem();
     }, []);
 
     const poemContent = isNil(poem) || poem.id === 0
         ? <Poem404 content="No poem found." />
         : <Poem key={poem.id} poem={poem} />;
-    
+
     return (
         // The component then displays all poems sorted by the timestamp at which they were created.
         // we can switch this so that it renders previous poems according to a view

@@ -19,8 +19,6 @@ import {
     SocketData,
 } from "../src/types";
 import {
-    getPoem,
-    returnPoems,
     storeLine,
     storePoem,
 } from "./queries";
@@ -32,28 +30,7 @@ import {
     maxEditors,
     maxMemberTimeSpentInactive,
     maxRoomTimeSpentEmpty,
-    nPoemsInLibrary,
 } from "../src/constants";
-
-// this function grabs some old poems to have something to show the users
-async function populateLibrary() {
-    const dbPoems = await returnPoems(nPoemsInLibrary) as Array<IPoem>;
-    for (const { id, createdAt, title, content } of dbPoems) {
-        libraryPoems.add({
-            content,
-            createdAt,
-            id,
-            title,
-        });
-    }
-}
-async function populatePage(poemID: number) {
-    const retrievedPoems = await getPoem(poemID) as Array<IPoem>;
-    console.log("populatePage", retrievedPoems);
-    return retrievedPoems[0];
-}
-
-populateLibrary();
 
 // New global data structures
 const socketIDToDeviceID: Record<string, string> = {};
@@ -61,7 +38,6 @@ const deviceIDToSocketID: Record<string, string> = {};  // unique on device. onl
 const deviceIDToRoomID: Record<string, string> = {};
 const roomIDToRoom: Map<string, any> = new Map();
 const roomIDToHost: Map<string, Host> = new Map();
-const libraryPoems: Set<IPoem> = new Set();
 
 class Room {
     // represents a socket.io room and a game of Exquisite Text
@@ -841,16 +817,6 @@ function sockets(io: Server<ClientToServerEvents, ServerToClientEvents, InterSer
                 }
                 targetRoom.addSpectator(deviceID, thisSpectator);
             }
-        });
-
-        socket.on("getPoems", () => {
-            libraryPoems.forEach((poem) => io.to(socket.id).emit("poem", poem));
-        });
-
-        socket.on("getPoemByID", async (poemID) => {
-            const retrievedPoem = await populatePage(poemID);
-            console.log("getPoemByID", retrievedPoem);
-            io.to(socket.id).emit("poem", retrievedPoem);
         });
     });
 }

@@ -1,11 +1,11 @@
 import * as React from "react";
 
 import { Poem } from "../../components/Poem";
+import Poem404 from "../../components/Poem404";
 import { getPoems } from "../../services/poems";
-import { poemsContainer } from "./styles";
 
+import { poemsContainer } from "./styles";
 import { IPoems } from "../../types";
-import Poem404 from "../Poem404";
 
 function Library(): JSX.Element {
     // The poems state is a plain object that contains each poem indexed by the poem ID.

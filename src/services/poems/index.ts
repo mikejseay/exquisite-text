@@ -1,8 +1,10 @@
 import { IPoem } from "../../types";
+import { serverPath } from "../../components/App";
 
 export async function getPoemById(id: IPoem["id"]) {
+    console.log(window.location);
     try {
-        const response = await fetch(`http://localhost:3000/poems/${id}`);
+        const response = await fetch(`${serverPath}/poems/${id}`);
         const json = await response.json();
         return json;
     } catch (error) {
@@ -11,8 +13,9 @@ export async function getPoemById(id: IPoem["id"]) {
 }
 
 export async function getPoems() {
+    console.log(window.location);
     try {
-        const response = await fetch("http://localhost:3000/poems/");
+        const response = await fetch(`${serverPath}/poems/`);
         const json = await response.json();
         return (json);
     } catch (error) {
