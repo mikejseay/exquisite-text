@@ -8,8 +8,6 @@ import express from "express";                  // the app framework library
 import path from "path";                        // for joining paths
 import cookieParser from "cookie-parser";       // for parsing cookies
 import logger from "morgan";                    // for logging
-import indexRouter from "./routes/index";       // an express object that routes users to the root page /
-import usersRouter from "./routes/users";       // an express object that routes users to the page /users
 import poemsRouter from "./routes/poems";       // an express object that routes poems to the page /poems
 
 const app = express();                          // instantiate the app object
@@ -24,9 +22,15 @@ const targetDir = isProduction
     ? "../build"
     : "public";
 
+// Priority serve any static files.
 app.use(express.static(path.join(__dirname, targetDir)));
-app.use("/", indexRouter);                      // sets the router for the root page /
-app.use("/users", usersRouter);                 // sets the router for the /users page
-app.use("/poems", poemsRouter);                 // sets the router for the /poems page
+
+// Answer API requests.
+app.use("/poems", poemsRouter);
+
+// All remaining requests return the React app, so it can handle routing.
+app.get("*", function(request, response) {
+    response.sendFile(path.resolve(__dirname, targetDir, "index.html"));
+});
 
 export default app;
