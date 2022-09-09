@@ -8,25 +8,26 @@ import {
     Socket,
     io,
 } from "socket.io-client";
+import Paper from "@mui/material/Paper";
 import { v4 as uuidv4 } from "uuid";
 
 import Tutorial from "../Tutorial";
+
 import {
     app,
     appHeader,
     appTitle,
     possibleSocket,
 } from "./styles";
-
 import type {
     ClientToServerEvents,
     ServerToClientEvents,
 } from "../../types";
-import Paper from "@mui/material/Paper";
 
 
 const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
-const serverPath: URL["pathname"] | URL["href"] = isDevelopment
+console.log(window.location);
+export const serverPath: URL["pathname"] | URL["href"] = isDevelopment
     ? `http://${window.location.hostname}:3000`
     : "/";
 

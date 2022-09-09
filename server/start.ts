@@ -13,11 +13,8 @@ import * as dotenv from "dotenv";
 dotenv.config({ path: __dirname+"/.env" });
 
 // import the http library
-// const http = require("http");
 import { createServer } from "http";
 
-// const https = require("https");
-// const fs = require("fs");
 // const privateKey   = fs.readFileSync("./.cert/key.pem", "utf8");
 // const certificate  = fs.readFileSync("./.cert/cert.pem", "utf8");
 // const credentials = {key: privateKey, cert: certificate};
@@ -37,7 +34,6 @@ import { isNil } from "lodash";
 // no ideas... chat-server is the name in package.json?
 const debug = debug0("chat-server:server");
 
-
 /**
  * Get port from environment and store in Express.
  */
@@ -52,8 +48,6 @@ app.set("port", port);
 // the http server that will listen on the port given by the app
 const httpServer = createServer(app);
 // const server = https.createServer(credentials, app);
-
-
 
 const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(httpServer, {
     cors: {

@@ -8,6 +8,7 @@ import React from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 
 import {
+    poemContainer,
     poemFont,
     poemTitle,
 } from "./styles";
@@ -22,7 +23,7 @@ export function Poem({ poem }: { poem: IPoem }): JSX.Element {
         : null;
 
     return (
-        <div className="poem-container">
+        <div className="poem-container" style={poemContainer}>
             <Accordion>
                 <AccordionSummary
                     expandIcon={<ExpandMoreIcon />}
@@ -52,5 +53,4 @@ export function Poem({ poem }: { poem: IPoem }): JSX.Element {
         </div>
     );
 }
-  
-  
+

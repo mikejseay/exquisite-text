@@ -19,7 +19,6 @@ import {
     SocketData,
 } from "../src/types";
 import {
-    returnPoems,
     storeLine,
     storePoem,
 } from "./queries";
@@ -31,22 +30,7 @@ import {
     maxEditors,
     maxMemberTimeSpentInactive,
     maxRoomTimeSpentEmpty,
-    retrieveNPoemsAtStart,
 } from "../src/constants";
-
-// this function grabs some old poems to have something to show the users
-async function populatePoems() {
-    const dbPoems = await returnPoems(retrieveNPoemsAtStart) as Array<IPoem>;
-    for (const { id, createdAt, title, content } of dbPoems) {
-        publicPoems.add({
-            content,
-            createdAt,
-            id,
-            title,
-        });
-    }
-}
-populatePoems();
 
 // New global data structures
 const socketIDToDeviceID: Record<string, string> = {};
@@ -54,7 +38,6 @@ const deviceIDToSocketID: Record<string, string> = {};  // unique on device. onl
 const deviceIDToRoomID: Record<string, string> = {};
 const roomIDToRoom: Map<string, any> = new Map();
 const roomIDToHost: Map<string, Host> = new Map();
-const publicPoems: Set<IPoem> = new Set();
 
 class Room {
     // represents a socket.io room and a game of Exquisite Text
@@ -254,8 +237,6 @@ class Member {
         this.socket.on("getUserTableInfo", () => this.requestUserTableInfo());
         this.socket.on("getGameSettingsInfo", () => this.requestGameSettingsInfo());
         this.socket.on("getSettingsEnabled", () => this.requestSettingsEnabled());
-        this.socket.on("getPoems", () => this.getPoems()); // initial load
-        this.socket.on("getPoemLines", () => this.getPoems()); // initial load
         this.socket.on("leave", () => this.leaveRoom());
 
         // These are all reserved events
@@ -267,7 +248,6 @@ class Member {
         this.socket.removeAllListeners("getUserTableInfo");
         this.socket.removeAllListeners("getGameSettingsInfo");
         this.socket.removeAllListeners("getSettingsEnabled");
-        this.socket.removeAllListeners("getPoems");
         this.socket.removeAllListeners("leave");
         this.socket.removeAllListeners("disconnect");
         this.socket.removeAllListeners("disconnecting");
@@ -323,21 +303,10 @@ class Member {
         console.log("socket", this.socket.id, " disconnecting from", this.socket.rooms);
     }
 
-    sendPoem(poem: IPoem) {
-        // crucial method that sends the poem to all users
-        // make sure the correct members receive this
-        this.io.in(this.roomID).emit("poem", poem);
-    }
-
     sendPoemAsLines(poemObj: Poem) {
         // crucial method that sends the poem to all users
         // make sure the correct members receive this
         this.io.in(this.roomID).emit("poemLines", Array.from(poemObj.lines));
-    }
-
-    getPoems() {
-        // this is used to bring a new user up to date on what's happening
-        publicPoems.forEach((poem) => this.sendPoem(poem));
     }
 
 }
@@ -659,7 +628,6 @@ class Editor extends Member {
             id: uuidv4(),
             title: `exquisite text #${Math.round(Math.random() * 100)}`,
         };
-        publicPoems.add(poem);
 
         // add the poem to the database
         storePoem(poem);
@@ -668,9 +636,6 @@ class Editor extends Member {
         // this.sendPoem(poem);
         // try out the new view
         this.sendPoemAsLines(poemObj);
-
-        // delete the global var from public view
-        publicPoems.delete(poem);
     }
 
     alterGameSettings(gameSettings: IGameSettingsInfo) {

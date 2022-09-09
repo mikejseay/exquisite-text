@@ -40,6 +40,24 @@ async function returnPoems(nPoems: number) {
     }
 }
 
+async function getPoem(poemID: number) {
+    try {
+        return await Poem.findOne({
+            attributes: [
+                "id",
+                "createdAt",
+                "title",
+                "content",
+            ],
+            where: {
+                id: poemID,
+            },
+        });
+    } catch ({ stack }) {
+        return stack;
+    }
+}
+
 async function storePoem({ title, content }: IPoem) {
     try {
         await Poem.create({ content, title });
@@ -57,6 +75,7 @@ async function storeLine({ poemID, lineIndex, content, authorDevice, passerDevic
 }
 
 export {
+    getPoem,
     returnPoems,
     storePoem,
     storeLine,
