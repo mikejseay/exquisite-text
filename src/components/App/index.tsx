@@ -26,8 +26,7 @@ import type {
 
 
 const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
-console.log(window.location);
-export const serverPath: URL["pathname"] | URL["href"] = isDevelopment
+const serverPath: URL["pathname"] | URL["href"] = isDevelopment
     ? `http://${window.location.hostname}:3000`
     : "/";
 
