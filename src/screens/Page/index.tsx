@@ -4,7 +4,7 @@ import isNil from "lodash/isNil";
 
 import { Poem } from "../../components/Poem";
 import { getPoemById } from "../../services/poems";
-import Poem404 from "../../components/Poem404";
+import NoResults from "../../components/NoResults";
 import { poemsContainer } from "./styles";
 
 import {
@@ -39,7 +39,7 @@ function Page(): JSX.Element {
     }, []);
 
     const poemContent = isNil(poem) || poem.id === 0
-        ? <Poem404 content="No poem found." />
+        ? <NoResults message="No poem found." />
         : <Poem key={poem.id} poem={poem} />;
 
     return (

@@ -1,10 +1,10 @@
 import * as React from "react";
 
-export default function Poem404({ content }: { content: string }): JSX.Element {
+export default function NoResults({ message }: { message: string }): JSX.Element {
     return (
         <div style={{ textAlign: "center" }}>
             <h4>
-                {content}
+                {message}
             </h4>
         </div>
     );
