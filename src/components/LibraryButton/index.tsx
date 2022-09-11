@@ -1,6 +1,6 @@
 import * as React from "react";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
-import FAB from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
 import Box from "@mui/material/Box";
 import { libraryButton } from "./styles";
 import { useNavigate } from "react-router-dom";
@@ -18,14 +18,15 @@ export function LibraryButton(): JSX.Element {
     return (
         <div className={"goto-library"}>
             <Box>
-                <FAB
+                <IconButton
                     color="primary"
+                    size={"large"}
                     aria-label="library"
                     sx={libraryButton}
                     onClick={_clickHandler}
                 >
                     <MenuBookIcon />
-                </FAB>
+                </IconButton>
             </Box>
         </div>
     );

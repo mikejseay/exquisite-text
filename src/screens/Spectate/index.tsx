@@ -2,13 +2,13 @@ import * as React from "react";
 
 import GameTransition from "../../components/GameTransition";
 import Lines from "../../components/Lines";
-import Leave from "../../components/Leave";
+import LeaveButton from "../../components/LeaveButton";
 
 function Spectate() {
     return (
         <div>
             <Lines />
-            <Leave />
+            <LeaveButton />
             <GameTransition />
         </div>
     );

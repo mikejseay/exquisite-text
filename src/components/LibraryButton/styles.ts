@@ -6,6 +6,6 @@ import {
 
 export const libraryButton: SxProps = {
     position: "absolute",
-    left: FABDiameter + 2 * FABSpace - 25,
-    top: FABSpace,
+    left: FABDiameter + FABSpace - 6,
+    top: FABSpace - 6,
 };

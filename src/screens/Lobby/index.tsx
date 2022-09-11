@@ -2,7 +2,7 @@ import * as React from "react";
 
 import GameSettings from "../../components/GameSettings";
 import GameTransition from "../../components/GameTransition";
-import Leave from "../../components/Leave";
+import LeaveButton from "../../components/LeaveButton";
 import UserTable from "../../components/UserTable";
 
 function Lobby() {
@@ -10,7 +10,7 @@ function Lobby() {
         <div >
             <UserTable />
             <GameSettings />
-            <Leave />
+            <LeaveButton />
             <GameTransition />
         </div>
     );
