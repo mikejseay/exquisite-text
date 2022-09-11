@@ -14,9 +14,11 @@ export async function getPoemById(id: IPoem["id"]) {
     }
 }
 
-export async function getPoems() {
+export async function getPoems(offset = 0) {
     try {
-        const response = await fetch(`${serverPath}/poems/`);
+        const response = await fetch(`${serverPath}/poems/${offset === 0
+            ? ""
+            : offset}`);
         const json = await response.json();
         return (json);
     } catch (error) {

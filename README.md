@@ -39,9 +39,9 @@ cp .env.example .env
 cd ..
 ```
 
-Install [Node](https://nodejs.org/en/) and [PostgreSQL](https://www.postgresql.org/download/) according to their instructions for your operating system. If you're using a Linux-like OS and have Homebrew, you can install PostgreSQL with `brew install postgresql` and then start its service with `brew services start postgresql`.
+Install [Node](https://nodejs.org/en/) and [PostgreSQL](https://www.postgresql.org/download/) according to their instructions for your operating system. If you're using a Linux-like OS and have Homebrew, you can install PostgreSQL with `brew install postgresql`, with Linux: `sudo apt install postgresql`. Then start its service with Linux: `sudo systemctl start postgresqlservice` | macOS: `brew services start postgresql`.
 
-To set up the PostgreSQL backend, first log in to the default database with `psql postgres`.  Then run the following commands from the `postgres` command line to create the user and database that will be used for development:
+To set up the PostgreSQL backend, first log in to the default database with Linux: `sudo -u postgres psql` | macOS: `psql postgres`. Then run the following commands from the `postgres` command line to create the user and database that will be used for development:
 
 ```
 CREATE ROLE me WITH CREATEDB LOGIN PASSWORD 'password';

@@ -2,30 +2,38 @@ import * as React from "react";
 import { Pagination } from "@mui/material";
 
 import { paginatedItems, paginationContainer } from "./styles";
-import { IPoem } from "../../types";
 import { Poem } from "../Poem";
 import NoResults from "../NoResults";
-import { getItemsOnCurrentPage } from "../../helpers";
 
-type Props = {
-    content: IPoem[],
-    noResults: string,
-}
+import { getPoems } from "../../services/poems";
 
-export default function PaginatedLibrary({ content, noResults }: Props): JSX.Element {
+import {
+    IPoem,
+    IPoems,
+} from "../../types";
+
+export default function PaginatedLibrary({ noResults }: { noResults: string}): JSX.Element {
     const [ page, setPage ] = React.useState(1);
-    
+    const [ poems, setPoems ] = React.useState<IPoem[]>([]);
     const PER_PAGE = 10;
-    const count = Math.ceil(content.length / PER_PAGE);
+    const count = Math.ceil(poems.length / PER_PAGE);
+
+    React.useEffect(() => {
+        const fetchPoems = async () => {
+            const fetchedPoems: IPoems = await getPoems((page - 1) * PER_PAGE);
+            setPoems(Object.values(fetchedPoems));
+        };
+        fetchPoems();
+    }, []);
 
     function handlePageChange (event: React.ChangeEvent<unknown>, page: number): void {
         setPage(page);
     }
 
     const poemsContent = <div style={paginatedItems}>
-        {Object.keys(content).length < 1
+        {Object.keys(poems).length < 1
             ? <NoResults key={0} message={noResults} />
-            : getItemsOnCurrentPage(content, page, PER_PAGE)
+            : poems
                 .sort((a, b) => Number(a.createdAt) - Number(b.createdAt))
                 .map((poem) => <Poem key={poem.id} poem={poem} />)}</div>;
 
