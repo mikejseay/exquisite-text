@@ -5,12 +5,14 @@ import { paginatedItems, paginationContainer } from "./styles";
 import { Poem } from "../Poem";
 import NoResults from "../NoResults";
 
+import { getItemsOnCurrentPage } from "../../helpers";
 import { getPoems } from "../../services/poems";
 
 import {
     IPoem,
     IPoems,
 } from "../../types";
+import isNil from "lodash/isNil";
 
 export default function PaginatedLibrary({ noResults }: { noResults: string}): JSX.Element {
     const [ page, setPage ] = React.useState(1);
@@ -20,7 +22,7 @@ export default function PaginatedLibrary({ noResults }: { noResults: string}): J
 
     React.useEffect(() => {
         const fetchPoems = async () => {
-            const fetchedPoems: IPoems = await getPoems((page - 1) * PER_PAGE);
+            const fetchedPoems: IPoems = await getPoems(0);
             setPoems(Object.values(fetchedPoems));
         };
         fetchPoems();
@@ -29,13 +31,15 @@ export default function PaginatedLibrary({ noResults }: { noResults: string}): J
     function handlePageChange (event: React.ChangeEvent<unknown>, page: number): void {
         setPage(page);
     }
-
+    const itemsOnCurrentPage = getItemsOnCurrentPage(poems, page, PER_PAGE);
     const poemsContent = <div style={paginatedItems}>
-        {Object.keys(poems).length < 1
+        {itemsOnCurrentPage.length < 1
             ? <NoResults key={0} message={noResults} />
-            : poems
+            : itemsOnCurrentPage
                 .sort((a, b) => Number(a.createdAt) - Number(b.createdAt))
-                .map((poem) => <Poem key={poem.id} poem={poem} />)}</div>;
+                .map((poem) => isNil(poem)
+                    ? null
+                    : <Poem key={poem.id} poem={poem} />)}</div>;
 
     const pagination = <div style={paginationContainer}>
         <Pagination

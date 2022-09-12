@@ -36,7 +36,7 @@ export const lineConstraints: ILineConstraintDict = {
 
 // server constants
 
-export const nPoemsInLibrary = 10;
+export const nPoemsInLibrary = 1000;
 export const maxEditors = 4;
 export const defaultGameSettings: IGameSettingsInfo = {
     lineLength: LineLength.short,
