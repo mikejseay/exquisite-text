@@ -18,12 +18,6 @@ router.get("/", async function (req: Request, res: Response) {
     res.send(response);
 });
 
-/* GET poems. */
-router.get("/:offset", async function (req: Request, res: Response) {
-    const response = await returnPoems(nPoemsInLibrary, Number(req.params.offset));
-    res.send(response);
-});
-
 /* GET poems by ID. */
 router.get("/:id", async function (req: Request, res: Response) {
     const response = await getPoem(Number(req.params.id));

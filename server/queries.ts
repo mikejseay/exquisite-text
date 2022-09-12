@@ -16,7 +16,7 @@ import { ILine, IPoem } from "../src/types";
     }
 })();
 
-async function returnPoems(nPoems: number, offset = 0) {
+async function returnPoems(nPoems: number) {
     try {
         await Poem.sync();  // make sure the table exists
         await Line.sync();  // make sure the table exists
@@ -28,7 +28,6 @@ async function returnPoems(nPoems: number, offset = 0) {
                 "content",
             ],
             limit: nPoems,
-            offset,
             order: [
                 [
                     "createdAt",
