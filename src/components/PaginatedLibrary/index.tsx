@@ -5,29 +5,30 @@ import { paginatedItems, paginationContainer } from "./styles";
 import { Poem } from "../Poem";
 import NoResults from "../NoResults";
 
-import { getPoems } from "../../services/poems";
+import { getPoemsOfPage } from "../../services/poems";
 
 import {
     IPoem,
     IPoems,
 } from "../../types";
+import { nPagesToShow, nPoemsPerPage } from "../../constants";
 
 export default function PaginatedLibrary({ noResults }: { noResults: string}): JSX.Element {
     const [ page, setPage ] = React.useState(1);
     const [ poems, setPoems ] = React.useState<IPoem[]>([]);
-    const PER_PAGE = 10;
-    const count = Math.ceil(poems.length / PER_PAGE);
 
     React.useEffect(() => {
+        console.log("fetchPoems useEffect invoked with page", page);
         const fetchPoems = async () => {
-            const fetchedPoems: IPoems = await getPoems((page - 1) * PER_PAGE);
+            const fetchedPoems: IPoems = await getPoemsOfPage((page - 1) * nPoemsPerPage);
             setPoems(Object.values(fetchedPoems));
         };
         fetchPoems();
-    }, []);
+    }, [ page ]);
 
     function handlePageChange (event: React.ChangeEvent<unknown>, page: number): void {
         setPage(page);
+        console.log("page changed to", page);
     }
 
     const poemsContent = <div style={paginatedItems}>
@@ -39,7 +40,7 @@ export default function PaginatedLibrary({ noResults }: { noResults: string}): J
 
     const pagination = <div style={paginationContainer}>
         <Pagination
-            count={count}
+            count={nPagesToShow}
             onChange={handlePageChange}
             page={page}
         />
