@@ -1,6 +1,6 @@
 import * as React from "react";
 
-export const poemsContainer: React.CSSProperties = {
+export const poemsLibraryContainer: React.CSSProperties = {
     marginBottom: "2em",
     marginTop: "auto",
 };
