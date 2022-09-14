@@ -16,8 +16,18 @@ export default function Host() {
 
     return (
         <main style={{ textAlign: "center" }}>
-            <h2>{"Go to " + rootURL}</h2>
-            <h2>{"Enter room code: " + roomID}</h2>
+            <h2>
+                <p>Go to&nbsp;
+                    <a
+                        href={rootURL}
+                        rel="noopener noreferrer"
+                        target={rootURL}
+                    >
+                        {rootURL}
+                    </a>.
+                </p>
+            </h2>
+            <h2>{`Enter room code: ${roomID}`}</h2>
             <UserTable />
             <GameSettings />
         </main>
