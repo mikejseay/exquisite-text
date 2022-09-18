@@ -17,6 +17,7 @@
 
 Exquisite Corpse is a game invented by surrealist artists in the 1920's. Each player adds to a composition in sequence, by being allowed to see only the end of what the previous person contributed. Here, I implement an online multiplayer version for poetry.
 
+Work is tracked for this repository on the [Exquisite Text Project Board](https://github.com/mikejseay/exquisite-text/projects/1).
 
 ## Tech Stack
 
