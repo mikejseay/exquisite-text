@@ -110,7 +110,7 @@ const LineInput = () => {
                 setPoemDoneVisible(true);
             } else {
                 setTextAreaVisible(false);
-                setHelpMessage("Your friend is writing 👇");
+                setHelpMessage("Your friend is writing ⤵");
                 setPassEnabled(false);
                 setPoemDoneVisible(false);
             }

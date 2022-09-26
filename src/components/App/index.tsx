@@ -1,4 +1,5 @@
 import isNil from "lodash/isNil";
+import Paper from "@mui/material/Paper";
 import * as React from "react";
 import {
     Outlet,
@@ -8,21 +9,21 @@ import {
     Socket,
     io,
 } from "socket.io-client";
-import Paper from "@mui/material/Paper";
 import { v4 as uuidv4 } from "uuid";
 
-import Tutorial from "../Tutorial";
-
+import { MenuButtons } from "../MenuButtons";
 import {
     app,
     appHeader,
     appTitle,
     possibleSocket,
 } from "./styles";
+
 import type {
     ClientToServerEvents,
     ServerToClientEvents,
 } from "../../types";
+
 
 
 const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
@@ -72,7 +73,7 @@ export default function App() {
         <div style={possibleSocket} className={"possible-socket"}>
             <Paper elevation={0} style={app} className={"app-container"}>
                 <header style={appHeader}>
-                    <Tutorial />
+                    <MenuButtons />
                     <div style={appTitle}>Exquisite Text</div>
                 </header>
                 <Outlet context={{ socket }} />
