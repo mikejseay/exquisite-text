@@ -8,4 +8,5 @@ export const paginationContainer: React.CSSProperties = {
 
 export const paginatedItems: React.CSSProperties = {
     paddingBottom: "1em",
+    paddingTop: "1em",
 };

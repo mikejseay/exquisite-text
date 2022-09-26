@@ -1,3 +1,6 @@
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
 import * as React from "react";
 import ReactDOM from "react-dom/client";
 import {
@@ -25,31 +28,54 @@ const noMatchRouteElement = <main style={{ textAlign: "center" }}>
     <p>There&apos;s nothing here!</p>
 </main>;
 
+function Root() {
+    const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+  
+    const theme = React.useMemo(
+        () =>
+            createTheme({
+                palette: {
+                    mode: prefersDarkMode
+                        ? "dark"
+                        : "light",
+                },
+            }),
+        [ prefersDarkMode ],
+    );
+  
+    return (
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/" element={<App />}>
+
+                        {/* create socket on button press with successful room entry */}
+                        <Route path="/" element={<Join />} />
+
+                        {/* definitely creates socket and room */}
+                        <Route path="host" element={<Host />} />
+
+                        {/* requires socket */}
+                        <Route path="lobby" element={<Lobby />} />
+                        <Route path="game" element={<Game />} />
+                        <Route path="spectate" element={<Spectate />} />
+                        <Route path="library" element={<Library />} />
+                        <Route path="page/:id" element={<Page />} />
+                        <Route path="disconnected" element={<Disconnected />} />
+                        <Route  // no match route
+                            path="*"
+                            element={noMatchRouteElement}
+                        />
+                    </Route>
+                </Routes>
+            </BrowserRouter>
+        </ThemeProvider>
+    );
+}
+
 root.render(
-    <BrowserRouter>
-        <Routes>
-            <Route path="/" element={<App />}>
-
-                {/* create socket on button press with successful room entry */}
-                <Route path="/" element={<Join />} />
-
-                {/* definitely creates socket and room */}
-                <Route path="host" element={<Host />} />
-
-                {/* requires socket */}
-                <Route path="lobby" element={<Lobby />} />
-                <Route path="game" element={<Game />} />
-                <Route path="spectate" element={<Spectate />} />
-                <Route path="library" element={<Library />} />
-                <Route path="page/:id" element={<Page />} />
-                <Route path="disconnected" element={<Disconnected />} />
-                <Route  // no match route
-                    path="*"
-                    element={noMatchRouteElement}
-                />
-            </Route>
-        </Routes>
-    </BrowserRouter>,
+    <Root />,
 );
 
 // If you want to start measuring performance in your app, pass a function
