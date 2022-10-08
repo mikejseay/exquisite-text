@@ -31,8 +31,10 @@ code {
 }
 
 @media (prefers-color-scheme: dark) {
+    textarea {
+        color: #fff;
+    }
     body {
-        filter: invert(100%) hue-rotate(2.25rad);
         background-color: #000;
     }
 }
