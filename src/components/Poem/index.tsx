@@ -56,7 +56,7 @@ export function Poem({ poem }: { poem: IPoem }): JSX.Element {
                     </CopyToClipboard>
                     <CopyToClipboard
                         onCopy={onCopy}
-                        text={`${location.origin}/poems/${poem.id}`}
+                        text={`${location.origin}/page/${poem.id}`}
                     >
                         <Tooltip title="Copy poem permalink to clipboard">
                             <IconButton>
