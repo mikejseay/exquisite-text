@@ -123,7 +123,11 @@ class Room {
         this.nPoemsInRotation = nPoemsToHandOut;
         let poemIndex = 0;
         for (const thisEditor of this.editors.values()) {
+
+            thisEditor.lastActivity = Date.now(); // refresh AFK timers upon game start
             thisEditor.prepareForGame();
+
+            // give the editor a new poem
             if (nPoemsToHandOut > 0) {
                 const thisPoem = new Poem(targetLines, poemIndex, this.io, this.roomID); // creates Poem object
                 thisEditor.poemQueue.push(thisPoem);

@@ -44,8 +44,8 @@ export const defaultGameSettings: IGameSettingsInfo = {
     nPoems: 1,
     nRounds: 2,
 };
-export const maxMemberTimeSpentInactive = 180000; // ms
-export const maxRoomTimeSpentEmpty = 300000; // ms
+export const maxMemberTimeSpentInactive = 300000; // ms
+export const maxRoomTimeSpentEmpty = 600000; // ms
 export const checkActivityInterval = 30000; // ms
 export const editorColorArr = [
     "#4F71BE",
