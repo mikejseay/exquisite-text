@@ -9,7 +9,8 @@ import { roomCodeLength } from "../../constants";
 export default function Host() {
     const { socket } = useSocket();
 
-    const rootURL = window.location.host;
+    const rootURLDisplay = window.location.host;
+    const rootURLRoute = "/";
     const roomID = generateAlphaString(roomCodeLength);
 
     socket.emit("createGameHost", roomID);
@@ -19,11 +20,11 @@ export default function Host() {
             <h2>
                 <p>Go to&nbsp;
                     <a
-                        href={rootURL}
+                        href={rootURLRoute}
                         rel="noopener noreferrer"
-                        target={rootURL}
+                        target={rootURLRoute}
                     >
-                        {rootURL}
+                        {rootURLDisplay}
                     </a>.
                 </p>
             </h2>

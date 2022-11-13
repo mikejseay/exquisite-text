@@ -34,6 +34,11 @@ const serverPath: URL["pathname"] | URL["href"] = isDevelopment
 type ContextType = { socket: Socket<ServerToClientEvents, ClientToServerEvents> };
 
 export default function App() {
+    // instead of creating the socket state here,
+    // only create the socket and pass it into the correct react router outlet
+    // (basically a way to pass a socket for useContext type usage)
+    // if a socket is necessary
+    // no socket needed for Join page, Library, poem permalink (Page)
     const [ socket, setSocket ] = React.useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
 
     React.useEffect(() => {
