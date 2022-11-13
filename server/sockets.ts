@@ -123,7 +123,6 @@ class Room {
         this.nPoemsInRotation = nPoemsToHandOut;
         let poemIndex = 0;
         for (const thisEditor of this.editors.values()) {
-
             thisEditor.lastActivity = Date.now(); // refresh AFK timers upon game start
             thisEditor.prepareForGame();
 
