@@ -6,10 +6,8 @@ import { LibraryButton } from "../LibraryButton";
 import Tutorial from "../Tutorial";
 
 export function MenuButtons(): JSX.Element {
-
-    const location = useLocation();
-
     const [ isGameScreen, setIsGameScreen ] = React.useState(false);
+    const location = useLocation();
 
     const nonGameButtons = isGameScreen
         ? null
