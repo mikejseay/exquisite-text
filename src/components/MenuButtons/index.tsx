@@ -14,7 +14,7 @@ export function MenuButtons(): JSX.Element {
         :  (<><LibraryButton /><HostButton /></>);
 
     // this is a fairly hacky way to tell whether the user is playing the game
-    // in that case, we want to hide the library button
+    // in that case, we want to hide the library and host buttons
     React.useEffect(() => {
         setIsGameScreen(location.pathname === "/game");
     }, [ location ]);
