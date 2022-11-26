@@ -1,11 +1,8 @@
 import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import AccordionSummary from "@mui/material/AccordionSummary";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import IconButton from "@mui/material/IconButton";
 import * as React from "react";
-import { CopyToClipboard } from "react-copy-to-clipboard";
 
 import { useSocket } from "../App";
 import PoemLines from "../PoemLines";
@@ -18,16 +15,11 @@ import {
     ILine,
     IUserTableInfo,
 } from "../../types";
-import { lineSepString, shortDur } from "../../constants";
 
 function PoemsLines() {
     const { socket } = useSocket();
     const [ poemsLines, setPoemsLines ] = React.useState<Array<ILine[]>>([]);
     const [ editorColors, setEditorColors ] = React.useState<Record<string, string>>({});
-    const [ isCopied, setIsCopied ] = React.useState<boolean>(false);
-    const copyStatus = isCopied
-        ? <span style={{ color: "gray" }}>Copied.</span>
-        : null;
 
     React.useEffect(() => {
     // Event handlers for the poem and the deletePoem events are set up for the Socket.IO connection.
@@ -69,16 +61,6 @@ function PoemsLines() {
                         </AccordionSummary>
                         <AccordionDetails>
                             <PoemLines poemLines={poemLines} editorColors={editorColors} />
-                            <CopyToClipboard text={poemLines.map(line => line.content).join(lineSepString)}
-                                onCopy={() => {
-                                    setIsCopied(true);
-                                    setTimeout(() => setIsCopied(false), shortDur);
-                                }}>
-                                <IconButton>
-                                    <ContentCopyIcon />
-                                </IconButton>
-                            </CopyToClipboard>
-                            {copyStatus}
                         </AccordionDetails>
                     </Accordion>
                 </div>
