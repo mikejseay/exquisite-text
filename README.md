@@ -54,7 +54,17 @@ Install Yarn with `npm install --global yarn` and then run `yarn` to install the
 
 Open up a new terminal and go to the server directory with `cd ./server`. Run `yarn` again, this time to install the server's node modules.
 
-In the server terminal, run `yarn start`, then in the root terminal run `yarn start`. This should automatically open a new browser tab at [`http://localhost:8080/`](http://localhost:8080/). Note that by default, you will not be able to join a game from multiple tabs in the same browser on the same device unless you prevent localStorage from being reused (e.g. incognito tab, Firefox multi-accounts). This can be overridden by changing the root .env variable `REACT_APP_DEBUG_SINGLE_BROWSER` to `true`, but it will prevent you from properly debugging device recognition behavior.  
+In the server terminal, run `yarn start`, then in the root terminal run `yarn start`. This should automatically open a new browser tab at [`http://localhost:8080/`](http://localhost:8080/). Note that by default, you will not be able to join a game from multiple tabs in the same browser on the same device unless you prevent localStorage from being reused (e.g. incognito tab, Firefox multi-accounts). This can be overridden by changing the root .env variable `REACT_APP_DEBUG_SINGLE_BROWSER` to `true`, but it will prevent you from properly debugging device recognition behavior.
+
+### Poke around the Database
+```sql
+\c exquisite;
+\d
+\dt
+\dt+
+SELECT * FROM "Poems";
+SELECT * FROM "Lines";
+```
 
 ### Heroku Deployment
 
