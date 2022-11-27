@@ -10,6 +10,8 @@ import { ILine, IPoem } from "../src/types";
 (async () => {
     try {
         await pgSequelConn.authenticate();
+        await Poem.sync();  // make sure the table exists
+        await Line.sync();  // make sure the table exists
         console.log("Connection has been established successfully.");
     } catch (error) {
         console.error("Unable to connect to the database:", error);
@@ -18,8 +20,6 @@ import { ILine, IPoem } from "../src/types";
 
 async function returnPoems(nPoems: number) {
     try {
-        await Poem.sync();  // make sure the table exists
-        await Line.sync();  // make sure the table exists
         return await Poem.findAll({
             attributes: [
                 "id",

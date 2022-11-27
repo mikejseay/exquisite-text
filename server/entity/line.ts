@@ -7,7 +7,7 @@ import {
 
 
 export const Line = pgSequelConn.define(
-    "Line",
+    "line",
     {
         // Model attributes are defined here
         poemID: {

@@ -23,7 +23,7 @@ export const pgSequelConn = new Sequelize(
 );
 
 export const Poem = pgSequelConn.define(
-    "Poem",
+    "poem",
     {
         // Model attributes are defined here
         content: {
