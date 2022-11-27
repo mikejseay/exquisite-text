@@ -62,8 +62,8 @@ In the server terminal, run `yarn start`, then in the root terminal run `yarn st
 \d
 \dt
 \dt+
-SELECT * FROM "Poems";
-SELECT * FROM "Lines";
+SELECT * FROM poems;
+SELECT * FROM lines;
 ```
 
 ### Heroku Deployment
