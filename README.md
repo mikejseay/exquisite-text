@@ -85,18 +85,9 @@ This will create a new Heroku app named `my-exquisite-text` and build the projec
 
 Soon we will add more docs to explain how to use Heroku Postgres to keep a database of poems.
 
-## License
-
-`exquisite-text` is licensed under the
-[GNU General Public License v3.0](https://github.com/mikejseay/exquisite-text/blob/main/LICENSE)
-
-Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights.
-
-
 ## Contact
 
 mikejseay@gmail.com
-
 
 ## Demonstration
 
