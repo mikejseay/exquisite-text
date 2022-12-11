@@ -12,7 +12,7 @@ import {
 import "./index.css";
 import App from "./components/App";
 import Game from "./screens/Game";
-import Host from "./screens/Host";
+// import Host from "./screens/Host";
 import Join from "./screens/Join";
 import Library from "./screens/Library";
 import Page from "./screens/Page";
@@ -58,7 +58,7 @@ function Root() {
                         <Route path="/" element={<Join />} />
 
                         {/* definitely creates socket and room */}
-                        <Route path="host" element={<Host />} />
+                        {/* <Route path="host" element={<Host />} /> */}
 
                         {/* requires socket */}
                         <Route path="lobby" element={<Lobby />} />

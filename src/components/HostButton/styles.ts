@@ -20,3 +20,9 @@ export const hostFAB: SxProps = {
     left: FABDiameter + 2 * FABSpace - 5,
     top: FABSpace,
 };
+
+export const roomCodeStyles: React.CSSProperties = {
+    paddingLeft: "2em",
+    position: "absolute",
+    top: FABDiameter + 2 * FABSpace,
+};
