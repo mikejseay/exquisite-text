@@ -66,7 +66,7 @@ export default function Join() {
 
     return (
         <div>
-            <div style={{ display: "flex", justifyContent: "center" }}>
+            <div style={{ display: "flex", justifyContent: "center", marginTop: "2em" }}>
                 <Box
                     component="form"
                     sx={{
@@ -125,7 +125,7 @@ export default function Join() {
                 }}>
                 {joinErrorMessage}
             </div>
-            <MenuButtons />
+            <MenuButtons socket={socket} />
         </div>
     );
 }
