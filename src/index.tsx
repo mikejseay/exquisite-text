@@ -28,6 +28,12 @@ const noMatchRouteElement = <main style={{ textAlign: "center" }}>
     <p>There&apos;s nothing here!</p>
 </main>;
 
+function isComponentEnabled(element: JSX.Element): JSX.Element | null {
+    return process.env.IS_LIBRARY_ENABLED === "true"
+        ? element
+        : null;
+}
+
 function Root() {
     const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
   
@@ -42,10 +48,6 @@ function Root() {
             }),
         [ prefersDarkMode ],
     );
-    
-    const library = process.env.IS_LIBRARY_ENABLED === "true"
-        ? <Route path="library" element={<Library />} />
-        : null;
 
     return (
         <ThemeProvider theme={theme}>
@@ -64,8 +66,8 @@ function Root() {
                         <Route path="lobby" element={<Lobby />} />
                         <Route path="game" element={<Game />} />
                         <Route path="spectate" element={<Spectate />} />
-                        {library}
-                        <Route path="page/:id" element={<Page />} />
+                        {isComponentEnabled(<Route path="library" element={<Library />} />)}
+                        {isComponentEnabled(<Route path="page/:id" element={<Page />} />)}
                         <Route path="disconnected" element={<Disconnected />} />
                         <Route  // no match route
                             path="*"
