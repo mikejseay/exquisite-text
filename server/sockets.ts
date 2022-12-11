@@ -633,7 +633,9 @@ class Editor extends Member {
         };
 
         // add the poem to the database
-        storePoem(poem);
+        if (process.env.IS_LIBRARY_ENABLED === "true") {
+            storePoem(poem);
+        }
 
         // broadcast the poem to room members via sockets
         // this.sendPoem(poem);
@@ -706,7 +708,9 @@ class Poem {
             addedAt: new Date(),
         };
         this.lines.add(myLine);
-        storeLine(myLine);
+        if (process.env.IS_LIBRARY_ENABLED === "true") {
+            storeLine(myLine);
+        }
         this.mostRecentEditor = authorID;
         this.halfLine = secondPart;
         this.io.in(this.roomID + "_Spectators").emit("lineSpectator", this.poemIndex, firstPart);

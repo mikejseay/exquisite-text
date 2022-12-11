@@ -3,6 +3,7 @@ import isNil from "lodash/isNil";
 import Button from "@mui/material/Button";
 import Fab from "@mui/material/Fab";
 import Stack from "@mui/material/Stack";
+import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import { ClickAwayListener } from "@mui/material";
 import WarningIcon from "@mui/icons-material/Warning";
@@ -21,11 +22,10 @@ import { shortDur } from "../../constants";
 import { useStateRef } from "../../helpers";
 import {
     activeInput,
+    alertMessageStyle,
     caret,
     completeConfirmBox,
     completeFAB,
-    errorMessage,
-    helpMessageStyle,
     inactiveInput,
     inputBox,
     lineInputContainer,
@@ -166,7 +166,7 @@ const LineInput = () => {
                 if (onLastLine) {
                     setHelpMessage("Last line. Make it count!");
                 } else {
-                    setHelpMessage("Now start the next line (Next player will see this.)");
+                    setHelpMessage("Start the next line (Next player will see this.)");
                 }
             } else {
                 if (onLastLine) {
@@ -324,16 +324,12 @@ const LineInput = () => {
                 style={mainInputContainer}
             >
                 <div
-                    className={"help-message"}
-                    style={helpMessageStyle}
+                    className={"alert-message"}
+                    style={alertMessageStyle}
                 >
-                    {helpMessage}
-                </div>
-                <div
-                    className={"error-message"}
-                    style={errorMessage}
-                >
-                    {inputErrorMsg}
+                    {inputErrorMsg !== "\n"
+                        ? <Alert severity="error">{inputErrorMsg}</Alert>
+                        : helpMessage !== "" && <Alert severity="info">{helpMessage}</Alert>}
                 </div>
                 <div
                     className={"input-box"}

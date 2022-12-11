@@ -17,6 +17,6 @@ export const hostConfirmBox: SxProps = {
 
 export const hostFAB: SxProps = {
     position: "absolute",
-    left: FABDiameter * 2 + 2 * FABSpace - 5,
+    left: FABDiameter + 2 * FABSpace - 5,
     top: FABSpace,
 };
