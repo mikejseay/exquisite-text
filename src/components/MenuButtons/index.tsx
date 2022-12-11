@@ -8,10 +8,13 @@ import Tutorial from "../Tutorial";
 export function MenuButtons(): JSX.Element {
     const [ isGameScreen, setIsGameScreen ] = React.useState(false);
     const location = useLocation();
+    const library = process.env.IS_LIBRARY_ENABLED === "true"
+        ? <LibraryButton />
+        : null;
 
     const nonGameButtons = isGameScreen
         ? null
-        :  (<><LibraryButton /><HostButton /></>);
+        : (<>{library}<HostButton /></>);
 
     // this is a fairly hacky way to tell whether the user is playing the game
     // in that case, we want to hide the library and host buttons

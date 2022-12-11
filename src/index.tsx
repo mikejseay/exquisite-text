@@ -42,7 +42,11 @@ function Root() {
             }),
         [ prefersDarkMode ],
     );
-  
+    
+    const library = process.env.IS_LIBRARY_ENABLED === "true"
+        ? <Route path="library" element={<Library />} />
+        : null;
+
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
@@ -60,7 +64,7 @@ function Root() {
                         <Route path="lobby" element={<Lobby />} />
                         <Route path="game" element={<Game />} />
                         <Route path="spectate" element={<Spectate />} />
-                        <Route path="library" element={<Library />} />
+                        {library}
                         <Route path="page/:id" element={<Page />} />
                         <Route path="disconnected" element={<Disconnected />} />
                         <Route  // no match route

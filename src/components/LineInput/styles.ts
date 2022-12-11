@@ -80,22 +80,15 @@ export const textSpacer: React.CSSProperties = {
     width: "auto",
 };
 
-export const errorMessage: React.CSSProperties = {
-    color: "red",
-    fontSize: "small",
-    textAlign: "center",
-    whiteSpace: "pre-line",
-};
-
 export const passButton: React.CSSProperties = {
     marginBottom: "1em",
     minHeight: "40px",
 };
 
-export const helpMessageStyle: React.CSSProperties = {
+export const alertMessageStyle: React.CSSProperties = {
     fontFamily: "sans-serif",
-    height: "1.2em",
-    whiteSpace: "pre-line",
+    marginBottom: "0.5em",
+    whiteSpace: "nowrap",
 };
 
 export const lineInputContainer: React.CSSProperties = {
