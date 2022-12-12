@@ -25,7 +25,7 @@ function HostButton({ socket }: { socket: Socket | null }) {
         setOpen((prev) => !prev);
         if (!open && socket) {
             const roomID = generateAlphaString(roomCodeLength);
-            const shareLink = `${location.protocol}${location.host}/${roomID}`;
+            const shareLink = `${location.protocol}//${location.host}/${roomID}`;
             setRoomID(roomID);
             setShareLink(shareLink);
             clipboard.copy(shareLink);
