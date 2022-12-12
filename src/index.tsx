@@ -69,6 +69,8 @@ function Root() {
                         {isComponentEnabled(<Route path="library" element={<Library />} />)}
                         {isComponentEnabled(<Route path="page/:id" element={<Page />} />)}
                         <Route path="disconnected" element={<Disconnected />} />
+
+                        <Route path="/:id" element={<Join />} />
                         <Route  // no match route
                             path="*"
                             element={noMatchRouteElement}
