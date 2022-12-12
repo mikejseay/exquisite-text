@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
@@ -14,11 +14,12 @@ import { MenuButtons } from "../../components/MenuButtons";
 
 export default function Join() {
     const navigate = useNavigate();
+    const { id } = useParams();
 
     const { socket } = useSocket();
 
     const [ joinErrorMessage, setJoinErrorMessage ] = React.useState<string>("");
-    const [ roomID, setRoomID ] = React.useState<string>("");
+    const [ roomID, setRoomID ] = React.useState<string>(id ?? "");
     const [ name, setName ] = React.useState<string>("");
 
     const [ roomOK, setRoomOK ] = React.useState<boolean>(false);
@@ -41,6 +42,10 @@ export default function Join() {
     const handleSpectatePress = () => {
         socket.emit("joinGameAs", "Spectator", roomID.toUpperCase(), name.toUpperCase());
     };
+
+    React.useEffect(() => {
+        setRoomID(id ?? "");
+    }, [ id ]);
 
     React.useEffect(() => {
         const joinErrorListener = (errorMsg: string) => {
@@ -66,7 +71,7 @@ export default function Join() {
 
     return (
         <div>
-            <div style={{ display: "flex", justifyContent: "center", marginTop: "2em" }}>
+            <div style={{ display: "flex", justifyContent: "center", marginTop: "6em" }}>
                 <Box
                     component="form"
                     sx={{
