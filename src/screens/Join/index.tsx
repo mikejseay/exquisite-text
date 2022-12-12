@@ -45,7 +45,9 @@ export default function Join() {
 
     React.useEffect(() => {
         setRoomID(id ?? "");
-    }, [ id ]);
+        setRoomOK(roomID.length === roomCodeLength);
+        setNameOK(name.length > 0);
+    }, [ id, name, roomID ]);
 
     React.useEffect(() => {
         const joinErrorListener = (errorMsg: string) => {

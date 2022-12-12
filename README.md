@@ -6,7 +6,7 @@
 
 <div align="center">
   <h3>
-    <a href="https://exquisite-text-js-hub-1.herokuapp.com/">
+    <a href="https://www.exquisitetext.com/">
       My Heroku Deploy
     </a>
   </h3>
