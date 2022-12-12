@@ -57,7 +57,7 @@ function Root() {
                     <Route path="/" element={<App />}>
 
                         {/* create socket on button press with successful room entry */}
-                        <Route path={"/"} element={<Join />} />
+                        <Route path="/" element={<Join />} />
 
                         {/* definitely creates socket and room */}
                         {/* <Route path="host" element={<Host />} /> */}
@@ -70,7 +70,7 @@ function Root() {
                         {isComponentEnabled(<Route path="page/:id" element={<Page />} />)}
                         <Route path="disconnected" element={<Disconnected />} />
 
-                        <Route path={"/:id"} element={<Join />} />
+                        <Route path="/:id" element={<Join />} />
                         <Route  // no match route
                             path="*"
                             element={noMatchRouteElement}
