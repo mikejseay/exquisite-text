@@ -13,6 +13,9 @@
 /.pnp
 .pnp.js
 
+#app
+/app/node_modules
+
 # testing
 /coverage
 

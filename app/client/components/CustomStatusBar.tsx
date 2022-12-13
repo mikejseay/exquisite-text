@@ -1,0 +1,33 @@
+import * as React from "react";
+import {
+    StatusBar,
+    StatusBarStyle,
+    View,
+    useColorScheme,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+export default function CustomStatusBar() {
+    const insets = useSafeAreaInsets();
+    const colorScheme = useColorScheme();
+    const isDark: boolean = colorScheme === "dark";
+    const backgroundColor: string = isDark
+        ? "#181A1B"
+        : "#fff";
+    const barStyle: StatusBarStyle = isDark
+        ? "light-content"
+        : "dark-content";
+
+    return (
+        <View style={{
+            backgroundColor,
+            height: insets.top,
+        }}>
+            <StatusBar
+                animated={true}
+                backgroundColor={backgroundColor}
+                barStyle={barStyle}
+            />
+        </View>
+    );
+}
