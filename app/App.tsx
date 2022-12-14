@@ -16,7 +16,7 @@ import CustomStatusBar from "./client/components/CustomStatusBar";
 
 
 export default function App() {
-    const [ uri, setUri ] = useState("https://www.exquisitetext.com");
+    const [ uri ] = useState("https://www.exquisitetext.com");
     const [ webViewKey, setWebViewKey ] = useState(0);
 
     const hideSplashScreen = async () => await SplashScreen.hideAsync();
