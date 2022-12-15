@@ -44,10 +44,13 @@ export default function Join() {
     };
 
     React.useEffect(() => {
-        setRoomID(id ?? "");
         setRoomOK(roomID.length === roomCodeLength);
         setNameOK(name.length > 0);
     }, [ id, name, roomID ]);
+
+    React.useEffect(() => {
+        setRoomID(id ?? "");
+    }, [ id ]);
 
     React.useEffect(() => {
         const joinErrorListener = (errorMsg: string) => {
@@ -87,7 +90,7 @@ export default function Join() {
                 >
                     <TextField
                         required
-                        label={"Enter " + roomCodeLength.toString() + "-Letter Code"}
+                        label={`Enter ${String(roomCodeLength)}-letter code`}
                         variant="standard"
                         value={roomID}
                         onChange={handleRoomEntryChange}
@@ -95,7 +98,7 @@ export default function Join() {
                     />
                     <TextField
                         required
-                        label="Enter Your Name"
+                        label="Enter your name"
                         variant="standard"
                         value={name}
                         onChange={handleNameEntryChange}
