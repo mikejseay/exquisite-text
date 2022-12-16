@@ -11,9 +11,9 @@ export default function Host() {
 
     const rootURLDisplay = window.location.host;
     const rootURLRoute = "/";
-    const roomID = generateAlphaString(roomCodeLength);
+    const roomId = generateAlphaString(roomCodeLength);
 
-    socket.emit("createGameHost", roomID);
+    socket.emit("createGameHost", roomId);
 
     return (
         <main style={{ textAlign: "center" }}>
@@ -28,7 +28,7 @@ export default function Host() {
                     </a>.
                 </p>
             </h2>
-            <h2>{`Enter room code: ${roomID}`}</h2>
+            <h2>{`Enter room code: ${roomId}`}</h2>
             <UserTable />
             <GameSettings />
         </main>

@@ -19,37 +19,37 @@ export default function Join() {
     const { socket } = useSocket();
 
     const [ joinErrorMessage, setJoinErrorMessage ] = React.useState<string>("");
-    const [ roomID, setRoomID ] = React.useState<string>(id ?? "");
+    const [ roomId, setRoomId ] = React.useState<string>(id ?? "");
     const [ name, setName ] = React.useState<string>("");
 
-    const [ roomOK, setRoomOK ] = React.useState<boolean>(false);
-    const [ nameOK, setNameOK ] = React.useState<boolean>(false);
+    const [ isRoomValid, setIsRoomValid ] = React.useState<boolean>(false);
+    const [ isNameValid, setIsNameValid ] = React.useState<boolean>(false);
 
     const handleRoomEntryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setRoomID(event.target.value);
-        setRoomOK(event.target.value.length === roomCodeLength);
+        setRoomId(event.target.value);
+        setIsRoomValid(event.target.value.length === roomCodeLength);
     };
 
     const handleNameEntryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setName(event.target.value);
-        setNameOK(event.target.value.length > 0);
+        setIsNameValid(event.target.value.length > 0);
     };
 
     const handleWritePress = () => {
-        socket.emit("joinGameAs", "Editor", roomID.toUpperCase(), name.toUpperCase());
+        socket.emit("joinGameAs", "Editor", roomId.toUpperCase(), name.toUpperCase());
     };
 
     const handleSpectatePress = () => {
-        socket.emit("joinGameAs", "Spectator", roomID.toUpperCase(), name.toUpperCase());
+        socket.emit("joinGameAs", "Spectator", roomId.toUpperCase(), name.toUpperCase());
     };
 
     React.useEffect(() => {
-        setRoomOK(roomID.length === roomCodeLength);
-        setNameOK(name.length > 0);
-    }, [ id, name, roomID ]);
+        setIsRoomValid(roomId.length === roomCodeLength);
+        setIsNameValid(name.length > 0);
+    }, [ id, name, roomId ]);
 
     React.useEffect(() => {
-        setRoomID(id ?? "");
+        setRoomId(id ?? "");
     }, [ id ]);
 
     React.useEffect(() => {
@@ -90,15 +90,15 @@ export default function Join() {
                 >
                     <TextField
                         required
-                        label={`Enter ${String(roomCodeLength)}-letter code`}
+                        label={`Enter ${String(roomCodeLength)}-Letter Code`}
                         variant="standard"
-                        value={roomID}
+                        value={roomId}
                         onChange={handleRoomEntryChange}
                         inputProps={{ maxLength: roomCodeLength, style: { textTransform: "uppercase" } }}
                     />
                     <TextField
                         required
-                        label="Enter your name"
+                        label="Enter Your Name"
                         variant="standard"
                         value={name}
                         onChange={handleNameEntryChange}
@@ -112,14 +112,14 @@ export default function Join() {
                 style={{ justifyContent: "center" }}
             >
                 <Button
-                    disabled={!(roomOK && nameOK)}
+                    disabled={!(isRoomValid && isNameValid)}
                     onClick={handleWritePress}
                     variant="contained"
                 >
           Write
                 </Button>
                 <Button
-                    disabled={!(roomOK && nameOK)}
+                    disabled={!(isRoomValid && isNameValid)}
                     onClick={handleSpectatePress}
                     variant="outlined"
                 >
