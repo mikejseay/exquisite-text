@@ -13,7 +13,7 @@ import { Socket } from "socket.io-client";
 
 function HostButton({ socket }: { socket: Socket | null }) {
     const [ open, setOpen ] = React.useState(false);
-    const [ roomID, setRoomID ] = React.useState<string | null>(null);
+    const [ roomId, setRoomId ] = React.useState<string | null>(null);
     const [ shareLink, setShareLink ] = React.useState<string | null>(null);
     const navigate = useNavigate();
 
@@ -24,20 +24,20 @@ function HostButton({ socket }: { socket: Socket | null }) {
     const handleClick = () => {
         setOpen((prev) => !prev);
         if (!open && socket) {
-            const roomID = generateAlphaString(roomCodeLength);
-            const shareLink = `${location.protocol}//${location.host}/${roomID}`;
-            setRoomID(roomID);
+            const roomId = generateAlphaString(roomCodeLength);
+            const shareLink = `${location.protocol}//${location.host}/${roomId}`;
+            setRoomId(roomId);
             setShareLink(shareLink);
             clipboard.copy(shareLink);
-            socket.emit("createGameHost", roomID);
-            navigate(`/${roomID}`);
+            socket.emit("createGameHost", roomId);
+            navigate(`/${roomId}`);
         }
     };
 
     const alerts = open && (
         <div style={roomCodeStyles}>
             <Alert severity="warning">
-                Enter room code: <b>{roomID}</b>
+                Enter room code: <b>{roomId}</b>
             </Alert>
             {clipboard.copied && <Alert severity="success">
                 Copied to clipboard: <b>{shareLink}</b>
