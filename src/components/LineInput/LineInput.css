@@ -19,3 +19,11 @@
         opacity: 1;
     }
 }
+@media (prefers-color-scheme: dark) {
+    #caret {
+        background-color: white !important;
+    }
+    .text-spacer {
+        color: black !important;
+    }
+}
