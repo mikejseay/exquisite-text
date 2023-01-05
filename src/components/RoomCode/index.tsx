@@ -24,7 +24,7 @@ function RoomCode() {
 
     return (
         <div style={{ textAlign: "center" }} >
-            <h1>Room Code: {roomCode}</h1>
+            <h2>Room Code: {roomCode}</h2>
         </div>
     );
 }
