@@ -240,6 +240,7 @@ class Member {
         this.socket.on("getUserTableInfo", () => this.requestUserTableInfo());
         this.socket.on("getGameSettingsInfo", () => this.requestGameSettingsInfo());
         this.socket.on("getSettingsEnabled", () => this.requestSettingsEnabled());
+        this.socket.on("getRoomCode", () => this.requestRoomCode());
         this.socket.on("leave", () => this.leaveRoom());
 
         // These are all reserved events
@@ -251,6 +252,7 @@ class Member {
         this.socket.removeAllListeners("getUserTableInfo");
         this.socket.removeAllListeners("getGameSettingsInfo");
         this.socket.removeAllListeners("getSettingsEnabled");
+        this.socket.removeAllListeners("getRoomCode");
         this.socket.removeAllListeners("leave");
         this.socket.removeAllListeners("disconnect");
         this.socket.removeAllListeners("disconnecting");
@@ -260,6 +262,11 @@ class Member {
         console.log(this.name, "requestUserTableInfo");
         this.io.to(this.socket.id).emit("userTableInfo",
             roomIdToRoom.get(this.roomId).currentUserTableInfo());
+    }
+
+    requestRoomCode() {
+        console.log(this.name, "requestRoomCode");
+        this.io.to(this.socket.id).emit("roomCode", this.roomId);
     }
 
     requestGameSettingsInfo() {

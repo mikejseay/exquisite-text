@@ -4,10 +4,12 @@ import GameSettings from "../../components/GameSettings";
 import GameTransition from "../../components/GameTransition";
 import LeaveButton from "../../components/LeaveButton";
 import UserTable from "../../components/UserTable";
+import RoomCode from "../../components/RoomCode";
 
 function Lobby() {
     return (
-        <div >
+        <div>
+            <RoomCode />
             <UserTable />
             <GameSettings />
             <LeaveButton />

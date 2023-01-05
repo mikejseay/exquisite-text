@@ -80,6 +80,7 @@ export interface ServerToClientEvents {
     poem: (a: IPoem) => void;
     poemLines: (a: ILine[]) => void;
 
+    roomCode: (a: string) => void;
     joinError: (a: string) => void;
     joinSuccess: () => void;
     userTableInfo: (a: IUserTableInfo) => void;
@@ -103,6 +104,7 @@ export interface ClientToServerEvents {
     getPoems: () => void;
     getPoemByID: (a: number) => void;
     getPoemLines: () => void;
+    getRoomCode: () => void;
     recognizeDevice: (a: string) => void;
     createGameHost: (a: string) => void;
     joinGameAs: (a: string, b: string, c: string) => void;
