@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -20,7 +20,8 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.exquisite",
-      "buildNumber": "0.0.3"
+      "buildNumber": "0.0.4",
+      "userInterfaceStyle": "automatic"
     },
     "android": {
       "adaptiveIcon": {
@@ -28,7 +29,8 @@
         "backgroundColor": "#FFFFFF"
       },
       "package": "com.exquisite",
-      "versionCode": 3
+      "userInterfaceStyle": "automatic",
+      "versionCode": 4
     },
     "web": {
       "favicon": "./assets/favicon.png"
