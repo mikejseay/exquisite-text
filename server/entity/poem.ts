@@ -1,7 +1,4 @@
-import {
-    DataTypes,
-    Sequelize,
-} from "sequelize";
+import { DataTypes, Sequelize } from "sequelize";
 
 const isProduction = process.env.NODE_ENV === "production";
 const connectionString = `postgres://${process.env.PG_USER}:${process.env.PG_PASSWORD}@${process.env.PG_HOST}:${process.env.PG_PORT}/${process.env.PG_DATABASE}`;
@@ -25,7 +22,7 @@ export const pgSequelConn = new Sequelize(
 export const Poem = pgSequelConn.define(
     "poem",
     {
-        // Model attributes are defined here
+    // Model attributes are defined here
         content: {
             allowNull: false,
             type: DataTypes.TEXT,
@@ -36,6 +33,6 @@ export const Poem = pgSequelConn.define(
         },
     },
     {
-        // Other model options go here
+    // Other model options go here
     },
 );

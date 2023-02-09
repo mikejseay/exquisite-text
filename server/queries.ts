@@ -1,17 +1,12 @@
-import {
-    Poem,
-    pgSequelConn,
-} from "./entity/poem";
-import {
-    Line,
-} from "./entity/line";
+import { Poem, pgSequelConn } from "./entity/poem";
+import { Line } from "./entity/line";
 import { ILine, IPoem } from "../src/types";
 
 (async () => {
     try {
         await pgSequelConn.authenticate();
-        await Poem.sync();  // make sure the table exists
-        await Line.sync();  // make sure the table exists
+        await Poem.sync(); // make sure the table exists
+        await Line.sync(); // make sure the table exists
         console.log("Connection has been established successfully.");
     } catch (error) {
         console.error("Unable to connect to the database:", error);
@@ -21,19 +16,9 @@ import { ILine, IPoem } from "../src/types";
 async function returnPoems(nPoems: number) {
     try {
         return await Poem.findAll({
-            attributes: [
-                "id",
-                "createdAt",
-                "title",
-                "content",
-            ],
+            attributes: [ "id", "createdAt", "title", "content" ],
             limit: nPoems,
-            order: [
-                [
-                    "createdAt",
-                    "DESC",
-                ],
-            ],
+            order: [ [ "createdAt", "DESC" ] ],
         });
     } catch ({ stack }) {
         return stack;
@@ -43,12 +28,7 @@ async function returnPoems(nPoems: number) {
 async function getPoem(poemID: number) {
     try {
         return await Poem.findOne({
-            attributes: [
-                "id",
-                "createdAt",
-                "title",
-                "content",
-            ],
+            attributes: [ "id", "createdAt", "title", "content" ],
             where: {
                 id: poemID,
             },
@@ -66,17 +46,28 @@ async function storePoem({ title, content }: IPoem) {
     }
 }
 
-async function storeLine({ poemID, lineIndex, content, authorDevice, passerDevice, editLength, addedAt }: ILine) {
+async function storeLine({
+    poemID,
+    lineIndex,
+    content,
+    authorDevice,
+    passerDevice,
+    editLength,
+    addedAt,
+}: ILine) {
     try {
-        await Line.create({ poemID, lineIndex, content, authorDevice, passerDevice, editLength, addedAt });
+        await Line.create({
+            poemID,
+            lineIndex,
+            content,
+            authorDevice,
+            passerDevice,
+            editLength,
+            addedAt,
+        });
     } catch ({ stack }) {
         console.log(stack);
     }
 }
 
-export {
-    getPoem,
-    returnPoems,
-    storePoem,
-    storeLine,
-};
+export { getPoem, returnPoems, storePoem, storeLine };
