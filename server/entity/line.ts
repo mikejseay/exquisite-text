@@ -1,15 +1,10 @@
-import {
-    DataTypes,
-} from "sequelize";
-import {
-    pgSequelConn,
-} from "./poem";
-
+import { DataTypes } from "sequelize";
+import { pgSequelConn } from "./poem";
 
 export const Line = pgSequelConn.define(
     "line",
     {
-        // Model attributes are defined here
+    // Model attributes are defined here
         poemID: {
             allowNull: false,
             type: DataTypes.CHAR(36), // uuidv4 is always 36 chars
@@ -40,7 +35,7 @@ export const Line = pgSequelConn.define(
         },
     },
     {
-        // Other model options go here
+    // Other model options go here
         timestamps: false,
     },
 );

@@ -1,12 +1,6 @@
-import {
-    Request,
-    Response,
-} from "express";
+import { Request, Response } from "express";
 
-import {
-    getPoem,
-    returnPoems,
-} from "../queries";
+import { getPoem, returnPoems } from "../queries";
 import express from "express";
 import { nPoemsInLibrary } from "../../src/constants";
 

@@ -10,7 +10,7 @@ import type {
 } from "../src/types";
 
 import * as dotenv from "dotenv";
-dotenv.config({ path: __dirname+"/.env" });
+dotenv.config({ path: __dirname + "/.env" });
 
 // import the http library
 import { createServer } from "http";
@@ -22,10 +22,10 @@ import { createServer } from "http";
 // app assembles the two routers and creates the express app and does its basic configuration
 import app from "./app";
 // "poem" contains the logic for the poem application
-import sockets from "./sockets";
+import sockets from "./modules/sockets";
 
 import debug0 from "debug";
-import { isNil } from "lodash";
+import isNil from "lodash/isNil";
 
 /**
  * Module dependencies.
@@ -49,7 +49,12 @@ app.set("port", port);
 const httpServer = createServer(app);
 // const server = https.createServer(credentials, app);
 
-const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(httpServer, {
+const io = new Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>(httpServer, {
     cors: {
         methods: [ "GET", "POST" ],
         origin: "*",
@@ -82,12 +87,12 @@ function normalizePort(val: string) {
     const port = parseInt(val, 10);
 
     if (isNaN(port)) {
-        // named pipe
+    // named pipe
         return val;
     }
 
     if (port >= 0) {
-        // port number
+    // port number
         return port;
     }
 
@@ -98,7 +103,7 @@ function normalizePort(val: string) {
  * Event listener for HTTP server "error" event.
  */
 
-function onError(error: { syscall: string; code: string; }) {
+function onError(error: { syscall: string; code: string }) {
     if (error.syscall !== "listen") {
         throw error;
     }
@@ -129,11 +134,12 @@ function onError(error: { syscall: string; code: string; }) {
 function onListening() {
     const address = httpServer.address();
     if (!isNil(address)) {
-        const bind = typeof address === "string"
-            ? "pipe " + address
-            : "port " + address.port;
+        const bind =
+      typeof address === "string"
+          ? "pipe " + address
+          : "port " + address.port;
         debug("Listening on " + bind);
     }
 }
 
-export { };
+export {};

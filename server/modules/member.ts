@@ -1,0 +1,181 @@
+import isNil from "lodash/isNil";
+import { Server, Socket } from "socket.io";
+
+import {
+    deviceIDToRoomId,
+    deviceIDToSocketID,
+    roomIdToRoom,
+    socketIDToDeviceID,
+} from "./globals";
+import type Poem from "./poem";
+import {
+    ClientToServerEvents,
+    InterServerEvents,
+    ServerToClientEvents,
+    SocketData,
+} from "../../src/types";
+
+class Member {
+    // represents an Editor or Spectator (which extend this)
+    // enforces deviceID constraint
+    // (if the same device tries to be a member of the same room twice,
+    // the old socket gets disconnected and removed and the new socket replaces it)
+
+    io: Server<
+    ClientToServerEvents,
+    ServerToClientEvents,
+    InterServerEvents,
+    SocketData
+  >;
+    socket: Socket<
+    ClientToServerEvents,
+    ServerToClientEvents,
+    InterServerEvents,
+    SocketData
+  >;
+    roomId: string;
+    deviceID: string;
+    name: string;
+    lastActivity: number;
+    connected: boolean;
+
+    constructor(
+        io: Server<
+      ClientToServerEvents,
+      ServerToClientEvents,
+      InterServerEvents,
+      SocketData
+    >,
+        socket: Socket,
+        roomId: string,
+        deviceID: string,
+        name: string,
+    ) {
+        this.io = io;
+        this.socket = socket;
+        this.roomId = roomId;
+        this.deviceID = deviceID;
+        this.name = name;
+        this.lastActivity = Date.now(); // current time since epoch in ms
+        this.connected = true;
+    }
+
+    joinRoom() {
+        this.connected = true;
+        this.socket.join(this.roomId);
+        this.setReceive(); // listen for certain messages from client
+    }
+
+    leaveRoom() {
+        this.connected = false;
+        console.log(this.name, " leaving ", this.roomId);
+        this.io.to(this.socket.id).emit("navigate", "/"); // navigate home (if possible)
+        delete deviceIDToRoomId[this.deviceID];
+        this.socket.leave(this.roomId);
+        this.unsetReceive(); // remove listeners
+    }
+
+    // setSend
+    // errors about join fail
+    // command to go to a certain view
+    // supply lobby subscription to keep game view up to date during configuration
+    // supply completed poems
+
+    // setReceive
+    // getUserTableInfo
+
+    setReceive() {
+        this.socket.on("getUserTableInfo", () => this.requestUserTableInfo());
+        this.socket.on("getGameSettingsInfo", () => this.requestGameSettingsInfo());
+        this.socket.on("getSettingsEnabled", () => this.requestSettingsEnabled());
+        this.socket.on("getRoomCode", () => this.requestRoomCode());
+        this.socket.on("leave", () => this.leaveRoom());
+
+        // These are all reserved events
+        this.socket.on("disconnect", () => this.disconnect());
+        this.socket.on("disconnecting", () => this.disconnecting());
+    }
+
+    unsetReceive() {
+        this.socket.removeAllListeners("getUserTableInfo");
+        this.socket.removeAllListeners("getGameSettingsInfo");
+        this.socket.removeAllListeners("getSettingsEnabled");
+        this.socket.removeAllListeners("getRoomCode");
+        this.socket.removeAllListeners("leave");
+        this.socket.removeAllListeners("disconnect");
+        this.socket.removeAllListeners("disconnecting");
+    }
+
+    requestUserTableInfo() {
+        console.log(this.name, "requestUserTableInfo");
+        this.io
+            .to(this.socket.id)
+            .emit(
+                "userTableInfo",
+                roomIdToRoom.get(this.roomId).currentUserTableInfo(),
+            );
+    }
+
+    requestRoomCode() {
+        console.log(this.name, "requestRoomCode");
+        this.io.to(this.socket.id).emit("roomCode", this.roomId);
+    }
+
+    requestGameSettingsInfo() {
+        console.log(this.name, "requestGameSettingsInfo");
+        this.io
+            .to(this.socket.id)
+            .emit("gameSettingsInfo", roomIdToRoom.get(this.roomId).gameSettings);
+    }
+
+    requestSettingsEnabled() {
+        console.log(this.name, "requestSettingsEnabled");
+        this.io.to(this.socket.id).emit("gameSettingsEnabled", false);
+    }
+
+    disconnect() {
+    // note this could be called by something as simple as closing the tab
+    // therefore we don't want to boot someone from the game based on this
+    // however if they are AFK, etc., we should do those things
+
+        console.log(this.socket.id, "disconnected");
+        this.connected = false;
+
+        // if in the room but the game hasn't started yet (lobby), remove them
+        const thisRoom = roomIdToRoom.get(this.roomId);
+        if (!isNil(thisRoom) && !thisRoom.gameOngoing) {
+            this.leaveRoom();
+        }
+
+        // socketIDToDeviceID
+        delete socketIDToDeviceID[this.socket.id];
+        // deviceIDToSocketID
+        delete deviceIDToSocketID[this.deviceID];
+        // roomIdToRoom
+
+        // do cleanup intelligently
+        // remove from socket map
+        // notice that we don't remove from the other maps
+        // this gives opportunity for the person to reconnect...
+        // but eventually we might have to remove them if they're inactive
+
+    // two-minute timer to boot completely from the Room?
+    }
+
+    disconnecting() {
+        console.log(
+            "socket",
+            this.socket.id,
+            " disconnecting from",
+            this.socket.rooms,
+        );
+    }
+
+    sendPoemAsLines(poemObj: Poem) {
+    // crucial method that sends the poem to all users
+    // make sure the correct members receive this
+        this.io.in(this.roomId).emit("poemLines", Array.from(poemObj.lines));
+    }
+}
+
+export default Member;
