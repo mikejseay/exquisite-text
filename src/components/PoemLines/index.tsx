@@ -4,12 +4,8 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import IconButton from "@mui/material/IconButton";
 import { useClipboard } from "use-clipboard-copy";
 
-import {
-    poemsBody,
-} from "./styles";
-import {
-    ILine,
-} from "../../types";
+import { poemsBody } from "./styles";
+import { ILine } from "../../types";
 
 import { lineSepString, shortDur } from "../../constants";
 
