@@ -4,12 +4,8 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import IconButton from "@mui/material/IconButton";
 import { useClipboard } from "use-clipboard-copy";
 
-import {
-    poemsBody,
-} from "./styles";
-import {
-    ILine,
-} from "../../types";
+import { poemsBody } from "./styles";
+import { ILine } from "../../types";
 
 import { lineSepString, shortDur } from "../../constants";
 
@@ -22,10 +18,10 @@ function PoemLines({ poemLines, editorColors }: { poemLines: ILine[], editorColo
         <div style={poemsBody}>
             {poemLines.map((line) => {
                 return <div key={line.lineIndex} style={{ whiteSpace: "pre-line" }}>
-                    <span className={"first-part"} key={line.lineIndex} style={{ color: editorColors[line.passerDevice] }}>
+                    <span className={"first-part"} style={{ color: editorColors[line.passerDevice] }}>
                         {line.content.slice(0, line.editLength)}
                     </span>
-                    <span className={"second-part"} key={line.lineIndex} style={{ color: editorColors[line.authorDevice] }}>
+                    <span className={"second-part"} style={{ color: editorColors[line.authorDevice] }}>
                         {line.content.slice(line.editLength)}
                     </span>
                 </div>;
