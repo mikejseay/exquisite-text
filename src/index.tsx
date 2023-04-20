@@ -11,6 +11,7 @@ import {
 
 import "./index.css";
 import App from "./components/App";
+import End from "./screens/End";
 import Game from "./screens/Game";
 // import Host from "./screens/Host";
 import Join from "./screens/Join";
@@ -66,6 +67,7 @@ function Root() {
                         <Route path="lobby" element={<Lobby />} />
                         <Route path="game" element={<Game />} />
                         <Route path="spectate" element={<Spectate />} />
+                        <Route path="end" element={<End />} />
                         {isComponentEnabled(<Route path="library" element={<Library />} />)}
                         {isComponentEnabled(<Route path="page/:id" element={<Page />} />)}
                         <Route path="disconnected" element={<Disconnected />} />
