@@ -1,8 +1,9 @@
 import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import AccordionSummary from "@mui/material/AccordionSummary";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import * as React from "react";
+import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
+import { Carousel } from "react-responsive-carousel";
 
 import { useSocket } from "../App";
 import PoemLines from "../PoemLines";
@@ -22,7 +23,6 @@ function PoemsLines() {
     const [ editorColors, setEditorColors ] = React.useState<Record<string, string>>({});
 
     React.useEffect(() => {
-    // Event handlers for the poem and the deletePoem events are set up for the Socket.IO connection.
         const poemsLinesListener = (myPoemLines: ILine[]) => {
             setPoemsLines(prevPoemsLines => {
                 return [ ...prevPoemsLines, myPoemLines ];
@@ -37,7 +37,7 @@ function PoemsLines() {
         socket.on("poemLines", poemsLinesListener);
         socket.on("userTableInfo", userTableInfoListener);
 
-        socket.emit("getUserTableInfo"); // initial populate
+        socket.emit("getUserTableInfo");
 
         return () => {
             socket.off("poemLines", poemsLinesListener);
@@ -45,26 +45,39 @@ function PoemsLines() {
         };
     }, [ socket ]);
 
+    const renderPoems = () => {
+        return poemsLines.map((poemLines, poemLinesIndex) => (
+            <Accordion
+                defaultExpanded={true}
+                expanded={true}
+                key={poemLinesIndex}
+            >
+                <AccordionSummary
+                    aria-controls="panel1a-content"
+                    id="panel1a-header"
+                >
+                    <div style={poemTitle} className={"poem-title"}>
+                        <strong>{"exquisite text #" + poemLinesIndex.toString()}</strong>
+                    </div>
+                </AccordionSummary>
+                <AccordionDetails>
+                    <PoemLines poemLines={poemLines} editorColors={editorColors} />
+                </AccordionDetails>
+            </Accordion>
+        ));
+    };
+
     return (
         <div className={"poems-with-lines"} style={poemsBody}>
-            {poemsLines.map( (poemLines, poemLinesIndex) => (
-                <div key={poemLinesIndex} className="poem-container">
-                    <Accordion>
-                        <AccordionSummary
-                            expandIcon={<ExpandMoreIcon />}
-                            aria-controls="panel1a-content"
-                            id="panel1a-header"
-                        >
-                            <div style={poemTitle} className={"poem-title"}>
-                                <strong>{"exquisite text #" + poemLinesIndex.toString()}</strong>
-                            </div>
-                        </AccordionSummary>
-                        <AccordionDetails>
-                            <PoemLines poemLines={poemLines} editorColors={editorColors} />
-                        </AccordionDetails>
-                    </Accordion>
-                </div>
-            ))}
+            {poemsLines.length > 1
+                ? (
+                    <Carousel>
+                        {renderPoems()}
+                    </Carousel>
+                )
+                : (
+                    renderPoems()
+                )}
         </div>
     );
 }
