@@ -95,12 +95,13 @@ const LineInput = () => {
 
         const lastLineListener = (lastLine: boolean) => {
             setOnLastLine(lastLine);
+            const constraints = lineConstraints[lineLength];
             if (lastLine) {
-                setMaxCharsOnLineTwo(lineConstraints[lineLength]["maxCharsOnLineOne"]);
-                setIdealCharsOnLineTwo(lineConstraints[lineLength]["idealCharsOnLineOne"]);
+                setMaxCharsOnLineTwo(constraints.maxCharsOnLineOne);
+                setIdealCharsOnLineTwo(constraints.idealCharsOnLineOne);
             } else {
-                setMaxCharsOnLineTwo(lineConstraints[lineLength]["maxCharsOnLineTwo"]);
-                setIdealCharsOnLineTwo(lineConstraints[lineLength]["idealCharsOnLineTwo"]);
+                setMaxCharsOnLineTwo(constraints.maxCharsOnLineTwo);
+                setIdealCharsOnLineTwo(constraints.idealCharsOnLineTwo);
             }
         };
 
@@ -297,8 +298,6 @@ const LineInput = () => {
 
         setTextAreaVisible(false);
         setPassEnabled(false);
-        // setHelpMessage("Poem completed! Open it at the bottom of the page.\n" +
-        //   "If you'd like to play again, make a new room.");
         setPoemDoneVisible(false);
 
         navigate("/end");
