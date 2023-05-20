@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useNavigate } from "react-router-dom";
 import isNil from "lodash/isNil";
 import Button from "@mui/material/Button";
 import Fab from "@mui/material/Fab";
@@ -43,7 +42,6 @@ import "./LineInput.css";
 
 const LineInput = () => {
     const { socket } = useSocket();
-    const navigate = useNavigate();
     const [ open, setOpen ] = React.useState(false);
     const handleClick = () => {
         setOpen((prev) => !prev);
@@ -299,8 +297,6 @@ const LineInput = () => {
         setTextAreaVisible(false);
         setPassEnabled(false);
         setPoemDoneVisible(false);
-
-        navigate("/end");
     }
 
     function handleKeyDown({ charCode, key, ctrlKey, metaKey }: React.KeyboardEvent) {
