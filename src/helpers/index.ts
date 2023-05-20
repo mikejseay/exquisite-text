@@ -9,6 +9,8 @@ function generateAlphaCharacter() {
     return allPossibleLetters.charAt(Math.floor(Math.random() * quantityAllPossibleLetters));
 }
 
+export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 export function generateAlphaString(stringLength: number) {
     let result = "";
     for (let i = 0; i < stringLength; i++) {
