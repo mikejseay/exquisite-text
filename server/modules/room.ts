@@ -1,6 +1,6 @@
 import { Server, Socket } from "socket.io";
 
-import { roomIdToHost, roomIdToRoom } from "./globals";
+import { deviceIDToRoomId, deviceIDToSocketID, roomIdToHost, roomIdToRoom, socketIDToDeviceID } from "./globals";
 import Spectator from "./spectator";
 import Editor from "./editor";
 import Poem from "./poem";
@@ -18,6 +18,7 @@ import {
     maxMemberTimeSpentInactive,
     maxRoomTimeSpentEmpty,
 } from "../../src/constants";
+import { sleep } from "../../src/helpers";
 
 class Room {
     // represents a socket.io room and a game of Exquisite Text
@@ -42,6 +43,7 @@ class Room {
     nPoemsInRotation: number;
     activityInterval: ReturnType<typeof setInterval>;
     createdAt: number;
+    finishedPoems: Array<Poem>;
 
     constructor(
         io: Server<
@@ -69,6 +71,7 @@ class Room {
             checkActivityInterval,
         );
         this.createdAt = Date.now();
+        this.finishedPoems = [];
     }
 
     addEditor(deviceUUID: string, editorObj: Editor) {
@@ -179,8 +182,49 @@ class Room {
         }
     }
 
-    selfDestruct() {
+    storePoem(poemObj: Poem) {
+        console.log(this.roomId, "storing poem", poemObj.poemID);
+        this.finishedPoems.push(poemObj);
+    }
+
+    sendToEnd() {
+        console.log(this.roomId, "sending everyone to the end screen");
+        this.io.in(this.roomId).emit("navigate", "/end");
+    }
+
+    async selfDestruct() {
+        console.log(this.roomId, "will self-destruct in 30 seconds");
+        await sleep(30000);
         console.log(this.roomId, "self-destructing");
+
+        // wait a bit then self-destruct the room and everyone in it!
+        console.log("finishedPoems", this.finishedPoems.length);
+        for (const [ editorID, thisEditor ] of this.editors.entries()) {
+            delete deviceIDToRoomId[editorID];
+            // since this.editors is a map from editor's device ID to the Member this should delete the object
+            // including its socket?
+            thisEditor.connected = false;
+            delete deviceIDToRoomId[editorID];
+            thisEditor.socket.leave(this.roomId);
+            thisEditor.unsetReceive();
+            delete socketIDToDeviceID[thisEditor.socket.id];
+            delete deviceIDToSocketID[editorID];
+            this.editors.delete(editorID);
+        }
+        for (const [
+            spectatorID,
+            thisSpectator,
+        ] of this.spectators.entries()) {
+            delete deviceIDToRoomId[spectatorID];
+            thisSpectator.connected = false;
+            delete deviceIDToRoomId[spectatorID];
+            thisSpectator.socket.leave(this.roomId);
+            thisSpectator.unsetReceive();
+            delete socketIDToDeviceID[thisSpectator.socket.id];
+            delete deviceIDToSocketID[spectatorID];
+            this.spectators.delete(spectatorID);
+        }
+
         clearInterval(this.activityInterval);
         roomIdToHost.delete(this.roomId);
         roomIdToRoom.delete(this.roomId);

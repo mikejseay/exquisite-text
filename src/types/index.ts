@@ -103,7 +103,7 @@ export interface ClientToServerEvents {
     getLines: () => void;
     getPoems: () => void;
     getPoemByID: (a: number) => void;
-    getPoemLines: () => void;
+    getPoemsLines: () => void;
     getRoomCode: () => void;
     recognizeDevice: (a: string) => void;
     createGameHost: (a: string) => void;

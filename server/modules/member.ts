@@ -86,6 +86,7 @@ class Member {
 
     setReceive() {
         this.socket.on("getUserTableInfo", () => this.requestUserTableInfo());
+        this.socket.on("getPoemsLines", () => this.requestPoemsLinesInfo());
         this.socket.on("getGameSettingsInfo", () => this.requestGameSettingsInfo());
         this.socket.on("getSettingsEnabled", () => this.requestSettingsEnabled());
         this.socket.on("getRoomCode", () => this.requestRoomCode());
@@ -114,6 +115,21 @@ class Member {
                 "userTableInfo",
                 roomIdToRoom.get(this.roomId).currentUserTableInfo(),
             );
+    }
+
+    requestPoemsLinesInfo() {
+        const thisRoom = roomIdToRoom.get(this.roomId);
+        console.log(this.name, "request poems from room which has", thisRoom.finishedPoems.length);
+        for (const poemObj of thisRoom.finishedPoems) {
+            // this.io.in(this.roomId).emit("poemLines", Array.from(poemObj.lines));
+            this.io
+                .to(this.socket.id)
+                .emit(
+                    "poemLines",
+                    Array.from(poemObj.lines),
+                );
+        }
+
     }
 
     requestRoomCode() {

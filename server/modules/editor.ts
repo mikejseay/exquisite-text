@@ -14,10 +14,7 @@ import { storePoem } from "../queries";
 import { lineSepString } from "../../src/constants";
 
 import {
-    deviceIDToRoomId,
-    deviceIDToSocketID,
     roomIdToRoom,
-    socketIDToDeviceID,
 } from "./globals";
 import type Poem from "./poem";
 import Member from "./member";
@@ -264,6 +261,9 @@ class Editor extends Member {
             addedAt: new Date(),
         });
 
+        // This is the last moment at which the server contains the full poem object (array of lines)
+        // Most likely we should store the poem inside the room
+        // So that we can pass them back to the members as needed
         this.handlePoem(poemToPass);
 
         const thisRoom = roomIdToRoom.get(this.roomId);
@@ -275,32 +275,9 @@ class Editor extends Member {
                 "no poems left to finish; forget everyone's device, delete room and poem globals",
             );
             thisRoom.gameOngoing = false;
-            for (const [ editorID, thisEditor ] of thisRoom.editors.entries()) {
-                delete deviceIDToRoomId[editorID];
-                // since thisRoom.editors is a map from editor's device ID to the Member this should delete the object
-                // including its socket?
-                thisEditor.connected = false;
-                delete deviceIDToRoomId[editorID];
-                thisEditor.socket.leave(this.roomId);
-                thisEditor.unsetReceive();
-                delete socketIDToDeviceID[thisEditor.socket.id];
-                delete deviceIDToSocketID[editorID];
-                thisRoom.editors.delete(editorID);
-            }
-            for (const [
-                spectatorID,
-                thisSpectator,
-            ] of thisRoom.spectators.entries()) {
-                delete deviceIDToRoomId[spectatorID];
-                thisSpectator.connected = false;
-                delete deviceIDToRoomId[spectatorID];
-                thisSpectator.socket.leave(this.roomId);
-                thisSpectator.unsetReceive();
-                delete socketIDToDeviceID[thisSpectator.socket.id];
-                delete deviceIDToSocketID[spectatorID];
-                thisRoom.spectators.delete(spectatorID);
-            }
-            thisRoom.selfDestruct();
+            thisRoom.sendToEnd();  // send everyone to the end screen
+            thisRoom.selfDestruct();  // self-destruct after some time
+
             // console.log("deviceIDToRoomId", deviceIDToRoomId);
             // console.log("roomIdToHost", roomIdToHost);
             // console.log("roomIdToRoom", roomIdToRoom);
@@ -331,6 +308,11 @@ class Editor extends Member {
         // this.sendPoem(poem);
         // try out the new view
         this.sendPoemAsLines(poemObj);
+
+        // save the poem into the Room object
+        const thisRoom = roomIdToRoom.get(this.roomId);
+        thisRoom.storePoem(poemObj);
+
     }
 
     alterGameSettings(gameSettings: IGameSettingsInfo) {

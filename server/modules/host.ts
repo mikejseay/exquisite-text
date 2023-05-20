@@ -10,6 +10,10 @@ class Host extends Member {
         this.setReceive(); // listen for certain messages from client
     }
 
+    requestPoemsLinesInfo() {
+        console.log(this.name, "requesting poems, do nothing...");
+    }
+
     // setSend
     // super.setSend()
     // eventually send cool game state info to inform hostGameView

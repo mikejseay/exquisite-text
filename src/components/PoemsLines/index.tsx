@@ -38,6 +38,8 @@ function PoemsLines() {
         socket.on("userTableInfo", userTableInfoListener);
 
         socket.emit("getUserTableInfo");
+        setPoemsLines([]);
+        socket.emit("getPoemsLines");
 
         return () => {
             socket.off("poemLines", poemsLinesListener);
