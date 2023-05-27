@@ -49,11 +49,11 @@ function HostButton({ socket }: { socket: Socket | null }) {
         <div className={"create-game-fab"}>
             <Box>
                 <Fab
-                    size="small"
-                    color="primary"
                     aria-label="new"
-                    sx={hostFAB}
+                    color="primary"
                     onClick={handleClick}
+                    size="small"
+                    sx={hostFAB}
                 >
                     <GamepadIcon />
                 </Fab>

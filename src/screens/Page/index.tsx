@@ -16,14 +16,12 @@ function Page(): JSX.Element {
 
     // The poems state is a plain object that contains each poem indexed by the poem ID.
     // Using React hooks, this state is updated inside the event handlers to reflect the changes provided by the server.
-    const [ poem, setPoem ] = React.useState<IPoem>(
-        {
-            id: 0,
-            content: "",
-            createdAt: new Date(),
-            title: "",
-        },
-    );
+    const [ poem, setPoem ] = React.useState<IPoem>({
+        id: 0,
+        content: "",
+        createdAt: new Date(),
+        title: "",
+    });
 
     React.useEffect(() => {
         if (isNil(id)) {

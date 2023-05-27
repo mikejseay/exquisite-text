@@ -27,11 +27,11 @@ class Editor extends Member {
 
     constructor(
         io: Server<
-      ClientToServerEvents,
-      ServerToClientEvents,
-      InterServerEvents,
-      SocketData
-    >,
+            ClientToServerEvents,
+            ServerToClientEvents,
+            InterServerEvents,
+            SocketData
+        >,
         hostSocket: Socket,
         roomId: string,
         deviceID: string,
@@ -133,9 +133,9 @@ class Editor extends Member {
     }
 
     requestLineEdit() {
-    // this is activated when the game view initially loads
-    // this should fill in what it's supposed to based on
-    // the halfLine of the first Poem in the queue (if this editor is active)
+        // this is activated when the game view initially loads
+        // this should fill in what it's supposed to based on
+        // the halfLine of the first Poem in the queue (if this editor is active)
 
         if (this.hasPoemInQueue()) {
             this.io.to(this.socket.id).emit("lineEdit", this.poemQueue[0].halfLine);
@@ -143,8 +143,8 @@ class Editor extends Member {
     }
 
     handleLineEdit(value: string) {
-    // when an active editor changes the lineInput, broadcast this
-    // to other editors and/or spectators so that they can "watch" them type
+        // when an active editor changes the lineInput, broadcast this
+        // to other editors and/or spectators so that they can "watch" them type
 
         // for other active editors (this version), they want the string
 
@@ -322,7 +322,7 @@ class Editor extends Member {
     }
 
     broadcastStartGame() {
-    // global in nature, so it will mainly eal with the room
+        // global in nature, so it will mainly eal with the room
         console.log("startGame");
         roomIdToRoom.get(this.roomId).setUpGame();
     }

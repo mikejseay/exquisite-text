@@ -32,8 +32,8 @@ export function Poem({ poem }: { poem: IPoem }): JSX.Element {
         <div className="poem-container" style={poemContainer}>
             <Accordion>
                 <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
                     aria-controls="panel1a-content"
+                    expandIcon={<ExpandMoreIcon />}
                     id="panel1a-header"
                 >
                     <div style={poemTitle} className={"poem-title"}>
