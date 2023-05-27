@@ -26,8 +26,7 @@ function PoemsLines() {
         const poemsLinesListener = (myPoemLines: ILine[]) => {
             setPoemsLines(prevPoemsLines => {
                 return [ ...prevPoemsLines, myPoemLines ];
-            },
-            );
+            });
         };
 
         const userTableInfoListener = (info: IUserTableInfo) => {
@@ -59,7 +58,7 @@ function PoemsLines() {
                     id="panel1a-header"
                 >
                     <div style={poemTitle} className={"poem-title"}>
-                        <strong>{"exquisite text #" + poemLinesIndex.toString()}</strong>
+                        <strong>{`exquisite text #${poemLinesIndex}`}</strong>
                     </div>
                 </AccordionSummary>
                 <AccordionDetails>
@@ -72,14 +71,8 @@ function PoemsLines() {
     return (
         <div className={"poems-with-lines"} style={poemsBody}>
             {poemsLines.length > 1
-                ? (
-                    <Carousel>
-                        {renderPoems()}
-                    </Carousel>
-                )
-                : (
-                    renderPoems()
-                )}
+                ? <Carousel>{renderPoems()}</Carousel>
+                : renderPoems()}
         </div>
     );
 }

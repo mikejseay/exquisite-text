@@ -78,31 +78,31 @@ export default function Join() {
         <div>
             <div style={{ display: "flex", justifyContent: "center", marginTop: "6em" }}>
                 <Box
+                    autoComplete="off"
                     component="form"
+                    noValidate
                     sx={{
                         "& > :not(style)": { m: 1, width: "25ch" },
                         display: "flex",
                         flexDirection: "column",
                         marginBottom: "1em",
                     }}
-                    noValidate
-                    autoComplete="off"
                 >
                     <TextField
-                        required
-                        label={`Enter ${String(roomCodeLength)}-Letter Code`}
-                        variant="standard"
-                        value={roomId}
-                        onChange={handleRoomEntryChange}
                         inputProps={{ maxLength: roomCodeLength, style: { textTransform: "uppercase" } }}
+                        label={`Enter ${String(roomCodeLength)}-Letter Code`}
+                        onChange={handleRoomEntryChange}
+                        required
+                        value={roomId}
+                        variant="standard"
                     />
                     <TextField
-                        required
-                        label="Enter Your Name"
-                        variant="standard"
-                        value={name}
-                        onChange={handleNameEntryChange}
                         inputProps={{ maxLength: maxNameChars, style: { textTransform: "uppercase" } }}
+                        label="Enter Your Name"
+                        onChange={handleNameEntryChange}
+                        required
+                        value={name}
+                        variant="standard"
                     />
                 </Box>
             </div>

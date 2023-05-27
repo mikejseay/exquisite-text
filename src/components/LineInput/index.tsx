@@ -316,7 +316,10 @@ const LineInput = () => {
     // the initial idea here was to have a single textarea element that was editable
     // an alternative idea is to have this element be composed of a non-editable portion
     // and an editable portion
-        <div className={"line-input-container"} style={lineInputContainer}>
+        <div
+            className={"line-input-container"}
+            style={lineInputContainer}
+        >
             <div
                 className={"main-input-container"}
                 style={mainInputContainer}
@@ -370,16 +373,16 @@ const LineInput = () => {
                                     </span>
                                 </div>
                                 <textarea
+                                    autoFocus={true} // this only on initial page load
                                     className={"poem-input"}
-                                    ref={textareaRef}
-                                    value={poemInput}
-                                    style={poemInputStyle}
                                     onChange={handlePoemBodyChange}
                                     onKeyDown={handleKeyDown}
-                                    rows={2}
-                                    autoFocus={true} // this only on initial page load
                                     readOnly={false}
-                                > </textarea>
+                                    ref={textareaRef}
+                                    rows={2}
+                                    style={poemInputStyle}
+                                    value={poemInput}
+                                />
                             </div>
                         ) :
                         (
@@ -426,12 +429,12 @@ const LineInput = () => {
                 <ClickAwayListener onClickAway={handleClickAway}>
                     <Box>
                         <Fab
-                            size="small"
-                            color="primary"
                             aria-label="complete"
-                            sx={completeFAB}
-                            onClick={handleClick}
+                            color="primary"
                             disabled={!poemDoneVisible}
+                            onClick={handleClick}
+                            size="small"
+                            sx={completeFAB}
                         >
                             <PlaylistAddCheckIcon />
                         </Fab>

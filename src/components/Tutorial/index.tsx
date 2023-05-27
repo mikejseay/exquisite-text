@@ -35,10 +35,10 @@ const Tutorial = () => {
                 <InfoOutlinedIcon />
             </IconButton>
             <Modal
-                open={helpOpen}
-                onClose={handleHelpClose}
-                aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
+                aria-labelledby="modal-modal-title"
+                onClose={handleHelpClose}
+                open={helpOpen}
             >
                 <Box
                     onClick={handleHelpClose}
@@ -54,8 +54,7 @@ const Tutorial = () => {
                     <div style={modalContent}>
                         <p>Exquisite Text is a collaborative writing game.</p>
                         <p>When it&apos;s your turn, you will write a snippet of poetry split across two lines.</p>
-                        <p>The first line is yours to complete: write until the underlined region is filled. This part will be kept
-              secret.</p>
+                        <p>The first line is yours to complete: write until the underlined region is filled. This part will be kept secret.</p>
                         <p>Then, press Return ⏎.</p>
                         <p> </p>
                         <img

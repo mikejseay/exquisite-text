@@ -29,11 +29,11 @@ function LeaveButton() {
             <ClickAwayListener onClickAway={handleClickAway}>
                 <Box>
                     <Fab
-                        size="small"
-                        color="secondary"
                         aria-label="logout"
-                        sx={leaveFAB}
+                        color="secondary"
                         onClick={handleClick}
+                        size="small"
+                        sx={leaveFAB}
                     >
                         <LogoutIcon />
                     </Fab>
