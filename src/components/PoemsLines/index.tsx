@@ -20,7 +20,7 @@ import {
 function PoemsLines() {
     const { socket } = useSocket();
     const [ poemsLines, setPoemsLines ] = React.useState<Array<ILine[]>>([]);
-    const [ editorColors, setEditorColors ] = React.useState<Record<string, string>>({});
+    const [ userInfo, setUserInfo ] = React.useState<IUserTableInfo>({} as IUserTableInfo);
 
     React.useEffect(() => {
         const poemsLinesListener = (myPoemLines: ILine[]) => {
@@ -30,7 +30,7 @@ function PoemsLines() {
         };
 
         const userTableInfoListener = (info: IUserTableInfo) => {
-            setEditorColors(info.editorColors);
+            setUserInfo(info);
         };
 
         socket.on("poemLines", poemsLinesListener);
@@ -62,7 +62,7 @@ function PoemsLines() {
                     </div>
                 </AccordionSummary>
                 <AccordionDetails>
-                    <PoemLines poemLines={poemLines} editorColors={editorColors} />
+                    <PoemLines poemLines={poemLines} userInfo={userInfo} />
                 </AccordionDetails>
             </Accordion>
         ));

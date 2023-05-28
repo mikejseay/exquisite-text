@@ -10,11 +10,19 @@ import { useClipboard } from "use-clipboard-copy";
 import Box from "@mui/material/Box";
 
 import { poemsBody } from "./styles";
-import { ILine } from "../../types";
+import {
+    ILine,
+    IUserTableInfo,
+} from "../../types";
 
 import { lineSepString, shortDur } from "../../constants";
 
-function PoemLines({ poemLines, editorColors }: { poemLines: ILine[], editorColors: Record<string, string> }) {
+function PoemLines({ poemLines, userInfo }: { poemLines: ILine[], userInfo: IUserTableInfo }) {
+    console.log(userInfo);
+    const {
+        editorColors,
+        editors,
+    } = userInfo;
     const clipboard = useClipboard({
         copiedTimeout: shortDur, // timeout duration in milliseconds
     });
@@ -39,10 +47,10 @@ function PoemLines({ poemLines, editorColors }: { poemLines: ILine[], editorColo
             </Alert>}
             <Card>
                 <CardContent style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
-                    {Object.entries(editorColors).map(([ editor, color ], index) => (
+                    {Object.entries(editorColors).map(([ , color ], index) => (
                         <Box key={index} style={{ margin: "0.5rem", display: "flex", alignItems: "center" }}>
                             <FiberManualRecordIcon style={{ color }} />
-                            <Typography style={{ marginLeft: "0.5rem" }}>{editor}</Typography>
+                            <Typography style={{ marginLeft: "0.5rem" }}>{editors[index]}</Typography>
                         </Box>
                     ))}
                 </CardContent>
