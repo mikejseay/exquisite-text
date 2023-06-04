@@ -47,7 +47,7 @@ export const defaultGameSettings: IGameSettingsInfo = {
 export const maxMemberTimeSpentInactive = 300_000; // ms
 export const maxRoomTimeSpentEmpty = 600_000; // ms
 export const checkActivityInterval = 30_000; // ms
-export const editorColorArr = [
+export const editorColorDefaultsArr = [
     "#4F71BE",
     "#B86029",
     "#A9D18E",

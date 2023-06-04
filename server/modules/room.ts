@@ -14,7 +14,7 @@ import {
 import {
     checkActivityInterval,
     defaultGameSettings,
-    editorColorArr,
+    editorColorDefaultsArr,
     maxMemberTimeSpentInactive,
     maxRoomTimeSpentEmpty,
 } from "../../src/constants";
@@ -96,12 +96,15 @@ class Room {
 
     currentUserTableInfo() {
         const editorNameArr: Array<string> = [];
+        const editorColorArr: Array<string> = [];
         const spectatorNameArr: Array<string> = [];
         const editorColorObj: Record<string, string> = {};
+        let editorIndex = 0;
         for (const thisEditor of this.editors.values()) {
             editorNameArr.push(thisEditor.name);
-            editorColorObj[thisEditor.deviceID] =
-        editorColorArr[thisEditor.turnPosition];
+            editorColorArr.push(editorColorDefaultsArr[editorIndex]);
+            editorColorObj[thisEditor.deviceID] = editorColorDefaultsArr[editorIndex];
+            editorIndex++;
         }
         for (const thisSpectator of this.spectators.values()) {
             spectatorNameArr.push(thisSpectator.name);
@@ -109,7 +112,8 @@ class Room {
         return {
             editors: editorNameArr,
             spectators: spectatorNameArr,
-            editorColors: editorColorObj,
+            editorColorObj: editorColorObj,
+            editorColorArr: editorColorArr,
         };
     }
 

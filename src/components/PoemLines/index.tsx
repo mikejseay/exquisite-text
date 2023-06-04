@@ -18,9 +18,9 @@ import {
 import { lineSepString, shortDur } from "../../constants";
 
 function PoemLines({ poemLines, userInfo }: { poemLines: ILine[], userInfo: IUserTableInfo }) {
-    console.log(userInfo);
     const {
-        editorColors,
+        editorColorObj,
+        editorColorArr,
         editors,
     } = userInfo;
     const clipboard = useClipboard({
@@ -31,10 +31,10 @@ function PoemLines({ poemLines, userInfo }: { poemLines: ILine[], userInfo: IUse
         <div style={poemsBody}>
             {poemLines.map((line) => {
                 return <div key={line.lineIndex} style={{ whiteSpace: "pre-line" }}>
-                    <span className={"first-part"} style={{ color: editorColors[line.passerDevice] }}>
+                    <span className={"first-part"} style={{ color: editorColorObj[line.passerDevice] }}>
                         {line.content.slice(0, line.editLength)}
                     </span>
-                    <span className={"second-part"} style={{ color: editorColors[line.authorDevice] }}>
+                    <span className={"second-part"} style={{ color: editorColorObj[line.authorDevice] }}>
                         {line.content.slice(line.editLength)}
                     </span>
                 </div>;
@@ -47,12 +47,14 @@ function PoemLines({ poemLines, userInfo }: { poemLines: ILine[], userInfo: IUse
             </Alert>}
             <Card>
                 <CardContent style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
-                    {Object.entries(editorColors).map(([ , color ], index) => (
-                        <Box key={index} style={{ margin: "0.5rem", display: "flex", alignItems: "center" }}>
-                            <FiberManualRecordIcon style={{ color }} />
-                            <Typography style={{ marginLeft: "0.5rem" }}>{editors[index]}</Typography>
-                        </Box>
-                    ))}
+                    {editors.map((editorName, editorIndex) => {
+                        return (
+                            <Box key={editorIndex} style={{ margin: "0.5rem", display: "flex", alignItems: "center" }}>
+                                <FiberManualRecordIcon style={{ color: editorColorArr[editorIndex] }} />
+                                <Typography style={{ marginLeft: "0.5rem" }}>{editorName}</Typography>
+                            </Box>
+                        );
+                    })}
                 </CardContent>
             </Card>
         </div>
