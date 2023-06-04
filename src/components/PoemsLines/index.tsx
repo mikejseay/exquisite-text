@@ -23,6 +23,9 @@ function PoemsLines() {
     const [ userInfo, setUserInfo ] = React.useState<IUserTableInfo>({} as IUserTableInfo);
 
     React.useEffect(() => {
+
+        socket.emit("getUserTableInfo");
+
         const poemsLinesListener = (myPoemLines: ILine[]) => {
             setPoemsLines(prevPoemsLines => {
                 return [ ...prevPoemsLines, myPoemLines ];
@@ -31,12 +34,12 @@ function PoemsLines() {
 
         const userTableInfoListener = (info: IUserTableInfo) => {
             setUserInfo(info);
+            socket.off("userTableInfo", userTableInfoListener);
         };
 
         socket.on("poemLines", poemsLinesListener);
         socket.on("userTableInfo", userTableInfoListener);
 
-        socket.emit("getUserTableInfo");
         setPoemsLines([]);
         socket.emit("getPoemsLines");
 
