@@ -7,6 +7,7 @@ function UserTable() {
     const { socket } = useSocket();
 
     const [ editorArr, setEditorArr ] = React.useState<Array<string>>([]);
+    const [ editorColorArr, setEditorColorArr ] = React.useState<Array<string>>([]);
     const [ spectatorArr, setSpectatorArr ] = React.useState<Array<string>>([]);
 
     // listen for arrays of editors and spectators
@@ -15,6 +16,7 @@ function UserTable() {
         // Event handlers for the line and the deleteLine events are set up for the Socket.IO connection.
         const userTableInfoListener = (info: IUserTableInfo) => {
             setEditorArr(info["editors"]);
+            setEditorColorArr(info["editorColorArr"]);
             setSpectatorArr(info["spectators"]);
         };
 
@@ -32,7 +34,7 @@ function UserTable() {
                 <h2>Editors:</h2>
                 {editorArr.map((name, nameIndex) => {
                     return (
-                        <p key={nameIndex}>{name}</p>
+                        <p key={nameIndex} style={{ color: editorColorArr[nameIndex] }}>{name}</p>
                     );
                 })}
             </div>
