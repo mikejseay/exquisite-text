@@ -23,6 +23,7 @@ import type {
     ClientToServerEvents,
     ServerToClientEvents,
 } from "../../types";
+import Canvas from "../Canvas";
 
 
 
@@ -81,6 +82,7 @@ export default function App() {
                     <MenuButtons socket={socket} />
                     <div style={appTitle}>Exquisite Text</div>
                 </header>
+                <Canvas />
                 <Outlet context={{ socket }} />
             </Paper>
         </div>
