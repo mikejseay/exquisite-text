@@ -15,6 +15,7 @@ type ExtendedTouch = Touch & {
 const Canvas: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [ points, setPoints ] = useState<Point[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [ strokeHistory, setStrokeHistory ] = useState<Point[][]>([]);
     const [ isMousedown, setIsMousedown ] = useState(false);
     const [ allowDirect, setAllowDirect ] = useState(true);
