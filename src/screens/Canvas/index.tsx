@@ -51,28 +51,6 @@ const Canvas: React.FC = () => {
         }
     }, []);
 
-    const handleUndo = useCallback(() => {
-        const newHistory = [ ...strokeHistory ];
-        newHistory.pop();
-        setStrokeHistory(newHistory);
-
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const context = canvas.getContext("2d");
-        if (!context) return;
-
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        newHistory.forEach((stroke) => {
-            if (newHistory.length === 0) return;
-
-            const strokePath: Point[] = [];
-            stroke.forEach((point) => {
-                strokePath.push(point);
-                drawOnCanvas(strokePath);
-            });
-        });
-    }, [ drawOnCanvas, strokeHistory ]);
-
     const handleStart = useCallback((e: React.MouseEvent<Element, MouseEvent> | React.TouchEvent<Element>) => {
         let pressure = 0.1;
         let x = 0;
@@ -181,10 +159,7 @@ const Canvas: React.FC = () => {
 
     return (
         <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginBottom: "20px" }}>
-                <Button onClick={handleUndo}>Undo</Button>
-                <Button onClick={() => setAllowDirect(!allowDirect)}>Toggle Direct</Button>
-            </div>
+            <Button onClick={() => setAllowDirect(!allowDirect)}>Toggle Direct</Button>
             <canvas
                 ref={canvasRef}
                 onMouseDown={handleStart}
