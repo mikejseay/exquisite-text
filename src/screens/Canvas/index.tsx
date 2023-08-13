@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import Button from "@mui/material/Button";
 
 interface Point {
   x: number;
@@ -164,9 +165,22 @@ const Canvas: React.FC = () => {
         canvas.width = window.innerWidth * devicePixelRatio;
         canvas.height = window.innerHeight * devicePixelRatio;
     }, []);
-    
+
+    useEffect(() => {
+        const disableScroll = (e: TouchEvent) => e.preventDefault();
+        document.body.addEventListener("touchmove", disableScroll, { passive: false });
+
+        return () => {
+            document.body.removeEventListener("touchmove", disableScroll);
+        };
+    }, []);
+
     return (
-        <div>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginBottom: "20px" }}>
+                <Button onClick={handleUndo}>Undo</Button>
+                <Button onClick={() => setAllowDirect(!allowDirect)}>Toggle Direct</Button>
+            </div>
             <canvas
                 ref={canvasRef}
                 onMouseDown={handleStart}
@@ -178,10 +192,6 @@ const Canvas: React.FC = () => {
             >
                 Sorry, your browser is too old for this demo.
             </canvas>
-            <div>
-                <button onClick={handleUndo}>Undo</button>
-                <button onClick={() => setAllowDirect(!allowDirect)}>Toggle Direct</button>
-            </div>
         </div>
     );
 };
