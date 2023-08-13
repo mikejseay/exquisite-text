@@ -20,6 +20,7 @@ const Canvas: React.FC = () => {
     const [ allowDirect, setAllowDirect ] = useState(true);
     const [ lineWidth, setLineWidth ] = useState(0);
     const [ eventPressure, setEventPressure ] = useState(0.1);
+    const [ drawType, setDrawType ] = useState("noDrawYet");
 
     const drawOnCanvas = useCallback((newPoints: Point[]) => {
         const canvas = canvasRef.current;
@@ -33,6 +34,7 @@ const Canvas: React.FC = () => {
 
         // newPoints is length 1 if being drawn by handleStart
         if (newPoints.length === 1) {
+            setDrawType("fill");
             const point = newPoints[0];
             context.lineWidth = point.lineWidth;
             context.beginPath();
@@ -42,9 +44,10 @@ const Canvas: React.FC = () => {
         }
 
         context.beginPath();
-        
+
         // newPoints is length 2 if being drawn by handleMove
         for (let i = 0; i < newPoints.length - 1; i++) {
+            setDrawType("stroke");
             const startPoint = newPoints[i];
             const endPoint = newPoints[i + 1];
 
@@ -121,8 +124,8 @@ const Canvas: React.FC = () => {
             y = (e.pageY - canvasBounds.top) * window.devicePixelRatio;
         }
 
-        setLineWidth((prev) => Math.log(pressure + 1) * 40 * 0.2 + prev * 0.8);
-        const newPoint = { x, y, lineWidth };
+        setLineWidth(Math.log(pressure + 1) * 40);
+        const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * 40 };
         setPoints((prev) => {
             drawOnCanvas([ prev[prev.length - 1], newPoint ]);
             return [ ...prev, newPoint ];
@@ -169,6 +172,8 @@ const Canvas: React.FC = () => {
                 {"Pressure: " + eventPressure}
                 <br />
                 {"Line Width: " + lineWidth}
+                <br />
+                {"Draw Type: " + drawType}
             </p>
             <Button onClick={() => setAllowDirect(!allowDirect)}>Toggle Direct</Button>
             <canvas
