@@ -19,6 +19,7 @@ const Canvas: React.FC = () => {
     const [ isMousedown, setIsMousedown ] = useState(false);
     const [ allowDirect, setAllowDirect ] = useState(true);
     const [ lineWidth, setLineWidth ] = useState(0);
+    const [ eventPressure, setEventPressure ] = useState(0.1);
 
     const drawOnCanvas = useCallback((newPoints: Point[]) => {
         const canvas = canvasRef.current;
@@ -30,6 +31,7 @@ const Canvas: React.FC = () => {
         context.lineCap = "round";
         context.lineJoin = "round";
 
+        // newPoints is length 1 if being drawn by handleStart
         if (newPoints.length === 1) {
             const point = newPoints[0];
             context.lineWidth = point.lineWidth;
@@ -40,6 +42,8 @@ const Canvas: React.FC = () => {
         }
 
         context.beginPath();
+        
+        // newPoints is length 2 if being drawn by handleMove
         for (let i = 0; i < newPoints.length - 1; i++) {
             const startPoint = newPoints[i];
             const endPoint = newPoints[i + 1];
@@ -63,10 +67,11 @@ const Canvas: React.FC = () => {
 
         if ("touches" in e) {
             const touch = e.touches[0] as ExtendedTouch;
-            
+
             if (allowDirect || (touch && touch.touchType !== "direct")) {
                 if (touch.force && touch.force > 0) {
                     pressure = touch.force;
+                    setEventPressure(pressure);
                 }
                 x = ((touch.pageX - canvasBounds.left) * window.devicePixelRatio);
                 y = ((touch.pageY - canvasBounds.top) * window.devicePixelRatio);
@@ -93,7 +98,7 @@ const Canvas: React.FC = () => {
         let pressure = 0.1;
         let x = 0;
         let y = 0;
-    
+
         const canvas = canvasRef.current;
         if (!canvas) return;
 
@@ -101,10 +106,11 @@ const Canvas: React.FC = () => {
 
         if ("touches" in e) {
             const touch = e.touches[0] as ExtendedTouch;
-            
+
             if (allowDirect || (touch && touch.touchType !== "direct")) {
                 if (touch.force && touch.force > 0) {
                     pressure = touch.force;
+                    setEventPressure(pressure);
                 }
                 x = ((touch.pageX - canvasBounds.left) * window.devicePixelRatio);
                 y = ((touch.pageY - canvasBounds.top) * window.devicePixelRatio);
@@ -112,7 +118,7 @@ const Canvas: React.FC = () => {
         } else {
             pressure = 1.0;
             x = (e.pageX - canvasBounds.left) * window.devicePixelRatio;
-            y = (e.pageY - canvasBounds.top) * window.devicePixelRatio;        
+            y = (e.pageY - canvasBounds.top) * window.devicePixelRatio;
         }
 
         setLineWidth((prev) => Math.log(pressure + 1) * 40 * 0.2 + prev * 0.8);
@@ -159,6 +165,11 @@ const Canvas: React.FC = () => {
 
     return (
         <div style={{ display: "flex", flexDirection: "column" }}>
+            <p style={{ textAlign: "center" }}>
+                {"Pressure: " + eventPressure}
+                <br />
+                {"Line Width: " + lineWidth}
+            </p>
             <Button onClick={() => setAllowDirect(!allowDirect)}>Toggle Direct</Button>
             <canvas
                 ref={canvasRef}
