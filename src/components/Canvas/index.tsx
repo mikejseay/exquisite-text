@@ -73,10 +73,12 @@ const Canvas: React.FC = () => {
     }, [ drawOnCanvas, strokeHistory ]);
 
     const handleStart = useCallback((e: React.MouseEvent<Element, MouseEvent> | React.TouchEvent<Element>) => {
-        console.log(e);
         let pressure = 0.1;
         let x = 0;
         let y = 0;
+
+        const canvas = canvasRef.current;
+        if (!canvas) return;
 
         if ("touches" in e) {
             const touch = e.touches[0] as ExtendedTouch;
@@ -85,13 +87,13 @@ const Canvas: React.FC = () => {
                 if (touch.force && touch.force > 0) {
                     pressure = touch.force;
                 }
-                x = touch.pageX * 2;
-                y = touch.pageY * 2;
+                x = (touch.pageX - canvas.offsetLeft) * 2;
+                y = (touch.pageY - canvas.offsetTop) * 2;
             }
         } else {
             pressure = 1.0;
-            x = e.pageX * devicePixelRatio;
-            y = e.pageY * devicePixelRatio;
+            x = (e.pageX - canvas.offsetLeft) * devicePixelRatio;
+            y = (e.pageY - canvas.offsetTop) * devicePixelRatio;
         }
 
         setIsMousedown(true);
@@ -110,7 +112,10 @@ const Canvas: React.FC = () => {
         let pressure = 0.1;
         let x = 0;
         let y = 0;
-
+    
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+    
         if ("touches" in e) {
             const touch = e.touches[0] as ExtendedTouch;
             
@@ -118,24 +123,23 @@ const Canvas: React.FC = () => {
                 if (touch.force && touch.force > 0) {
                     pressure = touch.force;
                 }
-                x = touch.pageX * 2;
-                y = touch.pageY * 2;
+                x = (touch.pageX - canvas.offsetLeft) * 2;
+                y = (touch.pageY - canvas.offsetTop) * 2;
             }
         } else {
             pressure = 1.0;
-            x = e.pageX * devicePixelRatio;
-            y = e.pageY * devicePixelRatio;            
+            x = (e.pageX - canvas.offsetLeft) * devicePixelRatio;
+            y = (e.pageY - canvas.offsetTop) * devicePixelRatio;            
         }
 
         setLineWidth((prev) => Math.log(pressure + 1) * 40 * 0.2 + prev * 0.8);
-
         const newPoint = { x, y, lineWidth };
         setPoints((prev) => {
             drawOnCanvas([ prev[prev.length - 1], newPoint ]);
             return [ ...prev, newPoint ];
         });
     }, [ allowDirect, drawOnCanvas, isMousedown ]);
-    
+
     const handleEnd = useCallback(() => {
         setIsMousedown(false);
         setStrokeHistory((prev) => [ ...prev, points ]);
