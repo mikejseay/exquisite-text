@@ -19,7 +19,7 @@ const Canvas: React.FC = () => {
     const [ allowDirect, setAllowDirect ] = useState(true);
     const [ lineWidth, setLineWidth ] = useState(0);
 
-    const drawOnCanvas = useCallback((stroke: Point[]) => {
+    const drawOnCanvas = useCallback((newPoints: Point[]) => {
         const canvas = canvasRef.current;
         if (!canvas) return;
         const context = canvas.getContext("2d");
@@ -29,21 +29,23 @@ const Canvas: React.FC = () => {
         context.lineCap = "round";
         context.lineJoin = "round";
 
-        const l = stroke.length - 1;
-        if (stroke.length >= 3) {
-            const xc = (stroke[l].x + stroke[l - 1].x) / 2;
-            const yc = (stroke[l].y + stroke[l - 1].y) / 2;
-            context.lineWidth = stroke[l - 1].lineWidth;
-            context.quadraticCurveTo(stroke[l - 1].x, stroke[l - 1].y, xc, yc);
-            context.stroke();
-            context.beginPath();
-            context.moveTo(xc, yc);
-        } else {
-            const point = stroke[l];
+        if (newPoints.length === 1) {
+            const point = newPoints[0];
             context.lineWidth = point.lineWidth;
-            context.strokeStyle = "gray";
             context.beginPath();
-            context.moveTo(point.x, point.y);
+            context.arc(point.x, point.y, point.lineWidth / 2, 0, Math.PI * 2);
+            context.fill();
+            return;
+        }
+
+        context.beginPath();
+        for (let i = 0; i < newPoints.length - 1; i++) {
+            const startPoint = newPoints[i];
+            const endPoint = newPoints[i + 1];
+
+            context.moveTo(startPoint.x, startPoint.y);
+            context.lineWidth = startPoint.lineWidth;
+            context.lineTo(endPoint.x, endPoint.y);
             context.stroke();
         }
     }, []);
@@ -71,10 +73,11 @@ const Canvas: React.FC = () => {
     }, [ drawOnCanvas, strokeHistory ]);
 
     const handleStart = useCallback((e: React.MouseEvent<Element, MouseEvent> | React.TouchEvent<Element>) => {
+        console.log(e);
         let pressure = 0.1;
         let x = 0;
         let y = 0;
-        
+
         if ("touches" in e) {
             const touch = e.touches[0] as ExtendedTouch;
             
@@ -87,24 +90,23 @@ const Canvas: React.FC = () => {
             }
         } else {
             pressure = 1.0;
-            x = e.pageX * 2;
-            y = e.pageY * 2;
+            x = e.pageX * devicePixelRatio;
+            y = e.pageY * devicePixelRatio;
         }
-    
-        if (isMousedown) {
-            setIsMousedown(true);
-            setLineWidth(Math.log(pressure + 1) * 40);
-            setPoints((prev) => [ ...prev, { x, y, lineWidth: Math.log(pressure + 1) * 40 } ]);
-            drawOnCanvas([ { x, y, lineWidth: Math.log(pressure + 1) * 40 } ]);
-        }
-    }, [ allowDirect, drawOnCanvas, lineWidth, isMousedown ]);
+
+        setIsMousedown(true);
+
+        const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * 40 };
+        setPoints((prev) => [ ...prev, newPoint ]);
+        drawOnCanvas([ newPoint ]);
+    }, [ allowDirect, drawOnCanvas ]);
 
     const handleMove = useCallback((e: React.MouseEvent | React.TouchEvent) => {
         if (!isMousedown) {
             return;
         }
         e.preventDefault();
-    
+
         let pressure = 0.1;
         let x = 0;
         let y = 0;
@@ -121,14 +123,18 @@ const Canvas: React.FC = () => {
             }
         } else {
             pressure = 1.0;
-            x = e.pageX * 2;
-            y = e.pageY * 2;
+            x = e.pageX * devicePixelRatio;
+            y = e.pageY * devicePixelRatio;            
         }
-    
+
         setLineWidth((prev) => Math.log(pressure + 1) * 40 * 0.2 + prev * 0.8);
-        setPoints((prev) => [ ...prev, { x, y, lineWidth } ]);
-        drawOnCanvas([ { x, y, lineWidth } ]);
-    }, [ allowDirect, drawOnCanvas, isMousedown, lineWidth ]);
+
+        const newPoint = { x, y, lineWidth };
+        setPoints((prev) => {
+            drawOnCanvas([ prev[prev.length - 1], newPoint ]);
+            return [ ...prev, newPoint ];
+        });
+    }, [ allowDirect, drawOnCanvas, isMousedown ]);
     
     const handleEnd = useCallback(() => {
         setIsMousedown(false);
@@ -136,7 +142,7 @@ const Canvas: React.FC = () => {
         setPoints([]);
         setLineWidth(0);
     }, [ points ]);
-      
+
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -144,6 +150,17 @@ const Canvas: React.FC = () => {
         canvas.height = window.innerHeight * 2;
     }, []);
 
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        const devicePixelRatio = window.devicePixelRatio || 1;
+
+        if (!canvas) return;
+        canvas.style.width = `${window.innerWidth}px`;
+        canvas.style.height = `${window.innerHeight}px`;
+        canvas.width = window.innerWidth * devicePixelRatio;
+        canvas.height = window.innerHeight * devicePixelRatio;
+    }, []);
+    
     return (
         <div>
             <canvas
@@ -155,7 +172,7 @@ const Canvas: React.FC = () => {
                 onMouseUp={handleEnd}
                 onTouchEnd={handleEnd}
             >
-        Sorry, your browser is too old for this demo.
+                Sorry, your browser is too old for this demo.
             </canvas>
             <div>
                 <button onClick={handleUndo}>Undo</button>
