@@ -81,6 +81,8 @@ const Canvas: React.FC = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
+        const canvasBounds = canvas.getBoundingClientRect();
+
         if ("touches" in e) {
             const touch = e.touches[0] as ExtendedTouch;
             
@@ -88,13 +90,13 @@ const Canvas: React.FC = () => {
                 if (touch.force && touch.force > 0) {
                     pressure = touch.force;
                 }
-                x = (touch.pageX - canvas.offsetLeft) * 2;
-                y = (touch.pageY - canvas.offsetTop) * 2;
+                x = ((touch.pageX - canvasBounds.left) * window.devicePixelRatio);
+                y = ((touch.pageY - canvasBounds.top) * window.devicePixelRatio);
             }
         } else {
             pressure = 1.0;
-            x = (e.pageX - canvas.offsetLeft) * devicePixelRatio;
-            y = (e.pageY - canvas.offsetTop) * devicePixelRatio;
+            x = (e.pageX - canvasBounds.left) * window.devicePixelRatio;
+            y = (e.pageY - canvasBounds.top) * window.devicePixelRatio;
         }
 
         setIsMousedown(true);
@@ -116,7 +118,9 @@ const Canvas: React.FC = () => {
     
         const canvas = canvasRef.current;
         if (!canvas) return;
-    
+
+        const canvasBounds = canvas.getBoundingClientRect();
+
         if ("touches" in e) {
             const touch = e.touches[0] as ExtendedTouch;
             
@@ -124,13 +128,13 @@ const Canvas: React.FC = () => {
                 if (touch.force && touch.force > 0) {
                     pressure = touch.force;
                 }
-                x = (touch.pageX - canvas.offsetLeft) * 2;
-                y = (touch.pageY - canvas.offsetTop) * 2;
+                x = ((touch.pageX - canvasBounds.left) * window.devicePixelRatio);
+                y = ((touch.pageY - canvasBounds.top) * window.devicePixelRatio);
             }
         } else {
             pressure = 1.0;
-            x = (e.pageX - canvas.offsetLeft) * devicePixelRatio;
-            y = (e.pageY - canvas.offsetTop) * devicePixelRatio;            
+            x = (e.pageX - canvasBounds.left) * window.devicePixelRatio;
+            y = (e.pageY - canvasBounds.top) * window.devicePixelRatio;        
         }
 
         setLineWidth((prev) => Math.log(pressure + 1) * 40 * 0.2 + prev * 0.8);
