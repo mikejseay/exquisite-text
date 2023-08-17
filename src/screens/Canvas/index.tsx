@@ -17,6 +17,12 @@ interface PlayerZone {
     end: number;
 }
 
+const playerZoneRatios = [
+    { start: 0, end: 0.33 },
+    { start: 0.3, end: 0.66 },
+    { start: 0.63, end: 1 },
+];
+
 const Canvas: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [ points, setPoints ] = useState<Point[]>([]);
@@ -27,27 +33,35 @@ const Canvas: React.FC = () => {
     const [ lineWidth, setLineWidth ] = useState(0);
     const [ eventPressure, setEventPressure ] = useState(0.1);
     const [ drawType, setDrawType ] = useState("noDrawYet");
-    const [ player, setPlayer ] = useState<number>(1); // current player, start with player 1
-    const [ playerZones, setPlayerZones ] = useState<PlayerZone[]>([
-        { start: 0, end: 0.33 },
-        { start: 0.3, end: 0.66 },
-        { start: 0.63, end: 1 },
-    ]); // Overlap of 0.03 to allow next player to see some part of the previous drawing.
-    const currentPlayerZone = playerZones[player - 1];
+    const [ player, setPlayer ] = useState<number>(0);
+    const [ playerZone, setPlayerZones ] = useState<[number, number]>([ 0, 0 ]);
+    const [ coordinates, setCoordinates ] = useState<{ x: number, y: number}>({ x: 0, y: 0 });
 
+    const currentPlayerZone = playerZoneRatios[player];
     const isInPlayerZone = (y: number) => {
         const canvas = canvasRef.current;
         if (!canvas) return false;
-
+        console.log("currentPlayerZone:");
+        console.log(currentPlayerZone);
+        console.log("player");
+        console.log(player);
         const start = currentPlayerZone.start * canvas.height;
         const end = currentPlayerZone.end * canvas.height;
-
+        setPlayerZones([ start, end ]);
         return y >= start && y <= end;
     };
+
     const switchPlayer = () => {
-        setPlayer(prev => (prev % 3) + 1); // Switch between 1, 2, and 3
-        setPoints([]);
-        setStrokeHistory([]);
+        if (player === 3) {
+            // TODO: Show full finished poem
+            // Perhaps display the result or do some finalization
+            // Reset game to start again or navigate to another screen
+        } else {
+            setPlayer((player + 1) % 3);
+            setPoints([]);
+            setStrokeHistory([]);
+        }
+        console.log("player in switchPlayer");
     };
 
     const drawPlayerZones = useCallback(() => {
@@ -56,24 +70,19 @@ const Canvas: React.FC = () => {
         const context = canvas.getContext("2d");
         if (!context) return;
 
-        context.strokeStyle = "red";
-        context.lineWidth = 1;
-
-        playerZones.forEach(zone => {
-            const start = zone.start * canvas.height;
+        playerZoneRatios.forEach((zone, index) => {
+            const start = zone.start * canvas.height * 2;
             const end = zone.end * canvas.height;
-            
-            context.beginPath();
-            context.moveTo(0, start);
-            context.lineTo(canvas.width, start);
-            context.stroke();
-            
-            context.beginPath();
-            context.moveTo(0, end);
-            context.lineTo(canvas.width, end);
-            context.stroke();
+
+            if (index !== player) { // Not the current player's zone
+                context.fillStyle = "rgba(200,200,200,0.5)";  // Semi-transparent gray
+                context.fillRect(0, start, canvas.width, end - start);
+            } else {
+                // Clear the section for the current player to see/draw
+                context.clearRect(0, start, canvas.width, end - start);
+            }
         });
-    }, [ playerZones ]);
+    }, [ player, playerZoneRatios ]);
 
     useEffect(() => {
         drawPlayerZones();
@@ -119,31 +128,33 @@ const Canvas: React.FC = () => {
         let pressure = 0.1;
         let x = 0;
         let y = 0;
-
+    
         const canvas = canvasRef.current;
         if (!canvas) return;
-        if (!isInPlayerZone(y)) return;
+    
         const canvasBounds = canvas.getBoundingClientRect();
-
+    
         if ("touches" in e) {
             const touch = e.touches[0] as ExtendedTouch;
-
+            x = ((touch.pageX - canvasBounds.left) * window.devicePixelRatio);
+            y = ((touch.pageY - canvasBounds.top) * window.devicePixelRatio);
+    
             if (allowDirect || (touch && touch.touchType !== "direct")) {
                 if (touch.force && touch.force > 0) {
                     pressure = touch.force;
                     setEventPressure(pressure);
                 }
-                x = ((touch.pageX - canvasBounds.left) * window.devicePixelRatio);
-                y = ((touch.pageY - canvasBounds.top) * window.devicePixelRatio);
             }
-            y = ((touch.pageY - canvasBounds.top) * window.devicePixelRatio);
-
         } else {
             pressure = 1.0;
             x = (e.pageX - canvasBounds.left) * window.devicePixelRatio;
             y = (e.pageY - canvasBounds.top) * window.devicePixelRatio;
-            
         }
+
+        setCoordinates({ x, y });
+        // Check if the y-coordinate is in the player's zone
+        console.log("isInPlayerZone(y):");
+        console.log(isInPlayerZone(y));
         if (!isInPlayerZone(y)) return;
 
         setIsMousedown(true);
@@ -151,7 +162,7 @@ const Canvas: React.FC = () => {
         const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * 40 };
         setPoints((prev) => [ ...prev, newPoint ]);
         drawOnCanvas([ newPoint ]);
-    }, [ allowDirect, drawOnCanvas ]);
+    }, [ allowDirect, drawOnCanvas, player ]);
 
     const handleMove = useCallback((e: React.MouseEvent | React.TouchEvent) => {
         if (!isMousedown) {
@@ -186,6 +197,7 @@ const Canvas: React.FC = () => {
             x = (e.pageX - canvasBounds.left) * window.devicePixelRatio;
             y = (e.pageY - canvasBounds.top) * window.devicePixelRatio;
         }
+        setCoordinates({ x, y });
         if (!isInPlayerZone(y)) return;
 
         setLineWidth(Math.log(pressure + 1) * 40);
@@ -194,7 +206,7 @@ const Canvas: React.FC = () => {
             drawOnCanvas([ prev[prev.length - 1], newPoint ]);
             return [ ...prev, newPoint ];
         });
-    }, [ allowDirect, drawOnCanvas, isMousedown ]);
+    }, [ allowDirect, drawOnCanvas, isMousedown, player ]);
 
     const handleEnd = useCallback(() => {
         setIsMousedown(false);
@@ -212,7 +224,7 @@ const Canvas: React.FC = () => {
 
     useEffect(() => {
         const canvas = canvasRef.current;
-        const devicePixelRatio = window.devicePixelRatio || 1;
+        const devicePixelRatio = window.devicePixelRatio ?? 1;
 
         if (!canvas) return;
         canvas.style.width = `${window.innerWidth}px`;
@@ -240,9 +252,17 @@ const Canvas: React.FC = () => {
                 {"Draw Type: " + drawType}
                 <br />
                 {"Current Player: " + player}
+                <br />
+                {"Coordinates: " + JSON.stringify(coordinates)}
+                <br />
+                {"Player Zone: " + playerZone}
             </p>
             <Button onClick={() => setAllowDirect(!allowDirect)}>Toggle Direct</Button>
-            <Button onClick={switchPlayer}>End Turn</Button>
+            <Button onClick={switchPlayer}>
+                {player < 3
+                    ? "Pass"
+                    : "Finish"}
+            </Button>
             <canvas
                 ref={canvasRef}
                 onMouseDown={handleStart}
