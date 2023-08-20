@@ -136,9 +136,9 @@ const Canvas: React.FC = () => {
     
         if ("touches" in e) {
             const touch = e.touches[0] as ExtendedTouch;
-            x = ((touch.pageX - canvasBounds.left) * window.devicePixelRatio);
-            y = ((touch.pageY - canvasBounds.top) * window.devicePixelRatio);
-    
+            x = ((touch.pageX - canvasBounds.left - window.scrollX) * window.devicePixelRatio);
+            y = ((touch.pageY - canvasBounds.top - window.scrollY) * window.devicePixelRatio);
+            
             if (allowDirect || (touch && touch.touchType !== "direct")) {
                 if (touch.force && touch.force > 0) {
                     pressure = touch.force;
@@ -147,8 +147,8 @@ const Canvas: React.FC = () => {
             }
         } else {
             pressure = 1.0;
-            x = (e.pageX - canvasBounds.left) * window.devicePixelRatio;
-            y = (e.pageY - canvasBounds.top) * window.devicePixelRatio;
+            x = (e.pageX - canvasBounds.left - window.scrollX) * window.devicePixelRatio;
+            y = (e.pageY - canvasBounds.top - window.scrollY) * window.devicePixelRatio;            
         }
 
         setCoordinates({ x, y });
@@ -187,15 +187,15 @@ const Canvas: React.FC = () => {
                     pressure = touch.force;
                     setEventPressure(pressure);
                 }
-                x = ((touch.pageX - canvasBounds.left) * window.devicePixelRatio);
-                y = ((touch.pageY - canvasBounds.top) * window.devicePixelRatio);
+                x = ((touch.pageX - canvasBounds.left - window.scrollX) * window.devicePixelRatio);
+                y = ((touch.pageY - canvasBounds.top - window.scrollY) * window.devicePixelRatio);                
             }
             y = ((touch.pageY - canvasBounds.top) * window.devicePixelRatio);
 
         } else {
             pressure = 1.0;
-            x = (e.pageX - canvasBounds.left) * window.devicePixelRatio;
-            y = (e.pageY - canvasBounds.top) * window.devicePixelRatio;
+            x = (e.pageX - canvasBounds.left - window.scrollX) * window.devicePixelRatio;
+            y = (e.pageY - canvasBounds.top - window.scrollY) * window.devicePixelRatio;            
         }
         setCoordinates({ x, y });
         if (!isInPlayerZone(y)) return;
