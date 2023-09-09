@@ -17,6 +17,7 @@ const fullCanvasHeightRatioOfWindow = 0.8;
 const panelHeightRatioOfWindow = 0.3;
 const overlap = 0.2;
 const defaultPressure = 0.1;
+const lineColor = "grey";
 
 const Canvas: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -81,7 +82,7 @@ const Canvas: React.FC = () => {
         const context = canvas.getContext("2d");
         if (!context) return;
 
-        context.strokeStyle = "gray";
+        context.strokeStyle = lineColor;
         context.lineCap = "round";
         context.lineJoin = "round";
 
@@ -89,7 +90,7 @@ const Canvas: React.FC = () => {
         if (newPoints.length === 1) {
             setDrawType("fill");
             const point = newPoints[0];
-            context.fillStyle = "gray";
+            context.fillStyle = lineColor;
             context.lineWidth = point.lineWidth;
             context.beginPath();
             context.arc(point.x, point.y, point.lineWidth / 2, 0, Math.PI * 2);
