@@ -12,6 +12,12 @@ type ExtendedTouch = Touch & {
     touchType?: string;
 };
 
+const defaultLineWidth = 30;
+const fullCanvasHeightRatioOfWindow = 0.8;
+const panelHeightRatioOfWindow = 0.3;
+const overlap = 0.2;
+const defaultPressure = 0.1;
+
 const Canvas: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [ points, setPoints ] = useState<Point[]>([]);
@@ -20,7 +26,7 @@ const Canvas: React.FC = () => {
     const [ isMousedown, setIsMousedown ] = useState(false);
     const [ allowDirect, setAllowDirect ] = useState(true);
     const [ lineWidth, setLineWidth ] = useState(0);
-    const [ eventPressure, setEventPressure ] = useState(0.1);
+    const [ eventPressure, setEventPressure ] = useState(defaultPressure);
     const [ drawType, setDrawType ] = useState<"fill" | "stroke" | "noDrawYet">("noDrawYet");
     const [ player, setPlayer ] = useState<number>(0);
     const [ coordinates, setCoordinates ] = useState<{ x: number, y: number}>({ x: 0, y: 0 });
@@ -29,25 +35,32 @@ const Canvas: React.FC = () => {
         const canvas = canvasRef.current;
         const context = canvas?.getContext("2d");
         if (canvas && context) {
+            // Extract the whole canvas
             const playerCanvas = context.getImageData(0, 0, canvas.width, canvas.height);
 
+            // Add it to a list of canvases per player
             const newPlayerCanvases = [ ...playerCanvases, playerCanvas ];
             setPlayerCanvases(newPlayerCanvases);
 
-            const imageData = context.getImageData(0, context.canvas.height * 0.8, context.canvas.width, context.canvas.height);
+            // Shift canvas contents upward by 0.8 times the canvas height (old method)
+            const imageData = context.getImageData(0, context.canvas.height * (1 - overlap), context.canvas.width, context.canvas.height);
             context.putImageData(imageData, 0, 0);
-            context.clearRect(context.canvas.width, context.canvas.height * 0.2, 0, context.canvas.height);
+            context.clearRect(context.canvas.width, context.canvas.height * overlap, 0, context.canvas.height);
 
+            // If the third panel is being submitted, clear the canvas, then construct a new one
+            // using the "full available height", then paste the image data from each individual player's canvas
+            // into the three vertical panels, shifting downwards by 0.8 times the canvas height each time.
             if (player === 2) {
                 context.clearRect(0, 0, canvas.width, canvas.height);
                 let yOffset = 0;
 
-                canvas.style.height = `${window.innerHeight * 0.8}px`;
-                canvas.height = window.innerHeight * devicePixelRatio * 0.8;
+
+                canvas.style.height = `${window.innerHeight * fullCanvasHeightRatioOfWindow}px`;
+                canvas.height = window.innerHeight * devicePixelRatio * fullCanvasHeightRatioOfWindow;
 
                 newPlayerCanvases.forEach((pc) => {
                     context.putImageData(pc, 0, yOffset);
-                    yOffset += Math.floor(pc.height * 0.8);
+                    yOffset += Math.floor(pc.height * (1 - overlap));
                 });
             } else {
                 setPlayer(player + 1);
@@ -56,7 +69,6 @@ const Canvas: React.FC = () => {
             }
         }
     };
-
 
     const drawOnCanvas = useCallback((newPoints: Point[]) => {
         const canvas = canvasRef.current;
@@ -97,7 +109,7 @@ const Canvas: React.FC = () => {
     }, []);
 
     const handleStart = useCallback((e: React.MouseEvent<Element, MouseEvent> | React.TouchEvent<Element>) => {
-        let pressure = 0.1;
+        let pressure = defaultPressure;
         let x = 0;
         let y = 0;
 
@@ -126,8 +138,8 @@ const Canvas: React.FC = () => {
         setCoordinates({ x, y });
         setIsMousedown(true);
 
-        setLineWidth(Math.log(pressure + 1) * 40);
-        const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * 40 };
+        setLineWidth(Math.log(pressure + 1) * defaultLineWidth);
+        const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * defaultLineWidth };
         setPoints((prev) => [ ...prev, newPoint ]);
         drawOnCanvas([ newPoint ]);
     }, [ allowDirect, drawOnCanvas, player ]);
@@ -138,7 +150,7 @@ const Canvas: React.FC = () => {
         }
         e.preventDefault();
 
-        let pressure = 0.1;
+        let pressure = defaultPressure;
         let x = 0;
         let y = 0;
 
@@ -167,8 +179,8 @@ const Canvas: React.FC = () => {
         }
         setCoordinates({ x, y });
 
-        setLineWidth(Math.log(pressure + 1) * 40);
-        const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * 40 };
+        setLineWidth(Math.log(pressure + 1) * defaultLineWidth);
+        const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * defaultLineWidth };
         setPoints((prev) => {
             drawOnCanvas([ prev[prev.length - 1], newPoint ]);
             return [ ...prev, newPoint ];
@@ -182,15 +194,17 @@ const Canvas: React.FC = () => {
         setLineWidth(0);
     }, [ points ]);
 
+
+    // This useEffect defines the panel height
     useEffect(() => {
         const canvas = canvasRef.current;
         const devicePixelRatio = window.devicePixelRatio ?? 1;
 
         if (!canvas) return;
         canvas.style.width = `${window.innerWidth}px`;
-        canvas.style.height = `${window.innerHeight * 0.3}px`;
+        canvas.style.height = `${window.innerHeight * panelHeightRatioOfWindow}px`;
         canvas.width = window.innerWidth * devicePixelRatio;
-        canvas.height = window.innerHeight * devicePixelRatio * 0.3;
+        canvas.height = window.innerHeight * devicePixelRatio * panelHeightRatioOfWindow;
     }, []);
 
     useEffect(() => {
