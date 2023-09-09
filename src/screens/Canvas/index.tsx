@@ -21,7 +21,7 @@ const defaultPressure = 0.1;
 const Canvas: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [ points, setPoints ] = useState<Point[]>([]);
-    const [ strokeHistory, setStrokeHistory ] = useState<Point[][]>([]);
+    // const [ strokeHistory, setStrokeHistory ] = useState<Point[][]>([]);
     const [ playerCanvases, setPlayerCanvases ] = useState<ImageData[]>([]);
     const [ isMousedown, setIsMousedown ] = useState(false);
     const [ allowDirect, setAllowDirect ] = useState(true);
@@ -70,7 +70,7 @@ const Canvas: React.FC = () => {
             } else {
                 setPlayer(player + 1);
                 setPoints([]);
-                setStrokeHistory([]);
+                // setStrokeHistory([]);
             }
         }
     };
@@ -194,7 +194,7 @@ const Canvas: React.FC = () => {
 
     const handleEnd = useCallback(() => {
         setIsMousedown(false);
-        setStrokeHistory((prev) => [ ...prev, points ]);
+        // setStrokeHistory((prev) => [ ...prev, points ]);
         setPoints([]);
         setLineWidth(0);
     }, [ points ]);
