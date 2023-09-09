@@ -47,6 +47,11 @@ const Canvas: React.FC = () => {
             context.putImageData(imageData, 0, 0);
             context.clearRect(context.canvas.width, context.canvas.height * overlap, 0, context.canvas.height);
 
+            // Shift canvas contents upward by 0.8 times the canvas height (new method)
+            // context.globalCompositeOperation = "copy";
+            // context.drawImage(context.canvas, 0, -context.canvas.height * (1 - overlap));
+            // context.globalCompositeOperation = "source-over";
+
             // If the third panel is being submitted, clear the canvas, then construct a new one
             // using the "full available height", then paste the image data from each individual player's canvas
             // into the three vertical panels, shifting downwards by 0.8 times the canvas height each time.
