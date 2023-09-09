@@ -30,24 +30,24 @@ const Canvas: React.FC = () => {
         const context = canvas?.getContext("2d");
         if (canvas && context) {
             const playerCanvas = context.getImageData(0, 0, canvas.width, canvas.height);
-            
+
             const newPlayerCanvases = [ ...playerCanvases, playerCanvas ];
             setPlayerCanvases(newPlayerCanvases);
-    
+
             const imageData = context.getImageData(0, context.canvas.height * 0.8, context.canvas.width, context.canvas.height);
             context.putImageData(imageData, 0, 0);
             context.clearRect(context.canvas.width, context.canvas.height * 0.2, 0, context.canvas.height);
-    
+
             if (player === 2) {
                 context.clearRect(0, 0, canvas.width, canvas.height);
                 let yOffset = 0;
-    
+
                 canvas.style.height = `${window.innerHeight * 0.8}px`;
                 canvas.height = window.innerHeight * devicePixelRatio * 0.8;
 
                 newPlayerCanvases.forEach((pc) => {
                     context.putImageData(pc, 0, yOffset);
-                    yOffset += Math.floor(pc.height * 0.8); 
+                    yOffset += Math.floor(pc.height * 0.8);
                 });
             } else {
                 setPlayer(player + 1);
@@ -56,8 +56,8 @@ const Canvas: React.FC = () => {
             }
         }
     };
-    
-    
+
+
     const drawOnCanvas = useCallback((newPoints: Point[]) => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -72,9 +72,11 @@ const Canvas: React.FC = () => {
         if (newPoints.length === 1) {
             setDrawType("fill");
             const point = newPoints[0];
+            context.fillStyle = "gray";
             context.lineWidth = point.lineWidth;
             context.beginPath();
             context.arc(point.x, point.y, point.lineWidth / 2, 0, Math.PI * 2);
+            context.closePath();
             context.fill();
             return;
         }
@@ -98,17 +100,17 @@ const Canvas: React.FC = () => {
         let pressure = 0.1;
         let x = 0;
         let y = 0;
-    
+
         const canvas = canvasRef.current;
         if (!canvas) return;
-    
+
         const canvasBounds = canvas.getBoundingClientRect();
-    
+
         if ("touches" in e) {
             const touch = e.touches[0] as ExtendedTouch;
             x = ((touch.pageX - canvasBounds.left - window.scrollX) * window.devicePixelRatio);
             y = ((touch.pageY - canvasBounds.top - window.scrollY) * window.devicePixelRatio);
-            
+
             if (allowDirect || (touch && touch.touchType !== "direct")) {
                 if (touch.force && touch.force > 0) {
                     pressure = touch.force;
@@ -118,12 +120,13 @@ const Canvas: React.FC = () => {
         } else {
             pressure = 1.0;
             x = (e.pageX - canvasBounds.left - window.scrollX) * window.devicePixelRatio;
-            y = (e.pageY - canvasBounds.top - window.scrollY) * window.devicePixelRatio;            
+            y = (e.pageY - canvasBounds.top - window.scrollY) * window.devicePixelRatio;
         }
 
         setCoordinates({ x, y });
         setIsMousedown(true);
 
+        setLineWidth(Math.log(pressure + 1) * 40);
         const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * 40 };
         setPoints((prev) => [ ...prev, newPoint ]);
         drawOnCanvas([ newPoint ]);
@@ -153,14 +156,14 @@ const Canvas: React.FC = () => {
                     setEventPressure(pressure);
                 }
                 x = ((touch.pageX - canvasBounds.left - window.scrollX) * window.devicePixelRatio);
-                y = ((touch.pageY - canvasBounds.top - window.scrollY) * window.devicePixelRatio);                
+                y = ((touch.pageY - canvasBounds.top - window.scrollY) * window.devicePixelRatio);
             }
             y = ((touch.pageY - canvasBounds.top) * window.devicePixelRatio);
 
         } else {
             pressure = 1.0;
             x = (e.pageX - canvasBounds.left - window.scrollX) * window.devicePixelRatio;
-            y = (e.pageY - canvasBounds.top - window.scrollY) * window.devicePixelRatio;            
+            y = (e.pageY - canvasBounds.top - window.scrollY) * window.devicePixelRatio;
         }
         setCoordinates({ x, y });
 
