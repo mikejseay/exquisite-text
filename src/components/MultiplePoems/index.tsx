@@ -6,7 +6,6 @@ import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a lo
 import { Carousel } from "react-responsive-carousel";
 
 import { useSocket } from "../App";
-import PoemLines from "../PoemLines";
 import {
     poemTitle,
     poemsBody,
@@ -16,8 +15,9 @@ import {
     ILine,
     IUserTableInfo,
 } from "../../types";
+import PoemLinesAnimated from "../PoemLinesAnimated";
 
-function PoemsLines() {
+function MultiplePoems() {
     const { socket } = useSocket();
     const [ poemsLines, setPoemsLines ] = React.useState<Array<ILine[]>>([]);
     const [ userInfo, setUserInfo ] = React.useState<IUserTableInfo>({} as IUserTableInfo);
@@ -65,7 +65,7 @@ function PoemsLines() {
                     </div>
                 </AccordionSummary>
                 <AccordionDetails>
-                    <PoemLines poemLines={poemLines} userInfo={userInfo} />
+                    <PoemLinesAnimated poemLines={poemLines} userInfo={userInfo} />
                 </AccordionDetails>
             </Accordion>
         ));
@@ -80,4 +80,4 @@ function PoemsLines() {
     );
 }
 
-export default PoemsLines;
+export default MultiplePoems;

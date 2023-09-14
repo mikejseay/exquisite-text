@@ -3,7 +3,7 @@ import * as React from "react";
 import GameTransition from "../../components/GameTransition";
 import LeaveButton from "../../components/LeaveButton";
 import LineInput from "../../components/LineInput";
-import PoemsLines from "../../components/PoemsLines";
+import MultiplePoems from "../../components/MultiplePoems";
 import { gameContainer } from "./styles";
 
 function Game() {
@@ -11,7 +11,7 @@ function Game() {
         <div style={gameContainer} className={"game-container"}>
             <LineInput />
             <LeaveButton />
-            <PoemsLines />
+            <MultiplePoems />
             <GameTransition />
         </div>
     );
