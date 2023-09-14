@@ -35,12 +35,6 @@ export const underlineSpan: React.CSSProperties = {
     borderBottom: "2px #aaaaaa solid",
 };
 
-export const underlineSpanHover: React.CSSProperties = {
-    // boxShadow: "0.1em 0.1em 0.6em grey",
-    // boxShadow: "none",
-    borderBottom: "4px #aaaaaa solid",
-};
-
 export const poemInputStyle: React.CSSProperties = {
     // backgroundImage: "linear-gradient(to right, #ffffff, #eeeeee)",
     // border: "1px #eeeeee solid",

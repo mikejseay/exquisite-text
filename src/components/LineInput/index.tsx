@@ -5,7 +5,7 @@ import Fab from "@mui/material/Fab";
 import Stack from "@mui/material/Stack";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
-import { ClickAwayListener } from "@mui/material";
+import { ClickAwayListener, Fade } from "@mui/material";
 import WarningIcon from "@mui/icons-material/Warning";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 
@@ -35,7 +35,6 @@ import {
     spacingSpan,
     textSpacer,
     underlineSpan,
-    underlineSpanHover,
     underlineSuggestionDiv,
 } from "./styles";
 import "./LineInput.css";
@@ -62,7 +61,7 @@ const LineInput = () => {
     const [ poemInputSpectate, setPoemInputSpectate ] = React.useState<string>("");
 
     const [ passEnabled, setPassEnabled, passEnabledRef ] = useStateRef(false);
-    const [ onSecondLine, setOnSecondLine ] = React.useState<boolean>(false);
+    const [ shouldDisplaySecondLine, setShouldDisplaySecondLine ] = React.useState<boolean>(false);
 
     const [ onLastLine, setOnLastLine ] = React.useState<boolean>(false);
     const [ textAreaVisible, setTextAreaVisible ] = React.useState<boolean>(true);
@@ -104,6 +103,7 @@ const LineInput = () => {
         };
 
         const editorActiveListener = (editorActiveFromServer: boolean) => {
+            setShouldDisplaySecondLine(false);
             if (editorActiveFromServer) {
                 setTextAreaVisible(true);
                 setHelpMessage("Complete a line of poetry.");
@@ -156,12 +156,16 @@ const LineInput = () => {
         if (messageType === 1) {
             if (progressProp < 0.3) {
                 setHelpMessage("Write a line of poetry.");
+                setShouldDisplaySecondLine(false);
             } else if (progressProp < 0.75) {
                 setHelpMessage("That's it, keep going!");
+                setShouldDisplaySecondLine(false);
             } else {
                 setHelpMessage("Go to next line when ready ⏎");
+                setShouldDisplaySecondLine(true);
             }
         } else {
+            setShouldDisplaySecondLine(true);
             if (progressProp < 0.6) {
                 if (onLastLine) {
                     setHelpMessage("Last line. Make it count!");
@@ -192,8 +196,6 @@ const LineInput = () => {
         if (lines.length === 1) {
             // only one line
 
-            setOnSecondLine(false);
-
             if (lines[0].length > maxCharsOnLineOne) {
                 const useInput = lines[0].slice(0, maxCharsOnLineOne);
                 setPoemInput(useInput);
@@ -214,8 +216,6 @@ const LineInput = () => {
             if (lines[1].length > maxCharsOnLineTwo) {
                 // second line too long
 
-                setOnSecondLine(true);
-
                 const useInput = lines[0] + lineSepString + lines[1].slice(0, maxCharsOnLineTwo);
                 setPoemInput(useInput);
                 socket.emit("lineEdit", useInput);
@@ -225,8 +225,6 @@ const LineInput = () => {
             } else if (lines[0].length < minCharsOnLineOne) {
                 // first line too short
 
-                setOnSecondLine(false);
-
                 setPoemInput(lines[0]);
                 socket.emit("lineEdit", lines[0]);
                 displayError("More on first line!");
@@ -234,8 +232,6 @@ const LineInput = () => {
                 setPassEnabled(false);
             } else {
                 // just right!
-
-                setOnSecondLine(true);
 
                 setPoemInput(evt.target.value);
                 socket.emit("lineEdit", evt.target.value);
@@ -245,7 +241,6 @@ const LineInput = () => {
         } else {
             // more than 2 lines somehow (e.g. large copy-paste or press enter on line two)
 
-            setOnSecondLine(true);
             const useInput = lines[0] + lineSepString + lines[1].slice(0, maxCharsOnLineTwo);
             setPoemInput(useInput);
             socket.emit("lineEdit", useInput);
@@ -268,7 +263,6 @@ const LineInput = () => {
 
             // broadcast that there was a change
             setPoemInput(secondPart);
-            setOnSecondLine(false);
 
             // this client submits its line, triggering a movement of its poem from its queue
             // to the target queue
@@ -292,7 +286,6 @@ const LineInput = () => {
         // set the input textarea to be blank
         setPoemInput("");
         socket.emit("lineEdit", "");
-        setOnSecondLine(false);
 
         setTextAreaVisible(false);
         setPassEnabled(false);
@@ -342,35 +335,25 @@ const LineInput = () => {
                             <div
                                 className={"active-input"}
                                 style={activeInput}
-                                onMouseOver={() => {
-                                    const target = document.getElementById("hoverSensitiveSpan") as HTMLElement;
-                                    if (!isNil(underlineSpanHover.borderBottom)) {
-                                        target.style.borderBottom = underlineSpanHover.borderBottom as string;
-                                    }
-                                }}
-                                onMouseOut={() => {
-                                    const target = document.getElementById("hoverSensitiveSpan") as HTMLElement;
-                                    if (!isNil(underlineSpan.borderBottom)) {
-                                        target.style.borderBottom = underlineSpan.borderBottom as string;
-                                    }
-                                }}
                             >
                                 <div
                                     className={"underline-suggestion"}
                                     style={underlineSuggestionDiv}
                                 >
                                     <span
-                                        id={"hoverSensitiveSpan"}
+                                        className={"underline-span-1"}
                                         style={underlineSpan}
                                     >
-                                        {onSecondLine
-                                            ? (
-                                                "  ".repeat(idealCharsOnLineOne + 3) + lineSepString + "  ".repeat(idealCharsOnLineTwo + 3)
-                                            )
-                                            : (
-                                                "  ".repeat(idealCharsOnLineOne + 3)
-                                            )}
+                                        {"  ".repeat(idealCharsOnLineOne + 3) + lineSepString}
                                     </span>
+                                    <Fade in={shouldDisplaySecondLine} timeout={1000}>
+                                        <span
+                                            className={"underline-span-2"}
+                                            style={underlineSpan}
+                                        >
+                                            {"  ".repeat(idealCharsOnLineTwo + 3)}
+                                        </span>
+                                    </Fade>
                                 </div>
                                 <textarea
                                     autoFocus={true} // this only on initial page load
