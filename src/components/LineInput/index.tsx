@@ -61,7 +61,7 @@ const LineInput = () => {
     const [ poemInputSpectate, setPoemInputSpectate ] = React.useState<string>("");
 
     const [ passEnabled, setPassEnabled, passEnabledRef ] = useStateRef(false);
-    const [ displaySecondLine, setDisplaySecondLine ] = React.useState<boolean>(false);
+    const [ shouldDisplaySecondLine, setShouldDisplaySecondLine ] = React.useState<boolean>(false);
 
     const [ onLastLine, setOnLastLine ] = React.useState<boolean>(false);
     const [ textAreaVisible, setTextAreaVisible ] = React.useState<boolean>(true);
@@ -103,7 +103,7 @@ const LineInput = () => {
         };
 
         const editorActiveListener = (editorActiveFromServer: boolean) => {
-            setDisplaySecondLine(false);
+            setShouldDisplaySecondLine(false);
             if (editorActiveFromServer) {
                 setTextAreaVisible(true);
                 setHelpMessage("Complete a line of poetry.");
@@ -156,16 +156,16 @@ const LineInput = () => {
         if (messageType === 1) {
             if (progressProp < 0.3) {
                 setHelpMessage("Write a line of poetry.");
-                setDisplaySecondLine(false);
+                setShouldDisplaySecondLine(false);
             } else if (progressProp < 0.75) {
                 setHelpMessage("That's it, keep going!");
-                setDisplaySecondLine(false);
+                setShouldDisplaySecondLine(false);
             } else {
                 setHelpMessage("Go to next line when ready ⏎");
-                setDisplaySecondLine(true);
+                setShouldDisplaySecondLine(true);
             }
         } else {
-            setDisplaySecondLine(true);
+            setShouldDisplaySecondLine(true);
             if (progressProp < 0.6) {
                 if (onLastLine) {
                     setHelpMessage("Last line. Make it count!");
@@ -346,7 +346,7 @@ const LineInput = () => {
                                     >
                                         {"  ".repeat(idealCharsOnLineOne + 3) + lineSepString}
                                     </span>
-                                    <Fade in={displaySecondLine} timeout={1000}>
+                                    <Fade in={shouldDisplaySecondLine} timeout={1000}>
                                         <span
                                             className={"underline-span-2"}
                                             style={underlineSpan}
