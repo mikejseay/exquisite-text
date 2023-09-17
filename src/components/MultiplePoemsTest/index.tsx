@@ -33,6 +33,8 @@ function getTextWidth(text: string, font: string) {
 function MultiplePoemsTest() {
     // define poemsLines and userInfo constantly for testing purposes
 
+    const [ reRender, setReRender ] = React.useState<boolean>(false);
+
     // const [ poemsLines, setPoemsLines ] = React.useState<Array<ILine[]>>([]);
     // const [ userInfo, setUserInfo ] = React.useState<IUserTableInfo>({} as IUserTableInfo);
 
@@ -176,7 +178,6 @@ function MultiplePoemsTest() {
         for (const line of poemLines) {
             const currentSingleLine = line.content.split(lineSepString)[0];
             const currentWidth = getTextWidth(currentSingleLine, "18pt Esteban");
-            console.log(currentSingleLine, "has width", currentWidth);
             if (isNil(currentWidth)) {
                 continue;
             }
@@ -188,7 +189,7 @@ function MultiplePoemsTest() {
     }
     maxWidth *= 0.77;
 
-    const renderPoems = () => {
+    const renderPoems = (reRender: boolean) => {
         return poemsLines.map((poemLines, poemLinesIndex) => (
             <div
                 key = {poemLinesIndex}
@@ -203,7 +204,12 @@ function MultiplePoemsTest() {
                     <strong>{`exquisite text #${poemLinesIndex}`}</strong>
                 </div>
                 {/*<PoemLines poemLines={poemLines} userInfo={userInfo} />*/}
-                <PoemLinesAnimated poemLines={poemLines} userInfo={userInfo} width={maxWidth} />
+                <PoemLinesAnimated
+                    poemLines={poemLines}
+                    userInfo={userInfo}
+                    width={maxWidth}
+                    reRender={reRender}
+                />
             </div>
         ));
     };
@@ -214,8 +220,16 @@ function MultiplePoemsTest() {
             style={{ width: `${maxWidth + 60}px` }}
         >
             {poemsLines.length > 1
-                ? <Carousel>{renderPoems()}</Carousel>
-                : renderPoems()}
+                ?
+                <Carousel
+                    onChange={() => {
+                        setReRender(!reRender);
+                    }}
+                    showThumbs={false}
+                >
+                    {renderPoems(reRender)}
+                </Carousel>
+                : renderPoems(reRender)}
         </div>
     );
 }

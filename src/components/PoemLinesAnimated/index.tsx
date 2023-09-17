@@ -20,8 +20,8 @@ import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
 
 function PoemLinesAnimated(
-    { poemLines, userInfo, width }:
-        { poemLines: ILine[], userInfo: IUserTableInfo, width: number }) {
+    { poemLines, userInfo, width, reRender }:
+        { poemLines: ILine[], userInfo: IUserTableInfo, width: number, reRender: boolean }) {
     const {
         editorColorArr,
         editors,
@@ -36,6 +36,7 @@ function PoemLinesAnimated(
                 poemLines={poemLines}
                 userInfo={userInfo}
                 width={width}
+                reRender={reRender}
                 speed={30}
                 random={30}
                 delay={30}

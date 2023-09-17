@@ -12,12 +12,14 @@ export default function TypewriterPoem(
         poemLines,
         userInfo,
         width,
+        reRender,
         speed = DEFAULT_MS,
         random = DEFAULT_MS,
         delay = DEFAULT_MS,
     }: {
         poemLines: ILine[],
         userInfo: IUserTableInfo,
+        reRender: boolean,
         width: number,
         speed: number,
         random: number,
@@ -40,6 +42,11 @@ export default function TypewriterPoem(
     const [ currentStringIndex, setCurrentStringIndex ] = useState(0);
     const [ currentTextIndex, setCurrentTextIndex ] = useState(0);
     const [ currentTextArray, setCurrentTextArray ] = useState<Array<number>>([ 0 ]);
+    useEffect(() => {
+        setCurrentStringIndex(0);
+        setCurrentTextIndex(0);
+        setCurrentTextArray([ 0 ]);
+    }, [ reRender ]);
     useEffect(() => {
         setTimeout(() => {
             if (currentTextIndex < stringArray[currentStringIndex].length) {
