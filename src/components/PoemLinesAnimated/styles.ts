@@ -1,6 +1,6 @@
 import * as React from "react";
 
-export const poemsBody: React.CSSProperties = {
+export const poemBody: React.CSSProperties = {
     // marginBottom: "2em",
     // marginTop: "auto",
     marginLeft: "auto",

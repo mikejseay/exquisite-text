@@ -5,7 +5,7 @@ import IconButton from "@mui/material/IconButton";
 import { useClipboard } from "use-clipboard-copy";
 
 
-import { poemsBody } from "./styles";
+import { poemBody } from "./styles";
 import {
     ILine,
     IUserTableInfo,
@@ -31,7 +31,7 @@ function PoemLinesAnimated(
     });
 
     return (
-        <div className={"poems-body"} style={poemsBody}>
+        <div className={"poem-body"} style={poemBody}>
             <TypewriterPoem
                 poemLines={poemLines}
                 userInfo={userInfo}

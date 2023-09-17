@@ -30,18 +30,6 @@ function getTextWidth(text: string, font: string) {
     }
 }
 
-function getCssStyle(element: HTMLElement, prop: string) {
-    return window.getComputedStyle(element, null).getPropertyValue(prop);
-}
-
-function getCanvasFont(el = document.body) {
-    const fontWeight = getCssStyle(el, "font-weight") || "normal";
-    const fontSize = getCssStyle(el, "font-size") || "16px";
-    const fontFamily = getCssStyle(el, "font-family") || "Times New Roman";
-
-    return `${fontWeight} ${fontSize} ${fontFamily}`;
-}
-
 function MultiplePoemsTest() {
     // define poemsLines and userInfo constantly for testing purposes
 
@@ -205,7 +193,11 @@ function MultiplePoemsTest() {
             <div
                 key = {poemLinesIndex}
                 className={"poem-container"}
-                style={{ width: `${maxWidth}px` }}
+                style={{
+                    width: `${maxWidth}px`,
+                    marginLeft: "auto",
+                    marginRight: "auto",
+                }}
             >
                 <div style={poemTitle} className={"poem-title"}>
                     <strong>{`exquisite text #${poemLinesIndex}`}</strong>
@@ -218,8 +210,8 @@ function MultiplePoemsTest() {
 
     return (
         <div
-            className={"poems-with-lines"}
-            style={{ width: `${maxWidth}px` }}
+            className={"multiple-poems"}
+            style={{ width: `${maxWidth + 60}px` }}
         >
             {poemsLines.length > 1
                 ? <Carousel>{renderPoems()}</Carousel>
