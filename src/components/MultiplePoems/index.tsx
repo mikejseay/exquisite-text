@@ -15,6 +15,7 @@ import {
     ILine,
     IUserTableInfo,
 } from "../../types";
+import PoemLines from "../PoemLines";
 import PoemLinesAnimated from "../PoemLinesAnimated";
 
 function MultiplePoems() {
@@ -65,11 +66,15 @@ function MultiplePoems() {
                     </div>
                 </AccordionSummary>
                 <AccordionDetails>
-                    <PoemLinesAnimated poemLines={poemLines} userInfo={userInfo} />
+                    {/*<PoemLinesAnimated poemLines={poemLines} userInfo={userInfo} />*/}
+                    <PoemLines poemLines={poemLines} userInfo={userInfo} />
                 </AccordionDetails>
             </Accordion>
         ));
     };
+
+    console.log(poemsLines);
+    console.log(userInfo);
 
     return (
         <div className={"poems-with-lines"} style={poemsBody}>

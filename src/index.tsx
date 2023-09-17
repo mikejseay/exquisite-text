@@ -12,6 +12,7 @@ import {
 import "./index.css";
 import App from "./components/App";
 import End from "./screens/End";
+import EndTest from "./screens/EndTest";
 import Game from "./screens/Game";
 // import Host from "./screens/Host";
 import Join from "./screens/Join";
@@ -38,7 +39,7 @@ function isComponentEnabled(element: JSX.Element): JSX.Element | null {
 
 function Root() {
     const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
-  
+
     const theme = React.useMemo(
         () =>
             createTheme({
@@ -69,6 +70,7 @@ function Root() {
                         <Route path="game" element={<Game />} />
                         <Route path="spectate" element={<Spectate />} />
                         <Route path="end" element={<End />} />
+                        <Route path="endtest" element={<EndTest />} />
                         <Route path="canvas" element={<Canvas />} />
                         {isComponentEnabled(<Route path="library" element={<Library />} />)}
                         {isComponentEnabled(<Route path="page/:id" element={<Page />} />)}

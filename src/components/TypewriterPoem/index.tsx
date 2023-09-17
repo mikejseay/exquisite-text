@@ -8,16 +8,25 @@ import {
 import { lineSepString } from "../../constants";
 
 export default function TypewriterPoem(
-    { poemLines,
+    {
+        poemLines,
         userInfo,
+        width,
         speed = DEFAULT_MS,
         random = DEFAULT_MS,
         delay = DEFAULT_MS,
-    }: { poemLines: ILine[], userInfo: IUserTableInfo, speed: number, random: number, delay: number}) {
+    }: {
+        poemLines: ILine[],
+        userInfo: IUserTableInfo,
+        width: number,
+        speed: number,
+        random: number,
+        delay: number
+    }) {
     const {
         editorColorObj,
     } = userInfo;
-    // const nLines = poemLines.length;
+    const nLines = poemLines.length;
     const stringArray: string[] = [];
     const colorArray: string[] = [];
     for (const line of poemLines) {
@@ -56,7 +65,18 @@ export default function TypewriterPoem(
         }, speed + (Math.random() * random));
     });
     return (
-        <div style={{ whiteSpace: "pre-line" }}>
+        <div style={{
+            whiteSpace: "pre-line",
+            height: `${nLines + 4}em`,
+            width: `${width}px`,
+            // width: "60ch",
+            // marginLeft: "auto",
+            // marginRight: "auto",
+            display: "inline-block",
+            textAlign: "left",
+            fontFamily: "'Esteban', serif",
+            fontSize: "18px",
+        }}>
             {stringArray.slice(0, currentStringIndex + 1).map((string, index) => {
                 return <span key={index} className={"piece"} style={{ color: colorArray[index] }}>
                     {string.substring(0, currentTextArray[index])}

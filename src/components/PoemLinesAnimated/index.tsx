@@ -19,7 +19,9 @@ import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
 
-function PoemLinesAnimated({ poemLines, userInfo }: { poemLines: ILine[], userInfo: IUserTableInfo }) {
+function PoemLinesAnimated(
+    { poemLines, userInfo, width }:
+        { poemLines: ILine[], userInfo: IUserTableInfo, width: number }) {
     const {
         editorColorArr,
         editors,
@@ -29,19 +31,29 @@ function PoemLinesAnimated({ poemLines, userInfo }: { poemLines: ILine[], userIn
     });
 
     return (
-        <div style={poemsBody}>
-            <div className={"typewriter-div"} style={{ whiteSpace: "pre-line" }}>
-                <TypewriterPoem
-                    poemLines={poemLines}
-                    userInfo={userInfo}
-                    speed={30}
-                    random={30}
-                    delay={30}
-                />
+        <div className={"poems-body"} style={poemsBody}>
+            <TypewriterPoem
+                poemLines={poemLines}
+                userInfo={userInfo}
+                width={width}
+                speed={30}
+                random={30}
+                delay={30}
+            />
+            <div className={"copy-button"} style={{
+                display: "flex",
+                flexDirection: "row",
+            }}>
+                <IconButton
+                    onClick={() => clipboard.copy(poemLines.map(line => line.content).join(lineSepString))}
+                    style={{
+                        marginLeft: "auto",
+                        marginRight: "4ch",
+                    }}
+                >
+                    <ContentCopyIcon />
+                </IconButton>
             </div>
-            <IconButton onClick={() => clipboard.copy(poemLines.map(line => line.content).join(lineSepString))}>
-                <ContentCopyIcon />
-            </IconButton>
             {clipboard.copied && <Alert severity="success" style={{ position: "fixed" }}>
               Copied!
             </Alert>}

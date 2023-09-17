@@ -28,7 +28,7 @@ function PoemLines({ poemLines, userInfo }: { poemLines: ILine[], userInfo: IUse
     });
 
     return (
-        <div style={poemsBody}>
+        <div className={"poems-body"} style={poemsBody}>
             {poemLines.map((line) => {
                 return <div key={line.lineIndex} style={{ whiteSpace: "pre-line" }}>
                     <span className={"first-part"} style={{ color: editorColorObj[line.passerDevice] }}>
