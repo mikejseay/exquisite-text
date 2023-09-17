@@ -1,67 +1,78 @@
 import React, { useEffect, useState } from "react";
-const DEFAULT_MS = 30;
-
-import {
-    ILine,
-    IUserTableInfo,
-} from "../../types";
+import { ILine, IUserTableInfo } from "../../types";
 import { lineSepString } from "../../constants";
 
-export default function TypewriterPoem(
-    { poemLines,
-        userInfo,
-        speed = DEFAULT_MS,
-        random = DEFAULT_MS,
-        delay = DEFAULT_MS,
-    }: { poemLines: ILine[], userInfo: IUserTableInfo, speed: number, random: number, delay: number}) {
-    const {
-        editorColorObj,
-    } = userInfo;
-    // const nLines = poemLines.length;
-    const stringArray: string[] = [];
-    const colorArray: string[] = [];
-    for (const line of poemLines) {
+const DEFAULT_MS = 30;
 
-        stringArray.push(line.content.slice(0, line.editLength));
-        colorArray.push(editorColorObj[line.passerDevice]);
+interface TypewriterPoemProps {
+    poemLines: ILine[];
+    userInfo: IUserTableInfo;
+    speed?: number;
+    random?: number;
+    delay?: number;
+}
 
-        stringArray.push(line.content.slice(line.editLength) + lineSepString);
-        colorArray.push(editorColorObj[line.authorDevice]);
-    }
+export default function TypewriterPoem({
+    poemLines,
+    userInfo,
+    speed = DEFAULT_MS,
+    random = DEFAULT_MS,
+    delay = DEFAULT_MS,
+}: TypewriterPoemProps) {
+    const { editorColorObj } = userInfo;
+
+    const [ stringArray, colorArray ] = poemLines.reduce(
+        ([ strings, colors ], line) => {
+            strings.push(line.content.slice(0, line.editLength), line.content.slice(line.editLength) + lineSepString);
+            colors.push(editorColorObj[line.passerDevice], editorColorObj[line.authorDevice]);
+            return [ strings, colors ];
+        },
+        [ [], [] ] as [string[], string[]],
+    );
+
     const [ currentStringIndex, setCurrentStringIndex ] = useState(0);
     const [ currentTextIndex, setCurrentTextIndex ] = useState(0);
-    const [ currentTextArray, setCurrentTextArray ] = useState<Array<number>>([ 0 ]);
+    const [ currentTextArray, setCurrentTextArray ] = useState<number[]>([ 0 ]);
+
     useEffect(() => {
-        setTimeout(() => {
+        const timeout = setTimeout(() => {
             if (currentTextIndex < stringArray[currentStringIndex].length) {
-
-                setCurrentTextIndex(currentTextIndex + 1);
-
-                const nextCurrentTextArray = [ ...currentTextArray ];
-                nextCurrentTextArray[currentStringIndex] += 1;
-                setCurrentTextArray(nextCurrentTextArray);
+                incrementCurrentText();
+            } else if (currentStringIndex < stringArray.length - 1) {
+                setTimeout(() => {
+                    resetCurrentText();
+                    incrementCurrentString();
+                }, delay);
             }
-            else {
-                if (currentStringIndex < stringArray.length - 1) {
-                    setTimeout(() => {
-                        setCurrentTextIndex(0);
-                        setCurrentStringIndex(currentStringIndex + 1);
+        }, speed + Math.random() * random);
 
-                        const nextCurrentTextArray = [ ...currentTextArray ];
-                        nextCurrentTextArray.push(0);
-                        setCurrentTextArray(nextCurrentTextArray);
-                    }, delay);
-                }
-            }
-        }, speed + (Math.random() * random));
+        return () => clearTimeout(timeout);
     });
+
+    const incrementCurrentText = () => {
+        setCurrentTextIndex((prevIndex) => prevIndex + 1);
+
+        setCurrentTextArray((prevArray) => {
+            const newArray = [ ...prevArray ];
+            newArray[currentStringIndex] += 1;
+            return newArray;
+        });
+    };
+
+    const resetCurrentText = () => setCurrentTextIndex(0);
+
+    const incrementCurrentString = () => {
+        setCurrentStringIndex((prevIndex) => prevIndex + 1);
+        setCurrentTextArray((prevArray) => [ ...prevArray, 0 ]);
+    };
+
     return (
         <div style={{ whiteSpace: "pre-line" }}>
-            {stringArray.slice(0, currentStringIndex + 1).map((string, index) => {
-                return <span key={index} className={"piece"} style={{ color: colorArray[index] }}>
+            {stringArray.slice(0, currentStringIndex + 1).map((string, index) => (
+                <span key={index} className="piece" style={{ color: colorArray[index] }}>
                     {string.substring(0, currentTextArray[index])}
-                </span>;
-            })}
+                </span>
+            ))}
         </div>
     );
 }
