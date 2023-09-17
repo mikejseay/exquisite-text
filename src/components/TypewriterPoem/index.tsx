@@ -6,6 +6,7 @@ import {
     IUserTableInfo,
 } from "../../types";
 import { lineSepString } from "../../constants";
+import { sleep } from "../../helpers";
 
 export default function TypewriterPoem(
     {
@@ -13,6 +14,7 @@ export default function TypewriterPoem(
         userInfo,
         width,
         reRender,
+        setReRender,
         speed = DEFAULT_MS,
         random = DEFAULT_MS,
         delay = DEFAULT_MS,
@@ -20,6 +22,7 @@ export default function TypewriterPoem(
         poemLines: ILine[],
         userInfo: IUserTableInfo,
         reRender: boolean,
+        setReRender: (value: boolean | ((prevVar: boolean) => boolean)) => void;
         width: number,
         speed: number,
         random: number,
@@ -43,33 +46,36 @@ export default function TypewriterPoem(
     const [ currentTextIndex, setCurrentTextIndex ] = useState(0);
     const [ currentTextArray, setCurrentTextArray ] = useState<Array<number>>([ 0 ]);
     useEffect(() => {
-        setCurrentStringIndex(0);
-        setCurrentTextIndex(0);
-        setCurrentTextArray([ 0 ]);
-    }, [ reRender ]);
-    useEffect(() => {
-        setTimeout(() => {
-            if (currentTextIndex < stringArray[currentStringIndex].length) {
+        if (reRender) {
+            setTimeout(() => {
+                setCurrentStringIndex(0);
+                setCurrentTextIndex(0);
+                setCurrentTextArray([ 0 ]);
+                setReRender(false);
+            }, Math.max(speed + random, delay) + 20);
+        } else {
+            setTimeout(() => {
+                if (currentTextIndex < stringArray[currentStringIndex].length) {
 
-                setCurrentTextIndex(currentTextIndex + 1);
+                    setCurrentTextIndex(currentTextIndex + 1);
 
-                const nextCurrentTextArray = [ ...currentTextArray ];
-                nextCurrentTextArray[currentStringIndex] += 1;
-                setCurrentTextArray(nextCurrentTextArray);
-            }
-            else {
-                if (currentStringIndex < stringArray.length - 1) {
-                    setTimeout(() => {
-                        setCurrentTextIndex(0);
-                        setCurrentStringIndex(currentStringIndex + 1);
+                    const nextCurrentTextArray = [ ...currentTextArray ];
+                    nextCurrentTextArray[currentStringIndex] += 1;
+                    setCurrentTextArray(nextCurrentTextArray);
+                } else {
+                    if (currentStringIndex < stringArray.length - 1) {
+                        setTimeout(() => {
+                            setCurrentTextIndex(0);
+                            setCurrentStringIndex(currentStringIndex + 1);
 
-                        const nextCurrentTextArray = [ ...currentTextArray ];
-                        nextCurrentTextArray.push(0);
-                        setCurrentTextArray(nextCurrentTextArray);
-                    }, delay);
+                            const nextCurrentTextArray = [ ...currentTextArray ];
+                            nextCurrentTextArray.push(0);
+                            setCurrentTextArray(nextCurrentTextArray);
+                        }, delay); // 70
+                    }
                 }
-            }
-        }, speed + (Math.random() * random));
+            }, speed + (Math.random() * random)); // 20 to 60
+        }
     });
     return (
         <div style={{

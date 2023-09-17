@@ -209,6 +209,7 @@ function MultiplePoemsTest() {
                     userInfo={userInfo}
                     width={maxWidth}
                     reRender={reRender}
+                    setReRender={setReRender}
                 />
             </div>
         ));
@@ -223,7 +224,7 @@ function MultiplePoemsTest() {
                 ?
                 <Carousel
                     onChange={() => {
-                        setReRender(!reRender);
+                        setReRender(true);
                     }}
                     showThumbs={false}
                 >

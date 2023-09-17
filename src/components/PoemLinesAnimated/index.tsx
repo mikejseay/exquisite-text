@@ -20,8 +20,13 @@ import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
 
 function PoemLinesAnimated(
-    { poemLines, userInfo, width, reRender }:
-        { poemLines: ILine[], userInfo: IUserTableInfo, width: number, reRender: boolean }) {
+    { poemLines, userInfo, width, reRender, setReRender }:
+        {
+            poemLines: ILine[],
+            userInfo: IUserTableInfo,
+            width: number,
+            reRender: boolean,
+            setReRender: (value: boolean | ((prevVar: boolean) => boolean)) => void; }) {
     const {
         editorColorArr,
         editors,
@@ -35,11 +40,12 @@ function PoemLinesAnimated(
             <TypewriterPoem
                 poemLines={poemLines}
                 userInfo={userInfo}
-                width={width}
                 reRender={reRender}
-                speed={30}
-                random={30}
-                delay={30}
+                setReRender={setReRender}
+                width={width}
+                speed={40}
+                random={20}
+                delay={70}
             />
             <div className={"copy-button"} style={{
                 display: "flex",
