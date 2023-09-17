@@ -5,7 +5,7 @@ import IconButton from "@mui/material/IconButton";
 import { useClipboard } from "use-clipboard-copy";
 
 
-import { poemsBody } from "./styles";
+import { poemBody } from "./styles";
 import {
     ILine,
     IUserTableInfo,
@@ -19,7 +19,14 @@ import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
 
-function PoemLinesAnimated({ poemLines, userInfo }: { poemLines: ILine[], userInfo: IUserTableInfo }) {
+function PoemLinesAnimated(
+    { poemLines, userInfo, width, reRender, setReRender }:
+        {
+            poemLines: ILine[],
+            userInfo: IUserTableInfo,
+            width: number,
+            reRender: boolean,
+            setReRender: (value: boolean | ((prevVar: boolean) => boolean)) => void; }) {
     const {
         editorColorArr,
         editors,
@@ -29,19 +36,31 @@ function PoemLinesAnimated({ poemLines, userInfo }: { poemLines: ILine[], userIn
     });
 
     return (
-        <div style={poemsBody}>
-            <div className={"typewriter-div"} style={{ whiteSpace: "pre-line" }}>
-                <TypewriterPoem
-                    poemLines={poemLines}
-                    userInfo={userInfo}
-                    speed={30}
-                    random={30}
-                    delay={30}
-                />
+        <div className={"poem-body"} style={poemBody}>
+            <TypewriterPoem
+                poemLines={poemLines}
+                userInfo={userInfo}
+                reRender={reRender}
+                setReRender={setReRender}
+                width={width}
+                speed={40}
+                random={20}
+                delay={70}
+            />
+            <div className={"copy-button"} style={{
+                display: "flex",
+                flexDirection: "row",
+            }}>
+                <IconButton
+                    onClick={() => clipboard.copy(poemLines.map(line => line.content).join(lineSepString))}
+                    style={{
+                        marginLeft: "auto",
+                        marginRight: "4ch",
+                    }}
+                >
+                    <ContentCopyIcon />
+                </IconButton>
             </div>
-            <IconButton onClick={() => clipboard.copy(poemLines.map(line => line.content).join(lineSepString))}>
-                <ContentCopyIcon />
-            </IconButton>
             {clipboard.copied && <Alert severity="success" style={{ position: "fixed" }}>
               Copied!
             </Alert>}
