@@ -1,25 +1,60 @@
-import Accordion from "@mui/material/Accordion";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import AccordionSummary from "@mui/material/AccordionSummary";
 import * as React from "react";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import { Carousel } from "react-responsive-carousel";
 
-import { useSocket } from "../App";
 import {
     poemTitle,
-    poemsBody,
 } from "./styles";
 
 import {
     ILine,
     IUserTableInfo,
 } from "../../types";
-import PoemLines from "../PoemLines";
+import { useSocket } from "../App";
 import PoemLinesAnimated from "../PoemLinesAnimated";
+import isNil from "lodash/isNil";
+import { lineSepString } from "../../constants";
+
+function getTextWidth(text: string, font: string) {
+    // re-use canvas object for better performance
+    const canvas: HTMLCanvasElement = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (!isNil(context)) {
+        context.font = font;
+        const metrics = context.measureText(text);
+        return metrics.width;
+    } else {
+        return null;
+    }
+}
+
+function maxWidthOfPoemsLines(poemsLines: Array<ILine[]>) {
+
+    let maxWidth = 0;
+    for (const poemLines of poemsLines) {
+        for (const line of poemLines) {
+            const currentSingleLine = line.content.split(lineSepString)[0];
+            const currentWidth = getTextWidth(currentSingleLine, "18pt Esteban");
+            if (isNil(currentWidth)) {
+                continue;
+            }
+            if (currentWidth > maxWidth) {
+                maxWidth = currentWidth;
+            }
+        }
+    }
+    maxWidth *= 0.77;
+
+    return maxWidth;
+
+}
 
 function MultiplePoems() {
+    // define poemsLines and userInfo constantly for testing purposes
+
     const { socket } = useSocket();
+
+    const [ reRender, setReRender ] = React.useState<boolean>(false);
     const [ poemsLines, setPoemsLines ] = React.useState<Array<ILine[]>>([]);
     const [ userInfo, setUserInfo ] = React.useState<IUserTableInfo>({} as IUserTableInfo);
 
@@ -50,37 +85,50 @@ function MultiplePoems() {
         };
     }, [ socket ]);
 
-    const renderPoems = () => {
+    const maxWidth = maxWidthOfPoemsLines(poemsLines);
+
+    const renderPoems = (reRender: boolean) => {
         return poemsLines.map((poemLines, poemLinesIndex) => (
-            <Accordion
-                defaultExpanded={true}
-                expanded={true}
-                key={poemLinesIndex}
+            <div
+                key = {poemLinesIndex}
+                className={"poem-container"}
+                style={{
+                    width: `${maxWidth}px`,
+                    marginLeft: "auto",
+                    marginRight: "auto",
+                }}
             >
-                <AccordionSummary
-                    aria-controls="panel1a-content"
-                    id="panel1a-header"
-                >
-                    <div style={poemTitle} className={"poem-title"}>
-                        <strong>{`exquisite text #${poemLinesIndex}`}</strong>
-                    </div>
-                </AccordionSummary>
-                <AccordionDetails>
-                    {/*<PoemLinesAnimated poemLines={poemLines} userInfo={userInfo} />*/}
-                    <PoemLines poemLines={poemLines} userInfo={userInfo} />
-                </AccordionDetails>
-            </Accordion>
+                <div style={poemTitle} className={"poem-title"}>
+                    <strong>{`exquisite text #${poemLinesIndex}`}</strong>
+                </div>
+                {/*<PoemLines poemLines={poemLines} userInfo={userInfo} />*/}
+                <PoemLinesAnimated
+                    poemLines={poemLines}
+                    userInfo={userInfo}
+                    width={maxWidth}
+                    reRender={reRender}
+                    setReRender={setReRender}
+                />
+            </div>
         ));
     };
 
-    console.log(poemsLines);
-    console.log(userInfo);
-
     return (
-        <div className={"poems-with-lines"} style={poemsBody}>
+        <div
+            className={"multiple-poems"}
+            style={{ width: `${maxWidth + 60}px` }}
+        >
             {poemsLines.length > 1
-                ? <Carousel>{renderPoems()}</Carousel>
-                : renderPoems()}
+                ?
+                <Carousel
+                    onChange={() => {
+                        setReRender(true);
+                    }}
+                    showThumbs={false}
+                >
+                    {renderPoems(reRender)}
+                </Carousel>
+                : renderPoems(reRender)}
         </div>
     );
 }
