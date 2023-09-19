@@ -1,0 +1,223 @@
+<mxfile host="Electron" modified="2023-09-19T23:12:21.285Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.6.8 Chrome/114.0.5735.289 Electron/25.5.0 Safari/537.36" etag="37sDx2VbAPNGmrGA35pw" version="21.6.8" type="device">
+  <diagram name="Page-1" id="1-gMk8BjGqugAFO5Nmgl">
+    <mxGraphModel dx="1418" dy="828" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-1" value="server/start.ts" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="30" y="120" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-2" value="Server" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=16;" parent="1" vertex="1">
+          <mxGeometry x="30" y="20" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-3" value="server/app.ts" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="231" y="55" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-5" value="imports" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="ODuexGqjPlrKOC3W8x_9-1" target="ODuexGqjPlrKOC3W8x_9-3" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="560" y="440" as="sourcePoint" />
+            <mxPoint x="610" y="390" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-6" value="- defines express server&lt;br&gt;- exposes non-React-Router endpoints to requests" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="211" y="115" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-8" value="imports" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="ODuexGqjPlrKOC3W8x_9-3" target="ODuexGqjPlrKOC3W8x_9-9" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="181" y="95" as="sourcePoint" />
+            <mxPoint x="411" y="85" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-9" value="server/routes/poems.ts" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="421" y="55" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-10" value="- defines responses to requests on /poems and /poems/:id&lt;br&gt;- underlies &quot;Library&quot; component" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="411" y="115" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-11" value="imports&lt;br&gt;from" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="ODuexGqjPlrKOC3W8x_9-9" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="361" y="95" as="sourcePoint" />
+            <mxPoint x="641" y="85" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-12" value="server/queries.ts" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="651" y="55" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-13" value="- uses sequelize ORM objects to define queries / updates on database" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="626" y="115" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-14" value="imports&lt;br&gt;from" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="ODuexGqjPlrKOC3W8x_9-12" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="581" y="95" as="sourcePoint" />
+            <mxPoint x="841" y="85" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-15" value="server/entity" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="851" y="55" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-16" value="- uses sequelize to create ORM for PostgreSQL database tables (currently, Poems and Lines)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="818.5" y="115" width="185" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-17" value="server/modules/&lt;br&gt;sockets.ts" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="210" y="185" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-18" value="imports" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="ODuexGqjPlrKOC3W8x_9-1" target="ODuexGqjPlrKOC3W8x_9-17" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="160" y="160" as="sourcePoint" />
+            <mxPoint x="220" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-19" value="- defines Socket.io functionality&lt;br&gt;- recognizes device to return users to ongoing room&lt;br&gt;- creates new rooms&lt;br&gt;- adds new users to existing rooms as editor/spectator" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="187.5" y="255" width="205" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-20" value="imports" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="ODuexGqjPlrKOC3W8x_9-17" target="ODuexGqjPlrKOC3W8x_9-21" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="220" y="95" as="sourcePoint" />
+            <mxPoint x="430" y="215" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-21" value="server/modules/&lt;br&gt;host.ts, editor.ts,&lt;br&gt;spectator.ts, room.ts" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="451" y="185" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-22" value="- host is a special socket that creates the room and would provide a view of the whole game&lt;br&gt;- editors are sockets that participate&lt;br&gt;- spectators view but don&#39;t participate&lt;br&gt;- room object organizes the game" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="421" y="255" width="250" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-23" value="server/modules/&lt;br&gt;member.ts, poem.ts, globals.ts" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="726" y="185" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-24" value="imports" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="ODuexGqjPlrKOC3W8x_9-21" target="ODuexGqjPlrKOC3W8x_9-23" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="380" y="225" as="sourcePoint" />
+            <mxPoint x="440" y="225" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-25" value="- member is the generic class underlying all room members (host/editor/spectator)&lt;br&gt;- poem object represents a single poem (a game can have multiple)&lt;br&gt;- globals defines global variables that track mappings of sockets/devices/rooms/hosts" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="691" y="255" width="250" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-26" value="- initializes and runs server on port 3000" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="17.5" y="185" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-27" value="Client" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=16;" parent="1" vertex="1">
+          <mxGeometry x="30" y="380" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-28" value="src/index.tsx" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="20" y="630" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-29" value="- defines root component that displays screens using React Router" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="10" y="700" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-30" value="routes to" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="ODuexGqjPlrKOC3W8x_9-28" target="ODuexGqjPlrKOC3W8x_9-31" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="150" y="280" as="sourcePoint" />
+            <mxPoint x="210" y="660" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-31" value="src/components/&lt;br&gt;App/index.tsx" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="220" y="630" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-32" value="- creates client-side socket object and provides function to get it as outlet context (?)&lt;br&gt;- tells server to recognize device based on ID&lt;br&gt;- contains header with menu buttons&lt;br&gt;- is outlet for the various screens" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="186" y="710" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-33" value="default outlet" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="ODuexGqjPlrKOC3W8x_9-31" target="ODuexGqjPlrKOC3W8x_9-34" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="150" y="670" as="sourcePoint" />
+            <mxPoint x="420" y="660" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-34" value="src/screens/&lt;br&gt;Join/index.tsx" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="441" y="630" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-35" value="- shows form with room code and name fields + write/spectate buttons&lt;br&gt;- allows user to join specific room as editor or spectator" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="415" y="700" width="169" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-36" value="always displays" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="ODuexGqjPlrKOC3W8x_9-31" target="ODuexGqjPlrKOC3W8x_9-37" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="150" y="670" as="sourcePoint" />
+            <mxPoint x="280" y="590" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-37" value="src/components/&lt;br&gt;MenuButtons/index.tsx" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="210" y="520" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-39" value="- contains Tutorial component&lt;br&gt;- possibly contains Library button&lt;br&gt;- possibly contains Host button" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="30" y="520" width="189" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-40" value="contains" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="ODuexGqjPlrKOC3W8x_9-37" target="ODuexGqjPlrKOC3W8x_9-41" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="290" y="640" as="sourcePoint" />
+            <mxPoint x="370" y="500" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-41" value="src/components/&lt;br&gt;Tutorial/index.tsx" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="211" y="420" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-42" value="- when button clicked shows modal with tutorial&lt;br&gt;- automatically display if first visit from device" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="360" y="420" width="189" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-43" value="contains" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="ODuexGqjPlrKOC3W8x_9-37" target="ODuexGqjPlrKOC3W8x_9-44" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="290" y="530" as="sourcePoint" />
+            <mxPoint x="410" y="570" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-44" value="src/components/&lt;br&gt;HostButton/index.tsx" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="431" y="520" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-45" value="- when clicked, creates a room, shows modal with URL/code, copies to clipboard, fills room field" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="582" y="520" width="189" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-46" value="navigates to" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="ODuexGqjPlrKOC3W8x_9-34" target="ODuexGqjPlrKOC3W8x_9-47" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="350" y="670" as="sourcePoint" />
+            <mxPoint x="640" y="660" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-47" value="src/screens/&lt;br&gt;Lobby/index.tsx" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="651" y="630" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-48" value="- shows room code, user table, game settings (only editable by first editor that joins), leave button" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="627" y="690" width="169" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-49" value="navigates to" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="ODuexGqjPlrKOC3W8x_9-47" target="ODuexGqjPlrKOC3W8x_9-50" edge="1">
+          <mxGeometry x="0.0101" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="571" y="670" as="sourcePoint" />
+            <mxPoint x="870" y="660" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-50" value="src/screens/&lt;br&gt;Game/index.tsx" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="863.5" y="560" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-51" value="- shows line input, leave button, any completed poems" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="863.5" y="510" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-52" value="src/screens/&lt;br&gt;Spectate/index.tsx" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="863.5" y="420" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-53" value="- shows ongoing poem states in real-time" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="863.5" y="380" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-54" value="navigates to" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="ODuexGqjPlrKOC3W8x_9-47" target="ODuexGqjPlrKOC3W8x_9-52" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="781" y="670" as="sourcePoint" />
+            <mxPoint x="880" y="670" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-55" value="navigates to" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="ODuexGqjPlrKOC3W8x_9-50" target="ODuexGqjPlrKOC3W8x_9-56" edge="1">
+          <mxGeometry x="0.0101" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="781" y="670" as="sourcePoint" />
+            <mxPoint x="1040" y="700" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-56" value="src/screens/&lt;br&gt;End/index.tsx" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="863.5" y="660" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ODuexGqjPlrKOC3W8x_9-57" value="- when game is complete, shows all completed poems in a Carousel element" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="851" y="730" width="200" height="50" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

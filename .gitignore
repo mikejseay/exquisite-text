@@ -1,3 +1,6 @@
+# drawio backups
+*.drawio.bkp
+
 # secrets
 .env
 /server/.env
