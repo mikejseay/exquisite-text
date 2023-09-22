@@ -46,7 +46,7 @@ function PoemLinesAnimated(
                 >
                     <ContentCopyIcon />
                 </IconButton>
-                {clipboard.copied && <Alert severity="success" style={{ marginLeft: "10px" }}>
+                {clipboard.copied && <Alert severity="success" style={{ marginBottom: "-1em" }}>
               Copied!
                 </Alert>}
             </div>
