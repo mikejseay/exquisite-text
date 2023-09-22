@@ -37,6 +37,21 @@ function PoemLinesAnimated(
 
     return (
         <div className={"poem-body"} style={poemBody}>
+            <div className={"copy-button"} style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                marginTop: "-2em",
+            }}>
+                <IconButton
+                    onClick={() => clipboard.copy(poemLines.map(line => line.content).join(lineSepString))}
+                >
+                    <ContentCopyIcon />
+                </IconButton>
+                {clipboard.copied && <Alert severity="success" style={{ marginLeft: "10px" }}>
+              Copied!
+                </Alert>}
+            </div>
             <TypewriterPoem
                 poemLines={poemLines}
                 userInfo={userInfo}
@@ -47,23 +62,6 @@ function PoemLinesAnimated(
                 random={20}
                 delay={70}
             />
-            <div className={"copy-button"} style={{
-                display: "flex",
-                flexDirection: "row",
-            }}>
-                <IconButton
-                    onClick={() => clipboard.copy(poemLines.map(line => line.content).join(lineSepString))}
-                    style={{
-                        marginLeft: "auto",
-                        marginRight: "4ch",
-                    }}
-                >
-                    <ContentCopyIcon />
-                </IconButton>
-            </div>
-            {clipboard.copied && <Alert severity="success" style={{ position: "fixed" }}>
-              Copied!
-            </Alert>}
             <Card>
                 <CardContent style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
                     {editors.map((editorName, editorIndex) => {
