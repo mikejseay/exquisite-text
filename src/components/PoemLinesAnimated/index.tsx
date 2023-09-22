@@ -39,8 +39,6 @@ function PoemLinesAnimated(
         <div className={"poem-body"} style={poemBody}>
             <div className={"copy-button"} style={{
                 display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
                 marginTop: "-2em",
             }}>
                 <IconButton
