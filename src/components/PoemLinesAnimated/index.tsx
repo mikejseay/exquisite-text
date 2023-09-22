@@ -19,14 +19,19 @@ import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
 
-function PoemLinesAnimated(
-    { poemLines, userInfo, width, reRender, setReRender }:
-        {
-            poemLines: ILine[],
-            userInfo: IUserTableInfo,
-            width: number,
-            reRender: boolean,
-            setReRender: (value: boolean | ((prevVar: boolean) => boolean)) => void; }) {
+function PoemLinesAnimated({
+    poemLines,
+    userInfo,
+    width,
+    reRender,
+    setReRender,
+}: {
+    poemLines: ILine[],
+    userInfo: IUserTableInfo,
+    width: number,
+    reRender: boolean,
+    setReRender: (value: boolean | ((prevVar: boolean) => boolean)) => void;
+}) {
     const {
         editorColorArr,
         editors,
@@ -47,7 +52,7 @@ function PoemLinesAnimated(
                     <ContentCopyIcon />
                 </IconButton>
                 {clipboard.copied && <Alert severity="success" style={{ marginBottom: "-1em" }}>
-              Copied!
+                    Copied!
                 </Alert>}
             </div>
             <TypewriterPoem
