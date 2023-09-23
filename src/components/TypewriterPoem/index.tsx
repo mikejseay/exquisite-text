@@ -7,9 +7,10 @@ const DEFAULT_MS = 30;
 interface TypewriterPoemProps {
     poemLines: ILine[];
     userInfo: IUserTableInfo;
-    reRender: boolean,
+    shouldAnimate: boolean;
+    reRender: boolean;
     setReRender: (value: boolean | ((prevVar: boolean) => boolean)) => void;
-    width: number,
+    width: number;
     speed?: number;
     random?: number;
     delay?: number;
@@ -18,9 +19,10 @@ interface TypewriterPoemProps {
 export default function TypewriterPoem({
     poemLines,
     userInfo,
-    width,
+    shouldAnimate,
     reRender,
     setReRender,
+    width,
     speed = DEFAULT_MS,
     random = DEFAULT_MS,
     delay = DEFAULT_MS,
@@ -41,7 +43,37 @@ export default function TypewriterPoem({
     const [ currentTextIndex, setCurrentTextIndex ] = useState(0);
     const [ currentTextArray, setCurrentTextArray ] = useState<number[]>([ 0 ]);
 
+    const incrementCurrentText = () => {
+        setCurrentTextIndex((prevIndex) => prevIndex + 1);
+
+        setCurrentTextArray((prevArray) => {
+            const newArray = [ ...prevArray ];
+            newArray[currentStringIndex] += 1;
+            return newArray;
+        });
+    };
+
+    const incrementCurrentString = () => {
+        setCurrentStringIndex((prevIndex) => prevIndex + 1);
+        setCurrentTextArray((prevArray) => [ ...prevArray, 0 ]);
+    };
+
+    const resetCurrentText = () => setCurrentTextIndex(0);
+
+    const resetEverything = () => {
+        setCurrentStringIndex(0);
+        setCurrentTextIndex(0);
+        setCurrentTextArray([ 0 ]);
+        setReRender(false);
+    };
+
+    console.log("shouldAnimate", shouldAnimate);
+
     useEffect(() => {
+
+        if (!shouldAnimate) {
+            return;
+        }
 
         if (reRender) {
 
@@ -68,30 +100,6 @@ export default function TypewriterPoem({
         }
     });
 
-    const incrementCurrentText = () => {
-        setCurrentTextIndex((prevIndex) => prevIndex + 1);
-
-        setCurrentTextArray((prevArray) => {
-            const newArray = [ ...prevArray ];
-            newArray[currentStringIndex] += 1;
-            return newArray;
-        });
-    };
-
-    const resetCurrentText = () => setCurrentTextIndex(0);
-
-    const resetEverything = () => {
-        setCurrentStringIndex(0);
-        setCurrentTextIndex(0);
-        setCurrentTextArray([ 0 ]);
-        setReRender(false);
-    };
-
-    const incrementCurrentString = () => {
-        setCurrentStringIndex((prevIndex) => prevIndex + 1);
-        setCurrentTextArray((prevArray) => [ ...prevArray, 0 ]);
-    };
-
     return (
         <div style={{
             whiteSpace: "pre-line",
@@ -102,11 +110,20 @@ export default function TypewriterPoem({
             fontFamily: "'Esteban', serif",
             fontSize: "18px",
         }}>
-            {stringArray.slice(0, currentStringIndex + 1).map((string, index) => (
-                <span key={index} className={"piece"} style={{ color: colorArray[index] }}>
-                    {string.substring(0, currentTextArray[index])}
-                </span>
-            ))}
+            {shouldAnimate
+                ?
+                stringArray.slice(0, currentStringIndex + 1).map((string, index) => (
+                    <span key={index} className={"piece"} style={{ color: colorArray[index] }}>
+                        {string.substring(0, currentTextArray[index])}
+                    </span>
+                ))
+                :
+                stringArray.map((string, index) => (
+                    <span key={index} className={"piece"} style={{ color: colorArray[index] }}>
+                        {string}
+                    </span>
+                ))
+            }
         </div>
     );
 }

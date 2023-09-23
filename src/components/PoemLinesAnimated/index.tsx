@@ -23,12 +23,14 @@ function PoemLinesAnimated({
     poemLines,
     userInfo,
     width,
+    shouldAnimate,
     reRender,
     setReRender,
 }: {
     poemLines: ILine[],
     userInfo: IUserTableInfo,
     width: number,
+    shouldAnimate: boolean,
     reRender: boolean,
     setReRender: (value: boolean | ((prevVar: boolean) => boolean)) => void;
 }) {
@@ -58,6 +60,7 @@ function PoemLinesAnimated({
             <TypewriterPoem
                 poemLines={poemLines}
                 userInfo={userInfo}
+                shouldAnimate={shouldAnimate}
                 reRender={reRender}
                 setReRender={setReRender}
                 width={width}

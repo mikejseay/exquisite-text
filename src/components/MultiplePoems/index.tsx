@@ -12,11 +12,14 @@ import {
 } from "../../types";
 import { useSocket } from "../App";
 import PoemLinesAnimated from "../PoemLinesAnimated";
-import PoemLines from "../PoemLines";
 import isNil from "lodash/isNil";
 import { lineSepString } from "../../constants";
 import { poemsLines as poemsLinesTestData } from "../../data/multiplePoems";
 import { userInfo as userInfoTestData } from "../../data/userInfo";
+
+import KeyboardIcon from "@mui/icons-material/Keyboard";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Switch from "@mui/material/Switch";
 
 function getTextWidth(text: string, font: string) {
     // re-use canvas object for better performance
@@ -61,6 +64,12 @@ function MultiplePoems({ shouldTest }: { shouldTest: boolean }) {
     const [ userInfo, setUserInfo ] = React.useState<IUserTableInfo>({} as IUserTableInfo);
 
     const [ reRender, setReRender ] = React.useState<boolean>(false);
+
+    const [ shouldAnimate, setShouldAnimate ] = React.useState(true);
+
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setShouldAnimate(event.target.checked);
+    };
 
     React.useEffect(() => {
 
@@ -116,6 +125,7 @@ function MultiplePoems({ shouldTest }: { shouldTest: boolean }) {
                     poemLines={poemLines}
                     userInfo={userInfo}
                     width={maxWidth}
+                    shouldAnimate={shouldAnimate}
                     reRender={reRender}
                     setReRender={setReRender}
                 />
@@ -139,6 +149,13 @@ function MultiplePoems({ shouldTest }: { shouldTest: boolean }) {
                     {renderPoems(reRender)}
                 </Carousel>
                 : renderPoems(reRender)}
+            <FormControlLabel control={
+                <Switch
+                    checked={shouldAnimate}
+                    onChange={handleChange}
+                    inputProps={{ "aria-label": "controlled" }}
+                />
+            } label="Animate" />
         </div>
     );
 }
