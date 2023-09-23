@@ -30,7 +30,7 @@ export default function TypewriterPoem({
     const { editorColorObj } = userInfo;
     const nLines = poemLines.length;
 
-    const [ stringArray, colorArray ] = poemLines.reduce(
+    const [ pieceArray, colorArray ] = poemLines.reduce(
         ([ strings, colors ], line) => {
             strings.push(line.content.slice(0, line.editLength), line.content.slice(line.editLength) + lineSepString);
             colors.push(editorColorObj[line.passerDevice], editorColorObj[line.authorDevice]);
@@ -39,31 +39,38 @@ export default function TypewriterPoem({
         [ [], [] ] as [string[], string[]],
     );
 
-    const [ currentStringIndex, setCurrentStringIndex ] = useState(0);
-    const [ currentTextIndex, setCurrentTextIndex ] = useState(0);
-    const [ currentTextArray, setCurrentTextArray ] = useState<number[]>([ 0 ]);
+    // Each "piece" is half of one player's contribution in a single turn.
+    // The first part is the completion of the current line
+    // The second part is the initiation of a new line
+    const [ currentPiece, setCurrentPiece ] = useState(0);
 
-    const incrementCurrentText = () => {
-        setCurrentTextIndex((prevIndex) => prevIndex + 1);
+    // This variable helps us keep track of the typing of the current piece
+    const [ currentLetter, setCurrentLetter ] = useState(0);
 
-        setCurrentTextArray((prevArray) => {
-            const newArray = [ ...prevArray ];
-            newArray[currentStringIndex] += 1;
-            return newArray;
+    // This variable keeps track of the lengths of all the pieces
+    const [ currentPieceLengths, setCurrentPieceLengths ] = useState<number[]>([ 0 ]);
+
+    const incrementCurrentLetter = () => {
+        setCurrentLetter((prevIndex) => prevIndex + 1);
+
+        setCurrentPieceLengths((prevPieceLengths) => {
+            const newPieceLengths = [ ...prevPieceLengths ];
+            newPieceLengths[currentPiece] += 1;
+            return newPieceLengths;
         });
     };
 
-    const incrementCurrentString = () => {
-        setCurrentStringIndex((prevIndex) => prevIndex + 1);
-        setCurrentTextArray((prevArray) => [ ...prevArray, 0 ]);
+    const incrementCurrentPiece = () => {
+        setCurrentPiece((prevIndex) => prevIndex + 1);
+        setCurrentPieceLengths((prevArray) => [ ...prevArray, 0 ]);
     };
 
-    const resetCurrentText = () => setCurrentTextIndex(0);
+    const resetCurrentLetter = () => setCurrentLetter(0);
 
     const resetEverything = () => {
-        setCurrentStringIndex(0);
-        setCurrentTextIndex(0);
-        setCurrentTextArray([ 0 ]);
+        setCurrentPiece(0);
+        setCurrentLetter(0);
+        setCurrentPieceLengths([ 0 ]);
         setReRender(false);
     };
 
@@ -77,20 +84,25 @@ export default function TypewriterPoem({
 
             const timeout = setTimeout(() => {
                 resetEverything();
-                setReRender(false);
-            }, Math.max(speed + random, delay) + 20);
+            }, speed + random + 20);
             return () => clearTimeout(timeout);
 
         } else {
 
             const timeout = setTimeout(() => {
-                if (currentTextIndex < stringArray[currentStringIndex].length) {
-                    incrementCurrentText();
-                } else if (currentStringIndex < stringArray.length - 1) {
+                // If we haven't reached the end of the current piece
+                if (currentLetter < pieceArray[currentPiece].length) {
+                    // Show the next letter of the current piece
+                    incrementCurrentLetter();
+                // But if we *have* reached the end of the current piece
+                } else if (currentPiece < pieceArray.length - 1) {
+                    // Go to the next piece and start from the beginning
                     setTimeout(() => {
-                        resetCurrentText();
-                        incrementCurrentString();
-                    }, delay);
+                        incrementCurrentPiece();
+                        resetCurrentLetter();
+                    }, (currentPiece % 2) == 1 ?
+                        delay / 2 :
+                        delay);
                 }
             }, speed + Math.random() * random);
             return () => clearTimeout(timeout);
@@ -110,13 +122,13 @@ export default function TypewriterPoem({
         }}>
             {shouldAnimate
                 ?
-                stringArray.slice(0, currentStringIndex + 1).map((string, index) => (
+                pieceArray.slice(0, currentPiece + 1).map((string, index) => (
                     <span key={index} className={"piece"} style={{ color: colorArray[index] }}>
-                        {string.substring(0, currentTextArray[index])}
+                        {string.substring(0, currentPieceLengths[index])}
                     </span>
                 ))
                 :
-                stringArray.map((string, index) => (
+                pieceArray.map((string, index) => (
                     <span key={index} className={"piece"} style={{ color: colorArray[index] }}>
                         {string}
                     </span>
