@@ -66,7 +66,7 @@ function PoemLinesAnimated({
                 width={width}
                 speed={40}
                 random={20}
-                delay={70}
+                delay={200}
             />
             <Card>
                 <CardContent style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
