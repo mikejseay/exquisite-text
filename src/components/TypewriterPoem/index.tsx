@@ -67,8 +67,6 @@ export default function TypewriterPoem({
         setReRender(false);
     };
 
-    console.log("shouldAnimate", shouldAnimate);
-
     useEffect(() => {
 
         if (!shouldAnimate) {
