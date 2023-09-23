@@ -12,7 +12,6 @@ import {
 import "./index.css";
 import App from "./components/App";
 import End from "./screens/End";
-import EndTest from "./screens/EndTest";
 import Game from "./screens/Game";
 // import Host from "./screens/Host";
 import Join from "./screens/Join";
@@ -69,8 +68,8 @@ function Root() {
                         <Route path="lobby" element={<Lobby />} />
                         <Route path="game" element={<Game />} />
                         <Route path="spectate" element={<Spectate />} />
-                        <Route path="end" element={<End />} />
-                        <Route path="endtest" element={<EndTest />} />
+                        <Route path="end" element={<End shouldTest={false} />} />
+                        <Route path="endtest" element={<End shouldTest={true} />} />
                         <Route path="canvas" element={<Canvas />} />
                         {isComponentEnabled(<Route path="library" element={<Library />} />)}
                         {isComponentEnabled(<Route path="page/:id" element={<Page />} />)}

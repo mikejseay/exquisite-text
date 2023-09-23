@@ -17,7 +17,7 @@ import {
 
 import { lineSepString, shortDur } from "../../constants";
 
-function PoemLines({ poemLines, userInfo }: { poemLines: ILine[], userInfo: IUserTableInfo }) {
+function PoemLines({ poemLines, userInfo, width }: { poemLines: ILine[], userInfo: IUserTableInfo, width: number }) {
     const {
         editorColorObj,
         editorColorArr,
@@ -26,19 +26,30 @@ function PoemLines({ poemLines, userInfo }: { poemLines: ILine[], userInfo: IUse
     const clipboard = useClipboard({
         copiedTimeout: shortDur, // timeout duration in milliseconds
     });
+    const nLines = poemLines.length;
 
     return (
         <div className={"poems-body"} style={poemsBody}>
-            {poemLines.map((line) => {
-                return <div key={line.lineIndex} style={{ whiteSpace: "pre-line" }}>
-                    <span className={"first-part"} style={{ color: editorColorObj[line.passerDevice] }}>
-                        {line.content.slice(0, line.editLength)}
-                    </span>
-                    <span className={"second-part"} style={{ color: editorColorObj[line.authorDevice] }}>
-                        {line.content.slice(line.editLength)}
-                    </span>
-                </div>;
-            })}
+            <div style={{
+                whiteSpace: "pre-line",
+                height: `${nLines + 4}em`,
+                width: `${width}px`,
+                display: "inline-block",
+                textAlign: "left",
+                fontFamily: "'Esteban', serif",
+                fontSize: "18px",
+            }}>
+                {poemLines.map((line) => {
+                    return <div key={line.lineIndex} style={{ whiteSpace: "pre-line" }}>
+                        <span className={"first-part"} style={{ color: editorColorObj[line.passerDevice] }}>
+                            {line.content.slice(0, line.editLength)}
+                        </span>
+                        <span className={"second-part"} style={{ color: editorColorObj[line.authorDevice] }}>
+                            {line.content.slice(line.editLength)}
+                        </span>
+                    </div>;
+                })}
+            </div>
             <IconButton onClick={() => clipboard.copy(poemLines.map(line => line.content).join(lineSepString))}>
                 <ContentCopyIcon />
             </IconButton>
