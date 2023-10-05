@@ -44,10 +44,13 @@ function PoemLinesAnimated({
 
     return (
         <div className={"poem-body"} style={poemBody}>
-            <div className={"copy-button"} style={{
-                display: "flex",
-                marginTop: "-2em",
-            }}>
+            <div
+                className={"copy-button"}
+                style={{
+                  display: "flex",
+                  marginTop: "-2em",
+                }}
+            >
                 <IconButton
                     onClick={() => clipboard.copy(poemLines.map(line => line.content).join(lineSepString))}
                 >
