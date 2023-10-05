@@ -4,7 +4,7 @@ import { centered, floatingToggleAnimate } from "./styles";
 import IconButton from "@mui/material/IconButton";
 import KeyboardIcon from "@mui/icons-material/Keyboard";
 
-function End({ shouldTest }: { shouldTest: boolean }) {
+function End({ shouldTest = false }: { shouldTest: boolean }) {
     const [ shouldAnimate, setShouldAnimate ] = React.useState(true);
     const handleChange = () => {
         setShouldAnimate(!shouldAnimate);
