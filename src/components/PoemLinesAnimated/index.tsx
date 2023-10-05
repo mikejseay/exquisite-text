@@ -47,8 +47,8 @@ function PoemLinesAnimated({
             <div
                 className={"copy-button"}
                 style={{
-                  display: "flex",
-                  marginTop: "-2em",
+                    display: "flex",
+                    marginTop: "-2em",
                 }}
             >
                 <IconButton
@@ -57,7 +57,7 @@ function PoemLinesAnimated({
                     <ContentCopyIcon />
                 </IconButton>
                 {clipboard.copied && <Alert severity="success" style={{ marginBottom: "-1em" }}>
-                    Copied!
+                  Copied!
                 </Alert>}
             </div>
             <TypewriterPoem
