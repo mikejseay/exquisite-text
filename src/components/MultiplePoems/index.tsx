@@ -110,7 +110,6 @@ function MultiplePoems({ shouldTest, shouldAnimate }: { shouldTest: boolean, sho
                 <div style={poemTitle} className={"poem-title"}>
                     <strong>{`exquisite text #${poemLinesIndex}`}</strong>
                 </div>
-                {/*<PoemLines poemLines={poemLines} userInfo={userInfo} width={maxWidth} />*/}
                 <PoemLinesAnimated
                     poemLines={poemLines}
                     userInfo={userInfo}
