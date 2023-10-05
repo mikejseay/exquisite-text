@@ -12,10 +12,13 @@ function End({ shouldTest }: { shouldTest: boolean }) {
     return (
         <div style={centered}>
             <IconButton onClick={handleChange} sx={floatingToggleAnimate}>
-                <KeyboardIcon color={
-                    shouldAnimate
-                        ? "primary"
-                        : "disabled"} />
+                <KeyboardIcon
+                    color={
+                        shouldAnimate
+                            ? "primary"
+                            : "disabled"
+                    }
+                />
             </IconButton>
             <span>Done! If you&apos;d like to play again, make a new room.</span>
             <br />
