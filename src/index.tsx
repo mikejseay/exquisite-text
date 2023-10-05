@@ -38,7 +38,7 @@ function isComponentEnabled(element: JSX.Element): JSX.Element | null {
 
 function Root() {
     const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
-  
+
     const theme = React.useMemo(
         () =>
             createTheme({
@@ -68,7 +68,8 @@ function Root() {
                         <Route path="lobby" element={<Lobby />} />
                         <Route path="game" element={<Game />} />
                         <Route path="spectate" element={<Spectate />} />
-                        <Route path="end" element={<End />} />
+                        <Route path="end" element={<End shouldTest={false} />} />
+                        <Route path="endtest" element={<End shouldTest={true} />} />
                         <Route path="canvas" element={<Canvas />} />
                         {isComponentEnabled(<Route path="library" element={<Library />} />)}
                         {isComponentEnabled(<Route path="page/:id" element={<Page />} />)}
