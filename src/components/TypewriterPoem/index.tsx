@@ -8,8 +8,9 @@ interface TypewriterPoemProps {
     poemLines: ILine[];
     userInfo: IUserTableInfo;
     shouldAnimate: boolean;
-    reRender: boolean;
-    setReRender: (value: boolean | ((prevVar: boolean) => boolean)) => void;
+    reRenderIndex: number;
+    setReRender: (value: number | ((prevVar: number) => number)) => void;
+    index: number;
     width: number;
     speed?: number;
     random?: number;
@@ -20,8 +21,9 @@ export default function TypewriterPoem({
     poemLines,
     userInfo,
     shouldAnimate,
-    reRender,
+    reRenderIndex,
     setReRender,
+    index,
     width,
     speed = DEFAULT_MS,
     random = DEFAULT_MS,
@@ -38,6 +40,12 @@ export default function TypewriterPoem({
         },
         [ [], [] ] as [string[], string[]],
     );
+
+    // Remove the first elements; they are always empty
+    pieceArray.shift();
+    colorArray.shift();
+
+    const [ isBeingViewed, setIsBeingViewed ] = useState(true);
 
     // Each "piece" is half of one player's contribution in a single turn.
     // The first part is the completion of the current line
@@ -67,47 +75,76 @@ export default function TypewriterPoem({
 
     const resetCurrentLetter = () => setCurrentLetter(0);
 
-    const resetEverything = () => {
+    const initializeTypewriter = () => {
         setCurrentPiece(0);
         setCurrentLetter(0);
         setCurrentPieceLengths([ 0 ]);
-        setReRender(false);
     };
 
     useEffect(() => {
 
+        // If we aren't animating, don't do anything
         if (!shouldAnimate) {
             return;
         }
 
-        if (reRender) {
+        // First check whether we are being viewed
+        // If we receive the reRenderIndex for this poem, it should be re-set
+        // This means initializing the animation and setting it as being viewed.
+        if (reRenderIndex === index) {
 
             const timeout = setTimeout(() => {
-                resetEverything();
-            }, speed + random + 20);
+
+                // Initialize the typewriter animation
+                initializeTypewriter();
+
+                // Re-initialize the state that tells which component to re-render
+                // so that it's ready for the next one
+                setReRender(-1);
+
+                // Set this component as being viewed
+                setIsBeingViewed(true);
+            }, delay + 10);
             return () => clearTimeout(timeout);
 
-        } else {
+        // If we receive the reRenderIndex for a different poem, then
+        // this poem is not being viewed, and it should be initialized.
+        } else if (reRenderIndex !== -1) {
 
             const timeout = setTimeout(() => {
-                // If we haven't reached the end of the current piece
-                if (currentLetter < pieceArray[currentPiece].length) {
-                    // Show the next letter of the current piece
-                    incrementCurrentLetter();
-                // But if we *have* reached the end of the current piece
-                } else if (currentPiece < pieceArray.length - 1) {
-                    // Go to the next piece and start from the beginning
-                    setTimeout(() => {
-                        incrementCurrentPiece();
-                        resetCurrentLetter();
-                    }, (currentPiece % 2) == 1 ?
-                        delay / 2 :
-                        delay);
-                }
-            }, speed + Math.random() * random);
-            return () => clearTimeout(timeout);
 
+                // Initialize the typewriter animation
+                initializeTypewriter();
+
+                // Set this component as not being viewed
+                setIsBeingViewed(false);
+            }, delay + 10);
+            return () => clearTimeout(timeout);
         }
+
+        // If we aren't being viewed, don't animate
+        if (!isBeingViewed) {
+            return;
+        }
+
+        // Otherwise, animate the typewriter
+        const timeout = setTimeout(() => {
+            // If we haven't reached the end of the current piece
+            if (currentLetter < pieceArray[currentPiece].length) {
+                // Show the next letter of the current piece
+                incrementCurrentLetter();
+            // But if we *have* reached the end of the current piece
+            } else if (currentPiece < pieceArray.length - 1) {
+                // Go to the next piece and start from the beginning
+                setTimeout(() => {
+                    incrementCurrentPiece();
+                    resetCurrentLetter();
+                }, (currentPiece % 2) == 1 ?
+                    delay / 2 :
+                    delay);
+            }
+        }, speed + Math.random() * random);
+        return () => clearTimeout(timeout);
     });
 
     return (
@@ -115,7 +152,6 @@ export default function TypewriterPoem({
             whiteSpace: "pre-line",
             height: `${nLines + 4}em`,
             width: `${width}px`,
-            display: "inline-block",
             textAlign: "left",
             fontFamily: "'Esteban', serif",
             fontSize: "18px",

@@ -24,15 +24,17 @@ function PoemLinesAnimated({
     userInfo,
     width,
     shouldAnimate,
-    reRender,
+    reRenderIndex,
     setReRender,
+    index,
 }: {
     poemLines: ILine[],
     userInfo: IUserTableInfo,
     width: number,
     shouldAnimate: boolean,
-    reRender: boolean,
-    setReRender: (value: boolean | ((prevVar: boolean) => boolean)) => void;
+    reRenderIndex: number,
+    setReRender: (value: number | ((prevVar: number) => number)) => void;
+    index: number,
 }) {
     const {
         editorColorArr,
@@ -64,8 +66,9 @@ function PoemLinesAnimated({
                 poemLines={poemLines}
                 userInfo={userInfo}
                 shouldAnimate={shouldAnimate}
-                reRender={reRender}
+                reRenderIndex={reRenderIndex}
                 setReRender={setReRender}
+                index={index}
                 width={width}
                 speed={40}
                 random={20}

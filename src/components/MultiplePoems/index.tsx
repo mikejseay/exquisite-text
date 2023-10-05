@@ -59,7 +59,7 @@ function MultiplePoems({ shouldTest, shouldAnimate }: { shouldTest: boolean, sho
     const [ poemsLines, setPoemsLines ] = React.useState<Array<ILine[]>>([]);
     const [ userInfo, setUserInfo ] = React.useState<IUserTableInfo>({} as IUserTableInfo);
 
-    const [ reRender, setReRender ] = React.useState<boolean>(false);
+    const [ reRender, setReRenderIndex ] = React.useState<number>(-1);
 
     React.useEffect(() => {
 
@@ -96,7 +96,7 @@ function MultiplePoems({ shouldTest, shouldAnimate }: { shouldTest: boolean, sho
 
     const maxWidth = maxWidthOfPoemsLines(poemsLines);
 
-    const renderPoems = (reRender: boolean) => {
+    const renderPoems = (reRenderIndex: number) => {
         return poemsLines.map((poemLines, poemLinesIndex) => (
             <div
                 key = {poemLinesIndex}
@@ -115,8 +115,9 @@ function MultiplePoems({ shouldTest, shouldAnimate }: { shouldTest: boolean, sho
                     userInfo={userInfo}
                     width={maxWidth}
                     shouldAnimate={shouldAnimate}
-                    reRender={reRender}
-                    setReRender={setReRender}
+                    reRenderIndex={reRenderIndex}
+                    setReRender={setReRenderIndex}
+                    index={poemLinesIndex}
                 />
             </div>
         ));
@@ -130,8 +131,8 @@ function MultiplePoems({ shouldTest, shouldAnimate }: { shouldTest: boolean, sho
             {poemsLines.length > 1
                 ?
                 <Carousel
-                    onChange={() => {
-                        setReRender(true);
+                    onChange={(slideIndex) => {
+                        setReRenderIndex(slideIndex);
                     }}
                     showThumbs={false}
                 >
