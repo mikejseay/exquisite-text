@@ -139,7 +139,7 @@ export default function TypewriterPoem({
                 setTimeout(() => {
                     incrementCurrentPiece();
                     resetCurrentLetter();
-                }, (currentPiece % 2) == 1 ?
+                }, (currentPiece % 2) == 0 ?
                     delay / 2 :
                     delay);
             }
