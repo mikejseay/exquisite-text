@@ -143,7 +143,6 @@ function MultiplePoems({ shouldTest, shouldAnimate }: { shouldTest: boolean, sho
 
             </div>
         </UserInfoContext.Provider>
-
     );
 }
 
