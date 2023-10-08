@@ -4,6 +4,8 @@ import { useSocket } from "../App";
 import type { IUserInfo } from "../../types";
 import { shortDur } from "../../constants";
 
+// NOTE: Currently unused component
+
 const GameSnack = () => {
     const { socket } = useSocket();
 

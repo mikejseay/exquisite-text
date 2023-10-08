@@ -4,14 +4,11 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import IconButton from "@mui/material/IconButton";
 import { useClipboard } from "use-clipboard-copy";
 
-
 import { poemBody } from "./styles";
-import {
-    ILine,
-    IUserTableInfo,
-} from "../../types";
+import { ILine } from "../../types";
 
 import { lineSepString, shortDur } from "../../constants";
+import { useUserInfo } from "../../context/UserInfoProvider";
 import TypewriterPoem from "../TypewriterPoem";
 import CardContent from "@mui/material/CardContent";
 import Box from "@mui/material/Box";
@@ -21,7 +18,6 @@ import Card from "@mui/material/Card";
 
 function PoemLinesAnimated({
     poemLines,
-    userInfo,
     width,
     shouldAnimate,
     reRenderIndex,
@@ -29,17 +25,22 @@ function PoemLinesAnimated({
     index,
 }: {
     poemLines: ILine[],
-    userInfo: IUserTableInfo,
     width: number,
     shouldAnimate: boolean,
     reRenderIndex: number,
     setReRender: (value: number | ((prevVar: number) => number)) => void;
     index: number,
 }) {
+    const userInfo = useUserInfo();
+    if (userInfo === null) {
+        return null;
+    }
+
     const {
         editorColorArr,
         editors,
     } = userInfo;
+
     const clipboard = useClipboard({
         copiedTimeout: shortDur, // timeout duration in milliseconds
     });
@@ -64,7 +65,6 @@ function PoemLinesAnimated({
             </div>
             <TypewriterPoem
                 poemLines={poemLines}
-                userInfo={userInfo}
                 shouldAnimate={shouldAnimate}
                 reRenderIndex={reRenderIndex}
                 setReRender={setReRender}

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { ILine, IUserTableInfo } from "../../types";
+import { ILine } from "../../types";
 import { lineSepString } from "../../constants";
+import { useUserInfo } from "../../context/UserInfoProvider";
 
 const DEFAULT_MS = 30;
 
 interface TypewriterPoemProps {
     poemLines: ILine[];
-    userInfo: IUserTableInfo;
     shouldAnimate: boolean;
     reRenderIndex: number;
     setReRender: (value: number | ((prevVar: number) => number)) => void;
@@ -19,7 +19,6 @@ interface TypewriterPoemProps {
 
 export default function TypewriterPoem({
     poemLines,
-    userInfo,
     shouldAnimate,
     reRenderIndex,
     setReRender,
@@ -29,6 +28,11 @@ export default function TypewriterPoem({
     random = DEFAULT_MS,
     delay = DEFAULT_MS,
 }: TypewriterPoemProps) {
+    const userInfo = useUserInfo();
+    if (userInfo === null) {
+        return null;
+    }
+
     const { editorColorObj } = userInfo;
     const nLines = poemLines.length;
 

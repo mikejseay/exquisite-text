@@ -6,6 +6,7 @@ import {
     poemTitle,
 } from "./styles";
 
+import { UserInfoContext } from "../../context/UserInfoProvider";
 import {
     ILine,
     IUserTableInfo,
@@ -112,7 +113,6 @@ function MultiplePoems({ shouldTest, shouldAnimate }: { shouldTest: boolean, sho
                 </div>
                 <PoemLinesAnimated
                     poemLines={poemLines}
-                    userInfo={userInfo}
                     width={maxWidth}
                     shouldAnimate={shouldAnimate}
                     reRenderIndex={reRenderIndex}
@@ -124,23 +124,26 @@ function MultiplePoems({ shouldTest, shouldAnimate }: { shouldTest: boolean, sho
     };
 
     return (
-        <div
-            className={"multiple-poems"}
-            style={{ width: `${maxWidth + 60}px` }}
-        >
-            {poemsLines.length > 1
-                ?
-                <Carousel
-                    onChange={(slideIndex) => {
-                        setReRenderIndex(slideIndex);
-                    }}
-                    showThumbs={false}
-                >
-                    {renderPoems(reRender)}
-                </Carousel>
-                : renderPoems(reRender)}
+        <UserInfoContext.Provider value={userInfo}>
+            <div
+                className={"multiple-poems"}
+                style={{ width: `${maxWidth + 60}px` }}
+            >
+                {poemsLines.length > 1
+                    ?
+                    <Carousel
+                        onChange={(slideIndex) => {
+                            setReRenderIndex(slideIndex);
+                        }}
+                        showThumbs={false}
+                    >
+                        {renderPoems(reRender)}
+                    </Carousel>
+                    : renderPoems(reRender)}
 
-        </div>
+            </div>
+        </UserInfoContext.Provider>
+
     );
 }
 
