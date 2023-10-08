@@ -27,8 +27,8 @@ export type ILineConstraintDict = {
 export interface IUserTableInfo {
     editors: Array<string>;
     spectators: Array<string>;
-    editorColorObj: Record<string, string>;
-    editorColorArr: Array<string>;
+    editorColorMap: Record<string, string>;
+    editorColors: Array<string>;
 }
 
 export interface IGameSettingsInfo {

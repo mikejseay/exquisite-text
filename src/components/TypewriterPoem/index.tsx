@@ -33,13 +33,13 @@ export default function TypewriterPoem({
         return null;
     }
 
-    const { editorColorObj } = userInfo;
+    const { editorColorMap } = userInfo;
     const nLines = poemLines.length;
 
     const [ pieceArray, colorArray ] = poemLines.reduce(
         ([ strings, colors ], line) => {
             strings.push(line.content.slice(0, line.editLength), line.content.slice(line.editLength) + lineSepString);
-            colors.push(editorColorObj[line.passerDevice], editorColorObj[line.authorDevice]);
+            colors.push(editorColorMap[line.passerDevice], editorColorMap[line.authorDevice]);
             return [ strings, colors ];
         },
         [ [], [] ] as [string[], string[]],

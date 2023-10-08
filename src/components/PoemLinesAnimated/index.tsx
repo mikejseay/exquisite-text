@@ -37,7 +37,7 @@ function PoemLinesAnimated({
     }
 
     const {
-        editorColorArr,
+        editorColors,
         editors,
     } = userInfo;
 
@@ -79,7 +79,7 @@ function PoemLinesAnimated({
                     {editors.map((editorName, editorIndex) => {
                         return (
                             <Box key={editorIndex} style={{ margin: "0.5rem", display: "flex", alignItems: "center" }}>
-                                <FiberManualRecordIcon style={{ color: editorColorArr[editorIndex] }} />
+                                <FiberManualRecordIcon style={{ color: editorColors[editorIndex] }} />
                                 <Typography style={{ marginLeft: "0.5rem" }}>{editorName}</Typography>
                             </Box>
                         );

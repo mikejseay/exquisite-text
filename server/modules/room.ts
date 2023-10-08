@@ -7,6 +7,7 @@ import Poem from "./poem";
 import {
     ClientToServerEvents,
     IGameSettingsInfo,
+    IUserTableInfo,
     InterServerEvents,
     ServerToClientEvents,
     SocketData,
@@ -95,25 +96,25 @@ class Room {
     }
 
     currentUserTableInfo() {
-        const editorNameArr: Array<string> = [];
-        const editorColorArr: Array<string> = [];
-        const spectatorNameArr: Array<string> = [];
-        const editorColorObj: Record<string, string> = {};
+        const editorNames: IUserTableInfo["editors"] = [];
+        const editorColors: IUserTableInfo["editorColors"] = [];
+        const spectatorNames: IUserTableInfo["spectators"] = [];
+        const editorColorMap: IUserTableInfo["editorColorMap"] = {};
         let editorIndex = 0;
         for (const thisEditor of this.editors.values()) {
-            editorNameArr.push(thisEditor.name);
-            editorColorArr.push(editorColorDefaultsArr[editorIndex]);
-            editorColorObj[thisEditor.deviceID] = editorColorDefaultsArr[editorIndex];
+            editorNames.push(thisEditor.name);
+            editorColors.push(editorColorDefaultsArr[editorIndex]);
+            editorColorMap[thisEditor.deviceID] = editorColorDefaultsArr[editorIndex];
             editorIndex++;
         }
         for (const thisSpectator of this.spectators.values()) {
-            spectatorNameArr.push(thisSpectator.name);
+            spectatorNames.push(thisSpectator.name);
         }
         return {
-            editors: editorNameArr,
-            spectators: spectatorNameArr,
-            editorColorObj: editorColorObj,
-            editorColorArr: editorColorArr,
+            editors: editorNames,
+            spectators: spectatorNames,
+            editorColorMap: editorColorMap,
+            editorColors: editorColors,
         };
     }
 
