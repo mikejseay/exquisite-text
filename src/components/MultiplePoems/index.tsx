@@ -15,8 +15,8 @@ import { useSocket } from "../App";
 import PoemLinesAnimated from "../PoemLinesAnimated";
 import isNil from "lodash/isNil";
 import { lineSepString } from "../../constants";
-import { poemsLines as poemsLinesTestData } from "../../data/multiplePoems";
-import { userInfo as userInfoTestData } from "../../data/userInfo";
+
+import { SocketInfoContext, useSocketInfo } from "../../context/SocketInfoProvider";
 
 function getTextWidth(text: string, font: string) {
     // re-use canvas object for better performance
@@ -58,42 +58,10 @@ function MultiplePoems({ shouldTest, shouldAnimate }: { shouldTest: boolean, sho
     const { socket } = useSocket();
 
     const [ poemsLines, setPoemsLines ] = React.useState<Array<ILine[]>>([]);
-    const [ userInfo, setUserInfo ] = React.useState<IUserTableInfo>({} as IUserTableInfo);
 
     const [ reRender, setReRenderIndex ] = React.useState<number>(-1);
-
-    React.useEffect(() => {
-
-        if (shouldTest) {
-            setPoemsLines(poemsLinesTestData);
-            setUserInfo(userInfoTestData);
-        } else {
-            socket.emit("getUserTableInfo");
-
-            const poemsLinesListener = (myPoemLines: ILine[]) => {
-                setPoemsLines(prevPoemsLines => {
-                    return [ ...prevPoemsLines, myPoemLines ];
-                });
-            };
-
-            const userTableInfoListener = (info: IUserTableInfo) => {
-                setUserInfo(info);
-                socket.off("userTableInfo", userTableInfoListener);
-            };
-
-            socket.on("poemLines", poemsLinesListener);
-            socket.on("userTableInfo", userTableInfoListener);
-
-            setPoemsLines([]);
-            socket.emit("getPoemsLines");
-
-            return () => {
-                socket.off("poemLines", poemsLinesListener);
-                socket.off("userTableInfo", userTableInfoListener);
-            };
-        }
-
-    }, [ socket ]);
+    const userInfo = useSocketInfo();
+    console.log("USER INFO FROM FUCKING SOCKET CONTEXT!!!!!!!!!!!!", userInfo);
 
     const maxWidth = maxWidthOfPoemsLines(poemsLines);
 
@@ -124,25 +92,23 @@ function MultiplePoems({ shouldTest, shouldAnimate }: { shouldTest: boolean, sho
     };
 
     return (
-        <UserInfoContext.Provider value={userInfo}>
-            <div
-                className={"multiple-poems"}
-                style={{ width: `${maxWidth + 60}px` }}
-            >
-                {poemsLines.length > 1
-                    ?
-                    <Carousel
-                        onChange={(slideIndex) => {
-                            setReRenderIndex(slideIndex);
-                        }}
-                        showThumbs={false}
-                    >
-                        {renderPoems(reRender)}
-                    </Carousel>
-                    : renderPoems(reRender)}
+        <div
+            className={"multiple-poems"}
+            style={{ width: `${maxWidth + 60}px` }}
+        >
+            {poemsLines.length > 1
+                ?
+                <Carousel
+                    onChange={(slideIndex) => {
+                        setReRenderIndex(slideIndex);
+                    }}
+                    showThumbs={false}
+                >
+                    {renderPoems(reRender)}
+                </Carousel>
+                : renderPoems(reRender)}
 
-            </div>
-        </UserInfoContext.Provider>
+        </div>
     );
 }
 

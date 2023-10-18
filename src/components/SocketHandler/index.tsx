@@ -1,0 +1,118 @@
+import isNil from "lodash/isNil";
+import Paper from "@mui/material/Paper";
+import * as React from "react";
+import {
+    Outlet,
+    useOutletContext,
+} from "react-router-dom";
+import {
+    Socket,
+    io,
+} from "socket.io-client";
+import { v4 as uuidv4 } from "uuid";
+import { SocketInfoContext } from "../../context/SocketInfoProvider";
+import { poemsLines as poemsLinesTestData } from "../../data/multiplePoems";
+import { userInfo as userInfoTestData } from "../../data/userInfo";
+import type {
+    ClientToServerEvents,
+    IUserTableInfo,
+    ServerToClientEvents,
+} from "../../types";
+
+const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
+const serverPath: URL["pathname"] | URL["href"] = isDevelopment
+    ? `http://${window.location.hostname}:3000`
+    : "/";
+
+type ContextType = { socket: Socket<ServerToClientEvents, ClientToServerEvents> };
+type Props = {
+    children: JSX.Element
+}
+
+export default function SocketHandler({ children }: Props) {
+    // instead of creating the socket state here,
+    // only create the socket and pass it into the correct React router outlet
+    // (basically a way to pass a socket for useContext type usage)
+    // if a socket is necessary
+    // no socket needed for Join page, Library, poem permalink (Page)
+    const [ socket, setSocket ] = React.useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
+    const [ userInfo, setUserInfo ] = React.useState<IUserTableInfo>({} as IUserTableInfo);
+
+    React.useEffect(() => {
+        const newSocket: Socket<ServerToClientEvents, ClientToServerEvents> = io(serverPath);
+        setSocket(newSocket);
+
+        return () => {
+            newSocket.close();
+        };
+    }, [ setSocket ]);
+
+
+    React.useEffect(() => {
+        const shouldTest = true;
+        if (shouldTest) {
+            // setPoemsLines(poemsLinesTestData);
+            setUserInfo(userInfoTestData);
+        } else {
+            if (!socket) return;
+            socket.emit("getUserTableInfo");
+
+            // const poemsLinesListener = (myPoemLines: ILine[]) => {
+            //     setPoemsLines(prevPoemsLines => {
+            //         return [ ...prevPoemsLines, myPoemLines ];
+            //     });
+            // };
+
+            const userTableInfoListener = (info: IUserTableInfo) => {
+                setUserInfo(info);
+                socket.off("userTableInfo", userTableInfoListener);
+            };
+
+            // socket.on("poemLines", poemsLinesListener);
+            socket.on("userTableInfo", userTableInfoListener);
+
+            // setPoemsLines([]);
+            socket.emit("getPoemsLines");
+
+            return () => {
+                // socket.off("poemLines", poemsLinesListener);
+                socket.off("userTableInfo", userTableInfoListener);
+            };
+        }
+
+    }, [ socket ]);
+
+    // The component then renders a page that contains a header.
+    // If a socket has already been established, it will also render two components Lines and LineInput.
+    // Both of these components need the socket to work, so it is being passed in as a parameter.
+    if (!socket) {
+        return <div>Not Connected</div>;
+    }
+
+    // set this to true if you want to be able to connect to the game
+    // multiple times from the same browser
+    if (process.env.REACT_APP_DEBUG_SINGLE_BROWSER === "true") {
+        // to debug I will send a random device id each time
+        socket.emit("recognizeDevice", uuidv4());
+    } else {
+        // check if this device (browser) has visited the page before
+        const firstVisit = !localStorage.getItem("device");
+        if (firstVisit) {
+            localStorage.setItem("device", uuidv4());
+        }
+        const deviceID = localStorage.getItem("device");
+        if (!isNil(deviceID)) {
+            socket.emit("recognizeDevice", deviceID);
+        }
+    }
+
+    return (
+        <SocketInfoContext.Provider value={userInfo}>
+            {children}
+        </SocketInfoContext.Provider >
+    );
+}
+
+export function useSocket() {
+    return useOutletContext<ContextType>();
+}
