@@ -21,7 +21,7 @@ function UserTable() {
         };
 
         socket.on("userTableInfo", userTableInfoListener);
-        socket.emit("getUserTableInfo"); // initial populate
+        socket.emit("getUserTableInfo", false); // initial populate
 
         return () => {
             socket.off("userTableInfo", userTableInfoListener);
