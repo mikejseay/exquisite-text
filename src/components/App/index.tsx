@@ -42,6 +42,7 @@ export default function App() {
     const [ socket, setSocket ] = React.useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
 
     React.useEffect(() => {
+        console.log("App about to connect to", serverPath);
         const newSocket: Socket<ServerToClientEvents, ClientToServerEvents> = io(serverPath);
         setSocket(newSocket);
 
