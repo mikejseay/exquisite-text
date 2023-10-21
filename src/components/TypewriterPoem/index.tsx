@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ILine } from "../../types";
 import { lineSepString } from "../../constants";
-import { useUserInfo } from "../../context/UserInfoProvider";
+import { useSocketInfo } from "../../context/SocketInfoProvider";
 
 const DEFAULT_MS = 30;
 
@@ -28,11 +28,10 @@ export default function TypewriterPoem({
     random = DEFAULT_MS,
     delay = DEFAULT_MS,
 }: TypewriterPoemProps) {
-    const userInfo = useUserInfo();
-    if (userInfo === null) {
+    const { userInfo } = useSocketInfo();
+    if (!userInfo) {
         return null;
     }
-
     const { editorColorMap } = userInfo;
     const nLines = poemLines.length;
 
