@@ -10,9 +10,10 @@ class Host extends Member {
         this.setReceive(); // listen for certain messages from client
     }
 
-    requestPoemsLinesInfo() {
-        console.log(this.name, "requesting poems, do nothing...");
-    }
+    // TODO: re-comment this when done testing socket info context refactor
+    // requestPoemsLinesInfo() {
+    //     console.log(this.name, "requesting poems, do nothing...");
+    // }
 
     // setSend
     // super.setSend()
