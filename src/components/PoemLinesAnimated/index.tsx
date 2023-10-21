@@ -8,13 +8,13 @@ import { poemBody } from "./styles";
 import { ILine } from "../../types";
 
 import { lineSepString, shortDur } from "../../constants";
-import { useUserInfo } from "../../context/UserInfoProvider";
 import TypewriterPoem from "../TypewriterPoem";
 import CardContent from "@mui/material/CardContent";
 import Box from "@mui/material/Box";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
+import { useSocketInfo } from "../../context/SocketInfoProvider";
 
 function PoemLinesAnimated({
     poemLines,
@@ -31,15 +31,11 @@ function PoemLinesAnimated({
     setReRender: (value: number | ((prevVar: number) => number)) => void;
     index: number,
 }) {
-    const userInfo = useUserInfo();
-    if (userInfo === null) {
+    const { userInfo } = useSocketInfo();
+    if (!userInfo) {
         return null;
     }
-
-    const {
-        editorColors,
-        editors,
-    } = userInfo;
+    const { editors, editorColors } = userInfo;
 
     const clipboard = useClipboard({
         copiedTimeout: shortDur, // timeout duration in milliseconds
