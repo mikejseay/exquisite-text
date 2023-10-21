@@ -6,17 +6,14 @@ import {
     poemTitle,
 } from "./styles";
 
-import { UserInfoContext } from "../../context/UserInfoProvider";
 import {
     ILine,
-    IUserTableInfo,
 } from "../../types";
-import { useSocket } from "../App";
 import PoemLinesAnimated from "../PoemLinesAnimated";
 import isNil from "lodash/isNil";
 import { lineSepString } from "../../constants";
 
-import { SocketInfoContext, useSocketInfo } from "../../context/SocketInfoProvider";
+import { useSocketInfo } from "../../context/SocketInfoProvider";
 
 function getTextWidth(text: string, font: string) {
     // re-use canvas object for better performance
@@ -52,16 +49,14 @@ function maxWidthOfPoemsLines(poemsLines: Array<ILine[]>) {
 
 }
 
-function MultiplePoems({ shouldTest, shouldAnimate }: { shouldTest: boolean, shouldAnimate: boolean, }) {
+function MultiplePoems({ shouldAnimate }: { shouldAnimate: boolean }) {
     // define poemsLines and userInfo constantly for testing purposes
 
-    const { socket } = useSocket();
-
-    const [ poemsLines, setPoemsLines ] = React.useState<Array<ILine[]>>([]);
-
     const [ reRender, setReRenderIndex ] = React.useState<number>(-1);
-    const userInfo = useSocketInfo();
-    console.log("USER INFO FROM FUCKING SOCKET CONTEXT!!!!!!!!!!!!", userInfo);
+    const { poemsLines } = useSocketInfo();
+    if (!poemsLines) {
+        return null;
+    }
 
     const maxWidth = maxWidthOfPoemsLines(poemsLines);
 
