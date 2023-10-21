@@ -1,8 +1,13 @@
 import { createContext, useContext } from "react";
-import { IUserTableInfo } from "../types";
+import { ISocketInfo } from "../types";
 
-export const SocketInfoContext = createContext<IUserTableInfo | null>(null);
+export const SocketInfoContext = createContext<ISocketInfo>(
+    {
+        userInfo: null,
+        poemsLines: null,
+    },
+);
 
-export const useSocketInfo = (): IUserTableInfo | null => {
+export const useSocketInfo = (): ISocketInfo => {
     return useContext(SocketInfoContext);
 };
