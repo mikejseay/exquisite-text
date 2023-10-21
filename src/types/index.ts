@@ -97,6 +97,10 @@ export interface ServerToClientEvents {
 }
 
 export interface ClientToServerEvents {
+    getUserTableInfo: (a: boolean) => void;
+    getPoemsLines: (a: boolean) => void;
+    createTestRoom: () => void;
+
     getLineEdit: () => void;
     lineEdit: (a: string) => void;
     line: (a: string) => void;
@@ -104,12 +108,10 @@ export interface ClientToServerEvents {
     getLines: () => void;
     getPoems: () => void;
     getPoemByID: (a: number) => void;
-    getPoemsLines: () => void;
     getRoomCode: () => void;
     recognizeDevice: (a: string) => void;
     createGameHost: (a: string) => void;
     joinGameAs: (a: string, b: string, c: string) => void;
-    getUserTableInfo: () => void;
     getGameSettingsInfo: () => void;
     getLastLineStatus: () => void;
     alterGameSettings: (a: IGameSettingsInfo) => void;
@@ -127,4 +129,18 @@ export interface InterServerEvents {
 
 export interface SocketData {
     name: string;
+}
+
+export interface ISocketInfoListeners {
+    // React.useState<IUserTableInfo>({} as IUserTableInfo);
+    setUserInfo: (value: IUserTableInfo |
+        ((prevVar: IUserTableInfo) => IUserTableInfo)) => void;
+    // React.useState<Array<ILine[]>>([]);
+    setPoemsLines: (value: Array<ILine[]> |
+        ((prevVar: Array<ILine[]>) => Array<ILine[]>)) => void;
+}
+
+export interface ISocketInfo {
+    userInfo: IUserTableInfo | null;
+    poemsLines: Array<ILine[]> | null;
 }
