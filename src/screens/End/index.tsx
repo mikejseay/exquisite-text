@@ -3,8 +3,20 @@ import MultiplePoems from "../../components/MultiplePoems";
 import { centered, floatingToggleAnimate } from "./styles";
 import IconButton from "@mui/material/IconButton";
 import KeyboardIcon from "@mui/icons-material/Keyboard";
+import {
+    createGameHost,
+    getPoemsLines,
+    getUserTableInfo,
+    recognizeDevice,
+} from "../../context/SocketRequestors";
 
 function End({ shouldTest = false }: { shouldTest: boolean }) {
+    if (shouldTest) {
+        recognizeDevice();
+        createGameHost("ROOM");
+        getUserTableInfo(true);
+        getPoemsLines(true);
+    }
     const [ shouldAnimate, setShouldAnimate ] = React.useState(true);
     const handleChange = () => {
         setShouldAnimate(!shouldAnimate);
@@ -22,7 +34,7 @@ function End({ shouldTest = false }: { shouldTest: boolean }) {
             </IconButton>
             <span>Done! If you&apos;d like to play again, make a new room.</span>
             <br />
-            <MultiplePoems shouldTest={shouldTest} shouldAnimate={shouldAnimate} />
+            <MultiplePoems shouldAnimate={shouldAnimate} />
         </div>
     );
 }
