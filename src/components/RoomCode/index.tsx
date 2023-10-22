@@ -1,9 +1,8 @@
 import * as React from "react";
 
-import { useSocket } from "../App";
+import { socket } from "../../context/SocketActions";
 
 function RoomCode() {
-    const { socket } = useSocket();
 
     const [ roomCode, setRoomCode ] = React.useState<string>("");
 

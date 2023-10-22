@@ -1,11 +1,10 @@
 import * as React from "react";
 
-import { useSocket } from "../App";
 import { lineSepString } from "../../constants";
 import { spectatorLines } from "./styles";
+import { socket } from "../../context/SocketActions";
 
 const Lines = () => {
-    const { socket } = useSocket();
 
     const [ lines, setLines ] = React.useState<Array<Array<string>>>([ [], [], [], [] ]);
     const [ lineEdits, setLineEdits ] = React.useState<Array<string>>([ "", "", "", "" ]);

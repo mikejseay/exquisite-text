@@ -1,10 +1,8 @@
 import * as React from "react";
-
-import { useSocket } from "../App";
+import { socket } from "../../context/SocketActions";
 import { IUserTableInfo } from "../../types";
 
 function UserTable() {
-    const { socket } = useSocket();
 
     const [ editorArr, setEditorArr ] = React.useState<Array<string>>([]);
     const [ editorColors, setEditorColorArr ] = React.useState<Array<string>>([]);

@@ -1,24 +1,25 @@
 import * as React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import { useSocket } from "../../components/App";
 import {
     maxNameChars,
     roomCodeLength,
-    shortDur,
 } from "../../constants";
 import { MenuButtons } from "../../components/MenuButtons";
+import { handleSpectatePress, handleWritePress } from "../../context/SocketRequestors";
+import { useSocketInfo } from "../../context/SocketInfoProvider";
+import { useNavigate } from "react-router-dom";
+import { socket } from "../../context/SocketActions";
 
 export default function Join() {
     const navigate = useNavigate();
+    const { joinErrorMessage } = useSocketInfo();
+
     const { id } = useParams();
 
-    const { socket } = useSocket();
-
-    const [ joinErrorMessage, setJoinErrorMessage ] = React.useState<string>("");
     const [ roomId, setRoomId ] = React.useState<string>(id ?? "");
     const [ name, setName ] = React.useState<string>("");
 
@@ -35,14 +36,6 @@ export default function Join() {
         setIsNameValid(event.target.value.length > 0);
     };
 
-    const handleWritePress = () => {
-        socket.emit("joinGameAs", "Editor", roomId.toUpperCase(), name.toUpperCase());
-    };
-
-    const handleSpectatePress = () => {
-        socket.emit("joinGameAs", "Spectator", roomId.toUpperCase(), name.toUpperCase());
-    };
-
     React.useEffect(() => {
         setIsRoomValid(roomId.length === roomCodeLength);
         setIsNameValid(name.length > 0);
@@ -53,20 +46,14 @@ export default function Join() {
     }, [ id ]);
 
     React.useEffect(() => {
-        const joinErrorListener = (errorMsg: string) => {
-            setJoinErrorMessage(errorMsg);
-            setTimeout(() => setJoinErrorMessage(""), shortDur);
-        };
-
         const navigateListener = (targetRoute: string) => {
+            console.log("navigateListener activated");
             navigate(targetRoute);
         };
 
-        socket.on("joinError", joinErrorListener);
         socket.on("navigate", navigateListener);
 
         return () => {
-            socket.off("joinError", joinErrorListener);
             socket.off("navigate", navigateListener);
         };
     }, [
@@ -113,14 +100,18 @@ export default function Join() {
             >
                 <Button
                     disabled={!(isRoomValid && isNameValid)}
-                    onClick={handleWritePress}
+                    onClick={() => {
+                        handleWritePress(roomId, name);
+                    }}
                     variant="contained"
                 >
           Write
                 </Button>
                 <Button
                     disabled={!(isRoomValid && isNameValid)}
-                    onClick={handleSpectatePress}
+                    onClick={() => {
+                        handleSpectatePress(roomId, name);
+                    }}
                     variant="outlined"
                 >
           Spectate

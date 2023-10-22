@@ -1,10 +1,9 @@
 import * as React from "react";
-import { useSocket } from "../App";
 import { useNavigate } from "react-router-dom";
+import { socket } from "../../context/SocketActions";
 
 function GameTransition() {
     const navigate = useNavigate();
-    const { socket } = useSocket();
 
     React.useEffect(() => {
         const navigateListener = (targetRoute: string) => {

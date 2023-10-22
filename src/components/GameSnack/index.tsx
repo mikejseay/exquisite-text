@@ -1,12 +1,11 @@
 import * as React from "react";
 import Snackbar from "@mui/material/Snackbar";
-import { useSocket } from "../App";
+import { socket } from "../../context/SocketActions";
 import type { IUserInfo } from "../../types";
 import { shortDur } from "../../constants";
 
 // NOTE: Currently unused component
 const GameSnack = () => {
-    const { socket } = useSocket();
 
     const [ snackMessage, setSnackMessage ] = React.useState("");
     const [ snackOpen, setSnackOpen ] = React.useState(false);

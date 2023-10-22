@@ -5,12 +5,11 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import * as React from "react";
 
 import { defaultGameSettings } from "../../constants";
-import { useSocket } from "../App";
+import { socket } from "../../context/SocketActions";
 
 import { IGameSettingsInfo, LineLength } from "../../types";
 
 function GameSettings() {
-    const { socket } = useSocket();
 
     const [ settingsEnabled, setSettingsEnabled ] = React.useState<boolean>(false);
     const [ lineLength, setLineLength ] = React.useState<LineLength>(defaultGameSettings.lineLength);

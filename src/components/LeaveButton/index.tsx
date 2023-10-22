@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useSocket } from "../App";
+import { socket } from "../../context/SocketActions";
 import LogoutIcon from "@mui/icons-material/Logout";
 import Fab from "@mui/material/Fab";
 import WarningIcon from "@mui/icons-material/Warning";
@@ -10,7 +10,6 @@ import { ClickAwayListener } from "@mui/material";
 import { leaveConfirmBox, leaveFAB } from "./styles";
 
 function LeaveButton() {
-    const { socket } = useSocket();
 
     const handleLeave = () => {
         socket.emit("leave");

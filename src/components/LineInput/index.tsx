@@ -9,7 +9,7 @@ import { ClickAwayListener, Fade } from "@mui/material";
 import WarningIcon from "@mui/icons-material/Warning";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 
-import { useSocket } from "../App";
+import { socket } from "../../context/SocketActions";
 import {
     IGameSettingsInfo,
     LineLength,
@@ -40,7 +40,6 @@ import {
 import "./LineInput.css";
 
 const LineInput = () => {
-    const { socket } = useSocket();
     const [ open, setOpen ] = React.useState(false);
     const handleClick = () => {
         setOpen((prev) => !prev);

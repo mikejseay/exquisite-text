@@ -1,13 +1,12 @@
 import * as React from "react";
 
-import { useSocket } from "../../components/App";
+import { socket } from "../../context/SocketActions";
 import UserTable from "../../components/UserTable";
 import GameSettings from "../../components/GameSettings";
 import { generateAlphaString } from "../../helpers";
 import { roomCodeLength } from "../../constants";
 
 export default function Host() {
-    const { socket } = useSocket();
 
     const rootURLDisplay = window.location.host;
     const rootURLRoute = "/";
