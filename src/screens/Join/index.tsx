@@ -135,7 +135,7 @@ export default function Join() {
                 }}>
                 {joinErrorMessage}
             </div>
-            <MenuButtons socket={socket} />
+            <MenuButtons />
         </div>
     );
 }

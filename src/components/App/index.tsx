@@ -79,7 +79,7 @@ export default function App() {
         <div style={possibleSocket} className={"possible-socket"}>
             <Paper elevation={0} style={app} className={"app-container"}>
                 <header style={appHeader}>
-                    <MenuButtons socket={socket} />
+                    <MenuButtons />
                     <div style={appTitle}>Exquisite Text</div>
                 </header>
                 <Outlet context={{ socket }} />

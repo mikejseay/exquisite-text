@@ -9,9 +9,9 @@ import { hostFAB, roomCodeStyles } from "./styles";
 
 import { generateAlphaString } from "../../helpers";
 import { roomCodeLength } from "../../constants";
-import { Socket } from "socket.io-client";
+import { createGameHost } from "../../context/SocketRequestors";
 
-function HostButton({ socket }: { socket: Socket | null }) {
+function HostButton() {
     const [ open, setOpen ] = React.useState(false);
     const [ roomId, setRoomId ] = React.useState<string | null>(null);
     const [ shareLink, setShareLink ] = React.useState<string | null>(null);
@@ -23,13 +23,13 @@ function HostButton({ socket }: { socket: Socket | null }) {
 
     const handleClick = () => {
         setOpen((prev) => !prev);
-        if (!open && socket) {
+        if (!open) {
             const roomId = generateAlphaString(roomCodeLength);
             const shareLink = `${location.protocol}//${location.host}/${roomId}`;
             setRoomId(roomId);
             setShareLink(shareLink);
             clipboard.copy(shareLink);
-            socket.emit("createGameHost", roomId);
+            createGameHost(roomId);
             navigate(`/${roomId}`);
         }
     };
