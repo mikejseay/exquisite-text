@@ -1,15 +1,15 @@
-import isNil from "lodash/isNil";
+// import isNil from "lodash/isNil";
 import Paper from "@mui/material/Paper";
 import * as React from "react";
 import {
     Outlet,
-    useOutletContext,
+    // useOutletContext,
 } from "react-router-dom";
-import {
-    Socket,
-    io,
-} from "socket.io-client";
-import { v4 as uuidv4 } from "uuid";
+// import {
+//     Socket,
+//     io,
+// } from "socket.io-client";
+// import { v4 as uuidv4 } from "uuid";
 
 import { MenuButtons } from "../MenuButtons";
 import {
@@ -19,19 +19,19 @@ import {
     possibleSocket,
 } from "./styles";
 
-import type {
-    ClientToServerEvents,
-    ServerToClientEvents,
-} from "../../types";
+// import type {
+//     ClientToServerEvents,
+//     ServerToClientEvents,
+// } from "../../types";
+import { socket } from "../../context/SocketActions";
 
 
-
-const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
-const serverPath: URL["pathname"] | URL["href"] = isDevelopment
-    ? `http://${window.location.hostname}:3000`
-    : "/";
-
-type ContextType = { socket: Socket<ServerToClientEvents, ClientToServerEvents> };
+// const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
+// const serverPath: URL["pathname"] | URL["href"] = isDevelopment
+//     ? `http://${window.location.hostname}:3000`
+//     : "/";
+//
+// type ContextType = { socket: Socket<ServerToClientEvents, ClientToServerEvents> };
 
 export default function App() {
     // instead of creating the socket state here,
@@ -39,17 +39,17 @@ export default function App() {
     // (basically a way to pass a socket for useContext type usage)
     // if a socket is necessary
     // no socket needed for Join page, Library, poem permalink (Page)
-    const [ socket, setSocket ] = React.useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
-
-    React.useEffect(() => {
-        console.log("App about to connect to", serverPath);
-        const newSocket: Socket<ServerToClientEvents, ClientToServerEvents> = io(serverPath);
-        setSocket(newSocket);
-
-        return () => {
-            newSocket.close();
-        };
-    }, [ setSocket ]);
+    // const [ socket, setSocket ] = React.useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
+    //
+    // React.useEffect(() => {
+    //     console.log("App about to connect to", serverPath);
+    //     const newSocket: Socket<ServerToClientEvents, ClientToServerEvents> = io(serverPath);
+    //     setSocket(newSocket);
+    //
+    //     return () => {
+    //         newSocket.close();
+    //     };
+    // }, [ setSocket ]);
 
     // The component then renders a page that contains a header.
     // If a socket has already been established, it will also render two components Lines and LineInput.
@@ -58,22 +58,22 @@ export default function App() {
         return <div>Not Connected</div>;
     }
 
-    // set this to true if you want to be able to connect to the game
-    // multiple times from the same browser
-    if (process.env.REACT_APP_DEBUG_SINGLE_BROWSER === "true") {
-        // to debug I will send a random device id each time
-        socket.emit("recognizeDevice", uuidv4());
-    } else {
-        // check if this device (browser) has visited the page before
-        const firstVisit = !localStorage.getItem("device");
-        if (firstVisit) {
-            localStorage.setItem("device", uuidv4());
-        }
-        const deviceID = localStorage.getItem("device");
-        if (!isNil(deviceID)) {
-            socket.emit("recognizeDevice", deviceID);
-        }
-    }
+    // // set this to true if you want to be able to connect to the game
+    // // multiple times from the same browser
+    // if (process.env.REACT_APP_DEBUG_SINGLE_BROWSER === "true") {
+    //     // to debug I will send a random device id each time
+    //     socket.emit("recognizeDevice", uuidv4());
+    // } else {
+    //     // check if this device (browser) has visited the page before
+    //     const firstVisit = !localStorage.getItem("device");
+    //     if (firstVisit) {
+    //         localStorage.setItem("device", uuidv4());
+    //     }
+    //     const deviceID = localStorage.getItem("device");
+    //     if (!isNil(deviceID)) {
+    //         socket.emit("recognizeDevice", deviceID);
+    //     }
+    // }
 
     return (
         <div style={possibleSocket} className={"possible-socket"}>
@@ -88,6 +88,6 @@ export default function App() {
     );
 }
 
-export function useSocket() {
-    return useOutletContext<ContextType>();
-}
+// export function useSocket() {
+//     return useOutletContext<ContextType>();
+// }
