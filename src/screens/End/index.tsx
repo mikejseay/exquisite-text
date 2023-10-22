@@ -11,12 +11,16 @@ import {
 } from "../../context/SocketRequestors";
 
 function End({ shouldTest = false }: { shouldTest: boolean }) {
-    if (shouldTest) {
+
+    const [ rendered, setRendered ] = React.useState(false);
+    if (shouldTest && !rendered) {
         recognizeDevice();
         createGameHost("ROOM");
         getUserTableInfo(true);
         getPoemsLines(true);
+        setRendered(true);
     }
+
     const [ shouldAnimate, setShouldAnimate ] = React.useState(true);
     const handleChange = () => {
         setShouldAnimate(!shouldAnimate);
