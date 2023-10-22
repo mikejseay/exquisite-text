@@ -5,6 +5,7 @@ export const SocketInfoContext = createContext<ISocketInfo>(
     {
         userInfo: null,
         poemsLines: null,
+        joinErrorMessage: null,
     },
 );
 

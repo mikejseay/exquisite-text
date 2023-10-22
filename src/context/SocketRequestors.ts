@@ -33,3 +33,13 @@ export const getPoemsLines = (shouldTest = false) => {
 export const createGameHost = (name: string) => {
     socket.emit("createGameHost", name);
 };
+
+export const handleWritePress = (roomId: string, name: string) => {
+    console.log("handleWritePress activated as", name, "is trying to join", roomId);
+    socket.emit("joinGameAs", "Editor", roomId.toUpperCase(), name.toUpperCase());
+};
+
+export const handleSpectatePress = (roomId: string, name: string) => {
+    console.log("handleSpectatePress activated");
+    socket.emit("joinGameAs", "Spectator", roomId.toUpperCase(), name.toUpperCase());
+};

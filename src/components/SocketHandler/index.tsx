@@ -15,11 +15,12 @@ export default function SocketHandler({ children }: Props) {
     // no socket needed for Join page, Library, poem permalink (Page)
     const [ userInfo, setUserInfo ] = React.useState<IUserTableInfo>({} as IUserTableInfo);
     const [ poemsLines, setPoemsLines ] = React.useState<Array<ILine[]>>([]);
+    const [ joinErrorMessage, setJoinErrorMessage ] = React.useState<string>("");
 
-    React.useEffect(() => initSockets({ setUserInfo, setPoemsLines }), [ initSockets ]);
+    React.useEffect(() => initSockets({ setUserInfo, setPoemsLines, setJoinErrorMessage }), [ initSockets ]);
 
     return (
-        <SocketInfoContext.Provider value={{ userInfo, poemsLines }}>
+        <SocketInfoContext.Provider value={{ userInfo, poemsLines, joinErrorMessage }}>
             {children}
         </SocketInfoContext.Provider>
     );

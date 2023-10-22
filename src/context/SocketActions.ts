@@ -9,8 +9,8 @@ const serverPath: URL["pathname"] | URL["href"] = isDevelopment
 
 export const socket = io(serverPath);
 
-export const initSockets = ({ setUserInfo, setPoemsLines } : ISocketInfoListeners) => {
+export const initSockets = ({ setUserInfo, setPoemsLines, setJoinErrorMessage } : ISocketInfoListeners) => {
 
     console.log("initSockets about to connect to", serverPath);
-    socketListeners( { setUserInfo, setPoemsLines } );
+    socketListeners( { setUserInfo, setPoemsLines, setJoinErrorMessage } );
 };

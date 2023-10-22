@@ -134,9 +134,13 @@ function sockets(
                 }
                 deviceIDToRoomId[deviceID] = roomId;
                 const thisEditor = new Editor(io, socket, roomId, deviceID, name);
+                console.log("editor object created");
                 thisEditor.joinRoom();
+                console.log("room joined");
                 io.to(socket.id).emit("navigate", "/lobby");
+                console.log("sent navigate message");
                 targetRoom.addEditor(deviceID, thisEditor);
+                console.log("editor added to room");
             } else if (role === "Spectator") {
                 deviceIDToRoomId[deviceID] = roomId;
                 const thisSpectator = new Spectator(io, socket, roomId, deviceID, name);

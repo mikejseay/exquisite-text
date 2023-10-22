@@ -138,9 +138,13 @@ export interface ISocketInfoListeners {
     // React.useState<Array<ILine[]>>([]);
     setPoemsLines: (value: Array<ILine[]> |
         ((prevVar: Array<ILine[]>) => Array<ILine[]>)) => void;
+    // React.useState<string>("");
+    setJoinErrorMessage: (value: string |
+        ((prevVar: string) => string)) => void;
 }
 
 export interface ISocketInfo {
     userInfo: IUserTableInfo | null;
     poemsLines: Array<ILine[]> | null;
+    joinErrorMessage: string | null;
 }
