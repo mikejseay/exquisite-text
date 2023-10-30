@@ -141,10 +141,38 @@ export interface ISocketInfoListeners {
     // React.useState<string>("");
     setJoinErrorMessage: (value: string |
         ((prevVar: string) => string)) => void;
+    // React.useState<string>("");
+    setRoomCode: (value: string |
+        ((prevVar: string) => string)) => void;
+    // React.useState<boolean>(false);
+    setSettingsEnabled: (value: boolean |
+        ((prevVar: boolean) => boolean)) => void;
+    // React.useState<LineLength>(defaultGameSettings.lineLength);
+    setLineLength: (value: LineLength |
+        ((prevVar: LineLength) => LineLength)) => void;
+    // React.useState<number>(defaultGameSettings.nRounds);
+    setNRounds: (value: number |
+        ((prevVar: number) => number)) => void;
+    // React.useState<number>(defaultGameSettings.nPoems);
+    setNPoems: (value: number |
+        ((prevVar: number) => number)) => void;
 }
 
 export interface ISocketInfo {
     userInfo: IUserTableInfo | null;
     poemsLines: Array<ILine[]> | null;
     joinErrorMessage: string | null;
+    roomCode: string | null;
+    setRoomCode: (value: string |
+        ((prevVar: string) => string)) => void;
+    settingsEnabled: boolean | null;
+    lineLength: LineLength | null;
+    nRounds: number | null;
+    nPoems: number | null;
+    setLineLength: (value: LineLength |
+        ((prevVar: LineLength) => LineLength)) => void;
+    setNRounds: (value: number |
+        ((prevVar: number) => number)) => void;
+    setNPoems: (value: number |
+        ((prevVar: number) => number)) => void;
 }
