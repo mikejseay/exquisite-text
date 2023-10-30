@@ -9,14 +9,12 @@ import {
     roomCodeLength,
 } from "../../constants";
 import { MenuButtons } from "../../components/MenuButtons";
-import { handleSpectatePress, handleWritePress } from "../../context/SocketRequestors";
+import { requestJoinAsEditor, requestJoinAsSpectator } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { useNavigate } from "react-router-dom";
-import { socket } from "../../context/SocketActions";
+import GameTransition from "../../components/GameTransition";
 
 export default function Join() {
-    const navigate = useNavigate();
-    const { joinErrorMessage } = useSocketInfo();
+    const { joinErrorMessage, setRoomCode } = useSocketInfo();
 
     const { id } = useParams();
 
@@ -36,6 +34,16 @@ export default function Join() {
         setIsNameValid(event.target.value.length > 0);
     };
 
+    const handleWritePress = () => {
+        requestJoinAsEditor(roomId, name);
+        setRoomCode(roomId.toUpperCase());
+    };
+
+    const handleSpectatePress = () => {
+        requestJoinAsSpectator(roomId, name);
+        setRoomCode(roomId.toUpperCase());
+    };
+
     React.useEffect(() => {
         setIsRoomValid(roomId.length === roomCodeLength);
         setIsNameValid(name.length > 0);
@@ -44,22 +52,6 @@ export default function Join() {
     React.useEffect(() => {
         setRoomId(id ?? "");
     }, [ id ]);
-
-    React.useEffect(() => {
-        const navigateListener = (targetRoute: string) => {
-            console.log("navigateListener activated");
-            navigate(targetRoute);
-        };
-
-        socket.on("navigate", navigateListener);
-
-        return () => {
-            socket.off("navigate", navigateListener);
-        };
-    }, [
-        navigate,
-        socket,
-    ]);
 
     return (
         <div>
@@ -100,18 +92,14 @@ export default function Join() {
             >
                 <Button
                     disabled={!(isRoomValid && isNameValid)}
-                    onClick={() => {
-                        handleWritePress(roomId, name);
-                    }}
+                    onClick={handleWritePress}
                     variant="contained"
                 >
           Write
                 </Button>
                 <Button
                     disabled={!(isRoomValid && isNameValid)}
-                    onClick={() => {
-                        handleSpectatePress(roomId, name);
-                    }}
+                    onClick={handleSpectatePress}
                     variant="outlined"
                 >
           Spectate
@@ -127,6 +115,7 @@ export default function Join() {
                 {joinErrorMessage}
             </div>
             <MenuButtons />
+            <GameTransition />
         </div>
     );
 }
