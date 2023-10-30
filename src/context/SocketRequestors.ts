@@ -1,6 +1,7 @@
 import { socket } from "./SocketActions";
 import { v4 as uuidv4 } from "uuid";
 import isNil from "lodash/isNil";
+import { LineLength } from "../types";
 
 export const recognizeDevice = () => {
 
@@ -34,12 +35,41 @@ export const createGameHost = (name: string) => {
     socket.emit("createGameHost", name);
 };
 
-export const handleWritePress = (roomId: string, name: string) => {
+export const requestJoinAsEditor = (roomId: string, name: string) => {
     console.log("handleWritePress activated as", name, "is trying to join", roomId);
     socket.emit("joinGameAs", "Editor", roomId.toUpperCase(), name.toUpperCase());
 };
 
-export const handleSpectatePress = (roomId: string, name: string) => {
+export const requestJoinAsSpectator = (roomId: string, name: string) => {
     console.log("handleSpectatePress activated");
     socket.emit("joinGameAs", "Spectator", roomId.toUpperCase(), name.toUpperCase());
+};
+
+export const getRoomCode = () => {
+    console.log("getRoomCode");
+    socket.emit("getRoomCode");
+};
+
+export const requestAlterGameSettings = (newLineLength: LineLength, nPoems: number, nRounds: number) => {
+    socket.emit("alterGameSettings", {
+        lineLength: newLineLength,
+        nPoems,
+        nRounds,
+    });
+};
+
+export const requestStartGame = () => {
+    socket.emit("startGame");
+};
+
+export const requestGetSettingsEnabled = () => {
+    socket.emit("getSettingsEnabled");   // initial populate
+};
+
+export const requestGetGameSettingsInfo = () => {
+    socket.emit("getGameSettingsInfo");
+};
+
+export const requestLeave = () => {
+    socket.emit("leave");
 };
