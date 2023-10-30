@@ -139,6 +139,8 @@ function sockets(
                 console.log("room joined");
                 io.to(socket.id).emit("navigate", "/lobby");
                 console.log("sent navigate message");
+                // io.to(socket.id).emit("roomCode", roomId);
+                // console.log("sent room code");
                 targetRoom.addEditor(deviceID, thisEditor);
                 console.log("editor added to room");
             } else if (role === "Spectator") {
@@ -149,6 +151,8 @@ function sockets(
                     io.to(socket.id).emit("navigate", "/spectate");
                 } else {
                     io.to(socket.id).emit("navigate", "/lobby");
+                    // io.to(socket.id).emit("roomCode", roomId);
+                    // console.log("sent room code");
                 }
                 targetRoom.addSpectator(deviceID, thisSpectator);
             }
