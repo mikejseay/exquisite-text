@@ -1,7 +1,8 @@
 import * as React from "react";
 import { SocketInfoContext } from "../../context/SocketInfoProvider";
-import { ILine, IUserTableInfo } from "../../types";
+import { ILine, IUserTableInfo, LineLength } from "../../types";
 import { initSockets } from "../../context/SocketActions";
+import { defaultGameSettings } from "../../constants";
 
 type Props = {
     children: JSX.Element
@@ -16,11 +17,43 @@ export default function SocketHandler({ children }: Props) {
     const [ userInfo, setUserInfo ] = React.useState<IUserTableInfo>({} as IUserTableInfo);
     const [ poemsLines, setPoemsLines ] = React.useState<Array<ILine[]>>([]);
     const [ joinErrorMessage, setJoinErrorMessage ] = React.useState<string>("");
+    const [ roomCode, setRoomCode ] = React.useState<string>("");
+    const [ settingsEnabled, setSettingsEnabled ] = React.useState<boolean>(false);
+    const [ lineLength, setLineLength ] = React.useState<LineLength>(LineLength.short);
+    const [ nRounds, setNRounds ] = React.useState<number>(defaultGameSettings.nRounds);
+    const [ nPoems, setNPoems ] = React.useState<number>(defaultGameSettings.nPoems);
 
-    React.useEffect(() => initSockets({ setUserInfo, setPoemsLines, setJoinErrorMessage }), [ initSockets ]);
+    // The crucial useEffect which contains
+    React.useEffect(() => initSockets(
+        {
+            setUserInfo,
+            setPoemsLines,
+            setJoinErrorMessage,
+            setRoomCode,
+            setSettingsEnabled,
+            setLineLength,
+            setNRounds,
+            setNPoems,
+        }),
+    [ initSockets ],
+    );
 
     return (
-        <SocketInfoContext.Provider value={{ userInfo, poemsLines, joinErrorMessage }}>
+        <SocketInfoContext.Provider value={{
+            userInfo,
+            poemsLines,
+            joinErrorMessage,
+            roomCode,
+            setRoomCode,
+            settingsEnabled,
+            lineLength,
+            nRounds,
+            nPoems,
+            setLineLength,
+            setNRounds,
+            setNPoems,
+
+        }}>
             {children}
         </SocketInfoContext.Provider>
     );

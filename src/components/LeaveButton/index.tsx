@@ -1,5 +1,4 @@
 import * as React from "react";
-import { socket } from "../../context/SocketActions";
 import LogoutIcon from "@mui/icons-material/Logout";
 import Fab from "@mui/material/Fab";
 import WarningIcon from "@mui/icons-material/Warning";
@@ -8,12 +7,10 @@ import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import { ClickAwayListener } from "@mui/material";
 import { leaveConfirmBox, leaveFAB } from "./styles";
+import { requestLeave } from "../../context/SocketRequestors";
 
 function LeaveButton() {
 
-    const handleLeave = () => {
-        socket.emit("leave");
-    };
     const [ open, setOpen ] = React.useState(false);
     const handleClick = () => {
         setOpen((prev) => !prev);
@@ -21,7 +18,6 @@ function LeaveButton() {
     const handleClickAway = () => {
         setOpen(false);
     };
-
 
     return (
         <React.Fragment>
@@ -44,7 +40,7 @@ function LeaveButton() {
                                 <Stack spacing={2} direction="row"
                                     style={{ justifyContent: "center" }}>
                                     <Button variant="outlined" onClick={handleClickAway}>No</Button>
-                                    <Button variant="contained" onClick={handleLeave}>Yes</Button>
+                                    <Button variant="contained" onClick={requestLeave}>Yes</Button>
                                 </Stack>
                             </Box>
                         )
