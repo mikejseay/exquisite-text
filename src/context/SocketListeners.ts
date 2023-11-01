@@ -13,6 +13,8 @@ export const socketListeners = (
         setLineLength,
         setNRounds,
         setNPoems,
+        setLines,
+        setLineEdits,
     } : ISocketInfoListeners) => {
 
     const poemsLinesListener = (myPoemLines: ILine[]) => {
@@ -45,12 +47,31 @@ export const socketListeners = (
         setSettingsEnabled(enabled);
     };
 
+    const lineSpectatorListener = (poemIndex: number, line: string) => {
+        setLines(prevLines => {
+            return [ ...prevLines.slice(0, poemIndex), [ ...prevLines[poemIndex], line ], ...prevLines.slice(poemIndex + 1) ];
+        },
+        );
+    };
+
+    const lineEditSpectatorListener = (poemIndex: number, value: string) => {
+        setLineEdits(prevLineEdits => {
+            return [
+                ...prevLineEdits.slice(0, poemIndex),
+                value,
+                ...prevLineEdits.slice(poemIndex + 1),
+            ];
+        });
+    };
+
     socket.on("poemLines", poemsLinesListener);
     socket.on("userTableInfo", userTableInfoListener);
     socket.on("joinError", joinErrorListener);
     socket.on("roomCode", roomCodeListener);
     socket.on("gameSettingsInfo", gameSettingsInfoListener);
     socket.on("gameSettingsEnabled", gameSettingsEnabledListener);
+    socket.on("lineSpectator", lineSpectatorListener);
+    socket.on("lineEditSpectator", lineEditSpectatorListener);
 
     return () => {
         socket.off("poemLines", poemsLinesListener);
@@ -59,6 +80,8 @@ export const socketListeners = (
         socket.off("roomCode", roomCodeListener);
         socket.off("gameSettingsInfo", gameSettingsInfoListener);
         socket.off("gameSettingsEnabled", gameSettingsEnabledListener);
+        socket.off("lineSpectator", lineSpectatorListener);
+        socket.off("lineEditSpectator", lineEditSpectatorListener);
     };
 
 };

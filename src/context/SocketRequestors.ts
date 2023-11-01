@@ -73,3 +73,7 @@ export const requestGetGameSettingsInfo = () => {
 export const requestLeave = () => {
     socket.emit("leave");
 };
+
+export const requestGetLines = () => {
+    socket.emit("getLines");
+};

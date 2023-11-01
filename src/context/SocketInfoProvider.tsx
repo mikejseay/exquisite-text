@@ -7,18 +7,16 @@ export const SocketInfoContext = createContext<ISocketInfo>(
         poemsLines: null,
         joinErrorMessage: null,
         roomCode: null,
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        setRoomCode: () => {},
+        setRoomCode: () => null,
         settingsEnabled: null,
         lineLength: null,
         nRounds: null,
         nPoems: null,
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        setLineLength: () => {},
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        setNRounds: () => {},
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        setNPoems: () => {},
+        setLineLength: () => null,
+        setNRounds: () => null,
+        setNPoems: () => null,
+        lines: null,
+        lineEdits: null,
     },
 );
 

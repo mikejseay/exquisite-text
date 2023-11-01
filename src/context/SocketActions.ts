@@ -18,6 +18,8 @@ export const initSockets = (
         setLineLength,
         setNRounds,
         setNPoems,
+        setLines,
+        setLineEdits,
     } : ISocketInfoListeners) => {
 
     console.log("initSockets about to connect to", serverPath);
@@ -31,6 +33,8 @@ export const initSockets = (
             setLineLength,
             setNRounds,
             setNPoems,
+            setLines,
+            setLineEdits,
         },
     );
 };

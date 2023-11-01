@@ -156,6 +156,12 @@ export interface ISocketInfoListeners {
     // React.useState<number>(defaultGameSettings.nPoems);
     setNPoems: (value: number |
         ((prevVar: number) => number)) => void;
+    // React.useState<Array<Array<string>>>([ [], [], [], [] ]);
+    setLines: (value: Array<Array<string>> |
+        ((prevVar: Array<Array<string>>) => Array<Array<string>>)) => void;
+    // React.useState<Array<string>>([ "", "", "", "" ]);
+    setLineEdits: (value: Array<string> |
+        ((prevVar: Array<string>) => Array<string>)) => void;
 }
 
 export interface ISocketInfo {
@@ -175,4 +181,6 @@ export interface ISocketInfo {
         ((prevVar: number) => number)) => void;
     setNPoems: (value: number |
         ((prevVar: number) => number)) => void;
+    lines: Array<Array<string>> | null;
+    lineEdits: Array<string> | null;
 }

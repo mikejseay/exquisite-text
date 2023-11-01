@@ -22,6 +22,8 @@ export default function SocketHandler({ children }: Props) {
     const [ lineLength, setLineLength ] = React.useState<LineLength>(LineLength.short);
     const [ nRounds, setNRounds ] = React.useState<number>(defaultGameSettings.nRounds);
     const [ nPoems, setNPoems ] = React.useState<number>(defaultGameSettings.nPoems);
+    const [ lines, setLines ] = React.useState<Array<Array<string>>>([ [], [], [], [] ]);
+    const [ lineEdits, setLineEdits ] = React.useState<Array<string>>([ "", "", "", "" ]);
 
     // The crucial useEffect which contains
     React.useEffect(() => initSockets(
@@ -34,6 +36,8 @@ export default function SocketHandler({ children }: Props) {
             setLineLength,
             setNRounds,
             setNPoems,
+            setLines,
+            setLineEdits,
         }),
     [ initSockets ],
     );
@@ -52,7 +56,8 @@ export default function SocketHandler({ children }: Props) {
             setLineLength,
             setNRounds,
             setNPoems,
-
+            lines,
+            lineEdits,
         }}>
             {children}
         </SocketInfoContext.Provider>
