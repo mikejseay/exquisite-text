@@ -114,6 +114,7 @@ function sockets(
                 return;
             }
             const targetRoom = roomIdToRoom.get(roomId);
+            console.log("current state of socketIDToDeviceID is", socketIDToDeviceID);
             const deviceID = socketIDToDeviceID[socket.id];
             if (role === "Editor") {
                 if (targetRoom.gameOngoing) {
@@ -133,8 +134,9 @@ function sockets(
                     return;
                 }
                 deviceIDToRoomId[deviceID] = roomId;
+                console.log("about to make editor obj with deviceID", deviceID, "and name", name);
                 const thisEditor = new Editor(io, socket, roomId, deviceID, name);
-                console.log("editor object created");
+                console.log("editor object created with deviceID", thisEditor.deviceID);
                 thisEditor.joinRoom();
                 console.log("room joined");
                 io.to(socket.id).emit("navigate", "/lobby");

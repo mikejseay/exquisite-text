@@ -9,8 +9,8 @@ function UserTable() {
     }
     const { editors, editorColors, spectators } = userInfo;
     console.log("editors", editors);
-    console.log("editorColors", editors);
-    console.log("spectators", editors);
+    console.log("editorColors", editorColors);
+    console.log("spectators", spectators);
     if (!editors) {
         return null;
     }

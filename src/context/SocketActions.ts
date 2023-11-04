@@ -20,6 +20,10 @@ export const initSockets = (
         setNPoems,
         setLines,
         setLineEdits,
+        setPoemInput,
+        setPoemInputSpectate,
+        setOnLastLine,
+        setEditorActive,
     } : ISocketInfoListeners) => {
 
     console.log("initSockets about to connect to", serverPath);
@@ -35,6 +39,10 @@ export const initSockets = (
             setNPoems,
             setLines,
             setLineEdits,
+            setPoemInput,
+            setPoemInputSpectate,
+            setOnLastLine,
+            setEditorActive,
         },
     );
 };

@@ -1,7 +1,7 @@
 import { socket } from "./SocketActions";
 import { IGameSettingsInfo, ILine, ISocketInfoListeners, IUserTableInfo } from "../types";
 
-import { shortDur } from "../constants";
+import { lineConstraints, shortDur } from "../constants";
 
 export const socketListeners = (
     {
@@ -15,6 +15,10 @@ export const socketListeners = (
         setNPoems,
         setLines,
         setLineEdits,
+        setPoemInput,
+        setPoemInputSpectate,
+        setOnLastLine,
+        setEditorActive,
     } : ISocketInfoListeners) => {
 
     const poemsLinesListener = (myPoemLines: ILine[]) => {
@@ -64,6 +68,41 @@ export const socketListeners = (
         });
     };
 
+    const lineEditListener = (lineEdit: string) => {
+        setPoemInput(lineEdit);
+    };
+
+    const lineEditorWatchListener = (lineEditorWatchVal: string) => {
+        setPoemInputSpectate(lineEditorWatchVal);
+    };
+
+    const lastLineListener = (lastLine: boolean) => {
+        setOnLastLine(lastLine);
+        // const constraints = lineConstraints[lineLength];
+        // if (lastLine) {
+        //     setMaxCharsOnLineTwo(constraints.maxCharsOnLineOne);
+        //     setIdealCharsOnLineTwo(constraints.idealCharsOnLineOne);
+        // } else {
+        //     setMaxCharsOnLineTwo(constraints.maxCharsOnLineTwo);
+        //     setIdealCharsOnLineTwo(constraints.idealCharsOnLineTwo);
+        // }
+    };
+
+    const editorActiveListener = (editorActiveFromServer: boolean) => {
+        setEditorActive(editorActiveFromServer);
+        // setShouldDisplaySecondLine(false);
+        // if (editorActiveFromServer) {
+        //     setTextAreaVisible(true);
+        //     setHelpMessage("Complete a line of poetry.");
+        //     setPoemDoneVisible(true);
+        // } else {
+        //     setTextAreaVisible(false);
+        //     setHelpMessage("Your friend is writing ⤵");
+        //     setPassEnabled(false);
+        //     setPoemDoneVisible(false);
+        // }
+    };
+
     socket.on("poemLines", poemsLinesListener);
     socket.on("userTableInfo", userTableInfoListener);
     socket.on("joinError", joinErrorListener);
@@ -72,6 +111,10 @@ export const socketListeners = (
     socket.on("gameSettingsEnabled", gameSettingsEnabledListener);
     socket.on("lineSpectator", lineSpectatorListener);
     socket.on("lineEditSpectator", lineEditSpectatorListener);
+    socket.on("lineEdit", lineEditListener);
+    socket.on("lineEditorWatch", lineEditorWatchListener);
+    socket.on("lastLine", lastLineListener);
+    socket.on("editorActive", editorActiveListener);
 
     return () => {
         socket.off("poemLines", poemsLinesListener);
@@ -82,6 +125,10 @@ export const socketListeners = (
         socket.off("gameSettingsEnabled", gameSettingsEnabledListener);
         socket.off("lineSpectator", lineSpectatorListener);
         socket.off("lineEditSpectator", lineEditSpectatorListener);
+        socket.off("lineEdit", lineEditListener);
+        socket.off("lineEditorWatch", lineEditorWatchListener);
+        socket.off("lastLine", lastLineListener);
+        socket.off("editorActive", editorActiveListener);
     };
 
 };

@@ -11,10 +11,6 @@ import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 
 import { socket } from "../../context/SocketActions";
 import {
-    IGameSettingsInfo,
-    LineLength,
-} from "../../types";
-import {
     lineConstraints,
     lineSepString,
 } from "../../constants";
@@ -38,8 +34,64 @@ import {
     underlineSuggestionDiv,
 } from "./styles";
 import "./LineInput.css";
+import { useSocketInfo } from "../../context/SocketInfoProvider";
+import { requestGetEditorActive, requestGetLastLineStatus, requestGetLineEdit } from "../../context/SocketRequestors";
 
 const LineInput = () => {
+    const [ rendered, setRendered ] = React.useState(false);
+    if (!rendered) {
+        requestGetLineEdit();
+        requestGetEditorActive();
+        requestGetLastLineStatus();
+        setRendered(true);
+    }
+
+    const {
+        poemInput,
+        poemInputSpectate,
+        onLastLine,
+        editorActive,
+        setPoemInput,
+        lineLength,
+    } = useSocketInfo();
+    if ((poemInput === null) || (poemInputSpectate === null) || (onLastLine === null) || (editorActive === null) || (lineLength === null)) {
+        return null;
+    }
+
+    const useLineConstraints = lineConstraints[lineLength];
+    const minCharsOnLineOne = useLineConstraints["minCharsOnLineOne"];
+    const maxCharsOnLineOne = useLineConstraints["maxCharsOnLineOne"];
+    const minCharsOnLineTwo = useLineConstraints["minCharsOnLineTwo"];
+    const idealCharsOnLineOne = useLineConstraints["idealCharsOnLineOne"];
+
+    const [ maxCharsOnLineTwo, setMaxCharsOnLineTwo ] = React.useState<number>(useLineConstraints["maxCharsOnLineTwo"]);
+    const [ idealCharsOnLineTwo, setIdealCharsOnLineTwo ] = React.useState<number>(useLineConstraints["idealCharsOnLineTwo"]);
+
+    // see lastLineListener and editorActiveListener
+    React.useEffect(() => {
+        if (onLastLine) {
+            setMaxCharsOnLineTwo(useLineConstraints.maxCharsOnLineOne);
+            setIdealCharsOnLineTwo(useLineConstraints.idealCharsOnLineOne);
+        } else {
+            setMaxCharsOnLineTwo(useLineConstraints.maxCharsOnLineTwo);
+            setIdealCharsOnLineTwo(useLineConstraints.idealCharsOnLineTwo);
+        }
+    }, [ onLastLine ]);
+
+    React.useEffect(() => {
+        setShouldDisplaySecondLine(false);
+        if (editorActive) {
+            setTextAreaVisible(true);
+            setHelpMessage("Complete a line of poetry.");
+            setPoemDoneVisible(true);
+        } else {
+            setTextAreaVisible(false);
+            setHelpMessage("Your friend is writing ⤵");
+            setPassEnabled(false);
+            setPoemDoneVisible(false);
+        }
+    }, [ editorActive ]);
+
     const [ open, setOpen ] = React.useState(false);
     const handleClick = () => {
         setOpen((prev) => !prev);
@@ -48,21 +100,9 @@ const LineInput = () => {
         setOpen(false);
     };
 
-    const [ lineLength, setLineLength ] = React.useState<LineLength>(LineLength.short);
-    const [ minCharsOnLineOne, setMinCharsOnLineOne ] = React.useState<number>(lineConstraints[LineLength.short]["minCharsOnLineOne"]);
-    const [ maxCharsOnLineOne, setMaxCharsOnLineOne ] = React.useState<number>(lineConstraints[LineLength.short]["maxCharsOnLineOne"]);
-    const [ minCharsOnLineTwo, setMinCharsOnLineTwo ] = React.useState<number>(lineConstraints[LineLength.short]["minCharsOnLineTwo"]);
-    const [ maxCharsOnLineTwo, setMaxCharsOnLineTwo ] = React.useState<number>(lineConstraints[LineLength.short]["maxCharsOnLineTwo"]);
-    const [ idealCharsOnLineOne, setIdealCharsOnLineOne ] = React.useState<number>(lineConstraints[LineLength.short]["idealCharsOnLineOne"]);
-    const [ idealCharsOnLineTwo, setIdealCharsOnLineTwo ] = React.useState<number>(lineConstraints[LineLength.short]["idealCharsOnLineTwo"]);
-
-    const [ poemInput, setPoemInput ] = React.useState<string>("");
-    const [ poemInputSpectate, setPoemInputSpectate ] = React.useState<string>("");
-
     const [ passEnabled, setPassEnabled, passEnabledRef ] = useStateRef(false);
     const [ shouldDisplaySecondLine, setShouldDisplaySecondLine ] = React.useState<boolean>(false);
 
-    const [ onLastLine, setOnLastLine ] = React.useState<boolean>(false);
     const [ textAreaVisible, setTextAreaVisible ] = React.useState<boolean>(true);
     const [ poemDoneVisible, setPoemDoneVisible ] = React.useState<boolean>(true);
 
@@ -80,76 +120,22 @@ const LineInput = () => {
         }
     }, [ textAreaVisible ]);
 
-    React.useEffect(() => {
-        const lineEditListener = (lineEdit: string) => {
-            setPoemInput(lineEdit);
-        };
+    // // Event handlers for the line and the deleteLine events are set up for the Socket.IO connection.
+    // const gameSettingsInfoListener = (info: IGameSettingsInfo) => {
+    //     const useSettings = lineConstraints[info["lineLength"]];
+    //     setLineLength(info["lineLength"]);
+    //     setMinCharsOnLineOne(useSettings["minCharsOnLineOne"]);
+    //     setMaxCharsOnLineOne(useSettings["maxCharsOnLineOne"]);
+    //     setMinCharsOnLineTwo(useSettings["minCharsOnLineTwo"]);
+    //     setMaxCharsOnLineTwo(useSettings["maxCharsOnLineTwo"]);
+    //     setIdealCharsOnLineOne(useSettings["idealCharsOnLineOne"]);
+    //     setIdealCharsOnLineTwo(useSettings["idealCharsOnLineTwo"]);
+    // };
 
-        const lineEditorWatchListener = (lineEditorWatchVal: string) => {
-            setPoemInputSpectate(lineEditorWatchVal);
-        };
-
-        const lastLineListener = (lastLine: boolean) => {
-            setOnLastLine(lastLine);
-            const constraints = lineConstraints[lineLength];
-            if (lastLine) {
-                setMaxCharsOnLineTwo(constraints.maxCharsOnLineOne);
-                setIdealCharsOnLineTwo(constraints.idealCharsOnLineOne);
-            } else {
-                setMaxCharsOnLineTwo(constraints.maxCharsOnLineTwo);
-                setIdealCharsOnLineTwo(constraints.idealCharsOnLineTwo);
-            }
-        };
-
-        const editorActiveListener = (editorActiveFromServer: boolean) => {
-            setShouldDisplaySecondLine(false);
-            if (editorActiveFromServer) {
-                setTextAreaVisible(true);
-                setHelpMessage("Complete a line of poetry.");
-                setPoemDoneVisible(true);
-            } else {
-                setTextAreaVisible(false);
-                setHelpMessage("Your friend is writing ⤵");
-                setPassEnabled(false);
-                setPoemDoneVisible(false);
-            }
-        };
-
-        // Event handlers for the line and the deleteLine events are set up for the Socket.IO connection.
-        const gameSettingsInfoListener = (info: IGameSettingsInfo) => {
-            const useSettings = lineConstraints[info["lineLength"]];
-            setLineLength(info["lineLength"]);
-            setMinCharsOnLineOne(useSettings["minCharsOnLineOne"]);
-            setMaxCharsOnLineOne(useSettings["maxCharsOnLineOne"]);
-            setMinCharsOnLineTwo(useSettings["minCharsOnLineTwo"]);
-            setMaxCharsOnLineTwo(useSettings["maxCharsOnLineTwo"]);
-            setIdealCharsOnLineOne(useSettings["idealCharsOnLineOne"]);
-            setIdealCharsOnLineTwo(useSettings["idealCharsOnLineTwo"]);
-        };
-
-        // set up listeners
-        socket.on("lineEdit", lineEditListener);
-        socket.on("lineEditorWatch", lineEditorWatchListener);
-        socket.on("editorActive", editorActiveListener);
-        socket.on("lastLine", lastLineListener);
-        socket.on("gameSettingsInfo", gameSettingsInfoListener);
-
-        // request initial populate on page load
-        socket.emit("getLineEdit");
-        socket.emit("getEditorActive");
-        socket.emit("getGameSettingsInfo");
-        socket.emit("getLastLineStatus");
-
-        return () => {
-            socket.off("lineEdit", lineEditListener);
-            socket.off("editorActive", editorActiveListener);
-            socket.off("gameSettingsInfo", gameSettingsInfoListener);
-        };
-    }, [
-        lineLength,
-        setPassEnabled,
-        socket,
-    ]);
+    // socket.emit("getLineEdit");
+    // socket.emit("getEditorActive");
+    // socket.emit("getGameSettingsInfo");
+    // socket.emit("getLastLineStatus");
 
     function helpBasedOnProgress(messageType: number, progressProp: number) {
         if (messageType === 1) {
@@ -253,6 +239,11 @@ const LineInput = () => {
     function passTurn() {
     // this function takes approximately 1.5 lines of poem, and "makes them exquisite" by clipping the 1st line.
     // the next person who sees the result should not be aware of the 1st line but must continue with a new line
+
+        if (!poemInput) {
+            return;
+        }
+
         const poemParts = poemInput.split(lineSepString);
 
         // check user input, should be two lines, although access to even executing this function is regulated

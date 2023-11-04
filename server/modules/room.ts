@@ -76,11 +76,13 @@ class Room {
     }
 
     addEditor(deviceUUID: string, editorObj: Editor) {
+        console.log("addEditor with deviceUUID", deviceUUID, "and editorObj", editorObj);
         this.editors.set(deviceUUID, editorObj);
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }
 
     removeEditor(deviceUUID: string) {
+        console.log("removeEditor with deviceUUID", deviceUUID);
         this.editors.delete(deviceUUID);
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }
@@ -123,6 +125,7 @@ class Room {
     }
 
     setUpGame() {
+        console.log("setUpGame with this.editors", this.editors);
         const targetLines = this.gameSettings["nRounds"] * this.editors.size + 2;
 
         // have each editor set their important properties
@@ -160,8 +163,8 @@ class Room {
         console.log(this.roomId, "checking activity at", currentTime);
         if (
             this.editors.size === 0 &&
-      this.spectators.size === 0 &&
-      currentTime - this.createdAt > maxRoomTimeSpentEmpty
+            this.spectators.size === 0 &&
+            currentTime - this.createdAt > maxRoomTimeSpentEmpty
         ) {
             console.log(this.roomId, "spent too long with no members, destroying");
             this.selfDestruct();
@@ -170,7 +173,7 @@ class Room {
         for (const thisSpectator of this.spectators.values()) {
             if (
                 !thisSpectator.connected &&
-        currentTime - thisSpectator.lastActivity > maxMemberTimeSpentInactive
+                currentTime - thisSpectator.lastActivity > maxMemberTimeSpentInactive
             ) {
                 thisSpectator.leaveRoom();
                 console.log("booting", thisSpectator.name, "based on inactivity");
@@ -179,7 +182,7 @@ class Room {
         for (const thisEditor of this.editors.values()) {
             if (
                 thisEditor.isCurrentlyEditing &&
-        currentTime - thisEditor.lastActivity > maxMemberTimeSpentInactive
+                currentTime - thisEditor.lastActivity > maxMemberTimeSpentInactive
             ) {
                 thisEditor.leaveRoom();
                 console.log("booting", thisEditor.name, "based on inactivity");

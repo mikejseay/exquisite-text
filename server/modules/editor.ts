@@ -46,14 +46,20 @@ class Editor extends Member {
     }
 
     prepareForGame() {
+        console.log("prepareForGame in room", this.roomId);
         const thisRoom = roomIdToRoom.get(this.roomId);
         const editorDeviceIDs = Array.from(
             thisRoom.editors.keys(),
         ) as Array<string>;
+        console.log("editorDeviceIDs", editorDeviceIDs);
         const nEditors = editorDeviceIDs.length;
+        console.log("nEditors", nEditors);
         this.turnPosition = editorDeviceIDs.indexOf(this.deviceID);
+        console.log("this.turnPosition", this.turnPosition);
         const safeNextIndex = (this.turnPosition + 1) % nEditors;
+        console.log("safeNextIndex", safeNextIndex);
         this.targetEditorID = editorDeviceIDs[safeNextIndex];
+        console.log("this.targetEditorID", this.targetEditorID);
         // this.targetEditorSocketID = thisRoom.editors.get(this.targetEditorID).socket.id;
         console.log(
             this.deviceID,

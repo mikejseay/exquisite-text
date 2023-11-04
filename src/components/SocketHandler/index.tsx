@@ -24,6 +24,10 @@ export default function SocketHandler({ children }: Props) {
     const [ nPoems, setNPoems ] = React.useState<number>(defaultGameSettings.nPoems);
     const [ lines, setLines ] = React.useState<Array<Array<string>>>([ [], [], [], [] ]);
     const [ lineEdits, setLineEdits ] = React.useState<Array<string>>([ "", "", "", "" ]);
+    const [ poemInput, setPoemInput ] = React.useState<string>("");
+    const [ poemInputSpectate, setPoemInputSpectate ] = React.useState<string>("");
+    const [ onLastLine, setOnLastLine ] = React.useState<boolean>(false);
+    const [ editorActive, setEditorActive ] = React.useState<boolean>(false);
 
     // The crucial useEffect which contains
     React.useEffect(() => initSockets(
@@ -38,6 +42,10 @@ export default function SocketHandler({ children }: Props) {
             setNPoems,
             setLines,
             setLineEdits,
+            setPoemInput,
+            setPoemInputSpectate,
+            setOnLastLine,
+            setEditorActive,
         }),
     [ initSockets ],
     );
@@ -58,6 +66,11 @@ export default function SocketHandler({ children }: Props) {
             setNPoems,
             lines,
             lineEdits,
+            poemInput,
+            poemInputSpectate,
+            onLastLine,
+            editorActive,
+            setPoemInput,
         }}>
             {children}
         </SocketInfoContext.Provider>

@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { ISocketInfo, LineLength } from "../types";
+import { ISocketInfo } from "../types";
 
 export const SocketInfoContext = createContext<ISocketInfo>(
     {
@@ -17,6 +17,11 @@ export const SocketInfoContext = createContext<ISocketInfo>(
         setNPoems: () => null,
         lines: null,
         lineEdits: null,
+        poemInput: null,
+        poemInputSpectate: null,
+        onLastLine: null,
+        editorActive: null,
+        setPoemInput: () => null,
     },
 );
 

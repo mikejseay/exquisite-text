@@ -77,3 +77,15 @@ export const requestLeave = () => {
 export const requestGetLines = () => {
     socket.emit("getLines");
 };
+
+export const requestGetLineEdit = () => {
+    socket.emit("getLineEdit");
+};
+
+export const requestGetEditorActive = () => {
+    socket.emit("getEditorActive");
+};
+
+export const requestGetLastLineStatus = () => {
+    socket.emit("getLastLineStatus");
+};

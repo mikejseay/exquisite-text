@@ -1,4 +1,5 @@
 import { Key } from "react";
+import * as React from "react";
 
 export enum Role {
     activeEditor = "activeEditor",
@@ -162,6 +163,19 @@ export interface ISocketInfoListeners {
     // React.useState<Array<string>>([ "", "", "", "" ]);
     setLineEdits: (value: Array<string> |
         ((prevVar: Array<string>) => Array<string>)) => void;
+    // React.useState<string>("");
+    setPoemInput: (value: string |
+        ((prevVar: string) => string)) => void;
+    // React.useState<string>("");
+    setPoemInputSpectate: (value: string |
+        ((prevVar: string) => string)) => void;
+    // React.useState<boolean>(false);
+    setOnLastLine: (value: boolean |
+        ((prevVar: boolean) => boolean)) => void;
+    // React.useState<boolean>(false);
+    setEditorActive: (value: boolean |
+        ((prevVar: boolean) => boolean)) => void;
+
 }
 
 export interface ISocketInfo {
@@ -183,4 +197,10 @@ export interface ISocketInfo {
         ((prevVar: number) => number)) => void;
     lines: Array<Array<string>> | null;
     lineEdits: Array<string> | null;
+    poemInput: string | null;
+    poemInputSpectate: string | null;
+    onLastLine: boolean | null;
+    editorActive: boolean | null;
+    setPoemInput: (value: string |
+        ((prevVar: string) => string)) => void;
 }

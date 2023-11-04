@@ -24,6 +24,7 @@ import {
 //     ServerToClientEvents,
 // } from "../../types";
 import { socket } from "../../context/SocketActions";
+import { recognizeDevice } from "../../context/SocketRequestors";
 
 
 // const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
@@ -74,6 +75,7 @@ export default function App() {
     //         socket.emit("recognizeDevice", deviceID);
     //     }
     // }
+    recognizeDevice();
 
     return (
         <div style={possibleSocket} className={"possible-socket"}>
