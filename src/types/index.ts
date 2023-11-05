@@ -1,5 +1,6 @@
 import { Key } from "react";
 import * as React from "react";
+import { NavigateFunction } from "react-router-dom";
 
 export enum Role {
     activeEditor = "activeEditor",
@@ -175,7 +176,7 @@ export interface ISocketInfoListeners {
     // React.useState<boolean>(false);
     setEditorActive: (value: boolean |
         ((prevVar: boolean) => boolean)) => void;
-
+    navigate: NavigateFunction;
 }
 
 export interface ISocketInfo {

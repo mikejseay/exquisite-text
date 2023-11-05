@@ -1,6 +1,5 @@
 import * as React from "react";
 
-import { socket } from "../../context/SocketActions";
 import UserTable from "../../components/UserTable";
 import GameSettings from "../../components/GameSettings";
 import { generateAlphaString } from "../../helpers";
@@ -11,8 +10,6 @@ export default function Host() {
     const rootURLDisplay = window.location.host;
     const rootURLRoute = "/";
     const roomId = generateAlphaString(roomCodeLength);
-
-    socket.emit("createGameHost", roomId);
 
     return (
         <main style={{ textAlign: "center" }}>

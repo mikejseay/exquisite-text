@@ -1,6 +1,6 @@
 import * as React from "react";
 import Snackbar from "@mui/material/Snackbar";
-import { socket } from "../../context/SocketActions";
+// import { socket } from "../../context/SocketActions";
 import type { IUserInfo } from "../../types";
 import { shortDur } from "../../constants";
 
@@ -11,27 +11,27 @@ const GameSnack = () => {
     const [ snackOpen, setSnackOpen ] = React.useState(false);
     const handleClose = () => { setSnackOpen(false); };
 
-    React.useEffect(() => {
-        function userInfoListener(userInfo: IUserInfo) {
-            if (userInfo["role"] === "activeEditor") {
-                document.title = "Your turn!";
-                setTimeout(() => (document.title = "Exquisite Text"), shortDur);
-                snackBasedOnTurnsAway(userInfo["turnsAway"]);
-                setSnackOpen(true);
-                setTimeout(() => setSnackOpen(false), shortDur);
-            } else if (userInfo["role"] === "inactiveEditor") {
-                snackBasedOnTurnsAway(userInfo["turnsAway"]);
-                setSnackOpen(true);
-                setTimeout(() => setSnackOpen(false), shortDur);
-            }
-        }
-
-        // socket.on("userInfo", userInfoListener);
-
-        return () => {
-            // socket.off("userInfo", userInfoListener);
-        };
-    }, [ socket ]);
+    // React.useEffect(() => {
+    //     function userInfoListener(userInfo: IUserInfo) {
+    //         if (userInfo["role"] === "activeEditor") {
+    //             document.title = "Your turn!";
+    //             setTimeout(() => (document.title = "Exquisite Text"), shortDur);
+    //             snackBasedOnTurnsAway(userInfo["turnsAway"]);
+    //             setSnackOpen(true);
+    //             setTimeout(() => setSnackOpen(false), shortDur);
+    //         } else if (userInfo["role"] === "inactiveEditor") {
+    //             snackBasedOnTurnsAway(userInfo["turnsAway"]);
+    //             setSnackOpen(true);
+    //             setTimeout(() => setSnackOpen(false), shortDur);
+    //         }
+    //     }
+    //
+    //     // socket.on("userInfo", userInfoListener);
+    //
+    //     return () => {
+    //         // socket.off("userInfo", userInfoListener);
+    //     };
+    // }, [ socket ]);
 
     function snackBasedOnTurnsAway(turnsAway: IUserInfo["turnsAway"]) {
         if (turnsAway === 0) {

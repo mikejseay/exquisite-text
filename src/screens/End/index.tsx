@@ -19,10 +19,6 @@ function End({ shouldTest = false }: { shouldTest: boolean }) {
         getUserTableInfo(true);
         getPoemsLines(true);
         setRendered(true);
-    } else if (!shouldTest && !rendered) {
-        getUserTableInfo(false);
-        getPoemsLines(false);
-        setRendered(true);
     }
 
     const [ shouldAnimate, setShouldAnimate ] = React.useState(true);

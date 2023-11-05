@@ -1,7 +1,6 @@
-import { socket } from "./SocketActions";
+import { socket } from "../components/SocketHandler";
 import { IGameSettingsInfo, ILine, ISocketInfoListeners, IUserTableInfo } from "../types";
-
-import { lineConstraints, shortDur } from "../constants";
+import { shortDur } from "../constants";
 
 export const socketListeners = (
     {
@@ -19,6 +18,7 @@ export const socketListeners = (
         setPoemInputSpectate,
         setOnLastLine,
         setEditorActive,
+        navigate,
     } : ISocketInfoListeners) => {
 
     const poemsLinesListener = (myPoemLines: ILine[]) => {
@@ -78,29 +78,15 @@ export const socketListeners = (
 
     const lastLineListener = (lastLine: boolean) => {
         setOnLastLine(lastLine);
-        // const constraints = lineConstraints[lineLength];
-        // if (lastLine) {
-        //     setMaxCharsOnLineTwo(constraints.maxCharsOnLineOne);
-        //     setIdealCharsOnLineTwo(constraints.idealCharsOnLineOne);
-        // } else {
-        //     setMaxCharsOnLineTwo(constraints.maxCharsOnLineTwo);
-        //     setIdealCharsOnLineTwo(constraints.idealCharsOnLineTwo);
-        // }
     };
 
     const editorActiveListener = (editorActiveFromServer: boolean) => {
         setEditorActive(editorActiveFromServer);
-        // setShouldDisplaySecondLine(false);
-        // if (editorActiveFromServer) {
-        //     setTextAreaVisible(true);
-        //     setHelpMessage("Complete a line of poetry.");
-        //     setPoemDoneVisible(true);
-        // } else {
-        //     setTextAreaVisible(false);
-        //     setHelpMessage("Your friend is writing ⤵");
-        //     setPassEnabled(false);
-        //     setPoemDoneVisible(false);
-        // }
+    };
+
+    const navigateListener = (targetRoute: string) => {
+        console.log("navigateListener activated targeting", targetRoute);
+        navigate(targetRoute);
     };
 
     socket.on("poemLines", poemsLinesListener);
@@ -115,6 +101,7 @@ export const socketListeners = (
     socket.on("lineEditorWatch", lineEditorWatchListener);
     socket.on("lastLine", lastLineListener);
     socket.on("editorActive", editorActiveListener);
+    socket.on("navigate", navigateListener);
 
     return () => {
         socket.off("poemLines", poemsLinesListener);
@@ -129,6 +116,7 @@ export const socketListeners = (
         socket.off("lineEditorWatch", lineEditorWatchListener);
         socket.off("lastLine", lastLineListener);
         socket.off("editorActive", editorActiveListener);
+        socket.off("navigate", navigateListener);
     };
 
 };

@@ -11,9 +11,9 @@ import {
 import { MenuButtons } from "../../components/MenuButtons";
 import { requestJoinAsEditor, requestJoinAsSpectator } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import GameTransition from "../../components/GameTransition";
 
 export default function Join() {
+
     const { joinErrorMessage, setRoomCode } = useSocketInfo();
 
     const { id } = useParams();
@@ -114,8 +114,6 @@ export default function Join() {
                 }}>
                 {joinErrorMessage}
             </div>
-            <MenuButtons />
-            <GameTransition />
         </div>
     );
 }

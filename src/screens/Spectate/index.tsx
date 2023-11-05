@@ -1,6 +1,5 @@
 import * as React from "react";
 
-import GameTransition from "../../components/GameTransition";
 import Lines from "../../components/Lines";
 import LeaveButton from "../../components/LeaveButton";
 
@@ -9,7 +8,6 @@ function Spectate() {
         <div>
             <Lines />
             <LeaveButton />
-            <GameTransition />
         </div>
     );
 }

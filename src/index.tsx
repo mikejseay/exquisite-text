@@ -55,18 +55,13 @@ function Root() {
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
-            <SocketHandler>
-                <BrowserRouter>
+            <BrowserRouter>
+                <SocketHandler>
                     <Routes>
                         <Route path="/" element={<App />}>
 
-                            {/* create socket on button press with successful room entry */}
                             <Route path="/" element={<Join />} />
-
-                            {/* definitely creates socket and room */}
                             {/* <Route path="host" element={<Host />} /> */}
-
-                            {/* requires socket */}
                             <Route path="lobby" element={<Lobby />} />
                             <Route path="game" element={<Game />} />
                             <Route path="spectate" element={<Spectate />} />
@@ -84,8 +79,8 @@ function Root() {
                             />
                         </Route>
                     </Routes>
-                </BrowserRouter>
-            </SocketHandler>
+                </SocketHandler>
+            </BrowserRouter>
         </ThemeProvider>
     );
 }

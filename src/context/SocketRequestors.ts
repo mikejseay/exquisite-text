@@ -1,4 +1,4 @@
-import { socket } from "./SocketActions";
+import { socket } from "../components/SocketHandler";
 import { v4 as uuidv4 } from "uuid";
 import isNil from "lodash/isNil";
 import { LineLength } from "../types";
@@ -88,4 +88,16 @@ export const requestGetEditorActive = () => {
 
 export const requestGetLastLineStatus = () => {
     socket.emit("getLastLineStatus");
+};
+
+export const requestUpdateLineEdit = (value: string) => {
+    socket.emit("lineEdit", value);
+};
+
+export const requestPassTurn = (firstPart: string, secondPart: string) => {
+    socket.emit("passTurn", firstPart, secondPart);
+};
+
+export const requestSendLastLine = (value: string | null) => {
+    socket.emit("lastLine", value);
 };

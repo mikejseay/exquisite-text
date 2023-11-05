@@ -1,8 +1,18 @@
 import * as React from "react";
 import { SocketInfoContext } from "../../context/SocketInfoProvider";
 import { ILine, IUserTableInfo, LineLength } from "../../types";
-import { initSockets } from "../../context/SocketActions";
 import { defaultGameSettings } from "../../constants";
+import { socketListeners } from "../../context/SocketListeners";
+import { useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
+
+const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
+const serverPath: URL["pathname"] | URL["href"] = isDevelopment
+    ? `http://${window.location.hostname}:3000`
+    : "/";
+
+export const socket = io(serverPath);
+
 
 type Props = {
     children: JSX.Element
@@ -29,8 +39,10 @@ export default function SocketHandler({ children }: Props) {
     const [ onLastLine, setOnLastLine ] = React.useState<boolean>(false);
     const [ editorActive, setEditorActive ] = React.useState<boolean>(false);
 
+    const navigate = useNavigate();
+
     // The crucial useEffect which contains
-    React.useEffect(() => initSockets(
+    React.useEffect(() => socketListeners(
         {
             setUserInfo,
             setPoemsLines,
@@ -46,8 +58,9 @@ export default function SocketHandler({ children }: Props) {
             setPoemInputSpectate,
             setOnLastLine,
             setEditorActive,
+            navigate,
         }),
-    [ initSockets ],
+    [ socketListeners ],
     );
 
     return (

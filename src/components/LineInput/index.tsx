@@ -9,7 +9,6 @@ import { ClickAwayListener, Fade } from "@mui/material";
 import WarningIcon from "@mui/icons-material/Warning";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 
-import { socket } from "../../context/SocketActions";
 import {
     lineConstraints,
     lineSepString,
@@ -35,7 +34,14 @@ import {
 } from "./styles";
 import "./LineInput.css";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { requestGetEditorActive, requestGetLastLineStatus, requestGetLineEdit } from "../../context/SocketRequestors";
+import {
+    requestGetEditorActive,
+    requestGetLastLineStatus,
+    requestGetLineEdit,
+    requestPassTurn,
+    requestSendLastLine,
+    requestUpdateLineEdit,
+} from "../../context/SocketRequestors";
 
 const LineInput = () => {
     const [ rendered, setRendered ] = React.useState(false);
@@ -120,23 +126,6 @@ const LineInput = () => {
         }
     }, [ textAreaVisible ]);
 
-    // // Event handlers for the line and the deleteLine events are set up for the Socket.IO connection.
-    // const gameSettingsInfoListener = (info: IGameSettingsInfo) => {
-    //     const useSettings = lineConstraints[info["lineLength"]];
-    //     setLineLength(info["lineLength"]);
-    //     setMinCharsOnLineOne(useSettings["minCharsOnLineOne"]);
-    //     setMaxCharsOnLineOne(useSettings["maxCharsOnLineOne"]);
-    //     setMinCharsOnLineTwo(useSettings["minCharsOnLineTwo"]);
-    //     setMaxCharsOnLineTwo(useSettings["maxCharsOnLineTwo"]);
-    //     setIdealCharsOnLineOne(useSettings["idealCharsOnLineOne"]);
-    //     setIdealCharsOnLineTwo(useSettings["idealCharsOnLineTwo"]);
-    // };
-
-    // socket.emit("getLineEdit");
-    // socket.emit("getEditorActive");
-    // socket.emit("getGameSettingsInfo");
-    // socket.emit("getLastLineStatus");
-
     function helpBasedOnProgress(messageType: number, progressProp: number) {
         if (messageType === 1) {
             if (progressProp < 0.3) {
@@ -173,10 +162,10 @@ const LineInput = () => {
     }
 
     // handles any change to the textarea element. written to be as fast as possible, so a bit verbose
-    function handlePoemBodyChange(evt: { preventDefault: () => void; target: { value: string }; }) {
-        evt.preventDefault();
+    function handlePoemBodyChange(event: { preventDefault: () => void; target: { value: string }; }) {
+        event.preventDefault();
 
-        const lines = String(evt.target.value).split(lineSepString);
+        const lines = String(event.target.value).split(lineSepString);
 
         if (lines.length === 1) {
             // only one line
@@ -184,14 +173,14 @@ const LineInput = () => {
             if (lines[0].length > maxCharsOnLineOne) {
                 const useInput = lines[0].slice(0, maxCharsOnLineOne);
                 setPoemInput(useInput);
-                socket.emit("lineEdit", useInput);
+                requestUpdateLineEdit(useInput);
                 displayError("First line maxed, press Enter/Return to go to next.");
                 helpBasedOnProgress(1, useInput.length / idealCharsOnLineOne);
                 setPassEnabled(false);
             } else {
-                setPoemInput(evt.target.value);
-                socket.emit("lineEdit", evt.target.value);
-                helpBasedOnProgress(1, evt.target.value.length / idealCharsOnLineOne);
+                setPoemInput(event.target.value);
+                requestUpdateLineEdit(event.target.value);
+                helpBasedOnProgress(1, event.target.value.length / idealCharsOnLineOne);
                 setPassEnabled(false);
             }
 
@@ -203,7 +192,7 @@ const LineInput = () => {
 
                 const useInput = lines[0] + lineSepString + lines[1].slice(0, maxCharsOnLineTwo);
                 setPoemInput(useInput);
-                socket.emit("lineEdit", useInput);
+                requestUpdateLineEdit(useInput);
                 displayError("That's the max. When done, click pass.");
                 helpBasedOnProgress(2, maxCharsOnLineTwo / idealCharsOnLineTwo);
                 setPassEnabled(true);
@@ -211,15 +200,15 @@ const LineInput = () => {
                 // first line too short
 
                 setPoemInput(lines[0]);
-                socket.emit("lineEdit", lines[0]);
+                requestUpdateLineEdit(lines[0]);
                 displayError("More on first line!");
                 helpBasedOnProgress(1, lines[0].length / idealCharsOnLineOne);
                 setPassEnabled(false);
             } else {
                 // just right!
 
-                setPoemInput(evt.target.value);
-                socket.emit("lineEdit", evt.target.value);
+                setPoemInput(event.target.value);
+                requestUpdateLineEdit(event.target.value);
                 helpBasedOnProgress(2, lines[1].length / idealCharsOnLineTwo);
                 setPassEnabled(lines[1].length >= minCharsOnLineTwo && lines[1].length <= maxCharsOnLineTwo);
             }
@@ -228,7 +217,7 @@ const LineInput = () => {
 
             const useInput = lines[0] + lineSepString + lines[1].slice(0, maxCharsOnLineTwo);
             setPoemInput(useInput);
-            socket.emit("lineEdit", useInput);
+            requestUpdateLineEdit(useInput);
             const linesTwo = useInput.split(lineSepString);
             displayError("Two lines only. If done click Pass.");
             helpBasedOnProgress(2, linesTwo[1].length / idealCharsOnLineTwo);
@@ -256,7 +245,7 @@ const LineInput = () => {
 
             // this client submits its line, triggering a movement of its poem from its queue
             // to the target queue
-            socket.emit("passTurn", firstPart, secondPart);
+            requestPassTurn(firstPart, secondPart);
 
             // after this we will never be able to pass right away
             setPassEnabled(false);
@@ -271,11 +260,11 @@ const LineInput = () => {
     // maybe this button's functionality should change?
     function completePoem() {
     // post the current input to the lines
-        socket.emit("lastLine", poemInput);
+        requestSendLastLine(poemInput);
 
         // set the input textarea to be blank
         setPoemInput("");
-        socket.emit("lineEdit", "");
+        requestUpdateLineEdit("");
 
         setTextAreaVisible(false);
         setPassEnabled(false);
