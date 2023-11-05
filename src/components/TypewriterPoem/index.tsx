@@ -84,6 +84,11 @@ export default function TypewriterPoem({
         setCurrentPieceLengths([ 0 ]);
     };
 
+    // Whenever the animation toggle is toggled, initialize the typewriter
+    useEffect(() => {
+        initializeTypewriter();
+    }, [ shouldAnimate ]);
+
     useEffect(() => {
 
         // If we aren't animating, don't do anything
