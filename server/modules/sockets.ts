@@ -71,6 +71,8 @@ function sockets(
                 delete theMember.socket;
                 theMember.socket = socket; // connect the new socket
                 theMember.joinRoom(); // re-join the correct rooms
+                // TODO: next big important piece: reinstate context on re-join
+                // theMember.reinstateContext();  // something like this
                 // theMember.setReceive(); // amazingly, this isn't necessary...
                 io.to(socket.id).emit("navigate", targetView); // navigate to correct view
             } // else this device isn't in a room yet, nothing to do
@@ -114,6 +116,7 @@ function sockets(
                 return;
             }
             const targetRoom = roomIdToRoom.get(roomId);
+            console.log("current state of socketIDToDeviceID is", socketIDToDeviceID);
             const deviceID = socketIDToDeviceID[socket.id];
             if (role === "Editor") {
                 if (targetRoom.gameOngoing) {
@@ -133,10 +136,17 @@ function sockets(
                     return;
                 }
                 deviceIDToRoomId[deviceID] = roomId;
+                console.log("about to make editor obj with deviceID", deviceID, "and name", name);
                 const thisEditor = new Editor(io, socket, roomId, deviceID, name);
+                console.log("editor object created with deviceID", thisEditor.deviceID);
                 thisEditor.joinRoom();
+                console.log("room joined");
                 io.to(socket.id).emit("navigate", "/lobby");
+                console.log("sent navigate message");
+                // io.to(socket.id).emit("roomCode", roomId);
+                // console.log("sent room code");
                 targetRoom.addEditor(deviceID, thisEditor);
+                console.log("editor added to room");
             } else if (role === "Spectator") {
                 deviceIDToRoomId[deviceID] = roomId;
                 const thisSpectator = new Spectator(io, socket, roomId, deviceID, name);
@@ -145,6 +155,8 @@ function sockets(
                     io.to(socket.id).emit("navigate", "/spectate");
                 } else {
                     io.to(socket.id).emit("navigate", "/lobby");
+                    // io.to(socket.id).emit("roomCode", roomId);
+                    // console.log("sent room code");
                 }
                 targetRoom.addSpectator(deviceID, thisSpectator);
             }

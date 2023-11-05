@@ -14,6 +14,8 @@ import {
     ServerToClientEvents,
     SocketData,
 } from "../../src/types";
+import { userInfo as userInfoTestData } from "../../src/data/userInfo";
+import { poemsLines as poemsLinesTestData } from "../../src/data/multiplePoems";
 
 class Member {
     // represents an Editor or Spectator (which extend this)
@@ -85,8 +87,8 @@ class Member {
     // getUserTableInfo
 
     setReceive() {
-        this.socket.on("getUserTableInfo", () => this.requestUserTableInfo());
-        this.socket.on("getPoemsLines", () => this.requestPoemsLinesInfo());
+        this.socket.on("getUserTableInfo", (shouldTest) => this.requestUserTableInfo(shouldTest));
+        this.socket.on("getPoemsLines", (shouldTest) => this.requestPoemsLinesInfo(shouldTest));
         this.socket.on("getGameSettingsInfo", () => this.requestGameSettingsInfo());
         this.socket.on("getSettingsEnabled", () => this.requestSettingsEnabled());
         this.socket.on("getRoomCode", () => this.requestRoomCode());
@@ -107,18 +109,35 @@ class Member {
         this.socket.removeAllListeners("disconnecting");
     }
 
-    requestUserTableInfo() {
+    requestUserTableInfo(shouldTest: boolean) {
         console.log(this.name, "requestUserTableInfo");
         this.io
             .to(this.socket.id)
             .emit(
                 "userTableInfo",
-                roomIdToRoom.get(this.roomId).currentUserTableInfo(),
+                shouldTest
+                    ? userInfoTestData
+                    : roomIdToRoom.get(this.roomId).currentUserTableInfo(),
             );
     }
 
-    requestPoemsLinesInfo() {
+    requestPoemsLinesInfo(shouldTest: boolean) {
         const thisRoom = roomIdToRoom.get(this.roomId);
+
+        if (shouldTest) {
+            console.log("sending test poemsLines data in a way that is unusual");
+            // poemsLinesTestData is an array of arrays of lines
+            for (const linesArray of poemsLinesTestData) {
+                this.io
+                    .to(this.socket.id)
+                    .emit(
+                        "poemLines",
+                        linesArray,
+                    );
+            }
+            return;
+        }
+
         console.log(this.name, "request poems from room which has", thisRoom.finishedPoems.length);
         for (const poemObj of thisRoom.finishedPoems) {
             // this.io.in(this.roomId).emit("poemLines", Array.from(poemObj.lines));
@@ -129,7 +148,6 @@ class Member {
                     Array.from(poemObj.lines),
                 );
         }
-
     }
 
     requestRoomCode() {

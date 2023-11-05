@@ -4,79 +4,66 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import * as React from "react";
 
-import { defaultGameSettings } from "../../constants";
-import { useSocket } from "../App";
-
-import { IGameSettingsInfo, LineLength } from "../../types";
+import { LineLength } from "../../types";
+import {
+    requestAlterGameSettings,
+    requestGetGameSettingsInfo,
+    requestGetSettingsEnabled,
+    requestStartGame,
+} from "../../context/SocketRequestors";
+import { useSocketInfo } from "../../context/SocketInfoProvider";
 
 function GameSettings() {
-    const { socket } = useSocket();
 
-    const [ settingsEnabled, setSettingsEnabled ] = React.useState<boolean>(false);
-    const [ lineLength, setLineLength ] = React.useState<LineLength>(defaultGameSettings.lineLength);
-    const [ nRounds, setNRounds ] = React.useState<number>(defaultGameSettings.nRounds);
-    const [ nPoems, setNPoems ] = React.useState<number>(defaultGameSettings.nPoems);
+    const {
+        settingsEnabled,
+        lineLength,
+        nRounds,
+        nPoems,
+        setLineLength,
+        setNRounds,
+        setNPoems,
+    } = useSocketInfo();
+    if (settingsEnabled === null) {
+        return null;
+    }
+
+    // TODO: refactor by giving info before navigating user to Lobby route
+    const [ rendered, setRendered ] = React.useState(false);
+    if (!rendered) {
+        requestGetSettingsEnabled();
+        requestGetGameSettingsInfo();
+        setRendered(true);
+    }
 
     // these will only ever take place for the VIP editor
     const handleLineLength = (event: React.MouseEvent<HTMLElement>, newLineLength: LineLength) => {
-        if (newLineLength !== null) {
-            setLineLength(newLineLength);
-            socket.emit("alterGameSettings", {
-                lineLength: newLineLength,
-                nPoems,
-                nRounds,
-            });
+        if (!newLineLength || !nPoems || !nRounds)  {
+            return;
         }
+        setLineLength(newLineLength);
+        requestAlterGameSettings(newLineLength, nPoems, nRounds);
     };
+
     const handleNRounds = (event: React.MouseEvent<HTMLElement>, newNRounds: number) => {
-        if (newNRounds !== null) {
-            setNRounds(newNRounds);
-            socket.emit("alterGameSettings", {
-                lineLength,
-                nPoems,
-                nRounds: newNRounds,
-            });
+        if (!lineLength || !nPoems || !newNRounds)  {
+            return;
         }
+        setNRounds(newNRounds);
+        requestAlterGameSettings(lineLength, nPoems, newNRounds);
     };
+
     const handleNPoems = (event: React.MouseEvent<HTMLElement>, newNPoems: number) => {
-        if (newNPoems !== null) {
-            setNPoems(newNPoems);
-            socket.emit("alterGameSettings", {
-                lineLength,
-                nPoems: newNPoems,
-                nRounds,
-            });
+        if (!lineLength || !newNPoems || !nRounds)  {
+            return;
         }
+        setNPoems(newNPoems);
+        requestAlterGameSettings(lineLength, newNPoems, nRounds);
     };
+
     const handlePressStartGameButton = () => {
-        socket.emit("startGame");
+        requestStartGame();
     };
-
-    // listen for arrays of editors and spectators
-    React.useEffect(() => {
-
-        // Event handlers for the line and the deleteLine events are set up for the Socket.IO connection.
-        const gameSettingsInfoListener = (info: IGameSettingsInfo) => {
-            setLineLength(info["lineLength"]);
-            setNRounds(info["nRounds"]);
-            setNPoems(info["nPoems"]);
-        };
-
-        const gameSettingsEnabledListener = (enabled: boolean) => {
-            setSettingsEnabled(enabled);
-        };
-
-        socket.on("gameSettingsInfo", gameSettingsInfoListener);
-        socket.on("gameSettingsEnabled", gameSettingsEnabledListener);
-
-        socket.emit("getSettingsEnabled");   // initial populate
-        socket.emit("getGameSettingsInfo");  // initial populate
-
-        return () => {
-            socket.off("gameSettingsInfo", gameSettingsInfoListener);
-            socket.off("gameSettingsEnabled", gameSettingsEnabledListener);
-        };
-    }, [ socket ]);
 
     return (
         <div className={"gameSettings"} style={{ textAlign: "center" }}>

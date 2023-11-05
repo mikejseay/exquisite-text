@@ -1,45 +1,15 @@
 import * as React from "react";
 
-import { useSocket } from "../App";
 import { lineSepString } from "../../constants";
 import { spectatorLines } from "./styles";
+import { useSocketInfo } from "../../context/SocketInfoProvider";
 
 const Lines = () => {
-    const { socket } = useSocket();
 
-    const [ lines, setLines ] = React.useState<Array<Array<string>>>([ [], [], [], [] ]);
-    const [ lineEdits, setLineEdits ] = React.useState<Array<string>>([ "", "", "", "" ]);
-
-    React.useEffect(() => {
-
-        const lineSpectatorListener = (poemIndex: number, line: string) => {
-            setLines(prevLines => {
-                return [ ...prevLines.slice(0, poemIndex), [ ...prevLines[poemIndex], line ], ...prevLines.slice(poemIndex + 1) ];
-            },
-            );
-        };
-
-        const lineEditSpectatorListener = (poemIndex: number, value: string) => {
-            setLineEdits(prevLineEdits => {
-                return [
-                    ...prevLineEdits.slice(0, poemIndex),
-                    value,
-                    ...prevLineEdits.slice(poemIndex + 1),
-                ];
-            });
-        };
-
-        socket.on("lineSpectator", lineSpectatorListener);
-        socket.on("lineEditSpectator", lineEditSpectatorListener);
-
-        setLines([ [], [], [], [] ]);
-        socket.emit("getLines");
-
-        return () => {
-            socket.off("lineSpectator", lineSpectatorListener);
-            socket.off("lineEditSpectator", lineEditSpectatorListener);
-        };
-    }, [ socket ]);
+    const { lines, lineEdits } = useSocketInfo();
+    if (!lines || !lineEdits) {
+        return null;
+    }
 
     return (
         <div className={"lines-outer"} style={spectatorLines}>

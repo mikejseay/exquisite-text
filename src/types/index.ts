@@ -1,4 +1,6 @@
 import { Key } from "react";
+import * as React from "react";
+import { NavigateFunction } from "react-router-dom";
 
 export enum Role {
     activeEditor = "activeEditor",
@@ -27,8 +29,8 @@ export type ILineConstraintDict = {
 export interface IUserTableInfo {
     editors: Array<string>;
     spectators: Array<string>;
-    editorColorObj: Record<string, string>;
-    editorColorArr: Array<string>;
+    editorColorMap: Record<string, string>;
+    editorColors: Array<string>;
 }
 
 export interface IGameSettingsInfo {
@@ -97,6 +99,10 @@ export interface ServerToClientEvents {
 }
 
 export interface ClientToServerEvents {
+    getUserTableInfo: (a: boolean) => void;
+    getPoemsLines: (a: boolean) => void;
+    createTestRoom: () => void;
+
     getLineEdit: () => void;
     lineEdit: (a: string) => void;
     line: (a: string) => void;
@@ -104,12 +110,10 @@ export interface ClientToServerEvents {
     getLines: () => void;
     getPoems: () => void;
     getPoemByID: (a: number) => void;
-    getPoemsLines: () => void;
     getRoomCode: () => void;
     recognizeDevice: (a: string) => void;
     createGameHost: (a: string) => void;
     joinGameAs: (a: string, b: string, c: string) => void;
-    getUserTableInfo: () => void;
     getGameSettingsInfo: () => void;
     getLastLineStatus: () => void;
     alterGameSettings: (a: IGameSettingsInfo) => void;
@@ -127,4 +131,77 @@ export interface InterServerEvents {
 
 export interface SocketData {
     name: string;
+}
+
+export interface ISocketInfoListeners {
+    // React.useState<IUserTableInfo>({} as IUserTableInfo);
+    setUserInfo: (value: IUserTableInfo |
+        ((prevVar: IUserTableInfo) => IUserTableInfo)) => void;
+    // React.useState<Array<ILine[]>>([]);
+    setPoemsLines: (value: Array<ILine[]> |
+        ((prevVar: Array<ILine[]>) => Array<ILine[]>)) => void;
+    // React.useState<string>("");
+    setJoinErrorMessage: (value: string |
+        ((prevVar: string) => string)) => void;
+    // React.useState<string>("");
+    setRoomCode: (value: string |
+        ((prevVar: string) => string)) => void;
+    // React.useState<boolean>(false);
+    setSettingsEnabled: (value: boolean |
+        ((prevVar: boolean) => boolean)) => void;
+    // React.useState<LineLength>(defaultGameSettings.lineLength);
+    setLineLength: (value: LineLength |
+        ((prevVar: LineLength) => LineLength)) => void;
+    // React.useState<number>(defaultGameSettings.nRounds);
+    setNRounds: (value: number |
+        ((prevVar: number) => number)) => void;
+    // React.useState<number>(defaultGameSettings.nPoems);
+    setNPoems: (value: number |
+        ((prevVar: number) => number)) => void;
+    // React.useState<Array<Array<string>>>([ [], [], [], [] ]);
+    setLines: (value: Array<Array<string>> |
+        ((prevVar: Array<Array<string>>) => Array<Array<string>>)) => void;
+    // React.useState<Array<string>>([ "", "", "", "" ]);
+    setLineEdits: (value: Array<string> |
+        ((prevVar: Array<string>) => Array<string>)) => void;
+    // React.useState<string>("");
+    setPoemInput: (value: string |
+        ((prevVar: string) => string)) => void;
+    // React.useState<string>("");
+    setPoemInputSpectate: (value: string |
+        ((prevVar: string) => string)) => void;
+    // React.useState<boolean>(false);
+    setOnLastLine: (value: boolean |
+        ((prevVar: boolean) => boolean)) => void;
+    // React.useState<boolean>(false);
+    setEditorActive: (value: boolean |
+        ((prevVar: boolean) => boolean)) => void;
+    navigate: NavigateFunction;
+}
+
+export interface ISocketInfo {
+    userInfo: IUserTableInfo | null;
+    poemsLines: Array<ILine[]> | null;
+    joinErrorMessage: string | null;
+    roomCode: string | null;
+    setRoomCode: (value: string |
+        ((prevVar: string) => string)) => void;
+    settingsEnabled: boolean | null;
+    lineLength: LineLength | null;
+    nRounds: number | null;
+    nPoems: number | null;
+    setLineLength: (value: LineLength |
+        ((prevVar: LineLength) => LineLength)) => void;
+    setNRounds: (value: number |
+        ((prevVar: number) => number)) => void;
+    setNPoems: (value: number |
+        ((prevVar: number) => number)) => void;
+    lines: Array<Array<string>> | null;
+    lineEdits: Array<string> | null;
+    poemInput: string | null;
+    poemInputSpectate: string | null;
+    onLastLine: boolean | null;
+    editorActive: boolean | null;
+    setPoemInput: (value: string |
+        ((prevVar: string) => string)) => void;
 }

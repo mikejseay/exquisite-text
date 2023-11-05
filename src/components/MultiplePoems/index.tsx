@@ -8,14 +8,12 @@ import {
 
 import {
     ILine,
-    IUserTableInfo,
 } from "../../types";
-import { useSocket } from "../App";
 import PoemLinesAnimated from "../PoemLinesAnimated";
 import isNil from "lodash/isNil";
 import { lineSepString } from "../../constants";
-import { poemsLines as poemsLinesTestData } from "../../data/multiplePoems";
-import { userInfo as userInfoTestData } from "../../data/userInfo";
+
+import { useSocketInfo } from "../../context/SocketInfoProvider";
 
 function getTextWidth(text: string, font: string) {
     // re-use canvas object for better performance
@@ -51,48 +49,14 @@ function maxWidthOfPoemsLines(poemsLines: Array<ILine[]>) {
 
 }
 
-function MultiplePoems({ shouldTest, shouldAnimate }: { shouldTest: boolean, shouldAnimate: boolean, }) {
+function MultiplePoems({ shouldAnimate }: { shouldAnimate: boolean }) {
     // define poemsLines and userInfo constantly for testing purposes
 
-    const { socket } = useSocket();
-
-    const [ poemsLines, setPoemsLines ] = React.useState<Array<ILine[]>>([]);
-    const [ userInfo, setUserInfo ] = React.useState<IUserTableInfo>({} as IUserTableInfo);
-
     const [ reRender, setReRenderIndex ] = React.useState<number>(-1);
-
-    React.useEffect(() => {
-
-        if (shouldTest) {
-            setPoemsLines(poemsLinesTestData);
-            setUserInfo(userInfoTestData);
-        } else {
-            socket.emit("getUserTableInfo");
-
-            const poemsLinesListener = (myPoemLines: ILine[]) => {
-                setPoemsLines(prevPoemsLines => {
-                    return [ ...prevPoemsLines, myPoemLines ];
-                });
-            };
-
-            const userTableInfoListener = (info: IUserTableInfo) => {
-                setUserInfo(info);
-                socket.off("userTableInfo", userTableInfoListener);
-            };
-
-            socket.on("poemLines", poemsLinesListener);
-            socket.on("userTableInfo", userTableInfoListener);
-
-            setPoemsLines([]);
-            socket.emit("getPoemsLines");
-
-            return () => {
-                socket.off("poemLines", poemsLinesListener);
-                socket.off("userTableInfo", userTableInfoListener);
-            };
-        }
-
-    }, [ socket ]);
+    const { poemsLines } = useSocketInfo();
+    if (!poemsLines) {
+        return null;
+    }
 
     const maxWidth = maxWidthOfPoemsLines(poemsLines);
 
@@ -112,7 +76,6 @@ function MultiplePoems({ shouldTest, shouldAnimate }: { shouldTest: boolean, sho
                 </div>
                 <PoemLinesAnimated
                     poemLines={poemLines}
-                    userInfo={userInfo}
                     width={maxWidth}
                     shouldAnimate={shouldAnimate}
                     reRenderIndex={reRenderIndex}

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { ILine, IUserTableInfo } from "../../types";
+import { ILine } from "../../types";
 import { lineSepString } from "../../constants";
+import { useSocketInfo } from "../../context/SocketInfoProvider";
 
 const DEFAULT_MS = 30;
 
 interface TypewriterPoemProps {
     poemLines: ILine[];
-    userInfo: IUserTableInfo;
     shouldAnimate: boolean;
     reRenderIndex: number;
     setReRender: (value: number | ((prevVar: number) => number)) => void;
@@ -19,7 +19,6 @@ interface TypewriterPoemProps {
 
 export default function TypewriterPoem({
     poemLines,
-    userInfo,
     shouldAnimate,
     reRenderIndex,
     setReRender,
@@ -29,13 +28,17 @@ export default function TypewriterPoem({
     random = DEFAULT_MS,
     delay = DEFAULT_MS,
 }: TypewriterPoemProps) {
-    const { editorColorObj } = userInfo;
+    const { userInfo } = useSocketInfo();
+    if (!userInfo) {
+        return null;
+    }
+    const { editorColorMap } = userInfo;
     const nLines = poemLines.length;
 
     const [ pieceArray, colorArray ] = poemLines.reduce(
         ([ strings, colors ], line) => {
             strings.push(line.content.slice(0, line.editLength), line.content.slice(line.editLength) + lineSepString);
-            colors.push(editorColorObj[line.passerDevice], editorColorObj[line.authorDevice]);
+            colors.push(editorColorMap[line.passerDevice], editorColorMap[line.authorDevice]);
             return [ strings, colors ];
         },
         [ [], [] ] as [string[], string[]],
@@ -80,6 +83,11 @@ export default function TypewriterPoem({
         setCurrentLetter(0);
         setCurrentPieceLengths([ 0 ]);
     };
+
+    // Whenever the animation toggle is toggled, initialize the typewriter
+    useEffect(() => {
+        initializeTypewriter();
+    }, [ shouldAnimate ]);
 
     useEffect(() => {
 

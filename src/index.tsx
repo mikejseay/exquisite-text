@@ -22,6 +22,7 @@ import Spectate from "./screens/Spectate";
 import Disconnected from "./screens/Disconnected";
 import Canvas from "./screens/Canvas";
 import reportWebVitals from "./reportWebVitals";
+import SocketHandler from "./components/SocketHandler";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement,
@@ -55,33 +56,30 @@ function Root() {
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <BrowserRouter>
-                <Routes>
-                    <Route path="/" element={<App />}>
+                <SocketHandler>
+                    <Routes>
+                        <Route path="/" element={<App />}>
 
-                        {/* create socket on button press with successful room entry */}
-                        <Route path="/" element={<Join />} />
+                            <Route path="/" element={<Join />} />
+                            {/* <Route path="host" element={<Host />} /> */}
+                            <Route path="lobby" element={<Lobby />} />
+                            <Route path="game" element={<Game />} />
+                            <Route path="spectate" element={<Spectate />} />
+                            <Route path="end" element={<End shouldTest={false} />} />
+                            <Route path="endtest" element={<End shouldTest={true} />} />
+                            <Route path="canvas" element={<Canvas />} />
+                            {isComponentEnabled(<Route path="library" element={<Library />} />)}
+                            {isComponentEnabled(<Route path="page/:id" element={<Page />} />)}
+                            <Route path="disconnected" element={<Disconnected />} />
 
-                        {/* definitely creates socket and room */}
-                        {/* <Route path="host" element={<Host />} /> */}
-
-                        {/* requires socket */}
-                        <Route path="lobby" element={<Lobby />} />
-                        <Route path="game" element={<Game />} />
-                        <Route path="spectate" element={<Spectate />} />
-                        <Route path="end" element={<End shouldTest={false} />} />
-                        <Route path="endtest" element={<End shouldTest={true} />} />
-                        <Route path="canvas" element={<Canvas />} />
-                        {isComponentEnabled(<Route path="library" element={<Library />} />)}
-                        {isComponentEnabled(<Route path="page/:id" element={<Page />} />)}
-                        <Route path="disconnected" element={<Disconnected />} />
-
-                        <Route path="/:id" element={<Join />} />
-                        <Route  // no match route
-                            path="*"
-                            element={noMatchRouteElement}
-                        />
-                    </Route>
-                </Routes>
+                            <Route path="/:id" element={<Join />} />
+                            <Route  // no match route
+                                path="*"
+                                element={noMatchRouteElement}
+                            />
+                        </Route>
+                    </Routes>
+                </SocketHandler>
             </BrowserRouter>
         </ThemeProvider>
     );

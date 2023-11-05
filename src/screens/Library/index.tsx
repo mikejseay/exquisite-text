@@ -9,7 +9,6 @@ function Library(): JSX.Element {
 
     return <div style={poemsLibraryContainer}>
         <PaginatedLibrary noResults={"No poems found."} />
-        <MenuButtons socket={null} />
     </div>;
 }
 

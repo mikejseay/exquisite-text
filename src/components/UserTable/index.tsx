@@ -1,46 +1,39 @@
 import * as React from "react";
-
-import { useSocket } from "../App";
-import { IUserTableInfo } from "../../types";
+import { useSocketInfo } from "../../context/SocketInfoProvider";
 
 function UserTable() {
-    const { socket } = useSocket();
+    const { userInfo } = useSocketInfo();
+    console.log("userInfo", userInfo);
+    if (!userInfo) {
+        return null;
+    }
+    const { editors, editorColors, spectators } = userInfo;
+    console.log("editors", editors);
+    console.log("editorColors", editorColors);
+    console.log("spectators", spectators);
+    if (!editors) {
+        return null;
+    }
+    if (!spectators) {
+        return null;
+    }
 
-    const [ editorArr, setEditorArr ] = React.useState<Array<string>>([]);
-    const [ editorColorArr, setEditorColorArr ] = React.useState<Array<string>>([]);
-    const [ spectatorArr, setSpectatorArr ] = React.useState<Array<string>>([]);
-
-    // listen for arrays of editors and spectators
-    React.useEffect(() => {
-
-        // Event handlers for the line and the deleteLine events are set up for the Socket.IO connection.
-        const userTableInfoListener = (info: IUserTableInfo) => {
-            setEditorArr(info["editors"]);
-            setEditorColorArr(info["editorColorArr"]);
-            setSpectatorArr(info["spectators"]);
-        };
-
-        socket.on("userTableInfo", userTableInfoListener);
-        socket.emit("getUserTableInfo"); // initial populate
-
-        return () => {
-            socket.off("userTableInfo", userTableInfoListener);
-        };
-    }, [ socket ]);
+    // const { editors, editorColors, spectators } = userInfo;
+    // console.log({ userInfo });
 
     return (
         <div className={"userTable"} style={{ textAlign: "center" }}>
             <div className={"editors"}>
                 <h2>Editors:</h2>
-                {editorArr.map((name, nameIndex) => {
+                {editors.map((name, nameIndex) => {
                     return (
-                        <p key={nameIndex} style={{ color: editorColorArr[nameIndex] }}>{name}</p>
+                        <p key={nameIndex} style={{ color: editorColors[nameIndex] }}>{name}</p>
                     );
                 })}
             </div>
             <div className={"spectators"}>
                 <h2>Spectators:</h2>
-                {spectatorArr.map((name, nameIndex) => {
+                {spectators.map((name, nameIndex) => {
                     return (
                         <p key={nameIndex}>{name}</p>
                     );

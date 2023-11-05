@@ -1,24 +1,23 @@
 import * as React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import { useSocket } from "../../components/App";
 import {
     maxNameChars,
     roomCodeLength,
-    shortDur,
 } from "../../constants";
 import { MenuButtons } from "../../components/MenuButtons";
+import { requestJoinAsEditor, requestJoinAsSpectator } from "../../context/SocketRequestors";
+import { useSocketInfo } from "../../context/SocketInfoProvider";
 
 export default function Join() {
-    const navigate = useNavigate();
+
+    const { joinErrorMessage, setRoomCode } = useSocketInfo();
+
     const { id } = useParams();
 
-    const { socket } = useSocket();
-
-    const [ joinErrorMessage, setJoinErrorMessage ] = React.useState<string>("");
     const [ roomId, setRoomId ] = React.useState<string>(id ?? "");
     const [ name, setName ] = React.useState<string>("");
 
@@ -36,11 +35,13 @@ export default function Join() {
     };
 
     const handleWritePress = () => {
-        socket.emit("joinGameAs", "Editor", roomId.toUpperCase(), name.toUpperCase());
+        requestJoinAsEditor(roomId, name);
+        setRoomCode(roomId.toUpperCase());
     };
 
     const handleSpectatePress = () => {
-        socket.emit("joinGameAs", "Spectator", roomId.toUpperCase(), name.toUpperCase());
+        requestJoinAsSpectator(roomId, name);
+        setRoomCode(roomId.toUpperCase());
     };
 
     React.useEffect(() => {
@@ -51,28 +52,6 @@ export default function Join() {
     React.useEffect(() => {
         setRoomId(id ?? "");
     }, [ id ]);
-
-    React.useEffect(() => {
-        const joinErrorListener = (errorMsg: string) => {
-            setJoinErrorMessage(errorMsg);
-            setTimeout(() => setJoinErrorMessage(""), shortDur);
-        };
-
-        const navigateListener = (targetRoute: string) => {
-            navigate(targetRoute);
-        };
-
-        socket.on("joinError", joinErrorListener);
-        socket.on("navigate", navigateListener);
-
-        return () => {
-            socket.off("joinError", joinErrorListener);
-            socket.off("navigate", navigateListener);
-        };
-    }, [
-        navigate,
-        socket,
-    ]);
 
     return (
         <div>
@@ -135,7 +114,6 @@ export default function Join() {
                 }}>
                 {joinErrorMessage}
             </div>
-            <MenuButtons socket={socket} />
         </div>
     );
 }
