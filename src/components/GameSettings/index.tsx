@@ -28,6 +28,7 @@ function GameSettings() {
         return null;
     }
 
+    // TODO: refactor by giving info before navigating user to Lobby route
     const [ rendered, setRendered ] = React.useState(false);
     if (!rendered) {
         requestGetSettingsEnabled();

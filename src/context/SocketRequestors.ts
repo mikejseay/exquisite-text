@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import isNil from "lodash/isNil";
 import { LineLength } from "../types";
 
-export const recognizeDevice = () => {
+export const requestRecognizeDevice = () => {
 
     // set this to true if you want to be able to connect to the game
     // multiple times from the same browser
@@ -45,11 +45,6 @@ export const requestJoinAsSpectator = (roomId: string, name: string) => {
     socket.emit("joinGameAs", "Spectator", roomId.toUpperCase(), name.toUpperCase());
 };
 
-export const getRoomCode = () => {
-    console.log("getRoomCode");
-    socket.emit("getRoomCode");
-};
-
 export const requestAlterGameSettings = (newLineLength: LineLength, nPoems: number, nRounds: number) => {
     socket.emit("alterGameSettings", {
         lineLength: newLineLength,
@@ -72,10 +67,6 @@ export const requestGetGameSettingsInfo = () => {
 
 export const requestLeave = () => {
     socket.emit("leave");
-};
-
-export const requestGetLines = () => {
-    socket.emit("getLines");
 };
 
 export const requestGetLineEdit = () => {

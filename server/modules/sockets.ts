@@ -71,6 +71,8 @@ function sockets(
                 delete theMember.socket;
                 theMember.socket = socket; // connect the new socket
                 theMember.joinRoom(); // re-join the correct rooms
+                // TODO: next big important piece: reinstate context on re-join
+                // theMember.reinstateContext();  // something like this
                 // theMember.setReceive(); // amazingly, this isn't necessary...
                 io.to(socket.id).emit("navigate", targetView); // navigate to correct view
             } // else this device isn't in a room yet, nothing to do

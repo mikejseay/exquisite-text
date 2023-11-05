@@ -7,14 +7,14 @@ import {
     createGameHost,
     getPoemsLines,
     getUserTableInfo,
-    recognizeDevice,
+    requestRecognizeDevice,
 } from "../../context/SocketRequestors";
 
 function End({ shouldTest = false }: { shouldTest: boolean }) {
 
     const [ rendered, setRendered ] = React.useState(false);
     if (shouldTest && !rendered) {
-        recognizeDevice();
+        requestRecognizeDevice();
         createGameHost("ROOM");
         getUserTableInfo(true);
         getPoemsLines(true);

@@ -44,6 +44,8 @@ import {
 } from "../../context/SocketRequestors";
 
 const LineInput = () => {
+
+    // TODO: refactor by giving info before navigating user to Game route
     const [ rendered, setRendered ] = React.useState(false);
     if (!rendered) {
         requestGetLineEdit();

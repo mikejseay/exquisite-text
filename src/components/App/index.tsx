@@ -8,10 +8,10 @@ import {
     appTitle,
     possibleSocket,
 } from "./styles";
-import { recognizeDevice } from "../../context/SocketRequestors";
+import { requestRecognizeDevice } from "../../context/SocketRequestors";
 
 export default function App() {
-    recognizeDevice();
+    requestRecognizeDevice();
     return (
         <div style={possibleSocket} className={"possible-socket"}>
             <Paper elevation={0} style={app} className={"app-container"}>
