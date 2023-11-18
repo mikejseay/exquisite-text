@@ -111,13 +111,17 @@ class Member {
 
     requestUserTableInfo(shouldTest: boolean) {
         console.log(this.name, "requestUserTableInfo");
+        if (!roomIdToRoom || !this.roomId) {
+            console.log("roomIdToRoom not found");
+            return;
+        }
         this.io
             .to(this.socket.id)
             .emit(
                 "userTableInfo",
                 shouldTest
                     ? userInfoTestData
-                    : roomIdToRoom.get(this.roomId).currentUserTableInfo(),
+                    : roomIdToRoom.get(this.roomId)!.currentUserTableInfo(),
             );
     }
 
@@ -138,6 +142,10 @@ class Member {
             return;
         }
 
+        if (!thisRoom) {
+            console.log("thisRoom not found");
+            return;
+        }
         console.log(this.name, "request poems from room which has", thisRoom.finishedPoems.length);
         for (const poemObj of thisRoom.finishedPoems) {
             // this.io.in(this.roomId).emit("poemLines", Array.from(poemObj.lines));
@@ -157,9 +165,13 @@ class Member {
 
     requestGameSettingsInfo() {
         console.log(this.name, "requestGameSettingsInfo");
+        if (!roomIdToRoom || !this.roomId) {
+            console.log("roomIdToRoom not found");
+            return;
+        }
         this.io
             .to(this.socket.id)
-            .emit("gameSettingsInfo", roomIdToRoom.get(this.roomId).gameSettings);
+            .emit("gameSettingsInfo", roomIdToRoom.get(this.roomId)!.gameSettings);
     }
 
     requestSettingsEnabled() {

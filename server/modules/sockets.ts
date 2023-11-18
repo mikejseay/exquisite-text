@@ -51,6 +51,10 @@ function sockets(
                 // try to reconnect them to that room in the correct role
                 const roomId = deviceIDToRoomId[deviceID];
                 const theRoom = roomIdToRoom.get(roomId);
+                if (!theRoom) {
+                    console.log("theRoom not found");
+                    return;
+                }
                 const editorDeviceIDsInRoom = Array.from(theRoom.editors.keys());
                 const spectatorDeviceIDsInRoom = Array.from(theRoom.spectators.keys());
 
@@ -118,6 +122,10 @@ function sockets(
             const targetRoom = roomIdToRoom.get(roomId);
             console.log("current state of socketIDToDeviceID is", socketIDToDeviceID);
             const deviceID = socketIDToDeviceID[socket.id];
+            if (!targetRoom) {
+                console.log("targetRoom not found");
+                return;
+            }
             if (role === "Editor") {
                 if (targetRoom.gameOngoing) {
                     console.log(roomId, "game is already ongoing");

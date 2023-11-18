@@ -11,6 +11,10 @@ class Spectator extends Member {
         super.leaveRoom();
         this.socket.leave(this.roomId + "_Spectators");
         const thisRoom = roomIdToRoom.get(this.roomId);
+        if (!thisRoom) {
+            console.log("thisRoom not found");
+            return;
+        }
         thisRoom.removeSpectator(this.deviceID);
     }
 
@@ -26,6 +30,10 @@ class Spectator extends Member {
 
     getAllPoemLines() {
         const thisRoom = roomIdToRoom.get(this.roomId);
+        if (!thisRoom) {
+            console.log("thisRoom not found");
+            return;
+        }
         for (const thisEditor of thisRoom.editors.values()) {
             for (const thisPoem of thisEditor.poemQueue) {
                 thisPoem.sendAllLinesTo(this.socket.id);
