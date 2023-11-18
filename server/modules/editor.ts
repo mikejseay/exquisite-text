@@ -49,7 +49,7 @@ class Editor extends Member {
         console.log("prepareForGame in room", this.roomId);
         const thisRoom = roomIdToRoom.get(this.roomId);
         if (!thisRoom) {
-            console.log("Room not found");
+            console.log("thisRoom not found");
             return;
         }
         const editorDeviceIDs = Array.from(thisRoom.editors.keys());
