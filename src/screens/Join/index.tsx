@@ -8,7 +8,6 @@ import {
     maxNameChars,
     roomCodeLength,
 } from "../../constants";
-import { MenuButtons } from "../../components/MenuButtons";
 import { requestJoinAsEditor, requestJoinAsSpectator } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 
