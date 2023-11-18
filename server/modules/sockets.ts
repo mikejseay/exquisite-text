@@ -58,8 +58,8 @@ function sockets(
                 const editorDeviceIDsInRoom = Array.from(theRoom.editors.keys());
                 const spectatorDeviceIDsInRoom = Array.from(theRoom.spectators.keys());
 
-                let theMember;
-                let targetView;
+                let theMember: Editor | Spectator | undefined;
+                let targetView: string;
                 if (editorDeviceIDsInRoom.includes(deviceID)) {
                     theMember = theRoom.editors.get(deviceID);
                     targetView = "/game";
@@ -69,15 +69,18 @@ function sockets(
                 } else {
                     targetView = "/";
                 }
+
+                if (theMember && theMember.socket) {
                 // if the socket is still connected, send them to disconnected view
-                io.to(theMember.socket.id).emit("navigate", "/disconnected");
-                theMember.socket.disconnect(); // force disconnect
-                delete theMember.socket;
-                theMember.socket = socket; // connect the new socket
-                theMember.joinRoom(); // re-join the correct rooms
+                    io.to(theMember.socket.id).emit("navigate", "/disconnected");
+                    theMember.socket.disconnect(); // force disconnect
+                    theMember.socket = socket; // connect the new socket
+                    theMember.joinRoom(); // re-join the correct rooms
                 // TODO: next big important piece: reinstate context on re-join
                 // theMember.reinstateContext();  // something like this
                 // theMember.setReceive(); // amazingly, this isn't necessary...
+                }
+
                 io.to(socket.id).emit("navigate", targetView); // navigate to correct view
             } // else this device isn't in a room yet, nothing to do
 
