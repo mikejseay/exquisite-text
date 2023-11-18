@@ -254,7 +254,7 @@ class Editor extends Member {
         poemToPass.lineWasEdited(secondPart);
         // should be a reference!!!
         if (!thisRoom) {
-            console.log("Room not found");
+            console.log("thisRoom not found");
             return;
         }
         const nextEditor = thisRoom.editors.get(this.targetEditorID);
