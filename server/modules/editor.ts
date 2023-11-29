@@ -48,9 +48,11 @@ class Editor extends Member {
     prepareForGame() {
         console.log("prepareForGame in room", this.roomId);
         const thisRoom = roomIdToRoom.get(this.roomId);
-        const editorDeviceIDs = Array.from(
-            thisRoom.editors.keys(),
-        ) as Array<string>;
+        if (!thisRoom) {
+            console.log("thisRoom not found");
+            return;
+        }
+        const editorDeviceIDs = Array.from(thisRoom.editors.keys());
         console.log("editorDeviceIDs", editorDeviceIDs);
         const nEditors = editorDeviceIDs.length;
         console.log("nEditors", nEditors);
@@ -79,12 +81,20 @@ class Editor extends Member {
         super.leaveRoom();
         this.socket.leave(this.roomId + "_Editors");
         const thisRoom = roomIdToRoom.get(this.roomId);
+        if (!thisRoom) {
+            console.log("thisRoom not found");
+            return;
+        }
         thisRoom.removeEditor(this.deviceID);
 
         if (thisRoom.gameOngoing) {
             // hand off any poems in your queue to the next person
             if (thisRoom.editors.size > 0) {
                 const nextEditor = thisRoom.editors.get(this.targetEditorID);
+                if (!nextEditor) {
+                    console.log("nextEditor not found");
+                    return;
+                }
                 nextEditor.poemQueue.push(...this.poemQueue);
                 if (!nextEditor.isCurrentlyEditing) {
                     nextEditor.possibleStartNewTurn();
@@ -164,8 +174,12 @@ class Editor extends Member {
         this.lastActivity = Date.now(); // they typed = active
 
         const thisRoom = roomIdToRoom.get(this.roomId);
+        if (!thisRoom || !thisRoom.editors) {
+            console.log("thisRoom.editors not found");
+            return;
+        }
         this.io
-            .to(thisRoom.editors.get(this.targetEditorID).socket.id)
+            .to(thisRoom.editors.get(this.targetEditorID)!.socket.id)
             .emit("lineEditorWatch", value);
 
         const thisPoem = this.poemQueue[0];
@@ -239,7 +253,15 @@ class Editor extends Member {
         poemToPass.submitLine(this.deviceID, firstPart, secondPart);
         poemToPass.lineWasEdited(secondPart);
         // should be a reference!!!
+        if (!thisRoom) {
+            console.log("thisRoom not found");
+            return;
+        }
         const nextEditor = thisRoom.editors.get(this.targetEditorID);
+        if (!nextEditor) {
+            console.log("nextEditor not found");
+            return;
+        }
         nextEditor.poemQueue.push(poemToPass);
 
         // trigger editors to check their queue and update their activity state
@@ -273,6 +295,10 @@ class Editor extends Member {
         this.handlePoem(poemToPass);
 
         const thisRoom = roomIdToRoom.get(this.roomId);
+        if (!thisRoom) {
+            console.log("thisRoom not found");
+            return;
+        }
         thisRoom.nPoemsInRotation--;
         // if all editors' poem queues are empty
         // remove each of the editor/spectator deviceIDs from deviceIDToRoomId
@@ -317,29 +343,41 @@ class Editor extends Member {
 
         // save the poem into the Room object
         const thisRoom = roomIdToRoom.get(this.roomId);
+        if (!thisRoom) {
+            console.log("thisRoom not found");
+            return;
+        }
         thisRoom.storePoem(poemObj);
 
     }
 
     alterGameSettings(gameSettings: IGameSettingsInfo) {
         console.log("alterGameSettings");
-        roomIdToRoom.get(this.roomId).gameSettings = gameSettings;
+        if (!roomIdToRoom ||  !roomIdToRoom.get || !this || !this.roomId) {
+            console.log("thisRoom not found");
+            return;
+        }
+        roomIdToRoom.get(this.roomId)!.gameSettings = gameSettings;
         this.socket.to(this.roomId).emit("gameSettingsInfo", gameSettings);
     }
 
     broadcastStartGame() {
         // global in nature, so it will mainly eal with the room
         console.log("startGame");
-        roomIdToRoom.get(this.roomId).setUpGame();
+        roomIdToRoom.get(this.roomId)!.setUpGame();
     }
 
     requestSettingsEnabled() {
         console.log(this.name, "requestSettingsEnabled");
-        this.io.to(this.socket.id).emit("gameSettingsEnabled", this.isVIP());
+        this.io.to(this.socket.id).emit("gameSettingsEnabled", Boolean(this.isVIP()));
     }
 
     isVIP() {
         const thisRoom = roomIdToRoom.get(this.roomId);
+        if (!thisRoom) {
+            console.log("thisRoom not found");
+            return;
+        }
         return thisRoom.editors.keys().next().value === this.deviceID;
     }
 }

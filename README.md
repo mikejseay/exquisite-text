@@ -42,6 +42,8 @@ cd ..
 
 Install [Node](https://nodejs.org/en/) and [PostgreSQL](https://www.postgresql.org/download/) according to their instructions for your operating system. If you're using a Linux-like OS and have Homebrew, you can install PostgreSQL with `brew install postgresql`, with Linux: `sudo apt install postgresql`. Then start its service with Linux: `sudo systemctl start postgresqlservice` | macOS: `brew services start postgresql`.
 
+NOTE: There are _two_ separate .env files. PostgreSQL credentials are located in the .env in the server folder - make sure you're editing the credentials in the appropriate server .env file.
+
 To set up the PostgreSQL backend, first log in to the default database with Linux: `sudo -u postgres psql` | macOS: `psql postgres`. Then run the following commands from the `postgres` command line to create the user and database that will be used for development:
 
 ```
