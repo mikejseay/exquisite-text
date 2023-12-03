@@ -7,16 +7,6 @@
     "@emotion/styled": "^11.9.3",
     "@mui/icons-material": "^5.8.4",
     "@mui/material": "^5.8.4",
-    "@testing-library/jest-dom": "^5.14.1",
-    "@testing-library/react": "^13.0.0",
-    "@testing-library/user-event": "^13.2.1",
-    "@types/jest": "^27.0.1",
-    "@types/node": "^16.7.13",
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
-    "@types/uuid": "^8.3.4",
-    "@typescript-eslint/eslint-plugin": "^5.32.0",
-    "@typescript-eslint/parser": "^5.32.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "debug": "^4.3.4",
@@ -39,6 +29,20 @@
     "use-clipboard-copy": "^0.2.0",
     "uuid": "^8.3.2",
     "web-vitals": "^2.1.4"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^13.0.0",
+    "@testing-library/user-event": "^13.2.1",
+    "@types/jest": "^27.0.1",
+    "@types/node": "^16.7.13",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@types/uuid": "^8.3.4",
+    "@typescript-eslint/eslint-plugin": "^5.32.0",
+    "@typescript-eslint/parser": "^5.32.0",
+    "@types/lodash": "^4.14.182",
+    "@types/react-copy-to-clipboard": "^5.0.4"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -65,10 +69,6 @@
     ]
   },
   "engines": {
-    "node": ">=16.0.0"
-  },
-  "devDependencies": {
-    "@types/lodash": "^4.14.182",
-    "@types/react-copy-to-clipboard": "^5.0.4"
+    "node": ">=20.0.0"
   }
 }

@@ -38,6 +38,7 @@ cp .env.example .env
 cd server
 cp .env.example .env
 cd ..
+nvm use
 ```
 
 Install [Node](https://nodejs.org/en/) and [PostgreSQL](https://www.postgresql.org/download/) according to their instructions for your operating system. If you're using a Linux-like OS and have Homebrew, you can install PostgreSQL with `brew install postgresql`, with Linux: `sudo apt install postgresql`. Then start its service with Linux: `sudo systemctl start postgresqlservice` | macOS: `brew services start postgresql`.
