@@ -2,24 +2,23 @@ import { socket } from "../components/SocketHandler";
 import { IGameSettingsInfo, ILine, ISocketInfoListeners, IUserTableInfo } from "../types";
 import { shortDur } from "../constants";
 
-export const socketListeners = (
-    {
-        setUserInfo,
-        setPoemsLines,
-        setJoinErrorMessage,
-        setRoomCode,
-        setSettingsEnabled,
-        setLineLength,
-        setNRounds,
-        setNPoems,
-        setLines,
-        setLineEdits,
-        setPoemInput,
-        setPoemInputSpectate,
-        setOnLastLine,
-        setEditorActive,
-        navigate,
-    } : ISocketInfoListeners) => {
+export const socketListeners = ({
+    setUserInfo,
+    setPoemsLines,
+    setJoinErrorMessage,
+    setRoomCode,
+    setSettingsEnabled,
+    setLineLength,
+    setNRounds,
+    setNPoems,
+    setLines,
+    setLineEdits,
+    setPoemInput,
+    setPoemInputSpectate,
+    setOnLastLine,
+    setEditorActive,
+    navigate,
+}: ISocketInfoListeners) => {
 
     const poemsLinesListener = (myPoemLines: ILine[]) => {
         setPoemsLines(prevPoemsLines => {
@@ -59,13 +58,11 @@ export const socketListeners = (
     };
 
     const lineEditSpectatorListener = (poemIndex: number, value: string) => {
-        setLineEdits(prevLineEdits => {
-            return [
-                ...prevLineEdits.slice(0, poemIndex),
-                value,
-                ...prevLineEdits.slice(poemIndex + 1),
-            ];
-        });
+        setLineEdits(prevLineEdits => [
+            ...prevLineEdits.slice(0, poemIndex),
+            value,
+            ...prevLineEdits.slice(poemIndex + 1),
+        ]);
     };
 
     const lineEditListener = (lineEdit: string) => {

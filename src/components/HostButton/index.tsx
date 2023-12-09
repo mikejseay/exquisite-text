@@ -5,8 +5,8 @@ import Fab from "@mui/material/Fab";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import { useClipboard } from "use-clipboard-copy";
-import { hostFAB, roomCodeStyles } from "./styles";
 
+import { hostFAB, roomCodeStyles } from "./styles";
 import { generateAlphaString } from "../../helpers";
 import { roomCodeLength } from "../../constants";
 import { createGameHost } from "../../context/SocketRequestors";

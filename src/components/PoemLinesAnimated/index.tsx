@@ -2,19 +2,18 @@ import * as React from "react";
 import Alert from "@mui/material/Alert";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import IconButton from "@mui/material/IconButton";
-import { useClipboard } from "use-clipboard-copy";
-
-import { poemBody } from "./styles";
-import { ILine } from "../../types";
-
-import { lineSepString, shortDur } from "../../constants";
-import TypewriterPoem from "../TypewriterPoem";
 import CardContent from "@mui/material/CardContent";
 import Box from "@mui/material/Box";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
+import { useClipboard } from "use-clipboard-copy";
+
 import { useSocketInfo } from "../../context/SocketInfoProvider";
+import { poemBody } from "./styles";
+import { ILine } from "../../types";
+import { lineSepString, shortDur } from "../../constants";
+import TypewriterPoem from "../TypewriterPoem";
 
 function PoemLinesAnimated({
     poemLines,

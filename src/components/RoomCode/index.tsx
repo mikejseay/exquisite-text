@@ -1,10 +1,8 @@
 import * as React from "react";
 
-// import { getRoomCode } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 
 function RoomCode() {
-
     const { roomCode } = useSocketInfo();
 
     return (
