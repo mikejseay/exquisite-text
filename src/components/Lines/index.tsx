@@ -5,7 +5,6 @@ import { spectatorLines } from "./styles";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 
 const Lines = () => {
-
     const { lines, lineEdits } = useSocketInfo();
     if (!lines || !lineEdits) {
         return null;

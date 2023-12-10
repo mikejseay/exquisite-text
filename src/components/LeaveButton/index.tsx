@@ -10,11 +10,12 @@ import { leaveConfirmBox, leaveFAB } from "./styles";
 import { requestLeave } from "../../context/SocketRequestors";
 
 function LeaveButton() {
-
     const [ open, setOpen ] = React.useState(false);
+
     const handleClick = () => {
         setOpen((prev) => !prev);
     };
+
     const handleClickAway = () => {
         setOpen(false);
     };

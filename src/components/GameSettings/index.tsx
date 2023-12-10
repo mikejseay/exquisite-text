@@ -14,7 +14,6 @@ import {
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 
 function GameSettings() {
-
     const {
         settingsEnabled,
         lineLength,
@@ -24,6 +23,7 @@ function GameSettings() {
         setNRounds,
         setNPoems,
     } = useSocketInfo();
+
     if (settingsEnabled === null) {
         return null;
     }

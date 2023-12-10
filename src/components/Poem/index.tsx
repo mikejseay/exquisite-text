@@ -14,7 +14,6 @@ import {
     poemFont,
     poemTitle,
 } from "./styles";
-
 import { IPoem } from "../../types";
 import { shortDur } from "../../constants";
 
