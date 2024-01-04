@@ -1,7 +1,7 @@
 import { socket } from "../components/SocketHandler";
 import { v4 as uuidv4 } from "uuid";
 import isNil from "lodash/isNil";
-import { LineLength } from "../types";
+import { LineLength, Point } from "../types";
 
 export const requestRecognizeDevice = () => {
 
@@ -91,4 +91,9 @@ export const requestPassTurn = (firstPart: string, secondPart: string) => {
 
 export const requestSendLastLine = (value: string | null) => {
     socket.emit("lastLine", value);
+};
+
+export const requestSendCanvas = (value: Point[][] | null) => {
+    socket.emit("sendCanvas", value);
+    // socket.emit("sendCanvas", JSON.stringify(value));
 };

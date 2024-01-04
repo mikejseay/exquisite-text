@@ -21,6 +21,8 @@ export const SocketInfoContext = createContext<ISocketInfo>({
     onLastLine: null,
     editorActive: null,
     setPoemInput: () => null,
+    strokeHistory: null,
+    setStrokeHistory: () => null,
 });
 
 export const useSocketInfo = (): ISocketInfo => {

@@ -1,5 +1,5 @@
 import { socket } from "../components/SocketHandler";
-import { IGameSettingsInfo, ILine, ISocketInfoListeners, IUserTableInfo } from "../types";
+import { IGameSettingsInfo, ILine, ISocketInfoListeners, IUserTableInfo, Point } from "../types";
 import { shortDur } from "../constants";
 
 export const socketListeners = ({
@@ -18,6 +18,7 @@ export const socketListeners = ({
     setOnLastLine,
     setEditorActive,
     navigate,
+    setStrokeHistory,
 }: ISocketInfoListeners) => {
 
     const poemsLinesListener = (myPoemLines: ILine[]) => {
@@ -86,6 +87,11 @@ export const socketListeners = ({
         navigate(targetRoute);
     };
 
+    const strokeHistoryListener = (strokeHistory: Point[][]) => {
+        console.log("strokeHistoryListener activated targeting", JSON.stringify(strokeHistory));
+        setStrokeHistory(strokeHistory);
+    };
+
     socket.on("poemLines", poemsLinesListener);
     socket.on("userTableInfo", userTableInfoListener);
     socket.on("joinError", joinErrorListener);
@@ -99,6 +105,7 @@ export const socketListeners = ({
     socket.on("lastLine", lastLineListener);
     socket.on("editorActive", editorActiveListener);
     socket.on("navigate", navigateListener);
+    socket.on("strokeHistory", strokeHistoryListener);
 
     return () => {
         socket.off("poemLines", poemsLinesListener);
@@ -114,6 +121,6 @@ export const socketListeners = ({
         socket.off("lastLine", lastLineListener);
         socket.off("editorActive", editorActiveListener);
         socket.off("navigate", navigateListener);
+        socket.off("strokeHistory", strokeHistoryListener);
     };
-
 };

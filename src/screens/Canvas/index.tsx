@@ -1,11 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Button from "@mui/material/Button";
-
-interface Point {
-  x: number;
-  y: number;
-  lineWidth: number;
-}
+import { Point } from "../../types";
+import { requestSendCanvas } from "../../context/SocketRequestors";
 
 type ExtendedTouch = Touch & {
     force?: number;
@@ -14,15 +10,31 @@ type ExtendedTouch = Touch & {
 
 const defaultLineWidth = 30;
 const fullCanvasHeightRatioOfWindow = 0.8;
-const panelHeightRatioOfWindow = 0.3;
+export const panelHeightRatioOfWindow = 0.3;
 const overlap = 0.2;
 const defaultPressure = 0.1;
 const lineColor = "grey";
 
+/*
+    - Send client-server message (at least stroke history and author) via a
+    JSON-serializable object of some kind (CanvasHistory)
+
+    - Hard-code a request to join a specific room ("BAMB") as a specific editor
+
+    - Add a button or piece of functionality that passes the completed canvas
+    to the back-end, it triggers a client-to-server message
+
+    - Defining the type for the client to server and server to client messages
+    in the types file
+
+    - Adding the corresponding methods to the editor and spectator classes
+    in the server socket code
+*/
+
 const Canvas: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [ points, setPoints ] = useState<Point[]>([]);
-    // const [ strokeHistory, setStrokeHistory ] = useState<Point[][]>([]);
+    const [ strokeHistory, setStrokeHistory ] = useState<Point[][]>([]);
     const [ playerCanvases, setPlayerCanvases ] = useState<ImageData[]>([]);
     const [ isMousedown, setIsMousedown ] = useState(false);
     const [ allowDirect, setAllowDirect ] = useState(true);
@@ -53,7 +65,7 @@ const Canvas: React.FC = () => {
             // context.drawImage(context.canvas, 0, -context.canvas.height * (1 - overlap));
             // context.globalCompositeOperation = "source-over";
 
-            // If the third panel is being submitted, clear the canvas, then construct a new one
+            // Completion: If the third panel is being submitted, clear the canvas, then construct a new one
             // using the "full available height", then paste the image data from each individual player's canvas
             // into the three vertical panels, shifting downwards by 0.8 times the canvas height each time.
             if (player === 2) {
@@ -71,9 +83,13 @@ const Canvas: React.FC = () => {
             } else {
                 setPlayer(player + 1);
                 setPoints([]);
-                // setStrokeHistory([]);
+                setStrokeHistory([]);
             }
         }
+    };
+
+    const submitCanvas = () => {
+        requestSendCanvas(strokeHistory);
     };
 
     const drawOnCanvas = useCallback((newPoints: Point[]) => {
@@ -195,7 +211,7 @@ const Canvas: React.FC = () => {
 
     const handleEnd = useCallback(() => {
         setIsMousedown(false);
-        // setStrokeHistory((prev) => [ ...prev, points ]);
+        setStrokeHistory((prev) => [ ...prev, points ]);
         setPoints([]);
         setLineWidth(0);
     }, [ points ]);
@@ -241,6 +257,7 @@ const Canvas: React.FC = () => {
                     ? "Pass"
                     : "Finish"}
             </Button>
+            <Button onClick={submitCanvas}>Submit Canvas</Button>
             <canvas
                 ref={canvasRef}
                 onMouseDown={handleStart}

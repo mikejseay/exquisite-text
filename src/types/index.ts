@@ -75,6 +75,17 @@ export interface ILine {
     addedAt: Date;
 }
 
+export interface Point {
+    x: number;
+    y: number;
+    lineWidth: number;
+  }
+  
+interface CanvasHistory {
+    user: string;
+    strokeHistory: Point[][]
+}
+
 export interface ServerToClientEvents {
     // line: (a: ILine) => void;
     lineEdit: (a: string) => void;
@@ -175,7 +186,8 @@ export interface ISocketInfoListeners {
     // React.useState<boolean>(false);
     setEditorActive: (value: boolean |
         ((prevVar: boolean) => boolean)) => void;
-    navigate: NavigateFunction;
+        navigate: NavigateFunction;
+    setStrokeHistory: ISocketInfo["setStrokeHistory"]
 }
 
 export interface ISocketInfo {
@@ -203,4 +215,7 @@ export interface ISocketInfo {
     editorActive: boolean | null;
     setPoemInput: (value: string |
         ((prevVar: string) => string)) => void;
+    strokeHistory: Point[][] | null;
+    setStrokeHistory: (value: Point[][] |
+        ((prevVar: Point[][]) => Point[][])) => void;
 }
