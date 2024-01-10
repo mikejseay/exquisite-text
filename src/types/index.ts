@@ -106,6 +106,7 @@ export interface ServerToClientEvents {
     lineEditorWatch: (a: string) => void;
     lineSpectator: (a: number, b: string) => void;
     lineEditSpectator: (a: number, b: string) => void;
+    strokeHistory: (a: Point[][]) => void;
 }
 
 export interface ClientToServerEvents {
@@ -133,6 +134,8 @@ export interface ClientToServerEvents {
     passTurn: (a: string, b: string) => void;
     lastLine: (a: string) => void;
     leave: () => void;
+    receiveCanvas: (a: Point[][]) => void;
+    requestRetrieveCanvas: () => void;
 }
 
 export interface InterServerEvents {
@@ -187,7 +190,8 @@ export interface ISocketInfoListeners {
     setEditorActive: (value: boolean |
         ((prevVar: boolean) => boolean)) => void;
         navigate: NavigateFunction;
-    setStrokeHistory: ISocketInfo["setStrokeHistory"]
+    setStrokeHistory: (value: Point[][] |
+        ((prevVar: Point[][]) => Point[][])) => void;
 }
 
 export interface ISocketInfo {

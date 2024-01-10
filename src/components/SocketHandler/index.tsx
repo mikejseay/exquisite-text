@@ -1,6 +1,6 @@
 import * as React from "react";
 import { SocketInfoContext } from "../../context/SocketInfoProvider";
-import { ILine, IUserTableInfo, LineLength } from "../../types";
+import { ILine, IUserTableInfo, LineLength, Point } from "../../types";
 import { defaultGameSettings } from "../../constants";
 import { socketListeners } from "../../context/SocketListeners";
 import { useNavigate } from "react-router-dom";
@@ -38,28 +38,29 @@ export default function SocketHandler({ children }: Props) {
     const [ poemInputSpectate, setPoemInputSpectate ] = React.useState<string>("");
     const [ onLastLine, setOnLastLine ] = React.useState<boolean>(false);
     const [ editorActive, setEditorActive ] = React.useState<boolean>(false);
+    const [ strokeHistory, setStrokeHistory ] = React.useState<Point[][]>([]);
 
     const navigate = useNavigate();
 
     // The crucial useEffect which contains
-    React.useEffect(() => socketListeners(
-        {
-            setUserInfo,
-            setPoemsLines,
-            setJoinErrorMessage,
-            setRoomCode,
-            setSettingsEnabled,
-            setLineLength,
-            setNRounds,
-            setNPoems,
-            setLines,
-            setLineEdits,
-            setPoemInput,
-            setPoemInputSpectate,
-            setOnLastLine,
-            setEditorActive,
-            navigate,
-        }),
+    React.useEffect(() => socketListeners({
+        setUserInfo,
+        setPoemsLines,
+        setJoinErrorMessage,
+        setRoomCode,
+        setSettingsEnabled,
+        setLineLength,
+        setNRounds,
+        setNPoems,
+        setLines,
+        setLineEdits,
+        setPoemInput,
+        setPoemInputSpectate,
+        setOnLastLine,
+        setEditorActive,
+        navigate,
+        setStrokeHistory,
+    }),
     [ socketListeners ],
     );
 
@@ -84,6 +85,8 @@ export default function SocketHandler({ children }: Props) {
             onLastLine,
             editorActive,
             setPoemInput,
+            strokeHistory,
+            setStrokeHistory,
         }}>
             {children}
         </SocketInfoContext.Provider>

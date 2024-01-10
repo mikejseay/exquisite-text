@@ -9,6 +9,7 @@ import {
     IGameSettingsInfo,
     IUserTableInfo,
     InterServerEvents,
+    Point,
     ServerToClientEvents,
     SocketData,
 } from "../../src/types";
@@ -45,6 +46,7 @@ class Room {
     activityInterval: ReturnType<typeof setInterval>;
     createdAt: number;
     finishedPoems: Array<Poem>;
+    finishedCanvas: Point[][];
 
     constructor(
         io: Server<
@@ -73,6 +75,7 @@ class Room {
         );
         this.createdAt = Date.now();
         this.finishedPoems = [];
+        this.finishedCanvas = [];
     }
 
     addEditor(deviceUUID: string, editorObj: Editor) {

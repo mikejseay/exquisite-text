@@ -1,23 +1,37 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { panelHeightRatioOfWindow  } from "./../Canvas";
+import { requestJoinAsCanvasSpectator, requestRecognizeDevice, requestRetrieveCanvas } from "../../context/SocketRequestors";
 
 /*
-    - Add state that will be context state, containing all info needed
+    [x] Add state that will be context state, containing all info needed
     to display the drawing for spectator view
 
-    - Hard-code a request to retrieve the completed canvas
+    [x] Hard-code a request to retrieve the completed canvas
 
-    - Hard-code a request to join a specific room ("BAMB") as a specific spectator
+    [x] Hard-code a request to join a specific room ("BAMB") as a specific spectator
 
-    - Alter the logic of this screen and its component so that all it does is
+    [-] Alter the logic of this screen and its component so that all it does is
     display one complete canvas
 
-    - Add functionality to draw canvas from strokeHistory (useEffect)
-    */
+        [ ] Add functionality to (re-) draw canvas from strokeHistory (useEffect)
+*/
+
 const CanvasSpectator: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const [ hasJoinedRoom, setHasJoinedRoom ] = useState<boolean>(false);
     const { strokeHistory } = useSocketInfo();
+
+    if (!hasJoinedRoom) {
+        requestRecognizeDevice();
+        requestJoinAsCanvasSpectator("ROOM", "spectator");
+        requestRetrieveCanvas();
+        setHasJoinedRoom(true);
+    }
+
+    useEffect(() => {
+        console.log("strokeHistory in CanvasSpectator:", strokeHistory);
+    }, [ strokeHistory ]);
 
     // This useEffect defines the panel height
     useEffect(() => {

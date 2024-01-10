@@ -21,6 +21,7 @@ class Spectator extends Member {
     setReceive() {
         super.setReceive();
         this.socket.on("getLines", () => this.getAllPoemLines());
+        this.socket.on("requestRetrieveCanvas", () => this.getCanvas());
     }
 
     unsetReceive() {
@@ -39,6 +40,20 @@ class Spectator extends Member {
                 thisPoem.sendAllLinesTo(this.socket.id);
             }
         }
+    }
+
+    getCanvas() {
+        const thisRoom = roomIdToRoom.get(this.roomId);
+        if (!thisRoom) {
+            console.log("thisRoom not found");
+            return;
+        }
+        const theCanvas = thisRoom.finishedCanvas;
+        // for (const thisEditor of thisRoom.editors.values()) {
+        // }
+        this.io
+            .to(this.socket.id)
+            .emit("strokeHistory", theCanvas);
     }
 
     disconnect() {

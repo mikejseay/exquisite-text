@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Button from "@mui/material/Button";
 import { Point } from "../../types";
-import { requestSendCanvas } from "../../context/SocketRequestors";
+import { createGameHost, requestJoinAsCanvasEditor, requestRecognizeDevice, requestSendCanvas } from "../../context/SocketRequestors";
 
 type ExtendedTouch = Touch & {
     force?: number;
@@ -16,18 +16,18 @@ const defaultPressure = 0.1;
 const lineColor = "grey";
 
 /*
-    - Send client-server message (at least stroke history and author) via a
+    [x] Send client-server message (at least stroke history and author) via a
     JSON-serializable object of some kind (CanvasHistory)
 
-    - Hard-code a request to join a specific room ("BAMB") as a specific editor
+    [x] Hard-code a request to join a specific room ("ROOM") as a specific editor
 
-    - Add a button or piece of functionality that passes the completed canvas
+    [x] Add a button or piece of functionality that passes the completed canvas
     to the back-end, it triggers a client-to-server message
 
-    - Defining the type for the client to server and server to client messages
+    [x] Defining the type for the client to server and server to client messages
     in the types file
 
-    - Adding the corresponding methods to the editor and spectator classes
+    [x] Adding the corresponding methods to the editor and spectator classes
     in the server socket code
 */
 
@@ -43,6 +43,14 @@ const Canvas: React.FC = () => {
     const [ drawType, setDrawType ] = useState<"fill" | "stroke" | "noDrawYet">("noDrawYet");
     const [ player, setPlayer ] = useState<number>(0);
     const [ coordinates, setCoordinates ] = useState<{ x: number, y: number}>({ x: 0, y: 0 });
+    const [ hasJoinedRoom, setHasJoinedRoom ] = useState<boolean>(false);
+
+    if (!hasJoinedRoom) {
+        createGameHost("ROOM");
+        requestRecognizeDevice();
+        requestJoinAsCanvasEditor("ROOM", "spectator");
+        setHasJoinedRoom(true);
+    }
 
     const switchPlayer = () => {
         const canvas = canvasRef.current;
@@ -89,6 +97,7 @@ const Canvas: React.FC = () => {
     };
 
     const submitCanvas = () => {
+        console.log("submitting Canvas:", strokeHistory);
         requestSendCanvas(strokeHistory);
     };
 

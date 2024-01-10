@@ -97,3 +97,17 @@ export const requestSendCanvas = (value: Point[][] | null) => {
     socket.emit("sendCanvas", value);
     // socket.emit("sendCanvas", JSON.stringify(value));
 };
+
+export const requestRetrieveCanvas = () => {
+    socket.emit("requestRetrieveCanvas");
+};
+
+export const requestJoinAsCanvasEditor = (roomId: string, name: string) => {
+    console.log("handleWritePress activated as", name, "is trying to join", roomId);
+    socket.emit("joinGameAs", "Editor", roomId.toUpperCase(), name.toUpperCase(), true);
+};
+
+export const requestJoinAsCanvasSpectator = (roomId: string, name: string) => {
+    console.log("handleSpectatePress activated");
+    socket.emit("joinGameAs", "Spectator", roomId.toUpperCase(), name.toUpperCase(), true);
+};

@@ -106,7 +106,7 @@ function sockets(
         });
 
         // TODO: role should be an enum
-        socket.on("joinGameAs", (role, roomId, name) => {
+        socket.on("joinGameAs", (role, roomId, name, isTest = false) => {
             console.log(
                 "socket",
                 socket.id,
@@ -152,7 +152,9 @@ function sockets(
                 console.log("editor object created with deviceID", thisEditor.deviceID);
                 thisEditor.joinRoom();
                 console.log("room joined");
-                io.to(socket.id).emit("navigate", "/lobby");
+                if (!isTest) {
+                    io.to(socket.id).emit("navigate", "/lobby");
+                }
                 console.log("sent navigate message");
                 // io.to(socket.id).emit("roomCode", roomId);
                 // console.log("sent room code");
@@ -162,12 +164,14 @@ function sockets(
                 deviceIDToRoomId[deviceID] = roomId;
                 const thisSpectator = new Spectator(io, socket, roomId, deviceID, name);
                 thisSpectator.joinRoom();
-                if (targetRoom.gameOngoing) {
-                    io.to(socket.id).emit("navigate", "/spectate");
-                } else {
-                    io.to(socket.id).emit("navigate", "/lobby");
-                    // io.to(socket.id).emit("roomCode", roomId);
-                    // console.log("sent room code");
+                if (!isTest) {
+                    if (targetRoom.gameOngoing) {
+                        io.to(socket.id).emit("navigate", "/spectate");
+                    } else {
+                        io.to(socket.id).emit("navigate", "/lobby");
+                        // io.to(socket.id).emit("roomCode", roomId);
+                        // console.log("sent room code");
+                    }
                 }
                 targetRoom.addSpectator(deviceID, thisSpectator);
             }

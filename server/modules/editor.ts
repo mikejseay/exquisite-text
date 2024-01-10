@@ -7,6 +7,7 @@ import {
     IGameSettingsInfo,
     IPoem,
     InterServerEvents,
+    Point,
     ServerToClientEvents,
     SocketData,
 } from "../../src/types";
@@ -120,6 +121,15 @@ class Editor extends Member {
     // super.setSend()
     // ((line1Chars, line2Chars) in previousEditor's lineInput)
 
+    receiveCanvas(strokeHistory: Point[][]) {
+        const thisRoom = roomIdToRoom.get(this.roomId);
+        if (!thisRoom || !thisRoom.editors) {
+            console.log("thisRoom.editors not found");
+            return;
+        }
+        thisRoom.finishedCanvas = strokeHistory;
+    }
+
     setReceive() {
         super.setReceive();
         this.socket.on("getLineEdit", () => this.requestLineEdit()); // initial populate
@@ -134,6 +144,7 @@ class Editor extends Member {
             this.alterGameSettings(value),
         );
         this.socket.on("startGame", () => this.broadcastStartGame());
+        this.socket.on("receiveCanvas", (value: Point[][]) => this.receiveCanvas(value));
     }
 
     unsetReceive() {
