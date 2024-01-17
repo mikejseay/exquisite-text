@@ -94,8 +94,8 @@ export const requestSendLastLine = (value: string | null) => {
 };
 
 export const requestSendCanvas = (value: Point[][] | null) => {
+    console.log("sendCanvas:", value);
     socket.emit("sendCanvas", value);
-    // socket.emit("sendCanvas", JSON.stringify(value));
 };
 
 export const requestRetrieveCanvas = () => {

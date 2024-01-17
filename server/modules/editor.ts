@@ -122,6 +122,7 @@ class Editor extends Member {
     // ((line1Chars, line2Chars) in previousEditor's lineInput)
 
     receiveCanvas(strokeHistory: Point[][]) {
+        console.log("receiveCanvas:", strokeHistory);
         const thisRoom = roomIdToRoom.get(this.roomId);
         if (!thisRoom || !thisRoom.editors) {
             console.log("thisRoom.editors not found");
@@ -144,7 +145,7 @@ class Editor extends Member {
             this.alterGameSettings(value),
         );
         this.socket.on("startGame", () => this.broadcastStartGame());
-        this.socket.on("receiveCanvas", (value: Point[][]) => this.receiveCanvas(value));
+        this.socket.on("sendCanvas", (value: Point[][]) => this.receiveCanvas(value));
     }
 
     unsetReceive() {

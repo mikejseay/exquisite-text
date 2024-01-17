@@ -79,7 +79,7 @@ class Room {
     }
 
     addEditor(deviceUUID: string, editorObj: Editor) {
-        console.log("addEditor with deviceUUID", deviceUUID, "and editorObj", editorObj);
+        console.log("addEditor with deviceUUID", deviceUUID);
         this.editors.set(deviceUUID, editorObj);
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }

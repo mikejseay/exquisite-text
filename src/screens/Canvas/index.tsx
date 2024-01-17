@@ -48,7 +48,7 @@ const Canvas: React.FC = () => {
     if (!hasJoinedRoom) {
         createGameHost("ROOM");
         requestRecognizeDevice();
-        requestJoinAsCanvasEditor("ROOM", "spectator");
+        requestJoinAsCanvasEditor("ROOM", "editor");
         setHasJoinedRoom(true);
     }
 
@@ -97,7 +97,7 @@ const Canvas: React.FC = () => {
     };
 
     const submitCanvas = () => {
-        console.log("submitting Canvas:", strokeHistory);
+        console.log("submitCanvas:", strokeHistory);
         requestSendCanvas(strokeHistory);
     };
 

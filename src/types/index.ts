@@ -134,7 +134,7 @@ export interface ClientToServerEvents {
     passTurn: (a: string, b: string) => void;
     lastLine: (a: string) => void;
     leave: () => void;
-    receiveCanvas: (a: Point[][]) => void;
+    sendCanvas: (a: Point[][]) => void;
     requestRetrieveCanvas: () => void;
 }
 
