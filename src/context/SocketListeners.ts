@@ -20,7 +20,7 @@ export const socketListeners = ({
     navigate,
     setStrokeHistory,
 }: ISocketInfoListeners) => {
-
+    // receivePoemsLinesListener
     const poemsLinesListener = (myPoemLines: ILine[]) => {
         setPoemsLines(prevPoemsLines => {
             return [ ...prevPoemsLines, myPoemLines ];

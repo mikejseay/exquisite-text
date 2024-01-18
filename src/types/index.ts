@@ -135,7 +135,7 @@ export interface ClientToServerEvents {
     lastLine: (a: string) => void;
     leave: () => void;
     sendCanvas: (a: Point[][]) => void;
-    requestRetrieveCanvas: () => void;
+    getCanvas: () => void;
 }
 
 export interface InterServerEvents {

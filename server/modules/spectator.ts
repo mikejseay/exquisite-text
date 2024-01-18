@@ -21,7 +21,7 @@ class Spectator extends Member {
     setReceive() {
         super.setReceive();
         this.socket.on("getLines", () => this.getAllPoemLines());
-        this.socket.on("requestRetrieveCanvas", () => this.getCanvas());
+        this.socket.on("getCanvas", () => this.getCanvas());
     }
 
     unsetReceive() {

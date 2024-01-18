@@ -6,10 +6,10 @@ import * as React from "react";
 
 import { LineLength } from "../../types";
 import {
-    requestAlterGameSettings,
-    requestGetGameSettingsInfo,
-    requestGetSettingsEnabled,
-    requestStartGame,
+    emitAlterGameSettings,
+    emitGetGameSettingsInfo,
+    emitGetSettingsEnabled,
+    emitStartGame,
 } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 
@@ -31,8 +31,8 @@ function GameSettings() {
     // TODO: refactor by giving info before navigating user to Lobby route
     const [ rendered, setRendered ] = React.useState(false);
     if (!rendered) {
-        requestGetSettingsEnabled();
-        requestGetGameSettingsInfo();
+        emitGetSettingsEnabled();
+        emitGetGameSettingsInfo();
         setRendered(true);
     }
 
@@ -42,7 +42,7 @@ function GameSettings() {
             return;
         }
         setLineLength(newLineLength);
-        requestAlterGameSettings(newLineLength, nPoems, nRounds);
+        emitAlterGameSettings(newLineLength, nPoems, nRounds);
     };
 
     const handleNRounds = (event: React.MouseEvent<HTMLElement>, newNRounds: number) => {
@@ -50,7 +50,7 @@ function GameSettings() {
             return;
         }
         setNRounds(newNRounds);
-        requestAlterGameSettings(lineLength, nPoems, newNRounds);
+        emitAlterGameSettings(lineLength, nPoems, newNRounds);
     };
 
     const handleNPoems = (event: React.MouseEvent<HTMLElement>, newNPoems: number) => {
@@ -58,11 +58,11 @@ function GameSettings() {
             return;
         }
         setNPoems(newNPoems);
-        requestAlterGameSettings(lineLength, newNPoems, nRounds);
+        emitAlterGameSettings(lineLength, newNPoems, nRounds);
     };
 
     const handlePressStartGameButton = () => {
-        requestStartGame();
+        emitStartGame();
     };
 
     return (

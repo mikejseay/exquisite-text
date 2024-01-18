@@ -7,7 +7,7 @@ import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import { ClickAwayListener } from "@mui/material";
 import { leaveConfirmBox, leaveFAB } from "./styles";
-import { requestLeave } from "../../context/SocketRequestors";
+import { emitLeave } from "../../context/SocketRequestors";
 
 function LeaveButton() {
     const [ open, setOpen ] = React.useState(false);
@@ -41,7 +41,7 @@ function LeaveButton() {
                                 <Stack spacing={2} direction="row"
                                     style={{ justifyContent: "center" }}>
                                     <Button variant="outlined" onClick={handleClickAway}>No</Button>
-                                    <Button variant="contained" onClick={requestLeave}>Yes</Button>
+                                    <Button variant="contained" onClick={emitLeave}>Yes</Button>
                                 </Stack>
                             </Box>
                         )

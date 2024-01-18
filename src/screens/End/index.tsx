@@ -5,16 +5,16 @@ import IconButton from "@mui/material/IconButton";
 import KeyboardIcon from "@mui/icons-material/Keyboard";
 import {
     createGameHost,
+    emitRecognizeDevice,
     getPoemsLines,
     getUserTableInfo,
-    requestRecognizeDevice,
 } from "../../context/SocketRequestors";
 
 function End({ shouldTest = false }: { shouldTest: boolean }) {
 
     const [ rendered, setRendered ] = React.useState(false);
     if (shouldTest && !rendered) {
-        requestRecognizeDevice();
+        emitRecognizeDevice();
         createGameHost("ROOM");
         getUserTableInfo(true);
         getPoemsLines(true);

@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import isNil from "lodash/isNil";
 import { LineLength, Point } from "../types";
 
-export const requestRecognizeDevice = () => {
+export const emitRecognizeDevice = () => {
 
     // set this to true if you want to be able to connect to the game
     // multiple times from the same browser
@@ -35,17 +35,17 @@ export const createGameHost = (name: string) => {
     socket.emit("createGameHost", name);
 };
 
-export const requestJoinAsEditor = (roomId: string, name: string) => {
+export const emitJoinAsEditor = (roomId: string, name: string) => {
     console.log("handleWritePress activated as", name, "is trying to join", roomId);
     socket.emit("joinGameAs", "Editor", roomId.toUpperCase(), name.toUpperCase());
 };
 
-export const requestJoinAsSpectator = (roomId: string, name: string) => {
+export const emitJoinAsSpectator = (roomId: string, name: string) => {
     console.log("handleSpectatePress activated");
     socket.emit("joinGameAs", "Spectator", roomId.toUpperCase(), name.toUpperCase());
 };
 
-export const requestAlterGameSettings = (newLineLength: LineLength, nPoems: number, nRounds: number) => {
+export const emitAlterGameSettings = (newLineLength: LineLength, nPoems: number, nRounds: number) => {
     socket.emit("alterGameSettings", {
         lineLength: newLineLength,
         nPoems,
@@ -53,61 +53,61 @@ export const requestAlterGameSettings = (newLineLength: LineLength, nPoems: numb
     });
 };
 
-export const requestStartGame = () => {
+export const emitStartGame = () => {
     socket.emit("startGame");
 };
 
-export const requestGetSettingsEnabled = () => {
+export const emitGetSettingsEnabled = () => {
     socket.emit("getSettingsEnabled");   // initial populate
 };
 
-export const requestGetGameSettingsInfo = () => {
+export const emitGetGameSettingsInfo = () => {
     socket.emit("getGameSettingsInfo");
 };
 
-export const requestLeave = () => {
+export const emitLeave = () => {
     socket.emit("leave");
 };
 
-export const requestGetLineEdit = () => {
+export const emitGetLineEdit = () => {
     socket.emit("getLineEdit");
 };
 
-export const requestGetEditorActive = () => {
+export const emitGetEditorActive = () => {
     socket.emit("getEditorActive");
 };
 
-export const requestGetLastLineStatus = () => {
+export const emitGetLastLineStatus = () => {
     socket.emit("getLastLineStatus");
 };
 
-export const requestUpdateLineEdit = (value: string) => {
+export const emitUpdateLineEdit = (value: string) => {
     socket.emit("lineEdit", value);
 };
 
-export const requestPassTurn = (firstPart: string, secondPart: string) => {
+export const emitPassTurn = (firstPart: string, secondPart: string) => {
     socket.emit("passTurn", firstPart, secondPart);
 };
 
-export const requestSendLastLine = (value: string | null) => {
+export const emitSendLastLine = (value: string | null) => {
     socket.emit("lastLine", value);
 };
 
-export const requestSendCanvas = (value: Point[][] | null) => {
+export const emitSendCanvas = (value: Point[][] | null) => {
     console.log("sendCanvas:", value);
     socket.emit("sendCanvas", value);
 };
 
-export const requestRetrieveCanvas = () => {
-    socket.emit("requestRetrieveCanvas");
+export const emitGetCanvas = () => {
+    socket.emit("getCanvas");
 };
 
-export const requestJoinAsCanvasEditor = (roomId: string, name: string) => {
+export const emitJoinAsCanvasEditor = (roomId: string, name: string) => {
     console.log("handleWritePress activated as", name, "is trying to join", roomId);
     socket.emit("joinGameAs", "Editor", roomId.toUpperCase(), name.toUpperCase(), true);
 };
 
-export const requestJoinAsCanvasSpectator = (roomId: string, name: string) => {
+export const emitJoinAsCanvasSpectator = (roomId: string, name: string) => {
     console.log("handleSpectatePress activated");
     socket.emit("joinGameAs", "Spectator", roomId.toUpperCase(), name.toUpperCase(), true);
 };
