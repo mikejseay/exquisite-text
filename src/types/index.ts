@@ -1,5 +1,5 @@
-import { Key } from "react";
-import { NavigateFunction } from "react-router-dom";
+import type { Key } from "react";
+import type { NavigateFunction } from "react-router-dom";
 
 export enum Role {
     activeEditor = "activeEditor",

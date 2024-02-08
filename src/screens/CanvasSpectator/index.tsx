@@ -12,17 +12,18 @@ import { Point } from "../../types";
 
     [x] Hard-code a request to join a specific room ("BAMB") as a specific spectator
 
-    [-] Alter the logic of this screen and its component so that all it does is
+    [x] Alter the logic of this screen and its component so that all it does is
     display one complete canvas
 
-        [ ] Add functionality to (re-) draw canvas from strokeHistory (useEffect)
+        [x] Add functionality to (re-) draw canvas from strokeHistory (useEffect)
 
     [ ] Refactor get send receive retrieve listener canvas func/socket naming to not be shitty ;)
-        1. All emitters start with `emit` and should have socket message afterwards (camel cased)
-        2. All listeners start with `receive` and have the socket message afterwards (camel cased)
-        3. In the case that an emitter is not passing data, consider adding `request`
-        4. Watch for collisions in the namespace of get/receive socket messages
-            If your emitter is passing data it should potentially have `send` in it
+        [ ] Potentially prefix all socket messages (the text) with their type e.g `stc` or `cts` (server-to-client / client-to-server)
+            [ ] Watch for collisions in the namespace of get/receive socket messages
+        [ ] In the case that an emitter (client-to-server) is not passing data, consider adding `request`
+        [ ] If your emitter is passing data (client-to-server) it should potentially have `send` in it
+        [ ] All emitter wrapper functions (SocketRequestors.ts) start with `emit` and should have socket message afterwards (camel cased)
+        [ ] All listeners (SocketListeners.ts) start with `receive` and have the socket message afterwards (camel cased)
 
     [ ] Make the drawOnCanvas func exported from Canvas into CanvasSpectator for single source of truth
 */

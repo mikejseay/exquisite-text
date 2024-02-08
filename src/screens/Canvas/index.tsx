@@ -16,25 +16,13 @@ const defaultPressure = 0.1;
 const lineColor = "grey";
 
 /*
-    [x] Send client-server message (at least stroke history and author) via a
-    JSON-serializable object of some kind (CanvasHistory)
-
-    [x] Hard-code a request to join a specific room ("ROOM") as a specific editor
-
-    [x] Add a button or piece of functionality that passes the completed canvas
-    to the back-end, it triggers a client-to-server message
-
-    [x] Defining the type for the client to server and server to client messages
-    in the types file
-
-    [x] Adding the corresponding methods to the editor and spectator classes
-    in the server socket code
+    [ ] Ensure that spectator receives entire drawing instead of just single frame
 */
 
 const Canvas: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [ points, setPoints ] = useState<Point[]>([]);
-    const [ strokeHistory, setStrokeHistory ] = useState<Point[][]>([]);
+    const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
     const [ playerCanvases, setPlayerCanvases ] = useState<ImageData[]>([]);
     const [ isMousedown, setIsMousedown ] = useState(false);
     const [ allowDirect, setAllowDirect ] = useState(true);
@@ -91,14 +79,14 @@ const Canvas: React.FC = () => {
             } else {
                 setPlayer(player + 1);
                 setPoints([]);
-                setStrokeHistory([]);
+                setLocalStrokeHistory([]);
             }
         }
     };
 
     const submitCanvas = () => {
-        console.log("submitCanvas:", strokeHistory);
-        emitSendCanvas(strokeHistory);
+        console.log("submitCanvas:", localStrokeHistory);
+        emitSendCanvas(localStrokeHistory);
     };
 
     const drawOnCanvas = useCallback((newPoints: Point[]) => {
@@ -220,7 +208,7 @@ const Canvas: React.FC = () => {
 
     const handleEnd = useCallback(() => {
         setIsMousedown(false);
-        setStrokeHistory((prev) => [ ...prev, points ]);
+        setLocalStrokeHistory((prev) => [ ...prev, points ]);
         setPoints([]);
         setLineWidth(0);
     }, [ points ]);
