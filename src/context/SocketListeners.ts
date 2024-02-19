@@ -21,44 +21,44 @@ export const socketListeners = ({
     setStrokeHistory,
 }: ISocketInfoListeners) => {
     // receivePoemsLinesListener
-    const poemsLinesListener = (myPoemLines: ILine[]) => {
+    const receivePoemsLines = (myPoemLines: ILine[]) => {
         setPoemsLines(prevPoemsLines => {
             return [ ...prevPoemsLines, myPoemLines ];
         });
     };
 
-    const userTableInfoListener = (info: IUserTableInfo) => {
+    const receiveUserTableInfo = (info: IUserTableInfo) => {
         setUserInfo(info);
     };
 
-    const joinErrorListener = (errorMsg: string) => {
+    const receiveJoinError = (errorMsg: string) => {
         setJoinErrorMessage(errorMsg);
         setTimeout(() => setJoinErrorMessage(""), shortDur);
     };
 
     // Event handlers for the line and the deleteLine events are set up for the Socket.IO connection.
-    const roomCodeListener = (info: string) => {
+    const receiveRoomCode = (info: string) => {
         setRoomCode(info);
     };
 
-    const gameSettingsInfoListener = (info: IGameSettingsInfo) => {
+    const receiveGameSettingsInfo = (info: IGameSettingsInfo) => {
         setLineLength(info["lineLength"]);
         setNRounds(info["nRounds"]);
         setNPoems(info["nPoems"]);
     };
 
-    const gameSettingsEnabledListener = (enabled: boolean) => {
+    const receiveGameSettingsEnabled = (enabled: boolean) => {
         setSettingsEnabled(enabled);
     };
 
-    const lineSpectatorListener = (poemIndex: number, line: string) => {
+    const receiveLineSpectator = (poemIndex: number, line: string) => {
         setLines(prevLines => {
             return [ ...prevLines.slice(0, poemIndex), [ ...prevLines[poemIndex], line ], ...prevLines.slice(poemIndex + 1) ];
         },
         );
     };
 
-    const lineEditSpectatorListener = (poemIndex: number, value: string) => {
+    const receiveLineEditSpectator = (poemIndex: number, value: string) => {
         setLineEdits(prevLineEdits => [
             ...prevLineEdits.slice(0, poemIndex),
             value,
@@ -66,61 +66,61 @@ export const socketListeners = ({
         ]);
     };
 
-    const lineEditListener = (lineEdit: string) => {
+    const receiveLineEdit = (lineEdit: string) => {
         setPoemInput(lineEdit);
     };
 
-    const lineEditorWatchListener = (lineEditorWatchVal: string) => {
+    const receiveLineEditorWatch = (lineEditorWatchVal: string) => {
         setPoemInputSpectate(lineEditorWatchVal);
     };
 
-    const lastLineListener = (lastLine: boolean) => {
+    const receiveLastLine = (lastLine: boolean) => {
         setOnLastLine(lastLine);
     };
 
-    const editorActiveListener = (editorActiveFromServer: boolean) => {
+    const receiveEditorActive = (editorActiveFromServer: boolean) => {
         setEditorActive(editorActiveFromServer);
     };
 
-    const navigateListener = (targetRoute: string) => {
-        console.log("navigateListener activated targeting", targetRoute);
+    const receiveNavigate = (targetRoute: string) => {
+        console.log("receiveNavigate activated targeting", targetRoute);
         navigate(targetRoute);
     };
 
-    const strokeHistoryListener = (strokeHistory: Point[][]) => {
-        console.log("strokeHistoryListener activated targeting", JSON.stringify(strokeHistory));
+    const receiveStrokeHistory = (strokeHistory: Point[][]) => {
+        console.log("receiveStrokeHistory activated targeting", JSON.stringify(strokeHistory));
         setStrokeHistory(strokeHistory);
     };
 
-    socket.on("stcPoemLines", poemsLinesListener);
-    socket.on("stcUserTableInfo", userTableInfoListener);
-    socket.on("stcJoinError", joinErrorListener);
-    socket.on("stcRoomCode", roomCodeListener);
-    socket.on("stcGameSettingsInfo", gameSettingsInfoListener);
-    socket.on("stcGameSettingsEnabled", gameSettingsEnabledListener);
-    socket.on("stcLineSpectator", lineSpectatorListener);
-    socket.on("stcLineEditSpectator", lineEditSpectatorListener);
-    socket.on("stcLineEdit", lineEditListener);
-    socket.on("stcLineEditorWatch", lineEditorWatchListener);
-    socket.on("stcLastLine", lastLineListener);
-    socket.on("stcEditorActive", editorActiveListener);
-    socket.on("stcNavigate", navigateListener);
-    socket.on("stcStrokeHistory", strokeHistoryListener);
+    socket.on("stcPoemLines", receivePoemsLines);
+    socket.on("stcUserTableInfo", receiveUserTableInfo);
+    socket.on("stcJoinError", receiveJoinError);
+    socket.on("stcRoomCode", receiveRoomCode);
+    socket.on("stcGameSettingsInfo", receiveGameSettingsInfo);
+    socket.on("stcGameSettingsEnabled", receiveGameSettingsEnabled);
+    socket.on("stcLineSpectator", receiveLineSpectator);
+    socket.on("stcLineEditSpectator", receiveLineEditSpectator);
+    socket.on("stcLineEdit", receiveLineEdit);
+    socket.on("stcLineEditorWatch", receiveLineEditorWatch);
+    socket.on("stcLastLine", receiveLastLine);
+    socket.on("stcEditorActive", receiveEditorActive);
+    socket.on("stcNavigate", receiveNavigate);
+    socket.on("stcStrokeHistory", receiveStrokeHistory);
 
     return () => {
-        socket.off("stcPoemLines", poemsLinesListener);
-        socket.off("stcUserTableInfo", userTableInfoListener);
-        socket.off("stcJoinError", joinErrorListener);
-        socket.off("stcRoomCode", roomCodeListener);
-        socket.off("stcGameSettingsInfo", gameSettingsInfoListener);
-        socket.off("stcGameSettingsEnabled", gameSettingsEnabledListener);
-        socket.off("stcLineSpectator", lineSpectatorListener);
-        socket.off("stcLineEditSpectator", lineEditSpectatorListener);
-        socket.off("stcLineEdit", lineEditListener);
-        socket.off("stcLineEditorWatch", lineEditorWatchListener);
-        socket.off("stcLastLine", lastLineListener);
-        socket.off("stcEditorActive", editorActiveListener);
-        socket.off("stcNavigate", navigateListener);
-        socket.off("stcStrokeHistory", strokeHistoryListener);
+        socket.off("stcPoemLines", receivePoemsLines);
+        socket.off("stcUserTableInfo", receiveUserTableInfo);
+        socket.off("stcJoinError", receiveJoinError);
+        socket.off("stcRoomCode", receiveRoomCode);
+        socket.off("stcGameSettingsInfo", receiveGameSettingsInfo);
+        socket.off("stcGameSettingsEnabled", receiveGameSettingsEnabled);
+        socket.off("stcLineSpectator", receiveLineSpectator);
+        socket.off("stcLineEditSpectator", receiveLineEditSpectator);
+        socket.off("stcLineEdit", receiveLineEdit);
+        socket.off("stcLineEditorWatch", receiveLineEditorWatch);
+        socket.off("stcLastLine", receiveLastLine);
+        socket.off("stcEditorActive", receiveEditorActive);
+        socket.off("stcNavigate", receiveNavigate);
+        socket.off("stcStrokeHistory", receiveStrokeHistory);
     };
 };
