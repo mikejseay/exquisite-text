@@ -20,9 +20,9 @@ import { Point } from "../../types";
     [ ] Refactor get send receive retrieve listener canvas func/socket naming to not be shitty ;)
         [x] Potentially prefix all socket messages (the text) with their type e.g `stc` or `cts` (server-to-client / client-to-server)
             [x] Watch for collisions in the namespace of get/receive socket messages
-        [ ] In the case that an emitter (client-to-server) is not passing data, consider adding `request`
-        [ ] If your emitter is passing data (client-to-server) it should potentially have `send` in it
-        [ ] All emitter wrapper functions (SocketRequestors.ts) start with `emit` and should have socket message afterwards (camel cased)
+        [x] In the case that an emitter (client-to-server) is not passing data, consider adding `request`
+        [x] If your emitter is passing data (client-to-server) it should potentially have `send` in it
+        [-] All emitter wrapper functions (SocketRequestors.ts) start with `emit` and should have socket message afterwards (camel cased)
         [ ] All listeners (SocketListeners.ts) start with `receive` and have the socket message afterwards (camel cased)
 
     [ ] Make the drawOnCanvas func exported from Canvas into CanvasSpectator for single source of truth
