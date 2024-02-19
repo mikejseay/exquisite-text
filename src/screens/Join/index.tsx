@@ -8,7 +8,7 @@ import {
     maxNameChars,
     roomCodeLength,
 } from "../../constants";
-import { emitJoinAsEditor, emitJoinAsSpectator } from "../../context/SocketRequestors";
+import { emitJoinAs } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 
 export default function Join() {
@@ -34,12 +34,12 @@ export default function Join() {
     };
 
     const handleWritePress = () => {
-        emitJoinAsEditor(roomId, name);
+        emitJoinAs("Editor", roomId, name);
         setRoomCode(roomId.toUpperCase());
     };
 
     const handleSpectatePress = () => {
-        emitJoinAsSpectator(roomId, name);
+        emitJoinAs("Spectator", roomId, name);
         setRoomCode(roomId.toUpperCase());
     };
 

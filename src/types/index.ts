@@ -104,25 +104,25 @@ export interface ServerToClientEvents {
 }
 
 export interface ClientToServerEvents {
-    ctsGetUserTableInfo: (a: boolean) => void;
-    ctsGetPoemsLines: (a: boolean) => void;
-    ctsGetLineEdit: () => void;
-    ctsLineEdit: (a: string) => void;
+    ctsRequestUserTableInfo: (a: boolean) => void;
+    ctsRequestPoemsLines: (a: boolean) => void;
+    ctsRequestLineEdit: () => void;
+    ctsEditLine: (a: string) => void;
     ctsGetLines: () => void;
     ctsRecognizeDevice: (a: string) => void;
     ctsCreateGameHost: (a: string) => void;
     ctsJoinGameAs: (a: string, b: string, c: string) => void;
-    ctsGetGameSettingsInfo: () => void;
-    ctsGetLastLineStatus: () => void;
+    ctsRequestGameSettingsInfo: () => void;
+    ctsRequestLastLineStatus: () => void;
     ctsAlterGameSettings: (a: IGameSettingsInfo) => void;
-    ctsGetSettingsEnabled: () => void;
+    ctsRequestSettingsEnabled: () => void;
     ctsStartGame: () => void;
-    ctsGetEditorActive: () => void;
-    ctsPassTurn: (a: string, b: string) => void;
-    ctsLastLine: (a: string) => void;
+    ctsRequestEditorActive: () => void;
+    ctsSendLineParts: (a: string, b: string) => void;
+    ctsSendLastLine: (a: string) => void;
     ctsLeave: () => void;
     ctsSendCanvas: (a: Point[][]) => void;
-    ctsGetCanvas: () => void;
+    ctsRequestCanvas: () => void;
 }
 
 export interface InterServerEvents {

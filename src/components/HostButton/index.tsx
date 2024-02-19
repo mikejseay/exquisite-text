@@ -9,7 +9,7 @@ import { useClipboard } from "use-clipboard-copy";
 import { hostFAB, roomCodeStyles } from "./styles";
 import { generateAlphaString } from "../../helpers";
 import { roomCodeLength } from "../../constants";
-import { createGameHost } from "../../context/SocketRequestors";
+import { emitCreateGameHost } from "../../context/SocketRequestors";
 
 function HostButton() {
     const [ open, setOpen ] = React.useState(false);
@@ -29,7 +29,7 @@ function HostButton() {
             setRoomId(roomId);
             setShareLink(shareLink);
             clipboard.copy(shareLink);
-            createGameHost(roomId);
+            emitCreateGameHost(roomId);
             navigate(`/${roomId}`);
         }
     };

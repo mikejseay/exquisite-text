@@ -133,14 +133,14 @@ class Editor extends Member {
 
     setReceive() {
         super.setReceive();
-        this.socket.on("ctsGetLineEdit", () => this.requestLineEdit()); // initial populate
-        this.socket.on("ctsLineEdit", (value) => this.handleLineEdit(value)); //whenever the input box is edited.
-        this.socket.on("ctsGetEditorActive", () => this.requestActivity());
-        this.socket.on("ctsPassTurn", (firstPart, secondPart) =>
+        this.socket.on("ctsRequestLineEdit", () => this.requestLineEdit()); // initial populate
+        this.socket.on("ctsEditLine", (value) => this.handleLineEdit(value)); //whenever the input box is edited.
+        this.socket.on("ctsRequestEditorActive", () => this.requestActivity());
+        this.socket.on("ctsSendLineParts", (firstPart, secondPart) =>
             this.handlePassTurn(firstPart, secondPart),
         );
-        this.socket.on("ctsLastLine", (value) => this.handleLastLine(value)); // whenever a new line has been submitted into the poem.
-        this.socket.on("ctsGetLastLineStatus", () => this.requestLastLineStatus());
+        this.socket.on("ctsSendLastLine", (value) => this.handleLastLine(value)); // whenever a new line has been submitted into the poem.
+        this.socket.on("ctsRequestLastLineStatus", () => this.requestLastLineStatus());
         this.socket.on("ctsAlterGameSettings", (value) =>
             this.alterGameSettings(value),
         );
@@ -150,12 +150,12 @@ class Editor extends Member {
 
     unsetReceive() {
         super.unsetReceive();
-        this.socket.removeAllListeners("ctsGetLineEdit");
-        this.socket.removeAllListeners("ctsLineEdit");
-        this.socket.removeAllListeners("ctsGetEditorActive");
-        this.socket.removeAllListeners("ctsPassTurn");
-        this.socket.removeAllListeners("ctsLastLine");
-        this.socket.removeAllListeners("ctsGetLastLineStatus");
+        this.socket.removeAllListeners("ctsRequestLineEdit");
+        this.socket.removeAllListeners("ctsEditLine");
+        this.socket.removeAllListeners("ctsRequestEditorActive");
+        this.socket.removeAllListeners("ctsSendLineParts");
+        this.socket.removeAllListeners("ctsSendLastLine");
+        this.socket.removeAllListeners("ctsRequestLastLineStatus");
         this.socket.removeAllListeners("ctsAlterGameSettings");
         this.socket.removeAllListeners("ctsStartGame");
     }

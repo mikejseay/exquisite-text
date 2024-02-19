@@ -87,10 +87,10 @@ class Member {
     // getUserTableInfo
 
     setReceive() {
-        this.socket.on("ctsGetUserTableInfo", (shouldTest) => this.requestUserTableInfo(shouldTest));
-        this.socket.on("ctsGetPoemsLines", (shouldTest) => this.requestPoemsLinesInfo(shouldTest));
-        this.socket.on("ctsGetGameSettingsInfo", () => this.requestGameSettingsInfo());
-        this.socket.on("ctsGetSettingsEnabled", () => this.requestSettingsEnabled());
+        this.socket.on("ctsRequestUserTableInfo", (shouldTest) => this.requestUserTableInfo(shouldTest));
+        this.socket.on("ctsRequestPoemsLines", (shouldTest) => this.requestPoemsLinesInfo(shouldTest));
+        this.socket.on("ctsRequestGameSettingsInfo", () => this.requestGameSettingsInfo());
+        this.socket.on("ctsRequestSettingsEnabled", () => this.requestSettingsEnabled());
         this.socket.on("getRoomCode", () => this.requestRoomCode());
         this.socket.on("ctsLeave", () => this.leaveRoom());
 
@@ -100,9 +100,9 @@ class Member {
     }
 
     unsetReceive() {
-        this.socket.removeAllListeners("ctsGetUserTableInfo");
-        this.socket.removeAllListeners("ctsGetGameSettingsInfo");
-        this.socket.removeAllListeners("ctsGetSettingsEnabled");
+        this.socket.removeAllListeners("ctsRequestUserTableInfo");
+        this.socket.removeAllListeners("ctsRequestGameSettingsInfo");
+        this.socket.removeAllListeners("ctsRequestSettingsEnabled");
         this.socket.removeAllListeners("getRoomCode");
         this.socket.removeAllListeners("ctsLeave");
         this.socket.removeAllListeners("disconnect");

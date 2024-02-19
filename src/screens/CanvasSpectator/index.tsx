@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { panelHeightRatioOfWindow  } from "../Canvas";
-import { emitGetCanvas, emitJoinAsCanvasSpectator, emitRecognizeDevice } from "../../context/SocketRequestors";
+import { emitJoinAs, emitRecognizeDevice, emitRequestCanvas } from "../../context/SocketRequestors";
 import { Point } from "../../types";
 
 /*
@@ -35,8 +35,8 @@ const CanvasSpectator: React.FC = () => {
 
     if (!hasJoinedRoom) {
         emitRecognizeDevice();
-        emitJoinAsCanvasSpectator("ROOM", "spectator");
-        emitGetCanvas();
+        emitJoinAs("Spectator", "ROOM", "MIKEY");
+        emitRequestCanvas();
         setHasJoinedRoom(true);
     }
 

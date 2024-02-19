@@ -4,10 +4,10 @@ import { centered, floatingToggleAnimate } from "./styles";
 import IconButton from "@mui/material/IconButton";
 import KeyboardIcon from "@mui/icons-material/Keyboard";
 import {
-    createGameHost,
+    emitCreateGameHost,
     emitRecognizeDevice,
-    getPoemsLines,
-    getUserTableInfo,
+    emitRequestPoemsLines,
+    emitRequestUserTableInfo,
 } from "../../context/SocketRequestors";
 
 function End({ shouldTest = false }: { shouldTest: boolean }) {
@@ -15,9 +15,9 @@ function End({ shouldTest = false }: { shouldTest: boolean }) {
     const [ rendered, setRendered ] = React.useState(false);
     if (shouldTest && !rendered) {
         emitRecognizeDevice();
-        createGameHost("ROOM");
-        getUserTableInfo(true);
-        getPoemsLines(true);
+        emitCreateGameHost("ROOM");
+        emitRequestUserTableInfo(true);
+        emitRequestPoemsLines(true);
         setRendered(true);
     }
 

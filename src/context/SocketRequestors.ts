@@ -23,26 +23,21 @@ export const emitRecognizeDevice = () => {
     }
 };
 
-export const getUserTableInfo = (shouldTest = false) => {
-    socket.emit("ctsGetUserTableInfo", shouldTest);
+export const emitRequestUserTableInfo = (shouldTest = false) => {
+    socket.emit("ctsRequestUserTableInfo", shouldTest);
 };
 
-export const getPoemsLines = (shouldTest = false) => {
-    socket.emit("ctsGetPoemsLines", shouldTest);
+export const emitRequestPoemsLines = (shouldTest = false) => {
+    socket.emit("ctsRequestPoemsLines", shouldTest);
 };
 
-export const createGameHost = (name: string) => {
+export const emitCreateGameHost = (name: string) => {
     socket.emit("ctsCreateGameHost", name);
 };
 
-export const emitJoinAsEditor = (roomId: string, name: string) => {
-    console.log("handleWritePress activated as", name, "is trying to join", roomId);
-    socket.emit("ctsJoinGameAs", "Editor", roomId.toUpperCase(), name.toUpperCase());
-};
-
-export const emitJoinAsSpectator = (roomId: string, name: string) => {
-    console.log("handleSpectatePress activated");
-    socket.emit("ctsJoinGameAs", "Spectator", roomId.toUpperCase(), name.toUpperCase());
+export const emitJoinAs = (memberType: string, roomId: string, name: string) => {
+    console.log("emitJoinAs activated as", name, "is trying to join", roomId, "as", memberType);
+    socket.emit("ctsJoinGameAs", memberType, roomId.toUpperCase(), name.toUpperCase());
 };
 
 export const emitAlterGameSettings = (newLineLength: LineLength, nPoems: number, nRounds: number) => {
@@ -57,40 +52,40 @@ export const emitStartGame = () => {
     socket.emit("ctsStartGame");
 };
 
-export const emitGetSettingsEnabled = () => {
-    socket.emit("ctsGetSettingsEnabled");   // initial populate
+export const emitRequestSettingsEnabled = () => {
+    socket.emit("ctsRequestSettingsEnabled");   // initial populate
 };
 
-export const emitGetGameSettingsInfo = () => {
-    socket.emit("ctsGetGameSettingsInfo");
+export const emitRequestGameSettingsInfo = () => {
+    socket.emit("ctsRequestGameSettingsInfo");
 };
 
 export const emitLeave = () => {
     socket.emit("ctsLeave");
 };
 
-export const emitGetLineEdit = () => {
-    socket.emit("ctsGetLineEdit");
+export const emitRequestLineEdit = () => {
+    socket.emit("ctsRequestLineEdit");
 };
 
-export const emitGetEditorActive = () => {
-    socket.emit("ctsGetEditorActive");
+export const emitRequestEditorActive = () => {
+    socket.emit("ctsRequestEditorActive");
 };
 
-export const emitGetLastLineStatus = () => {
-    socket.emit("ctsGetLastLineStatus");
+export const emitRequestLastLineStatus = () => {
+    socket.emit("ctsRequestLastLineStatus");
 };
 
-export const emitUpdateLineEdit = (value: string) => {
-    socket.emit("ctsLineEdit", value);
+export const emitEditLine = (value: string) => {
+    socket.emit("ctsEditLine", value);
 };
 
-export const emitPassTurn = (firstPart: string, secondPart: string) => {
-    socket.emit("ctsPassTurn", firstPart, secondPart);
+export const emitSendLineParts = (firstPart: string, secondPart: string) => {
+    socket.emit("ctsSendLineParts", firstPart, secondPart);
 };
 
 export const emitSendLastLine = (value: string | null) => {
-    socket.emit("ctsLastLine", value);
+    socket.emit("ctsSendLastLine", value);
 };
 
 export const emitSendCanvas = (value: Point[][] | null) => {
@@ -98,16 +93,6 @@ export const emitSendCanvas = (value: Point[][] | null) => {
     socket.emit("ctsSendCanvas", value);
 };
 
-export const emitGetCanvas = () => {
-    socket.emit("ctsGetCanvas");
-};
-
-export const emitJoinAsCanvasEditor = (roomId: string, name: string) => {
-    console.log("handleWritePress activated as", name, "is trying to join", roomId);
-    socket.emit("ctsJoinGameAs", "Editor", roomId.toUpperCase(), name.toUpperCase(), true);
-};
-
-export const emitJoinAsCanvasSpectator = (roomId: string, name: string) => {
-    console.log("handleSpectatePress activated");
-    socket.emit("ctsJoinGameAs", "Spectator", roomId.toUpperCase(), name.toUpperCase(), true);
+export const emitRequestCanvas = () => {
+    socket.emit("ctsRequestCanvas");
 };

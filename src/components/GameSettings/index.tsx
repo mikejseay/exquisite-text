@@ -7,8 +7,8 @@ import * as React from "react";
 import { LineLength } from "../../types";
 import {
     emitAlterGameSettings,
-    emitGetGameSettingsInfo,
-    emitGetSettingsEnabled,
+    emitRequestGameSettingsInfo,
+    emitRequestSettingsEnabled,
     emitStartGame,
 } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
@@ -31,8 +31,8 @@ function GameSettings() {
     // TODO: refactor by giving info before navigating user to Lobby route
     const [ rendered, setRendered ] = React.useState(false);
     if (!rendered) {
-        emitGetSettingsEnabled();
-        emitGetGameSettingsInfo();
+        emitRequestSettingsEnabled();
+        emitRequestGameSettingsInfo();
         setRendered(true);
     }
 
