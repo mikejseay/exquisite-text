@@ -35,9 +35,9 @@ export const emitCreateGameHost = (name: string) => {
     socket.emit("ctsCreateGameHost", name);
 };
 
-export const emitJoinAs = (memberType: string, roomId: string, name: string) => {
+export const emitJoinAs = (memberType: string, roomId: string, name: string, isTest = false) => {
     console.log("emitJoinAs activated as", name, "is trying to join", roomId, "as", memberType);
-    socket.emit("ctsJoinGameAs", memberType, roomId.toUpperCase(), name.toUpperCase());
+    socket.emit("ctsJoinGameAs", memberType, roomId.toUpperCase(), name.toUpperCase(), isTest);
 };
 
 export const emitAlterGameSettings = (newLineLength: LineLength, nPoems: number, nRounds: number) => {

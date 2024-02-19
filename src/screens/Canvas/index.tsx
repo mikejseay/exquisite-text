@@ -36,7 +36,7 @@ const Canvas: React.FC = () => {
     if (!hasJoinedRoom) {
         emitCreateGameHost("ROOM");
         emitRecognizeDevice();
-        emitJoinAs("Editor","ROOM", "PETER");
+        emitJoinAs("Editor","ROOM", "PETER", true);
         setHasJoinedRoom(true);
     }
 
