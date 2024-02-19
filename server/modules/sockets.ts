@@ -106,11 +106,11 @@ function sockets(
         });
 
         // TODO: role should be an enum
-        socket.on("ctsJoinGameAs", (role, roomId, name, isTest = false) => {
+        socket.on("ctsJoinAs", (role, roomId, name, isTest = false) => {
             console.log(
                 "socket",
                 socket.id,
-                "ctsJoinGameAs",
+                "ctsJoinAs",
                 role,
                 "to room",
                 roomId,

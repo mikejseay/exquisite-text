@@ -111,7 +111,7 @@ export interface ClientToServerEvents {
     ctsGetLines: () => void;
     ctsRecognizeDevice: (a: string) => void;
     ctsCreateGameHost: (a: string) => void;
-    ctsJoinGameAs: (a: string, b: string, c: string) => void;
+    ctsJoinAs: (a: string, b: string, c: string) => void;
     ctsRequestGameSettingsInfo: () => void;
     ctsRequestLastLineStatus: () => void;
     ctsAlterGameSettings: (a: IGameSettingsInfo) => void;
