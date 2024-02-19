@@ -124,7 +124,7 @@ class Room {
     }
 
     sendCurrentUserTableInfo() {
-        this.io.in(this.roomId).emit("userTableInfo", this.currentUserTableInfo());
+        this.io.in(this.roomId).emit("stcUserTableInfo", this.currentUserTableInfo());
     }
 
     setUpGame() {
@@ -150,8 +150,8 @@ class Room {
         }
 
         // should tell editors to navigate to /game and spectators to /spectate
-        this.io.in(this.roomId + "_Editors").emit("navigate", "/game");
-        this.io.in(this.roomId + "_Spectators").emit("navigate", "/spectate");
+        this.io.in(this.roomId + "_Editors").emit("stcNavigate", "/game");
+        this.io.in(this.roomId + "_Spectators").emit("stcNavigate", "/spectate");
         this.gameOngoing = true;
     }
 
@@ -200,7 +200,7 @@ class Room {
 
     sendToEnd() {
         console.log(this.roomId, "sending everyone to the end screen");
-        this.io.in(this.roomId).emit("navigate", "/end");
+        this.io.in(this.roomId).emit("stcNavigate", "/end");
     }
 
     async selfDestruct() {

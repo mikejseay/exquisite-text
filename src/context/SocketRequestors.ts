@@ -9,7 +9,7 @@ export const emitRecognizeDevice = () => {
     // multiple times from the same browser
     if (process.env.REACT_APP_DEBUG_SINGLE_BROWSER === "true") {
         // to debug I will send a random device id each time
-        socket.emit("recognizeDevice", uuidv4());
+        socket.emit("ctsRecognizeDevice", uuidv4());
     } else {
         // check if this device (browser) has visited the page before
         const firstVisit = !localStorage.getItem("device");
@@ -18,35 +18,35 @@ export const emitRecognizeDevice = () => {
         }
         const deviceID = localStorage.getItem("device");
         if (!isNil(deviceID)) {
-            socket.emit("recognizeDevice", deviceID);
+            socket.emit("ctsRecognizeDevice", deviceID);
         }
     }
 };
 
 export const getUserTableInfo = (shouldTest = false) => {
-    socket.emit("getUserTableInfo", shouldTest);
+    socket.emit("ctsGetUserTableInfo", shouldTest);
 };
 
 export const getPoemsLines = (shouldTest = false) => {
-    socket.emit("getPoemsLines", shouldTest);
+    socket.emit("ctsGetPoemsLines", shouldTest);
 };
 
 export const createGameHost = (name: string) => {
-    socket.emit("createGameHost", name);
+    socket.emit("ctsCreateGameHost", name);
 };
 
 export const emitJoinAsEditor = (roomId: string, name: string) => {
     console.log("handleWritePress activated as", name, "is trying to join", roomId);
-    socket.emit("joinGameAs", "Editor", roomId.toUpperCase(), name.toUpperCase());
+    socket.emit("ctsJoinGameAs", "Editor", roomId.toUpperCase(), name.toUpperCase());
 };
 
 export const emitJoinAsSpectator = (roomId: string, name: string) => {
     console.log("handleSpectatePress activated");
-    socket.emit("joinGameAs", "Spectator", roomId.toUpperCase(), name.toUpperCase());
+    socket.emit("ctsJoinGameAs", "Spectator", roomId.toUpperCase(), name.toUpperCase());
 };
 
 export const emitAlterGameSettings = (newLineLength: LineLength, nPoems: number, nRounds: number) => {
-    socket.emit("alterGameSettings", {
+    socket.emit("ctsAlterGameSettings", {
         lineLength: newLineLength,
         nPoems,
         nRounds,
@@ -54,60 +54,60 @@ export const emitAlterGameSettings = (newLineLength: LineLength, nPoems: number,
 };
 
 export const emitStartGame = () => {
-    socket.emit("startGame");
+    socket.emit("ctsStartGame");
 };
 
 export const emitGetSettingsEnabled = () => {
-    socket.emit("getSettingsEnabled");   // initial populate
+    socket.emit("ctsGetSettingsEnabled");   // initial populate
 };
 
 export const emitGetGameSettingsInfo = () => {
-    socket.emit("getGameSettingsInfo");
+    socket.emit("ctsGetGameSettingsInfo");
 };
 
 export const emitLeave = () => {
-    socket.emit("leave");
+    socket.emit("ctsLeave");
 };
 
 export const emitGetLineEdit = () => {
-    socket.emit("getLineEdit");
+    socket.emit("ctsGetLineEdit");
 };
 
 export const emitGetEditorActive = () => {
-    socket.emit("getEditorActive");
+    socket.emit("ctsGetEditorActive");
 };
 
 export const emitGetLastLineStatus = () => {
-    socket.emit("getLastLineStatus");
+    socket.emit("ctsGetLastLineStatus");
 };
 
 export const emitUpdateLineEdit = (value: string) => {
-    socket.emit("lineEdit", value);
+    socket.emit("ctsLineEdit", value);
 };
 
 export const emitPassTurn = (firstPart: string, secondPart: string) => {
-    socket.emit("passTurn", firstPart, secondPart);
+    socket.emit("ctsPassTurn", firstPart, secondPart);
 };
 
 export const emitSendLastLine = (value: string | null) => {
-    socket.emit("lastLine", value);
+    socket.emit("ctsLastLine", value);
 };
 
 export const emitSendCanvas = (value: Point[][] | null) => {
     console.log("sendCanvas:", value);
-    socket.emit("sendCanvas", value);
+    socket.emit("ctsSendCanvas", value);
 };
 
 export const emitGetCanvas = () => {
-    socket.emit("getCanvas");
+    socket.emit("ctsGetCanvas");
 };
 
 export const emitJoinAsCanvasEditor = (roomId: string, name: string) => {
     console.log("handleWritePress activated as", name, "is trying to join", roomId);
-    socket.emit("joinGameAs", "Editor", roomId.toUpperCase(), name.toUpperCase(), true);
+    socket.emit("ctsJoinGameAs", "Editor", roomId.toUpperCase(), name.toUpperCase(), true);
 };
 
 export const emitJoinAsCanvasSpectator = (roomId: string, name: string) => {
     console.log("handleSpectatePress activated");
-    socket.emit("joinGameAs", "Spectator", roomId.toUpperCase(), name.toUpperCase(), true);
+    socket.emit("ctsJoinGameAs", "Spectator", roomId.toUpperCase(), name.toUpperCase(), true);
 };

@@ -69,13 +69,13 @@ class Poem {
         this.halfLine = secondPart;
         this.io
             .in(this.roomId + "_Spectators")
-            .emit("lineSpectator", this.poemIndex, firstPart);
+            .emit("stcLineSpectator", this.poemIndex, firstPart);
     }
 
     lineWasEdited(value: string) {
         this.io
             .in(this.roomId + "_Spectators")
-            .emit("lineEditSpectator", this.poemIndex, value);
+            .emit("stcLineEditSpectator", this.poemIndex, value);
     }
 
     sendAllLinesTo(socketID: string) {
@@ -84,7 +84,7 @@ class Poem {
     }
 
     sendLine(line: string, socketID: string) {
-        this.io.to(socketID).emit("lineSpectator", this.poemIndex, line);
+        this.io.to(socketID).emit("stcLineSpectator", this.poemIndex, line);
     }
 }
 

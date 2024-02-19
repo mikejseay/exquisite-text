@@ -40,7 +40,7 @@ function sockets(
 
         // This establishes the callbacks that every socket should have access to.
 
-        socket.on("recognizeDevice", (deviceID) => {
+        socket.on("ctsRecognizeDevice", (deviceID) => {
             console.log("new socket", socket.id, "from device", deviceID);
 
             const isDeviceInARoom: boolean = Object.prototype.hasOwnProperty.call(
@@ -72,7 +72,7 @@ function sockets(
 
                 if (theMember && theMember.socket) {
                 // if the socket is still connected, send them to disconnected view
-                    io.to(theMember.socket.id).emit("navigate", "/disconnected");
+                    io.to(theMember.socket.id).emit("stcNavigate", "/disconnected");
                     theMember.socket.disconnect(); // force disconnect
                     theMember.socket = socket; // connect the new socket
                     theMember.joinRoom(); // re-join the correct rooms
@@ -81,14 +81,14 @@ function sockets(
                 // theMember.setReceive(); // amazingly, this isn't necessary...
                 }
 
-                io.to(socket.id).emit("navigate", targetView); // navigate to correct view
+                io.to(socket.id).emit("stcNavigate", targetView); // navigate to correct view
             } // else this device isn't in a room yet, nothing to do
 
             socketIDToDeviceID[socket.id] = deviceID; // since socket is always uuid, won't overwrite
             deviceIDToSocketID[deviceID] = socket.id; // will overwrite previous
         });
 
-        socket.on("createGameHost", (roomId) => {
+        socket.on("ctsCreateGameHost", (roomId) => {
             console.log("createGameHost for ", socket.id, "joining", roomId);
             // notice we don't add the host device to deviceIDToRoomId
             const thisHost = new Host(
@@ -106,11 +106,11 @@ function sockets(
         });
 
         // TODO: role should be an enum
-        socket.on("joinGameAs", (role, roomId, name, isTest = false) => {
+        socket.on("ctsJoinGameAs", (role, roomId, name, isTest = false) => {
             console.log(
                 "socket",
                 socket.id,
-                "joinGameAs",
+                "ctsJoinGameAs",
                 role,
                 "to room",
                 roomId,
@@ -119,7 +119,7 @@ function sockets(
             );
             if (!roomIdToRoom.has(roomId)) {
                 console.log(roomId, "does not exist");
-                io.to(socket.id).emit("joinError", "Room does not exist.");
+                io.to(socket.id).emit("stcJoinError", "Room does not exist.");
                 return;
             }
             const targetRoom = roomIdToRoom.get(roomId);
@@ -133,7 +133,7 @@ function sockets(
                 if (targetRoom.gameOngoing) {
                     console.log(roomId, "game is already ongoing");
                     io.to(socket.id).emit(
-                        "joinError",
+                        "stcJoinError",
                         "Game already ongoing. Join as spectator?",
                     );
                     return;
@@ -141,7 +141,7 @@ function sockets(
                 if (targetRoom.editors.size >= maxEditors) {
                     console.log("trying to join as editor but it's already full");
                     io.to(socket.id).emit(
-                        "joinError",
+                        "stcJoinError",
                         "Writer's room full. Join as spectator?",
                     );
                     return;
@@ -153,10 +153,10 @@ function sockets(
                 thisEditor.joinRoom();
                 console.log("room joined");
                 if (!isTest) {
-                    io.to(socket.id).emit("navigate", "/lobby");
+                    io.to(socket.id).emit("stcNavigate", "/lobby");
                 }
                 console.log("sent navigate message");
-                // io.to(socket.id).emit("roomCode", roomId);
+                // io.to(socket.id).emit("stcRoomCode", roomId);
                 // console.log("sent room code");
                 targetRoom.addEditor(deviceID, thisEditor);
                 console.log("editor added to room");
@@ -166,10 +166,10 @@ function sockets(
                 thisSpectator.joinRoom();
                 if (!isTest) {
                     if (targetRoom.gameOngoing) {
-                        io.to(socket.id).emit("navigate", "/spectate");
+                        io.to(socket.id).emit("stcNavigate", "/spectate");
                     } else {
-                        io.to(socket.id).emit("navigate", "/lobby");
-                        // io.to(socket.id).emit("roomCode", roomId);
+                        io.to(socket.id).emit("stcNavigate", "/lobby");
+                        // io.to(socket.id).emit("stcRoomCode", roomId);
                         // console.log("sent room code");
                     }
                 }

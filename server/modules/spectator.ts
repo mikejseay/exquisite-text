@@ -20,13 +20,13 @@ class Spectator extends Member {
 
     setReceive() {
         super.setReceive();
-        this.socket.on("getLines", () => this.getAllPoemLines());
-        this.socket.on("getCanvas", () => this.getCanvas());
+        this.socket.on("ctsGetLines", () => this.getAllPoemLines());
+        this.socket.on("ctsGetCanvas", () => this.getCanvas());
     }
 
     unsetReceive() {
         super.unsetReceive();
-        this.socket.removeAllListeners("getLines");
+        this.socket.removeAllListeners("ctsGetLines");
     }
 
     getAllPoemLines() {
@@ -53,7 +53,7 @@ class Spectator extends Member {
         // }
         this.io
             .to(this.socket.id)
-            .emit("strokeHistory", theCanvas);
+            .emit("stcStrokeHistory", theCanvas);
     }
 
     disconnect() {

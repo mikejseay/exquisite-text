@@ -80,62 +80,49 @@ export interface Point {
     y: number;
     lineWidth: number;
   }
-  
+
 interface CanvasHistory {
     user: string;
     strokeHistory: Point[][]
 }
 
 export interface ServerToClientEvents {
-    // line: (a: ILine) => void;
-    lineEdit: (a: string) => void;
-    lineEditSize: (a: number, b: number) => void;
-    poem: (a: IPoem) => void;
-    poemLines: (a: ILine[]) => void;
-
-    roomCode: (a: string) => void;
-    joinError: (a: string) => void;
-    joinSuccess: () => void;
-    userTableInfo: (a: IUserTableInfo) => void;
-    gameSettingsInfo: (a: IGameSettingsInfo) => void;
-    gameSettingsEnabled: (a: boolean) => void;
-    navigate: (a: string) => void;
-    editorActive: (a: boolean) => void;
-    lastLine: (a: boolean) => void;
-    checkIfActive: () => void;
-    lineEditorWatch: (a: string) => void;
-    lineSpectator: (a: number, b: string) => void;
-    lineEditSpectator: (a: number, b: string) => void;
-    strokeHistory: (a: Point[][]) => void;
+    stcLineEdit: (a: string) => void;
+    stcPoemLines: (a: ILine[]) => void;
+    stcRoomCode: (a: string) => void;
+    stcJoinError: (a: string) => void;
+    stcUserTableInfo: (a: IUserTableInfo) => void;
+    stcGameSettingsInfo: (a: IGameSettingsInfo) => void;
+    stcGameSettingsEnabled: (a: boolean) => void;
+    stcNavigate: (a: string) => void;
+    stcEditorActive: (a: boolean) => void;
+    stcLastLine: (a: boolean) => void;
+    stcLineEditorWatch: (a: string) => void;
+    stcLineSpectator: (a: number, b: string) => void;
+    stcLineEditSpectator: (a: number, b: string) => void;
+    stcStrokeHistory: (a: Point[][]) => void;
 }
 
 export interface ClientToServerEvents {
-    getUserTableInfo: (a: boolean) => void;
-    getPoemsLines: (a: boolean) => void;
-    createTestRoom: () => void;
-
-    getLineEdit: () => void;
-    lineEdit: (a: string) => void;
-    line: (a: string) => void;
-    poemDone: () => void;
-    getLines: () => void;
-    getPoems: () => void;
-    getPoemByID: (a: number) => void;
-    getRoomCode: () => void;
-    recognizeDevice: (a: string) => void;
-    createGameHost: (a: string) => void;
-    joinGameAs: (a: string, b: string, c: string) => void;
-    getGameSettingsInfo: () => void;
-    getLastLineStatus: () => void;
-    alterGameSettings: (a: IGameSettingsInfo) => void;
-    getSettingsEnabled: () => void;
-    startGame: () => void;
-    getEditorActive: () => void;
-    passTurn: (a: string, b: string) => void;
-    lastLine: (a: string) => void;
-    leave: () => void;
-    sendCanvas: (a: Point[][]) => void;
-    getCanvas: () => void;
+    ctsGetUserTableInfo: (a: boolean) => void;
+    ctsGetPoemsLines: (a: boolean) => void;
+    ctsGetLineEdit: () => void;
+    ctsLineEdit: (a: string) => void;
+    ctsGetLines: () => void;
+    ctsRecognizeDevice: (a: string) => void;
+    ctsCreateGameHost: (a: string) => void;
+    ctsJoinGameAs: (a: string, b: string, c: string) => void;
+    ctsGetGameSettingsInfo: () => void;
+    ctsGetLastLineStatus: () => void;
+    ctsAlterGameSettings: (a: IGameSettingsInfo) => void;
+    ctsGetSettingsEnabled: () => void;
+    ctsStartGame: () => void;
+    ctsGetEditorActive: () => void;
+    ctsPassTurn: (a: string, b: string) => void;
+    ctsLastLine: (a: string) => void;
+    ctsLeave: () => void;
+    ctsSendCanvas: (a: Point[][]) => void;
+    ctsGetCanvas: () => void;
 }
 
 export interface InterServerEvents {
