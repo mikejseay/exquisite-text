@@ -100,6 +100,7 @@ class Member {
 
     unsetReceive() {
         this.socket.removeAllListeners("ctsRequestUserTableInfo");
+        this.socket.removeAllListeners("ctsRequestPoemsLines");
         this.socket.removeAllListeners("ctsRequestGameSettingsInfo");
         this.socket.removeAllListeners("ctsRequestSettingsEnabled");
         this.socket.removeAllListeners("ctsLeave");

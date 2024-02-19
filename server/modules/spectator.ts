@@ -27,6 +27,7 @@ class Spectator extends Member {
     unsetReceive() {
         super.unsetReceive();
         this.socket.removeAllListeners("ctsGetLines");
+        this.socket.removeAllListeners("ctsRequestCanvas");
     }
 
     getAllPoemLines() {

@@ -158,6 +158,7 @@ class Editor extends Member {
         this.socket.removeAllListeners("ctsRequestLastLineStatus");
         this.socket.removeAllListeners("ctsAlterGameSettings");
         this.socket.removeAllListeners("ctsStartGame");
+        this.socket.removeAllListeners("ctsSendCanvas");
     }
 
     requestLineEdit() {
