@@ -91,7 +91,6 @@ class Member {
         this.socket.on("ctsRequestPoemsLines", (shouldTest) => this.requestPoemsLinesInfo(shouldTest));
         this.socket.on("ctsRequestGameSettingsInfo", () => this.requestGameSettingsInfo());
         this.socket.on("ctsRequestSettingsEnabled", () => this.requestSettingsEnabled());
-        this.socket.on("getRoomCode", () => this.requestRoomCode());
         this.socket.on("ctsLeave", () => this.leaveRoom());
 
         // These are all reserved events
@@ -103,7 +102,6 @@ class Member {
         this.socket.removeAllListeners("ctsRequestUserTableInfo");
         this.socket.removeAllListeners("ctsRequestGameSettingsInfo");
         this.socket.removeAllListeners("ctsRequestSettingsEnabled");
-        this.socket.removeAllListeners("getRoomCode");
         this.socket.removeAllListeners("ctsLeave");
         this.socket.removeAllListeners("disconnect");
         this.socket.removeAllListeners("disconnecting");
