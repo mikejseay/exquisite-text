@@ -71,7 +71,7 @@ class Member {
     leaveRoom() {
         this.connected = false;
         console.log(this.name, " leaving ", this.roomId);
-        this.io.to(this.socket.id).emit("navigate", "/"); // navigate home (if possible)
+        this.io.to(this.socket.id).emit("stcNavigate", "/"); // navigate home (if possible)
         delete deviceIDToRoomId[this.deviceID];
         this.socket.leave(this.roomId);
         this.unsetReceive(); // remove listeners
@@ -87,12 +87,11 @@ class Member {
     // getUserTableInfo
 
     setReceive() {
-        this.socket.on("getUserTableInfo", (shouldTest) => this.requestUserTableInfo(shouldTest));
-        this.socket.on("getPoemsLines", (shouldTest) => this.requestPoemsLinesInfo(shouldTest));
-        this.socket.on("getGameSettingsInfo", () => this.requestGameSettingsInfo());
-        this.socket.on("getSettingsEnabled", () => this.requestSettingsEnabled());
-        this.socket.on("getRoomCode", () => this.requestRoomCode());
-        this.socket.on("leave", () => this.leaveRoom());
+        this.socket.on("ctsRequestUserTableInfo", (shouldTest) => this.requestUserTableInfo(shouldTest));
+        this.socket.on("ctsRequestPoemsLines", (shouldTest) => this.requestPoemsLinesInfo(shouldTest));
+        this.socket.on("ctsRequestGameSettingsInfo", () => this.requestGameSettingsInfo());
+        this.socket.on("ctsRequestSettingsEnabled", () => this.requestSettingsEnabled());
+        this.socket.on("ctsLeave", () => this.leaveRoom());
 
         // These are all reserved events
         this.socket.on("disconnect", () => this.disconnect());
@@ -100,11 +99,11 @@ class Member {
     }
 
     unsetReceive() {
-        this.socket.removeAllListeners("getUserTableInfo");
-        this.socket.removeAllListeners("getGameSettingsInfo");
-        this.socket.removeAllListeners("getSettingsEnabled");
-        this.socket.removeAllListeners("getRoomCode");
-        this.socket.removeAllListeners("leave");
+        this.socket.removeAllListeners("ctsRequestUserTableInfo");
+        this.socket.removeAllListeners("ctsRequestPoemsLines");
+        this.socket.removeAllListeners("ctsRequestGameSettingsInfo");
+        this.socket.removeAllListeners("ctsRequestSettingsEnabled");
+        this.socket.removeAllListeners("ctsLeave");
         this.socket.removeAllListeners("disconnect");
         this.socket.removeAllListeners("disconnecting");
     }
@@ -118,7 +117,7 @@ class Member {
         this.io
             .to(this.socket.id)
             .emit(
-                "userTableInfo",
+                "stcUserTableInfo",
                 shouldTest
                     ? userInfoTestData
                     : roomIdToRoom.get(this.roomId)!.currentUserTableInfo(),
@@ -135,7 +134,7 @@ class Member {
                 this.io
                     .to(this.socket.id)
                     .emit(
-                        "poemLines",
+                        "stcPoemLines",
                         linesArray,
                     );
             }
@@ -148,11 +147,11 @@ class Member {
         }
         console.log(this.name, "request poems from room which has", thisRoom.finishedPoems.length);
         for (const poemObj of thisRoom.finishedPoems) {
-            // this.io.in(this.roomId).emit("poemLines", Array.from(poemObj.lines));
+            // this.io.in(this.roomId).emit("stcPoemLines", Array.from(poemObj.lines));
             this.io
                 .to(this.socket.id)
                 .emit(
-                    "poemLines",
+                    "stcPoemLines",
                     Array.from(poemObj.lines),
                 );
         }
@@ -160,7 +159,7 @@ class Member {
 
     requestRoomCode() {
         console.log(this.name, "requestRoomCode");
-        this.io.to(this.socket.id).emit("roomCode", this.roomId);
+        this.io.to(this.socket.id).emit("stcRoomCode", this.roomId);
     }
 
     requestGameSettingsInfo() {
@@ -171,12 +170,12 @@ class Member {
         }
         this.io
             .to(this.socket.id)
-            .emit("gameSettingsInfo", roomIdToRoom.get(this.roomId)!.gameSettings);
+            .emit("stcGameSettingsInfo", roomIdToRoom.get(this.roomId)!.gameSettings);
     }
 
     requestSettingsEnabled() {
         console.log(this.name, "requestSettingsEnabled");
-        this.io.to(this.socket.id).emit("gameSettingsEnabled", false);
+        this.io.to(this.socket.id).emit("stcGameSettingsEnabled", false);
     }
 
     disconnect() {
@@ -220,7 +219,7 @@ class Member {
     sendPoemAsLines(poemObj: Poem) {
     // crucial method that sends the poem to all users
     // make sure the correct members receive this
-        this.io.in(this.roomId).emit("poemLines", Array.from(poemObj.lines));
+        this.io.in(this.roomId).emit("stcPoemLines", Array.from(poemObj.lines));
     }
 }
 

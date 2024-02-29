@@ -21,7 +21,6 @@ import { createServer } from "http";
 
 // app assembles the two routers and creates the express app and does its basic configuration
 import app from "./app";
-// "poem" contains the logic for the poem application
 import sockets from "./modules/sockets";
 
 import debug0 from "debug";

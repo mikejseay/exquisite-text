@@ -7,6 +7,7 @@ import {
     IGameSettingsInfo,
     IPoem,
     InterServerEvents,
+    Point,
     ServerToClientEvents,
     SocketData,
 } from "../../src/types";
@@ -120,32 +121,44 @@ class Editor extends Member {
     // super.setSend()
     // ((line1Chars, line2Chars) in previousEditor's lineInput)
 
+    receiveCanvas(strokeHistory: Point[][]) {
+        console.log("receiveCanvas:", strokeHistory);
+        const thisRoom = roomIdToRoom.get(this.roomId);
+        if (!thisRoom || !thisRoom.editors) {
+            console.log("thisRoom.editors not found");
+            return;
+        }
+        thisRoom.finishedCanvas = strokeHistory;
+    }
+
     setReceive() {
         super.setReceive();
-        this.socket.on("getLineEdit", () => this.requestLineEdit()); // initial populate
-        this.socket.on("lineEdit", (value) => this.handleLineEdit(value)); //whenever the input box is edited.
-        this.socket.on("getEditorActive", () => this.requestActivity());
-        this.socket.on("passTurn", (firstPart, secondPart) =>
+        this.socket.on("ctsRequestLineEdit", () => this.requestLineEdit()); // initial populate
+        this.socket.on("ctsEditLine", (value) => this.handleLineEdit(value)); //whenever the input box is edited.
+        this.socket.on("ctsRequestEditorActive", () => this.requestActivity());
+        this.socket.on("ctsSendLineParts", (firstPart, secondPart) =>
             this.handlePassTurn(firstPart, secondPart),
         );
-        this.socket.on("lastLine", (value) => this.handleLastLine(value)); // whenever a new line has been submitted into the poem.
-        this.socket.on("getLastLineStatus", () => this.requestLastLineStatus());
-        this.socket.on("alterGameSettings", (value) =>
+        this.socket.on("ctsSendLastLine", (value) => this.handleLastLine(value)); // whenever a new line has been submitted into the poem.
+        this.socket.on("ctsRequestLastLineStatus", () => this.requestLastLineStatus());
+        this.socket.on("ctsAlterGameSettings", (value) =>
             this.alterGameSettings(value),
         );
-        this.socket.on("startGame", () => this.broadcastStartGame());
+        this.socket.on("ctsStartGame", () => this.broadcastStartGame());
+        this.socket.on("ctsSendCanvas", (value: Point[][]) => this.receiveCanvas(value));
     }
 
     unsetReceive() {
         super.unsetReceive();
-        this.socket.removeAllListeners("getLineEdit");
-        this.socket.removeAllListeners("lineEdit");
-        this.socket.removeAllListeners("getEditorActive");
-        this.socket.removeAllListeners("passTurn");
-        this.socket.removeAllListeners("lastLine");
-        this.socket.removeAllListeners("getLastLineStatus");
-        this.socket.removeAllListeners("alterGameSettings");
-        this.socket.removeAllListeners("startGame");
+        this.socket.removeAllListeners("ctsRequestLineEdit");
+        this.socket.removeAllListeners("ctsEditLine");
+        this.socket.removeAllListeners("ctsRequestEditorActive");
+        this.socket.removeAllListeners("ctsSendLineParts");
+        this.socket.removeAllListeners("ctsSendLastLine");
+        this.socket.removeAllListeners("ctsRequestLastLineStatus");
+        this.socket.removeAllListeners("ctsAlterGameSettings");
+        this.socket.removeAllListeners("ctsStartGame");
+        this.socket.removeAllListeners("ctsSendCanvas");
     }
 
     requestLineEdit() {
@@ -154,7 +167,7 @@ class Editor extends Member {
         // the halfLine of the first Poem in the queue (if this editor is active)
 
         if (this.hasPoemInQueue()) {
-            this.io.to(this.socket.id).emit("lineEdit", this.poemQueue[0].halfLine);
+            this.io.to(this.socket.id).emit("stcLineEdit", this.poemQueue[0].halfLine);
         }
     }
 
@@ -180,7 +193,7 @@ class Editor extends Member {
         }
         this.io
             .to(thisRoom.editors.get(this.targetEditorID)!.socket.id)
-            .emit("lineEditorWatch", value);
+            .emit("stcLineEditorWatch", value);
 
         const thisPoem = this.poemQueue[0];
         if (!isNil(thisPoem)) {
@@ -190,7 +203,7 @@ class Editor extends Member {
 
     requestActivity() {
         console.log(this.name, "requestEditorActivity");
-        this.io.to(this.socket.id).emit("editorActive", this.hasPoemInQueue());
+        this.io.to(this.socket.id).emit("stcEditorActive", this.hasPoemInQueue());
     }
 
     hasPoemInQueue() {
@@ -215,13 +228,13 @@ class Editor extends Member {
 
     requestLastLineStatus() {
         console.log("requestLastLineStatus");
-        this.io.to(this.socket.id).emit("lastLine", this.currentlyOnLastLine());
+        this.io.to(this.socket.id).emit("stcLastLine", this.currentlyOnLastLine());
     }
 
     possibleStartNewTurn() {
         if (this.hasPoemInQueue()) {
             this.lastActivity = Date.now(); // give them some time to type
-            this.io.to(this.socket.id).emit("lineEdit", this.poemQueue[0].halfLine);
+            this.io.to(this.socket.id).emit("stcLineEdit", this.poemQueue[0].halfLine);
             const thisPoem = this.poemQueue[0];
             console.log(
                 "we think the poem has",
@@ -230,15 +243,15 @@ class Editor extends Member {
             );
 
             if (thisPoem.lines.size === thisPoem.targetLines - 2) {
-                this.io.to(this.socket.id).emit("lastLine", true);
+                this.io.to(this.socket.id).emit("stcLastLine", true);
             } else {
-                this.io.to(this.socket.id).emit("lastLine", false);
+                this.io.to(this.socket.id).emit("stcLastLine", false);
             }
-            this.io.to(this.socket.id).emit("editorActive", true);
+            this.io.to(this.socket.id).emit("stcEditorActive", true);
             this.isCurrentlyEditing = true;
         } else {
-            this.io.to(this.socket.id).emit("lineEdit", "");
-            this.io.to(this.socket.id).emit("editorActive", false);
+            this.io.to(this.socket.id).emit("stcLineEdit", "");
+            this.io.to(this.socket.id).emit("stcEditorActive", false);
             this.isCurrentlyEditing = false;
         } // otherwise, leave it the way it was?
     }
@@ -352,24 +365,24 @@ class Editor extends Member {
     }
 
     alterGameSettings(gameSettings: IGameSettingsInfo) {
-        console.log("alterGameSettings");
+        console.log("ctsAlterGameSettings");
         if (!roomIdToRoom ||  !roomIdToRoom.get || !this || !this.roomId) {
             console.log("thisRoom not found");
             return;
         }
         roomIdToRoom.get(this.roomId)!.gameSettings = gameSettings;
-        this.socket.to(this.roomId).emit("gameSettingsInfo", gameSettings);
+        this.socket.to(this.roomId).emit("stcGameSettingsInfo", gameSettings);
     }
 
     broadcastStartGame() {
         // global in nature, so it will mainly eal with the room
-        console.log("startGame");
+        console.log("ctsStartGame");
         roomIdToRoom.get(this.roomId)!.setUpGame();
     }
 
     requestSettingsEnabled() {
         console.log(this.name, "requestSettingsEnabled");
-        this.io.to(this.socket.id).emit("gameSettingsEnabled", Boolean(this.isVIP()));
+        this.io.to(this.socket.id).emit("stcGameSettingsEnabled", Boolean(this.isVIP()));
     }
 
     isVIP() {

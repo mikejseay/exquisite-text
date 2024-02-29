@@ -1,5 +1,5 @@
-import { Key } from "react";
-import { NavigateFunction } from "react-router-dom";
+import type { Key } from "react";
+import type { NavigateFunction } from "react-router-dom";
 
 export enum Role {
     activeEditor = "activeEditor",
@@ -75,53 +75,54 @@ export interface ILine {
     addedAt: Date;
 }
 
-export interface ServerToClientEvents {
-    // line: (a: ILine) => void;
-    lineEdit: (a: string) => void;
-    lineEditSize: (a: number, b: number) => void;
-    poem: (a: IPoem) => void;
-    poemLines: (a: ILine[]) => void;
+export interface Point {
+    x: number;
+    y: number;
+    lineWidth: number;
+  }
 
-    roomCode: (a: string) => void;
-    joinError: (a: string) => void;
-    joinSuccess: () => void;
-    userTableInfo: (a: IUserTableInfo) => void;
-    gameSettingsInfo: (a: IGameSettingsInfo) => void;
-    gameSettingsEnabled: (a: boolean) => void;
-    navigate: (a: string) => void;
-    editorActive: (a: boolean) => void;
-    lastLine: (a: boolean) => void;
-    checkIfActive: () => void;
-    lineEditorWatch: (a: string) => void;
-    lineSpectator: (a: number, b: string) => void;
-    lineEditSpectator: (a: number, b: string) => void;
+interface CanvasHistory {
+    user: string;
+    strokeHistory: Point[][]
+}
+
+export interface ServerToClientEvents {
+    stcLineEdit: (a: string) => void;
+    stcPoemLines: (a: ILine[]) => void;
+    stcRoomCode: (a: string) => void;
+    stcJoinError: (a: string) => void;
+    stcUserTableInfo: (a: IUserTableInfo) => void;
+    stcGameSettingsInfo: (a: IGameSettingsInfo) => void;
+    stcGameSettingsEnabled: (a: boolean) => void;
+    stcNavigate: (a: string) => void;
+    stcEditorActive: (a: boolean) => void;
+    stcLastLine: (a: boolean) => void;
+    stcLineEditorWatch: (a: string) => void;
+    stcLineSpectator: (a: number, b: string) => void;
+    stcLineEditSpectator: (a: number, b: string) => void;
+    stcStrokeHistory: (a: Point[][]) => void;
 }
 
 export interface ClientToServerEvents {
-    getUserTableInfo: (a: boolean) => void;
-    getPoemsLines: (a: boolean) => void;
-    createTestRoom: () => void;
-
-    getLineEdit: () => void;
-    lineEdit: (a: string) => void;
-    line: (a: string) => void;
-    poemDone: () => void;
-    getLines: () => void;
-    getPoems: () => void;
-    getPoemByID: (a: number) => void;
-    getRoomCode: () => void;
-    recognizeDevice: (a: string) => void;
-    createGameHost: (a: string) => void;
-    joinGameAs: (a: string, b: string, c: string) => void;
-    getGameSettingsInfo: () => void;
-    getLastLineStatus: () => void;
-    alterGameSettings: (a: IGameSettingsInfo) => void;
-    getSettingsEnabled: () => void;
-    startGame: () => void;
-    getEditorActive: () => void;
-    passTurn: (a: string, b: string) => void;
-    lastLine: (a: string) => void;
-    leave: () => void;
+    ctsRequestUserTableInfo: (a: boolean) => void;
+    ctsRequestPoemsLines: (a: boolean) => void;
+    ctsRequestLineEdit: () => void;
+    ctsEditLine: (a: string) => void;
+    ctsGetLines: () => void;
+    ctsRecognizeDevice: (a: string) => void;
+    ctsCreateGameHost: (a: string) => void;
+    ctsJoinAs: (a: string, b: string, c: string) => void;
+    ctsRequestGameSettingsInfo: () => void;
+    ctsRequestLastLineStatus: () => void;
+    ctsAlterGameSettings: (a: IGameSettingsInfo) => void;
+    ctsRequestSettingsEnabled: () => void;
+    ctsStartGame: () => void;
+    ctsRequestEditorActive: () => void;
+    ctsSendLineParts: (a: string, b: string) => void;
+    ctsSendLastLine: (a: string) => void;
+    ctsLeave: () => void;
+    ctsSendCanvas: (a: Point[][]) => void;
+    ctsRequestCanvas: () => void;
 }
 
 export interface InterServerEvents {
@@ -175,7 +176,9 @@ export interface ISocketInfoListeners {
     // React.useState<boolean>(false);
     setEditorActive: (value: boolean |
         ((prevVar: boolean) => boolean)) => void;
-    navigate: NavigateFunction;
+        navigate: NavigateFunction;
+    setStrokeHistory: (value: Point[][] |
+        ((prevVar: Point[][]) => Point[][])) => void;
 }
 
 export interface ISocketInfo {
@@ -203,4 +206,7 @@ export interface ISocketInfo {
     editorActive: boolean | null;
     setPoemInput: (value: string |
         ((prevVar: string) => string)) => void;
+    strokeHistory: Point[][] | null;
+    setStrokeHistory: (value: Point[][] |
+        ((prevVar: Point[][]) => Point[][])) => void;
 }

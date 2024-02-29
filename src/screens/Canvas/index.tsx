@@ -1,28 +1,72 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Button from "@mui/material/Button";
-
-interface Point {
-  x: number;
-  y: number;
-  lineWidth: number;
-}
+import { Point } from "../../types";
+import { emitCreateGameHost, emitJoinAs, emitRecognizeDevice, emitSendCanvas } from "../../context/SocketRequestors";
 
 type ExtendedTouch = Touch & {
     force?: number;
     touchType?: string;
 };
 
+export const panelHeightRatioOfWindow = 0.3;
 const defaultLineWidth = 30;
 const fullCanvasHeightRatioOfWindow = 0.8;
-const panelHeightRatioOfWindow = 0.3;
 const overlap = 0.2;
 const defaultPressure = 0.1;
 const lineColor = "grey";
 
+/* TODO:
+    [ ] Ensure that spectator receives entire drawing instead of just single frame
+    [ ] Refactor names of server class methods (e.g `requestLineEdit` should be `sendLineEdit`?)
+    [ ] Modularize all server socket functions to work with both poems and canvases
+*/
+
+export function drawOnCanvas (newPoints: Point[], canvasRef: React.MutableRefObject<HTMLCanvasElement | null>) {
+    if (!canvasRef) {
+        console.warn("No canvasRef in CanvasSpectator");
+        return;
+    }
+    const canvas = canvasRef.current;
+    const context = canvas?.getContext("2d");
+    if (!context) {
+        console.warn("No context in CanvasSpectator");
+        return;
+    }
+
+    context.strokeStyle = lineColor;
+    context.lineCap = "round";
+    context.lineJoin = "round";
+
+    // newPoints is length 1 if being drawn by handleStart
+    if (newPoints.length === 1) {
+        const point = newPoints[0];
+        context.fillStyle = lineColor;
+        context.lineWidth = point.lineWidth;
+        context.beginPath();
+        context.arc(point.x, point.y, point.lineWidth / 2, 0, Math.PI * 2);
+        context.closePath();
+        context.fill();
+        return;
+    }
+
+    context.beginPath();
+
+    // newPoints is length 2 if being drawn by handleMove
+    for (let i = 0; i < newPoints.length - 1; i++) {
+        const startPoint = newPoints[i];
+        const endPoint = newPoints[i + 1];
+
+        context.moveTo(startPoint.x, startPoint.y);
+        context.lineWidth = startPoint.lineWidth;
+        context.lineTo(endPoint.x, endPoint.y);
+        context.stroke();
+    }
+}
+
 const Canvas: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [ points, setPoints ] = useState<Point[]>([]);
-    // const [ strokeHistory, setStrokeHistory ] = useState<Point[][]>([]);
+    const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
     const [ playerCanvases, setPlayerCanvases ] = useState<ImageData[]>([]);
     const [ isMousedown, setIsMousedown ] = useState(false);
     const [ allowDirect, setAllowDirect ] = useState(true);
@@ -31,6 +75,14 @@ const Canvas: React.FC = () => {
     const [ drawType, setDrawType ] = useState<"fill" | "stroke" | "noDrawYet">("noDrawYet");
     const [ player, setPlayer ] = useState<number>(0);
     const [ coordinates, setCoordinates ] = useState<{ x: number, y: number}>({ x: 0, y: 0 });
+    const [ hasJoinedRoom, setHasJoinedRoom ] = useState<boolean>(false);
+
+    if (!hasJoinedRoom) {
+        emitCreateGameHost("ROOM");
+        emitRecognizeDevice();
+        emitJoinAs("Editor","ROOM", "PETER", true);
+        setHasJoinedRoom(true);
+    }
 
     const switchPlayer = () => {
         const canvas = canvasRef.current;
@@ -53,7 +105,7 @@ const Canvas: React.FC = () => {
             // context.drawImage(context.canvas, 0, -context.canvas.height * (1 - overlap));
             // context.globalCompositeOperation = "source-over";
 
-            // If the third panel is being submitted, clear the canvas, then construct a new one
+            // Completion: If the third panel is being submitted, clear the canvas, then construct a new one
             // using the "full available height", then paste the image data from each individual player's canvas
             // into the three vertical panels, shifting downwards by 0.8 times the canvas height each time.
             if (player === 2) {
@@ -71,48 +123,15 @@ const Canvas: React.FC = () => {
             } else {
                 setPlayer(player + 1);
                 setPoints([]);
-                // setStrokeHistory([]);
+                setLocalStrokeHistory([]);
             }
         }
     };
 
-    const drawOnCanvas = useCallback((newPoints: Point[]) => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const context = canvas.getContext("2d");
-        if (!context) return;
-
-        context.strokeStyle = lineColor;
-        context.lineCap = "round";
-        context.lineJoin = "round";
-
-        // newPoints is length 1 if being drawn by handleStart
-        if (newPoints.length === 1) {
-            setDrawType("fill");
-            const point = newPoints[0];
-            context.fillStyle = lineColor;
-            context.lineWidth = point.lineWidth;
-            context.beginPath();
-            context.arc(point.x, point.y, point.lineWidth / 2, 0, Math.PI * 2);
-            context.closePath();
-            context.fill();
-            return;
-        }
-
-        context.beginPath();
-
-        // newPoints is length 2 if being drawn by handleMove
-        for (let i = 0; i < newPoints.length - 1; i++) {
-            setDrawType("stroke");
-            const startPoint = newPoints[i];
-            const endPoint = newPoints[i + 1];
-
-            context.moveTo(startPoint.x, startPoint.y);
-            context.lineWidth = startPoint.lineWidth;
-            context.lineTo(endPoint.x, endPoint.y);
-            context.stroke();
-        }
-    }, []);
+    const submitCanvas = () => {
+        console.log("submitCanvas:", localStrokeHistory);
+        emitSendCanvas(localStrokeHistory);
+    };
 
     const handleStart = useCallback((e: React.MouseEvent<Element, MouseEvent> | React.TouchEvent<Element>) => {
         let pressure = defaultPressure;
@@ -147,7 +166,7 @@ const Canvas: React.FC = () => {
         setLineWidth(Math.log(pressure + 1) * defaultLineWidth);
         const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * defaultLineWidth };
         setPoints((prev) => [ ...prev, newPoint ]);
-        drawOnCanvas([ newPoint ]);
+        drawOnCanvas([ newPoint ], canvasRef);
     }, [ allowDirect, drawOnCanvas, player ]);
 
     const handleMove = useCallback((e: React.MouseEvent | React.TouchEvent) => {
@@ -188,14 +207,14 @@ const Canvas: React.FC = () => {
         setLineWidth(Math.log(pressure + 1) * defaultLineWidth);
         const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * defaultLineWidth };
         setPoints((prev) => {
-            drawOnCanvas([ prev[prev.length - 1], newPoint ]);
+            drawOnCanvas([ prev[prev.length - 1], newPoint ], canvasRef);
             return [ ...prev, newPoint ];
         });
     }, [ allowDirect, drawOnCanvas, isMousedown, player ]);
 
     const handleEnd = useCallback(() => {
         setIsMousedown(false);
-        // setStrokeHistory((prev) => [ ...prev, points ]);
+        setLocalStrokeHistory((prev) => [ ...prev, points ]);
         setPoints([]);
         setLineWidth(0);
     }, [ points ]);
@@ -241,6 +260,7 @@ const Canvas: React.FC = () => {
                     ? "Pass"
                     : "Finish"}
             </Button>
+            <Button onClick={submitCanvas}>Submit Canvas</Button>
             <canvas
                 ref={canvasRef}
                 onMouseDown={handleStart}
