@@ -108,7 +108,6 @@ export interface ClientToServerEvents {
     ctsRequestPoemsLines: (a: boolean) => void;
     ctsRequestLineEdit: () => void;
     ctsEditLine: (a: string) => void;
-    ctsGetLines: () => void;
     ctsRecognizeDevice: (a: string) => void;
     ctsCreateGameHost: (a: string) => void;
     ctsJoinAs: (a: string, b: string, c: string) => void;

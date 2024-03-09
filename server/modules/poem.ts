@@ -16,11 +16,11 @@ class Poem {
     targetLines: number;
     poemIndex: number;
     io: Server<
-    ClientToServerEvents,
-    ServerToClientEvents,
-    InterServerEvents,
-    SocketData
-  >;
+        ClientToServerEvents,
+        ServerToClientEvents,
+        InterServerEvents,
+        SocketData
+    >;
     roomId: string;
     poemID: string;
     halfLine: string;
@@ -34,11 +34,11 @@ class Poem {
         targetLines: number,
         poemIndex: number,
         io: Server<
-      ClientToServerEvents,
-      ServerToClientEvents,
-      InterServerEvents,
-      SocketData
-    >,
+            ClientToServerEvents,
+            ServerToClientEvents,
+            InterServerEvents,
+            SocketData
+        >,
         roomId: string,
     ) {
         this.targetLines = targetLines;
@@ -68,13 +68,13 @@ class Poem {
         this.mostRecentEditor = authorID;
         this.halfLine = secondPart;
         this.io
-            .in(this.roomId + "_Spectators")
+            .in(`${this.roomId}_Spectators`)
             .emit("stcLineSpectator", this.poemIndex, firstPart);
     }
 
-    lineWasEdited(value: string) {
+    sendLineEditToSpectators(value: string) {
         this.io
-            .in(this.roomId + "_Spectators")
+            .in(`${this.roomId}_Spectators`)
             .emit("stcLineEditSpectator", this.poemIndex, value);
     }
 
