@@ -17,7 +17,6 @@ const lineColor = "grey";
 
 /* TODO:
     [ ] Ensure that spectator receives entire drawing instead of just single frame
-    [ ] Refactor names of server class methods (e.g `requestLineEdit` should be `sendLineEdit`?)
     [ ] Modularize all server socket functions to work with both poems and canvases
 */
 

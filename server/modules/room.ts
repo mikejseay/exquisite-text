@@ -25,17 +25,17 @@ import { sleep } from "../../src/helpers";
 class Room {
     // represents a socket.io room and a game of Exquisite Text
     io: Server<
-    ClientToServerEvents,
-    ServerToClientEvents,
-    InterServerEvents,
-    SocketData
-  >;
-    hostSocket: Socket<
-    ClientToServerEvents,
-    ServerToClientEvents,
-    InterServerEvents,
-    SocketData
-  > | null;
+        ClientToServerEvents,
+        ServerToClientEvents,
+        InterServerEvents,
+        SocketData
+    >;
+    hostSocket: null | Socket<
+        ClientToServerEvents,
+        ServerToClientEvents,
+        InterServerEvents,
+        SocketData
+    >;
     roomId: string;
 
     editors: Map<string, Editor>;
@@ -50,11 +50,11 @@ class Room {
 
     constructor(
         io: Server<
-      ClientToServerEvents,
-      ServerToClientEvents,
-      InterServerEvents,
-      SocketData
-    >,
+            ClientToServerEvents,
+            ServerToClientEvents,
+            InterServerEvents,
+            SocketData
+        >,
         hostSocket: Socket,
         room: string,
     ) {
@@ -150,8 +150,8 @@ class Room {
         }
 
         // should tell editors to navigate to /game and spectators to /spectate
-        this.io.in(this.roomId + "_Editors").emit("stcNavigate", "/game");
-        this.io.in(this.roomId + "_Spectators").emit("stcNavigate", "/spectate");
+        this.io.in(`${this.roomId}_Editors`).emit("stcNavigate", "/game");
+        this.io.in(`${this.roomId}_Spectators`).emit("stcNavigate", "/spectate");
         this.gameOngoing = true;
     }
 

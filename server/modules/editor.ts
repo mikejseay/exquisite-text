@@ -75,12 +75,12 @@ class Editor extends Member {
 
     joinRoom() {
         super.joinRoom();
-        this.socket.join(this.roomId + "_Editors");
+        this.socket.join(`${this.roomId}_Editors`);
     }
 
     leaveRoom() {
         super.leaveRoom();
-        this.socket.leave(this.roomId + "_Editors");
+        this.socket.leave(`${this.roomId}_Editors`);
         const thisRoom = roomIdToRoom.get(this.roomId);
         if (!thisRoom) {
             console.log("thisRoom not found");
@@ -133,14 +133,14 @@ class Editor extends Member {
 
     setReceive() {
         super.setReceive();
-        this.socket.on("ctsRequestLineEdit", () => this.requestLineEdit()); // initial populate
-        this.socket.on("ctsEditLine", (value) => this.handleLineEdit(value)); //whenever the input box is edited.
-        this.socket.on("ctsRequestEditorActive", () => this.requestActivity());
+        this.socket.on("ctsRequestLineEdit", () => this.sendLineEdit()); // initial populate
+        this.socket.on("ctsEditLine", (value) => this.handleLineEdit(value)); // whenever the input box is edited.
+        this.socket.on("ctsRequestEditorActive", () => this.sendActivity());
         this.socket.on("ctsSendLineParts", (firstPart, secondPart) =>
-            this.handlePassTurn(firstPart, secondPart),
+            this.handleLineParts(firstPart, secondPart),
         );
         this.socket.on("ctsSendLastLine", (value) => this.handleLastLine(value)); // whenever a new line has been submitted into the poem.
-        this.socket.on("ctsRequestLastLineStatus", () => this.requestLastLineStatus());
+        this.socket.on("ctsRequestLastLineStatus", () => this.sendLastLineStatus());
         this.socket.on("ctsAlterGameSettings", (value) =>
             this.alterGameSettings(value),
         );
@@ -161,7 +161,7 @@ class Editor extends Member {
         this.socket.removeAllListeners("ctsSendCanvas");
     }
 
-    requestLineEdit() {
+    sendLineEdit() {
         // this is activated when the game view initially loads
         // this should fill in what it's supposed to based on
         // the halfLine of the first Poem in the queue (if this editor is active)
@@ -197,11 +197,11 @@ class Editor extends Member {
 
         const thisPoem = this.poemQueue[0];
         if (!isNil(thisPoem)) {
-            thisPoem.lineWasEdited(value);
+            thisPoem.sendLineEditToSpectators(value);
         }
     }
 
-    requestActivity() {
+    sendActivity() {
         console.log(this.name, "requestEditorActivity");
         this.io.to(this.socket.id).emit("stcEditorActive", this.hasPoemInQueue());
     }
@@ -226,7 +226,7 @@ class Editor extends Member {
         }
     }
 
-    requestLastLineStatus() {
+    sendLastLineStatus() {
         console.log("requestLastLineStatus");
         this.io.to(this.socket.id).emit("stcLastLine", this.currentlyOnLastLine());
     }
@@ -256,7 +256,7 @@ class Editor extends Member {
         } // otherwise, leave it the way it was?
     }
 
-    handlePassTurn(firstPart: string, secondPart: string) {
+    handleLineParts(firstPart: string, secondPart: string) {
         const thisRoom = roomIdToRoom.get(this.roomId);
         const poemToPass = this.poemQueue.shift();
         if (isNil(poemToPass)) {
@@ -264,7 +264,7 @@ class Editor extends Member {
         }
 
         poemToPass.submitLine(this.deviceID, firstPart, secondPart);
-        poemToPass.lineWasEdited(secondPart);
+        poemToPass.sendLineEditToSpectators(secondPart);
         // should be a reference!!!
         if (!thisRoom) {
             console.log("thisRoom not found");
@@ -380,7 +380,7 @@ class Editor extends Member {
         roomIdToRoom.get(this.roomId)!.setUpGame();
     }
 
-    requestSettingsEnabled() {
+    sendSettingsEnabled() {
         console.log(this.name, "requestSettingsEnabled");
         this.io.to(this.socket.id).emit("stcGameSettingsEnabled", Boolean(this.isVIP()));
     }

@@ -24,17 +24,17 @@ class Member {
     // the old socket gets disconnected and removed and the new socket replaces it)
 
     io: Server<
-    ClientToServerEvents,
-    ServerToClientEvents,
-    InterServerEvents,
-    SocketData
-  >;
+        ClientToServerEvents,
+        ServerToClientEvents,
+        InterServerEvents,
+        SocketData
+    >;
     socket: Socket<
-    ClientToServerEvents,
-    ServerToClientEvents,
-    InterServerEvents,
-    SocketData
-  >;
+        ClientToServerEvents,
+        ServerToClientEvents,
+        InterServerEvents,
+        SocketData
+    >;
     roomId: string;
     deviceID: string;
     name: string;
@@ -43,11 +43,11 @@ class Member {
 
     constructor(
         io: Server<
-      ClientToServerEvents,
-      ServerToClientEvents,
-      InterServerEvents,
-      SocketData
-    >,
+            ClientToServerEvents,
+            ServerToClientEvents,
+            InterServerEvents,
+            SocketData
+        >,
         socket: Socket,
         roomId: string,
         deviceID: string,
@@ -87,10 +87,10 @@ class Member {
     // getUserTableInfo
 
     setReceive() {
-        this.socket.on("ctsRequestUserTableInfo", (shouldTest) => this.requestUserTableInfo(shouldTest));
-        this.socket.on("ctsRequestPoemsLines", (shouldTest) => this.requestPoemsLinesInfo(shouldTest));
-        this.socket.on("ctsRequestGameSettingsInfo", () => this.requestGameSettingsInfo());
-        this.socket.on("ctsRequestSettingsEnabled", () => this.requestSettingsEnabled());
+        this.socket.on("ctsRequestUserTableInfo", (shouldTest) => this.sendUserTableInfo(shouldTest));
+        this.socket.on("ctsRequestPoemsLines", (shouldTest) => this.sendPoemsLinesInfo(shouldTest));
+        this.socket.on("ctsRequestGameSettingsInfo", () => this.sendGameSettingsInfo());
+        this.socket.on("ctsRequestSettingsEnabled", () => this.sendSettingsEnabled());
         this.socket.on("ctsLeave", () => this.leaveRoom());
 
         // These are all reserved events
@@ -108,7 +108,7 @@ class Member {
         this.socket.removeAllListeners("disconnecting");
     }
 
-    requestUserTableInfo(shouldTest: boolean) {
+    sendUserTableInfo(shouldTest: boolean) {
         console.log(this.name, "requestUserTableInfo");
         if (!roomIdToRoom || !this.roomId) {
             console.log("roomIdToRoom not found");
@@ -124,7 +124,7 @@ class Member {
             );
     }
 
-    requestPoemsLinesInfo(shouldTest: boolean) {
+    sendPoemsLinesInfo(shouldTest: boolean) {
         const thisRoom = roomIdToRoom.get(this.roomId);
 
         if (shouldTest) {
@@ -147,6 +147,7 @@ class Member {
         }
         console.log(this.name, "request poems from room which has", thisRoom.finishedPoems.length);
         for (const poemObj of thisRoom.finishedPoems) {
+            // TODO: Explore this, this could improve server-side efficiency:
             // this.io.in(this.roomId).emit("stcPoemLines", Array.from(poemObj.lines));
             this.io
                 .to(this.socket.id)
@@ -162,7 +163,7 @@ class Member {
         this.io.to(this.socket.id).emit("stcRoomCode", this.roomId);
     }
 
-    requestGameSettingsInfo() {
+    sendGameSettingsInfo() {
         console.log(this.name, "requestGameSettingsInfo");
         if (!roomIdToRoom || !this.roomId) {
             console.log("roomIdToRoom not found");
@@ -173,7 +174,7 @@ class Member {
             .emit("stcGameSettingsInfo", roomIdToRoom.get(this.roomId)!.gameSettings);
     }
 
-    requestSettingsEnabled() {
+    sendSettingsEnabled() {
         console.log(this.name, "requestSettingsEnabled");
         this.io.to(this.socket.id).emit("stcGameSettingsEnabled", false);
     }

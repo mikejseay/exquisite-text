@@ -4,12 +4,12 @@ import Member from "./member";
 class Spectator extends Member {
     joinRoom() {
         super.joinRoom();
-        this.socket.join(this.roomId + "_Spectators");
+        this.socket.join(`${this.roomId}_Spectators`);
     }
 
     leaveRoom() {
         super.leaveRoom();
-        this.socket.leave(this.roomId + "_Spectators");
+        this.socket.leave(`${this.roomId}_Spectators`);
         const thisRoom = roomIdToRoom.get(this.roomId);
         if (!thisRoom) {
             console.log("thisRoom not found");
@@ -20,30 +20,15 @@ class Spectator extends Member {
 
     setReceive() {
         super.setReceive();
-        this.socket.on("ctsGetLines", () => this.getAllPoemLines());
-        this.socket.on("ctsRequestCanvas", () => this.getCanvas());
+        this.socket.on("ctsRequestCanvas", () => this.sendCanvas());
     }
 
     unsetReceive() {
         super.unsetReceive();
-        this.socket.removeAllListeners("ctsGetLines");
         this.socket.removeAllListeners("ctsRequestCanvas");
     }
 
-    getAllPoemLines() {
-        const thisRoom = roomIdToRoom.get(this.roomId);
-        if (!thisRoom) {
-            console.log("thisRoom not found");
-            return;
-        }
-        for (const thisEditor of thisRoom.editors.values()) {
-            for (const thisPoem of thisEditor.poemQueue) {
-                thisPoem.sendAllLinesTo(this.socket.id);
-            }
-        }
-    }
-
-    getCanvas() {
+    sendCanvas() {
         const thisRoom = roomIdToRoom.get(this.roomId);
         if (!thisRoom) {
             console.log("thisRoom not found");
