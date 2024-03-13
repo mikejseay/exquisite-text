@@ -110,9 +110,9 @@ class Editor extends Member {
             }
         } else {
             // if we are still in the lobby then tell first editor to check whether they are VIP
-            const firstEditor = thisRoom.editors.values().next().value;
+            const firstEditor: Editor | undefined = thisRoom.editors.values().next().value;
             if (!isNil(firstEditor)) {
-                firstEditor.requestSettingsEnabled();
+                firstEditor.sendSettingsEnabled();
             }
         }
     }
@@ -392,6 +392,12 @@ class Editor extends Member {
             return;
         }
         return thisRoom.editors.keys().next().value === this.deviceID;
+    }
+
+    reinstateContext() {
+        this.sendLineEdit();
+        this.sendActivity();
+        this.sendLastLineStatus();
     }
 }
 

@@ -36,23 +36,12 @@ import "./LineInput.css";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import {
     emitEditLine,
-    emitRequestEditorActive,
-    emitRequestLastLineStatus,
-    emitRequestLineEdit,
     emitSendLastLine,
     emitSendLineParts,
 } from "../../context/SocketRequestors";
 
 const LineInput = () => {
-
     // TODO: refactor by giving info before navigating user to Game route
-    const [ rendered, setRendered ] = React.useState(false);
-    if (!rendered) {
-        emitRequestLineEdit();
-        emitRequestEditorActive();
-        emitRequestLastLineStatus();
-        setRendered(true);
-    }
 
     const {
         poemInput,
@@ -62,7 +51,13 @@ const LineInput = () => {
         setPoemInput,
         lineLength,
     } = useSocketInfo();
-    if ((poemInput === null) || (poemInputSpectate === null) || (onLastLine === null) || (editorActive === null) || (lineLength === null)) {
+    if (
+        poemInput === null ||
+        poemInputSpectate === null ||
+        onLastLine === null ||
+        editorActive === null ||
+        lineLength === null
+    ) {
         return null;
     }
 

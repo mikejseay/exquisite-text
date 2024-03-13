@@ -16,8 +16,13 @@ const defaultPressure = 0.1;
 const lineColor = "grey";
 
 /* TODO:
+    [ ] Check for usages of 
     [ ] Ensure that spectator receives entire drawing instead of just single frame
     [ ] Modularize all server socket functions to work with both poems and canvases
+    [ ] For the watcher, the cursor is not in right spot until writer starts writing:
+        As a part of reinstateContext, find the editor you're supposed to be spectating,
+        Find the poem they're editing, get the current line edit, and send it via "stcLineEditorWatch"
+
 */
 
 export function drawOnCanvas (newPoints: Point[], canvasRef: React.MutableRefObject<HTMLCanvasElement | null>) {
