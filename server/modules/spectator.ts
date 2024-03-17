@@ -42,9 +42,28 @@ class Spectator extends Member {
             .emit("stcStrokeHistory", theCanvas);
     }
 
+    sendAllPoemLines() {
+        const thisRoom = roomIdToRoom.get(this.roomId);
+        if (!thisRoom) {
+            console.log("thisRoom not found");
+            return;
+        }
+        for (const thisEditor of thisRoom.editors.values()) {
+            for (const thisPoem of thisEditor.poemQueue) {
+                thisPoem.sendAllLinesTo(this.socket.id);
+            }
+        }
+    }
+
     disconnect() {
         this.lastActivity = Date.now(); // refresh activity
         super.disconnect();
+    }
+
+    reinstateContext() {
+        // TODO: Placeholder
+        // super.reinstateContext();
+        this.sendAllPoemLines();
     }
 }
 

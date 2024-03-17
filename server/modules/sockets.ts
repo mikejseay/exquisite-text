@@ -76,8 +76,8 @@ function sockets(
                     theMember.socket.disconnect(); // force disconnect
                     theMember.socket = socket; // connect the new socket
                     theMember.joinRoom(); // re-join the correct rooms
-                // TODO: next big important piece: reinstate context on re-join
-                // theMember.reinstateContext();  // something like this
+                    // TODO: next big important piece: reinstate context on re-join
+                    theMember.reinstateContext();  // something like this
                 // theMember.setReceive(); // amazingly, this isn't necessary...
                 }
 

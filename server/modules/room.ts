@@ -153,6 +153,11 @@ class Room {
         this.io.in(`${this.roomId}_Editors`).emit("stcNavigate", "/game");
         this.io.in(`${this.roomId}_Spectators`).emit("stcNavigate", "/spectate");
         this.gameOngoing = true;
+
+        for (const thisEditor of this.editors.values()) {
+            thisEditor.sendActivity();
+            thisEditor.sendLastLineStatus();
+        }
     }
 
     reorganizeEditors() {
