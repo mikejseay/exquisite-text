@@ -2,9 +2,14 @@ import type { Key } from "react";
 import type { NavigateFunction } from "react-router-dom";
 
 export enum Role {
+    EDITOR = "Editor",
+    SPECTATOR = "Spectator"
+}
+
+// Unused
+enum EditorStatus {
     activeEditor = "activeEditor",
     inactiveEditor = "inactiveEditor",
-    // spectator = "spectator",
 }
 
 export enum LineLength {
@@ -43,7 +48,7 @@ export interface IUserInfo {
     name: string;
     color: string;
     turn: number;
-    role: Role;
+    role: EditorStatus;
     turnsAway: number;
 }
 

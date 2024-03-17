@@ -11,6 +11,7 @@ import Room from "./room";
 import {
     ClientToServerEvents,
     InterServerEvents,
+    Role,
     ServerToClientEvents,
     SocketData,
 } from "../../src/types";
@@ -106,7 +107,7 @@ function sockets(
         });
 
         // TODO: role should be an enum
-        socket.on("ctsJoinAs", (role, roomId, name, isTest = false) => {
+        socket.on("ctsJoinAs", (role: Role | string, roomId: string, name: string, isTest = false) => {
             console.log(
                 "socket",
                 socket.id,
@@ -129,7 +130,7 @@ function sockets(
                 console.log("targetRoom not found");
                 return;
             }
-            if (role === "Editor") {
+            if (role === Role.EDITOR) {
                 if (targetRoom.gameOngoing) {
                     console.log(roomId, "game is already ongoing");
                     io.to(socket.id).emit(
@@ -160,7 +161,7 @@ function sockets(
                 // console.log("sent room code");
                 targetRoom.addEditor(deviceID, thisEditor);
                 console.log("editor added to room");
-            } else if (role === "Spectator") {
+            } else if (role === Role.SPECTATOR) {
                 deviceIDToRoomId[deviceID] = roomId;
                 const thisSpectator = new Spectator(io, socket, roomId, deviceID, name);
                 thisSpectator.joinRoom();

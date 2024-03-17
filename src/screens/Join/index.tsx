@@ -10,6 +10,7 @@ import {
 } from "../../constants";
 import { emitJoinAs } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
+import { Role } from "../../types";
 
 export default function Join() {
 
@@ -34,12 +35,12 @@ export default function Join() {
     };
 
     const handleWritePress = () => {
-        emitJoinAs("Editor", roomId, name);
+        emitJoinAs(Role.EDITOR, roomId, name);
         setRoomCode(roomId.toUpperCase());
     };
 
     const handleSpectatePress = () => {
-        emitJoinAs("Spectator", roomId, name);
+        emitJoinAs(Role.SPECTATOR, roomId, name);
         setRoomCode(roomId.toUpperCase());
     };
 
