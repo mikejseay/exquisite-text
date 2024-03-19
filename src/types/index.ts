@@ -10,6 +10,7 @@ export enum Role {
 enum EditorStatus {
     activeEditor = "activeEditor",
     inactiveEditor = "inactiveEditor",
+    // spectator = "spectator",
 }
 
 export enum LineLength {
