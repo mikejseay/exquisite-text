@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Button from "@mui/material/Button";
-import { Point } from "../../types";
+import { Point, Role } from "../../types";
 import { emitCreateGameHost, emitJoinAs, emitRecognizeDevice, emitSendCanvas } from "../../context/SocketRequestors";
 
 type ExtendedTouch = Touch & {
@@ -84,7 +84,7 @@ const Canvas: React.FC = () => {
     if (!hasJoinedRoom) {
         emitCreateGameHost("ROOM");
         emitRecognizeDevice();
-        emitJoinAs("Editor","ROOM", "PETER", true);
+        emitJoinAs(Role.EDITOR,"ROOM", "PETER", true);
         setHasJoinedRoom(true);
     }
 

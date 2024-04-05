@@ -2,9 +2,8 @@ import type { Key } from "react";
 import type { NavigateFunction } from "react-router-dom";
 
 export enum Role {
-    activeEditor = "activeEditor",
-    inactiveEditor = "inactiveEditor",
-    // spectator = "spectator",
+    EDITOR = "Editor",
+    SPECTATOR = "Spectator"
 }
 
 export enum LineLength {
@@ -37,22 +36,6 @@ export interface IGameSettingsInfo {
     nRounds: number;
     nPoems: number;
 }
-
-export interface IUserInfo {
-    id: string;
-    name: string;
-    color: string;
-    turn: number;
-    role: Role;
-    turnsAway: number;
-}
-
-// export interface ILine {
-//     id: Key;
-//     user: IUserInfo;
-//     value: string;
-//     createdAt: Date;
-// }
 
 export interface IPoems {
     [id: string]: IPoem;
@@ -110,7 +93,7 @@ export interface ClientToServerEvents {
     ctsEditLine: (a: string) => void;
     ctsRecognizeDevice: (a: string) => void;
     ctsCreateGameHost: (a: string) => void;
-    ctsJoinAs: (a: string, b: string, c: string) => void;
+    ctsJoinAs: (role: Role, roomId: string, name: string) => void;
     ctsRequestGameSettingsInfo: () => void;
     ctsRequestLastLineStatus: () => void;
     ctsAlterGameSettings: (a: IGameSettingsInfo) => void;

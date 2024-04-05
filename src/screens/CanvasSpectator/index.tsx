@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { drawOnCanvas, panelHeightRatioOfWindow  } from "../Canvas";
 import { emitJoinAs, emitRecognizeDevice, emitRequestCanvas } from "../../context/SocketRequestors";
+import { Role } from "../../types";
 
 
 const CanvasSpectator: React.FC = () => {
@@ -11,7 +12,7 @@ const CanvasSpectator: React.FC = () => {
 
     if (!hasJoinedRoom) {
         emitRecognizeDevice();
-        emitJoinAs("Spectator", "ROOM", "MIKEY", true);
+        emitJoinAs(Role.SPECTATOR, "ROOM", "MIKEY", true);
         emitRequestCanvas();
         setHasJoinedRoom(true);
     }
