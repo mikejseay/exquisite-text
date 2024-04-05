@@ -106,8 +106,7 @@ function sockets(
             console.log("room", roomId, "created with ", socket.id, "as host");
         });
 
-        // TODO: role should be an enum
-        socket.on("ctsJoinAs", (role: Role | string, roomId: string, name: string, isTest = false) => {
+        socket.on("ctsJoinAs", (role: Role, roomId: string, name: string, isTest = false) => {
             console.log(
                 "socket",
                 socket.id,
