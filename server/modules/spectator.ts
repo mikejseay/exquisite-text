@@ -34,12 +34,12 @@ class Spectator extends Member {
             console.log("thisRoom not found");
             return;
         }
-        const theCanvas = thisRoom.finishedCanvas;
+        const canvas = thisRoom.finishedCanvas;
         // for (const thisEditor of thisRoom.editors.values()) {
         // }
         this.io
             .to(this.socket.id)
-            .emit("stcStrokeHistory", theCanvas);
+            .emit("stcStrokeHistory", canvas);
     }
 
     sendAllPoemLines() {

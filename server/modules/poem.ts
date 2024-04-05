@@ -10,6 +10,12 @@ import {
 } from "../../src/types";
 import { storeLine } from "../queries";
 
+// TODO: Break this up into a superclass called Collaboration and Poem extends Collaboration
+// Make replica of Poem called Drawing that's analogous
+// e.g:
+// class Collaboration 
+// Poem extends Collaboration
+
 class Poem {
     // represents a single poem
 
