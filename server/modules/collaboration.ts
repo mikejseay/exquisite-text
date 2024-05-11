@@ -16,11 +16,8 @@ import { storeLine } from "../queries";
 // class Collaboration 
 // Poem extends Collaboration
 
-class Poem {
+class Collaboration {
     // represents a single poem
-
-    targetLines: number;
-    poemIndex: number;
     io: Server<
         ClientToServerEvents,
         ServerToClientEvents,
@@ -28,6 +25,29 @@ class Poem {
         SocketData
     >;
     roomId: string;
+
+    // any edit of lines or half-line (e.g. submitLine, handleLineEdit)
+    // will send a message to the Spectators in the roomId
+
+    constructor(
+        io: Server<
+            ClientToServerEvents,
+            ServerToClientEvents,
+            InterServerEvents,
+            SocketData
+        >,
+        roomId: string,
+    ) {
+        this.io = io;
+        this.roomId = roomId;
+    }
+}
+
+class Poem extends Collaboration {
+    // represents a single poem
+
+    targetLines: number;
+    poemIndex: number;
     poemID: string;
     halfLine: string;
     mostRecentEditor: string;
@@ -47,10 +67,9 @@ class Poem {
         >,
         roomId: string,
     ) {
+        super(io, roomId);
         this.targetLines = targetLines;
         this.poemIndex = poemIndex;
-        this.io = io;
-        this.roomId = roomId;
         this.poemID = uuidv4();
         this.halfLine = "";
         this.mostRecentEditor = "";

@@ -3,7 +3,7 @@ import { Server, Socket } from "socket.io";
 import { deviceIDToRoomId, deviceIDToSocketID, roomIdToHost, roomIdToRoom, socketIDToDeviceID } from "./globals";
 import Spectator from "./spectator";
 import Editor from "./editor";
-import Poem from "./poem";
+import Poem from "./collaboration";
 import {
     ClientToServerEvents,
     IGameSettingsInfo,
