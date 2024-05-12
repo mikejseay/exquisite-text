@@ -7,7 +7,7 @@ import {
     roomIdToRoom,
     socketIDToDeviceID,
 } from "./globals";
-import type Poem from "./poem";
+import type Poem from "./collaboration";
 import {
     ClientToServerEvents,
     InterServerEvents,

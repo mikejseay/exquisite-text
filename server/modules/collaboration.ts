@@ -13,11 +13,10 @@ import { storeLine } from "../queries";
 // TODO: Break this up into a superclass called Collaboration and Poem extends Collaboration
 // Make replica of Poem called Drawing that's analogous
 // e.g:
-// class Collaboration 
+// class Collaboration
 // Poem extends Collaboration
 
 class Collaboration {
-    // represents a single poem
     io: Server<
         ClientToServerEvents,
         ServerToClientEvents,
@@ -25,9 +24,10 @@ class Collaboration {
         SocketData
     >;
     roomId: string;
-
-    // any edit of lines or half-line (e.g. submitLine, handleLineEdit)
-    // will send a message to the Spectators in the roomId
+    nParts: number;
+    indexInGame: number;
+    ID: string;
+    mostRecentEditor: string;
 
     constructor(
         io: Server<
@@ -37,28 +37,29 @@ class Collaboration {
             SocketData
         >,
         roomId: string,
+        nParts: number,
+        indexInGame: number,
     ) {
         this.io = io;
         this.roomId = roomId;
+        this.nParts = nParts;
+        this.indexInGame = indexInGame;
+        this.ID = uuidv4();
+        this.mostRecentEditor = "";
     }
 }
 
 class Poem extends Collaboration {
     // represents a single poem
 
-    targetLines: number;
-    poemIndex: number;
-    poemID: string;
     halfLine: string;
-    mostRecentEditor: string;
     lines: Set<ILine>;
 
     // any edit of lines or half-line (e.g. submitLine, handleLineEdit)
     // will send a message to the Spectators in the roomId
 
     constructor(
-        targetLines: number,
-        poemIndex: number,
+
         io: Server<
             ClientToServerEvents,
             ServerToClientEvents,
@@ -66,19 +67,17 @@ class Poem extends Collaboration {
             SocketData
         >,
         roomId: string,
+        nParts: number,
+        indexInGame: number,
     ) {
-        super(io, roomId);
-        this.targetLines = targetLines;
-        this.poemIndex = poemIndex;
-        this.poemID = uuidv4();
+        super(io, roomId, nParts, indexInGame);
         this.halfLine = "";
-        this.mostRecentEditor = "";
         this.lines = new Set<ILine>();
     }
 
     submitLine(authorID: string, firstPart: string, secondPart: string) {
         const myLine = {
-            poemID: this.poemID,
+            ID: this.ID,
             lineIndex: this.lines.size,
             content: firstPart,
             authorDevice: authorID,
@@ -94,13 +93,13 @@ class Poem extends Collaboration {
         this.halfLine = secondPart;
         this.io
             .in(`${this.roomId}_Spectators`)
-            .emit("stcLineSpectator", this.poemIndex, firstPart);
+            .emit("stcLineSpectator", this.indexInGame, firstPart);
     }
 
     sendLineEditToSpectators(value: string) {
         this.io
             .in(`${this.roomId}_Spectators`)
-            .emit("stcLineEditSpectator", this.poemIndex, value);
+            .emit("stcLineEditSpectator", this.indexInGame, value);
     }
 
     sendAllLinesTo(socketID: string) {
@@ -109,7 +108,7 @@ class Poem extends Collaboration {
     }
 
     sendLine(line: string, socketID: string) {
-        this.io.to(socketID).emit("stcLineSpectator", this.poemIndex, line);
+        this.io.to(socketID).emit("stcLineSpectator", this.indexInGame, line);
     }
 }
 

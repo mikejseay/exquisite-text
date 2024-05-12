@@ -17,7 +17,7 @@ import { lineSepString } from "../../src/constants";
 import {
     roomIdToRoom,
 } from "./globals";
-import type Poem from "./poem";
+import type Poem from "./collaboration";
 import Member from "./member";
 
 class Editor extends Member {
@@ -218,9 +218,9 @@ class Editor extends Member {
                 "we think the poem has ",
                 currentLength,
                 "of",
-                thisPoem.targetLines - 2,
+                thisPoem.nParts - 2,
             );
-            return currentLength >= thisPoem.targetLines - 2;
+            return currentLength >= thisPoem.nParts - 2;
         } else {
             return false;
         }
@@ -242,7 +242,7 @@ class Editor extends Member {
                 "submissions so far",
             );
 
-            if (thisPoem.lines.size === thisPoem.targetLines - 2) {
+            if (thisPoem.lines.size === thisPoem.nParts - 2) {
                 this.io.to(this.socket.id).emit("stcLastLine", true);
             } else {
                 this.io.to(this.socket.id).emit("stcLastLine", false);
@@ -293,7 +293,7 @@ class Editor extends Member {
             return;
         }
         poemToPass.lines.add({
-            poemID: poemToPass.poemID,
+            ID: poemToPass.ID,
             lineIndex: poemToPass.lines.size,
             content: lastPart,
             authorDevice: this.deviceID,

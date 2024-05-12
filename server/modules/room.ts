@@ -129,7 +129,7 @@ class Room {
 
     setUpGame() {
         console.log("setUpGame with this.editors", this.editors);
-        const targetLines = this.gameSettings["nRounds"] * this.editors.size + 2;
+        const nParts = this.gameSettings["nRounds"] * this.editors.size + 2;
 
         // have each editor set their important properties
         let nPoemsToHandOut = this.gameSettings["nPoems"];
@@ -141,7 +141,7 @@ class Room {
 
             // give the editor a new poem
             if (nPoemsToHandOut > 0) {
-                const thisPoem = new Poem(targetLines, poemIndex, this.io, this.roomId); // creates Poem object
+                const thisPoem = new Poem(this.io, this.roomId, nParts, poemIndex); // creates Poem object
                 thisEditor.poemQueue.push(thisPoem);
                 thisEditor.isCurrentlyEditing = true;
                 nPoemsToHandOut--;
@@ -199,7 +199,7 @@ class Room {
     }
 
     storePoem(poemObj: Poem) {
-        console.log(this.roomId, "storing poem", poemObj.poemID);
+        console.log(this.roomId, "storing poem", poemObj.ID);
         this.finishedPoems.push(poemObj);
     }
 

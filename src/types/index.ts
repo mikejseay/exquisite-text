@@ -49,7 +49,7 @@ export interface IPoem {
 }
 
 export interface ILine {
-    poemID: string;
+    ID: string;
     lineIndex: number;
     content: string;
     authorDevice: string;
