@@ -9,7 +9,7 @@ export default function Host() {
 
     const rootURLDisplay = window.location.host;
     const rootURLRoute = "/";
-    const roomId = generateAlphaString(roomCodeLength);
+    const roomID = generateAlphaString(roomCodeLength);
 
     return (
         <main style={{ textAlign: "center" }}>
@@ -24,7 +24,7 @@ export default function Host() {
                     </a>.
                 </p>
             </h2>
-            <h2>{`Enter room code: ${roomId}`}</h2>
+            <h2>{`Enter room code: ${roomID}`}</h2>
             <UserTable />
             <GameSettings />
         </main>

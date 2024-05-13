@@ -93,7 +93,7 @@ export interface ClientToServerEvents {
     ctsEditLine: (a: string) => void;
     ctsRecognizeDevice: (a: string) => void;
     ctsCreateGameHost: (a: string) => void;
-    ctsJoinAs: (role: Role, roomId: string, name: string) => void;
+    ctsJoinAs: (role: Role, roomID: string, name: string) => void;
     ctsRequestGameSettingsInfo: () => void;
     ctsRequestLastLineStatus: () => void;
     ctsAlterGameSettings: (a: IGameSettingsInfo) => void;

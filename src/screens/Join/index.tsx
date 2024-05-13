@@ -18,14 +18,14 @@ export default function Join() {
 
     const { id } = useParams();
 
-    const [ roomId, setRoomId ] = React.useState<string>(id ?? "");
+    const [ roomID, setRoomID ] = React.useState<string>(id ?? "");
     const [ name, setName ] = React.useState<string>("");
 
     const [ isRoomValid, setIsRoomValid ] = React.useState<boolean>(false);
     const [ isNameValid, setIsNameValid ] = React.useState<boolean>(false);
 
     const handleRoomEntryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setRoomId(event.target.value);
+        setRoomID(event.target.value);
         setIsRoomValid(event.target.value.length === roomCodeLength);
     };
 
@@ -35,22 +35,22 @@ export default function Join() {
     };
 
     const handleWritePress = () => {
-        emitJoinAs(Role.EDITOR, roomId, name);
-        setRoomCode(roomId.toUpperCase());
+        emitJoinAs(Role.EDITOR, roomID, name);
+        setRoomCode(roomID.toUpperCase());
     };
 
     const handleSpectatePress = () => {
-        emitJoinAs(Role.SPECTATOR, roomId, name);
-        setRoomCode(roomId.toUpperCase());
+        emitJoinAs(Role.SPECTATOR, roomID, name);
+        setRoomCode(roomID.toUpperCase());
     };
 
     React.useEffect(() => {
-        setIsRoomValid(roomId.length === roomCodeLength);
+        setIsRoomValid(roomID.length === roomCodeLength);
         setIsNameValid(name.length > 0);
-    }, [ id, name, roomId ]);
+    }, [ id, name, roomID ]);
 
     React.useEffect(() => {
-        setRoomId(id ?? "");
+        setRoomID(id ?? "");
     }, [ id ]);
 
     return (
@@ -72,7 +72,7 @@ export default function Join() {
                         label={`Enter ${String(roomCodeLength)}-Letter Code`}
                         onChange={handleRoomEntryChange}
                         required
-                        value={roomId}
+                        value={roomID}
                         variant="standard"
                     />
                     <TextField

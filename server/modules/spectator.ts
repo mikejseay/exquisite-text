@@ -1,16 +1,16 @@
-import { roomIdToRoom } from "./globals";
+import { roomIDToRoom } from "./globals";
 import Member from "./member";
 
 class Spectator extends Member {
     joinRoom() {
         super.joinRoom();
-        this.socket.join(`${this.roomId}_Spectators`);
+        this.socket.join(`${this.roomID}_Spectators`);
     }
 
     leaveRoom() {
         super.leaveRoom();
-        this.socket.leave(`${this.roomId}_Spectators`);
-        const thisRoom = roomIdToRoom.get(this.roomId);
+        this.socket.leave(`${this.roomID}_Spectators`);
+        const thisRoom = roomIDToRoom.get(this.roomID);
         if (!thisRoom) {
             console.log("thisRoom not found");
             return;
@@ -29,7 +29,7 @@ class Spectator extends Member {
     }
 
     sendCanvas() {
-        const thisRoom = roomIdToRoom.get(this.roomId);
+        const thisRoom = roomIDToRoom.get(this.roomID);
         if (!thisRoom) {
             console.log("thisRoom not found");
             return;
@@ -43,7 +43,7 @@ class Spectator extends Member {
     }
 
     sendAllPoemLines() {
-        const thisRoom = roomIdToRoom.get(this.roomId);
+        const thisRoom = roomIDToRoom.get(this.roomID);
         if (!thisRoom) {
             console.log("thisRoom not found");
             return;

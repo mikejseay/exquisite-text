@@ -23,7 +23,7 @@ class Collaboration {
         InterServerEvents,
         SocketData
     >;
-    roomId: string;
+    roomID: string;
     nParts: number;
     indexInGame: number;
     ID: string;
@@ -36,12 +36,12 @@ class Collaboration {
             InterServerEvents,
             SocketData
         >,
-        roomId: string,
+        roomID: string,
         nParts: number,
         indexInGame: number,
     ) {
         this.io = io;
-        this.roomId = roomId;
+        this.roomID = roomID;
         this.nParts = nParts;
         this.indexInGame = indexInGame;
         this.ID = uuidv4();
@@ -56,7 +56,7 @@ class Poem extends Collaboration {
     lines: Set<ILine>;
 
     // any edit of lines or half-line (e.g. submitLine, handleLineEdit)
-    // will send a message to the Spectators in the roomId
+    // will send a message to the Spectators in the roomID
 
     constructor(
 
@@ -66,11 +66,11 @@ class Poem extends Collaboration {
             InterServerEvents,
             SocketData
         >,
-        roomId: string,
+        roomID: string,
         nParts: number,
         indexInGame: number,
     ) {
-        super(io, roomId, nParts, indexInGame);
+        super(io, roomID, nParts, indexInGame);
         this.halfLine = "";
         this.lines = new Set<ILine>();
     }
@@ -92,13 +92,13 @@ class Poem extends Collaboration {
         this.mostRecentEditor = authorID;
         this.halfLine = secondPart;
         this.io
-            .in(`${this.roomId}_Spectators`)
+            .in(`${this.roomID}_Spectators`)
             .emit("stcLineSpectator", this.indexInGame, firstPart);
     }
 
     sendLineEditToSpectators(value: string) {
         this.io
-            .in(`${this.roomId}_Spectators`)
+            .in(`${this.roomID}_Spectators`)
             .emit("stcLineEditSpectator", this.indexInGame, value);
     }
 

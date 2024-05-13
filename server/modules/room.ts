@@ -1,6 +1,6 @@
 import { Server, Socket } from "socket.io";
 
-import { deviceIDToRoomId, deviceIDToSocketID, roomIdToHost, roomIdToRoom, socketIDToDeviceID } from "./globals";
+import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "./globals";
 import Spectator from "./spectator";
 import Editor from "./editor";
 import Poem from "./collaboration";
@@ -36,7 +36,7 @@ class Room {
         InterServerEvents,
         SocketData
     >;
-    roomId: string;
+    roomID: string;
 
     editors: Map<string, Editor>;
     spectators: Map<string, Spectator>;
@@ -60,7 +60,7 @@ class Room {
     ) {
         this.io = io;
         this.hostSocket = hostSocket;
-        this.roomId = room;
+        this.roomID = room;
 
         this.editors = new Map(); // deviceID to editorObj
         this.spectators = new Map(); // deviceID to spectatorObj
@@ -124,7 +124,7 @@ class Room {
     }
 
     sendCurrentUserTableInfo() {
-        this.io.in(this.roomId).emit("stcUserTableInfo", this.currentUserTableInfo());
+        this.io.in(this.roomID).emit("stcUserTableInfo", this.currentUserTableInfo());
     }
 
     setUpGame() {
@@ -141,7 +141,7 @@ class Room {
 
             // give the editor a new poem
             if (nPoemsToHandOut > 0) {
-                const thisPoem = new Poem(this.io, this.roomId, nParts, poemIndex); // creates Poem object
+                const thisPoem = new Poem(this.io, this.roomID, nParts, poemIndex); // creates Poem object
                 thisEditor.poemQueue.push(thisPoem);
                 thisEditor.isCurrentlyEditing = true;
                 nPoemsToHandOut--;
@@ -150,8 +150,8 @@ class Room {
         }
 
         // should tell editors to navigate to /game and spectators to /spectate
-        this.io.in(`${this.roomId}_Editors`).emit("stcNavigate", "/game");
-        this.io.in(`${this.roomId}_Spectators`).emit("stcNavigate", "/spectate");
+        this.io.in(`${this.roomID}_Editors`).emit("stcNavigate", "/game");
+        this.io.in(`${this.roomID}_Spectators`).emit("stcNavigate", "/spectate");
         this.gameOngoing = true;
 
         for (const thisEditor of this.editors.values()) {
@@ -168,13 +168,13 @@ class Room {
 
     checkActivity() {
         const currentTime = Date.now();
-        console.log(this.roomId, "checking activity at", currentTime);
+        console.log(this.roomID, "checking activity at", currentTime);
         if (
             this.editors.size === 0 &&
             this.spectators.size === 0 &&
             currentTime - this.createdAt > maxRoomTimeSpentEmpty
         ) {
-            console.log(this.roomId, "spent too long with no members, destroying");
+            console.log(this.roomID, "spent too long with no members, destroying");
             this.selfDestruct();
             return;
         }
@@ -199,29 +199,29 @@ class Room {
     }
 
     storePoem(poemObj: Poem) {
-        console.log(this.roomId, "storing poem", poemObj.ID);
+        console.log(this.roomID, "storing poem", poemObj.ID);
         this.finishedPoems.push(poemObj);
     }
 
     sendToEnd() {
-        console.log(this.roomId, "sending everyone to the end screen");
-        this.io.in(this.roomId).emit("stcNavigate", "/end");
+        console.log(this.roomID, "sending everyone to the end screen");
+        this.io.in(this.roomID).emit("stcNavigate", "/end");
     }
 
     async selfDestruct() {
-        console.log(this.roomId, "will self-destruct in 30 seconds");
+        console.log(this.roomID, "will self-destruct in 30 seconds");
         await sleep(30000);
-        console.log(this.roomId, "self-destructing");
+        console.log(this.roomID, "self-destructing");
 
         // wait a bit then self-destruct the room and everyone in it!
         console.log("finishedPoems", this.finishedPoems.length);
         for (const [ editorID, thisEditor ] of this.editors.entries()) {
-            delete deviceIDToRoomId[editorID];
+            delete deviceIDToRoomID[editorID];
             // since this.editors is a map from editor's device ID to the Member this should delete the object
             // including its socket?
             thisEditor.connected = false;
-            delete deviceIDToRoomId[editorID];
-            thisEditor.socket.leave(this.roomId);
+            delete deviceIDToRoomID[editorID];
+            thisEditor.socket.leave(this.roomID);
             thisEditor.unsetReceive();
             delete socketIDToDeviceID[thisEditor.socket.id];
             delete deviceIDToSocketID[editorID];
@@ -231,10 +231,10 @@ class Room {
             spectatorID,
             thisSpectator,
         ] of this.spectators.entries()) {
-            delete deviceIDToRoomId[spectatorID];
+            delete deviceIDToRoomID[spectatorID];
             thisSpectator.connected = false;
-            delete deviceIDToRoomId[spectatorID];
-            thisSpectator.socket.leave(this.roomId);
+            delete deviceIDToRoomID[spectatorID];
+            thisSpectator.socket.leave(this.roomID);
             thisSpectator.unsetReceive();
             delete socketIDToDeviceID[thisSpectator.socket.id];
             delete deviceIDToSocketID[spectatorID];
@@ -242,8 +242,8 @@ class Room {
         }
 
         clearInterval(this.activityInterval);
-        roomIdToHost.delete(this.roomId);
-        roomIdToRoom.delete(this.roomId);
+        roomIDToHost.delete(this.roomID);
+        roomIDToRoom.delete(this.roomID);
     }
 }
 

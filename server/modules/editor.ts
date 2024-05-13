@@ -15,7 +15,7 @@ import { storePoem } from "../queries";
 import { lineSepString } from "../../src/constants";
 
 import {
-    roomIdToRoom,
+    roomIDToRoom,
 } from "./globals";
 import type Poem from "./collaboration";
 import Member from "./member";
@@ -34,11 +34,11 @@ class Editor extends Member {
             SocketData
         >,
         hostSocket: Socket,
-        roomId: string,
+        roomID: string,
         deviceID: string,
         name: string,
     ) {
-        super(io, hostSocket, roomId, deviceID, name);
+        super(io, hostSocket, roomID, deviceID, name);
         this.targetEditorID = "";
         // this.targetEditorSocketID = "";
         this.turnPosition = 0;
@@ -47,8 +47,8 @@ class Editor extends Member {
     }
 
     prepareForGame() {
-        console.log("prepareForGame in room", this.roomId);
-        const thisRoom = roomIdToRoom.get(this.roomId);
+        console.log("prepareForGame in room", this.roomID);
+        const thisRoom = roomIDToRoom.get(this.roomID);
         if (!thisRoom) {
             console.log("thisRoom not found");
             return;
@@ -75,13 +75,13 @@ class Editor extends Member {
 
     joinRoom() {
         super.joinRoom();
-        this.socket.join(`${this.roomId}_Editors`);
+        this.socket.join(`${this.roomID}_Editors`);
     }
 
     leaveRoom() {
         super.leaveRoom();
-        this.socket.leave(`${this.roomId}_Editors`);
-        const thisRoom = roomIdToRoom.get(this.roomId);
+        this.socket.leave(`${this.roomID}_Editors`);
+        const thisRoom = roomIDToRoom.get(this.roomID);
         if (!thisRoom) {
             console.log("thisRoom not found");
             return;
@@ -123,7 +123,7 @@ class Editor extends Member {
 
     receiveCanvas(strokeHistory: Point[][]) {
         console.log("receiveCanvas:", strokeHistory);
-        const thisRoom = roomIdToRoom.get(this.roomId);
+        const thisRoom = roomIDToRoom.get(this.roomID);
         if (!thisRoom || !thisRoom.editors) {
             console.log("thisRoom.editors not found");
             return;
@@ -186,7 +186,7 @@ class Editor extends Member {
 
         this.lastActivity = Date.now(); // they typed = active
 
-        const thisRoom = roomIdToRoom.get(this.roomId);
+        const thisRoom = roomIDToRoom.get(this.roomID);
         if (!thisRoom || !thisRoom.editors) {
             console.log("thisRoom.editors not found");
             return;
@@ -257,7 +257,7 @@ class Editor extends Member {
     }
 
     handleLineParts(firstPart: string, secondPart: string) {
-        const thisRoom = roomIdToRoom.get(this.roomId);
+        const thisRoom = roomIDToRoom.get(this.roomID);
         const poemToPass = this.poemQueue.shift();
         if (isNil(poemToPass)) {
             return;
@@ -307,14 +307,14 @@ class Editor extends Member {
         // So that we can pass them back to the members as needed
         this.handlePoem(poemToPass);
 
-        const thisRoom = roomIdToRoom.get(this.roomId);
+        const thisRoom = roomIDToRoom.get(this.roomID);
         if (!thisRoom) {
             console.log("thisRoom not found");
             return;
         }
         thisRoom.nPoemsInRotation--;
         // if all editors' poem queues are empty
-        // remove each of the editor/spectator deviceIDs from deviceIDToRoomId
+        // remove each of the editor/spectator deviceIDs from deviceIDToRoomID
         if (thisRoom.nPoemsInRotation === 0) {
             console.log(
                 "no poems left to finish; forget everyone's device, delete room and poem globals",
@@ -323,9 +323,9 @@ class Editor extends Member {
             thisRoom.sendToEnd();  // send everyone to the end screen
             thisRoom.selfDestruct();  // self-destruct after some time
 
-            // console.log("deviceIDToRoomId", deviceIDToRoomId);
-            // console.log("roomIdToHost", roomIdToHost);
-            // console.log("roomIdToRoom", roomIdToRoom);
+            // console.log("deviceIDToRoomID", deviceIDToRoomID);
+            // console.log("roomIDToHost", roomIDToHost);
+            // console.log("roomIDToRoom", roomIDToRoom);
             // console.log("thisRoom.editors", thisRoom.editors);
             // console.log("thisRoom.spectators", thisRoom.spectators);
         }
@@ -355,7 +355,7 @@ class Editor extends Member {
         this.sendPoemAsLines(poemObj);
 
         // save the poem into the Room object
-        const thisRoom = roomIdToRoom.get(this.roomId);
+        const thisRoom = roomIDToRoom.get(this.roomID);
         if (!thisRoom) {
             console.log("thisRoom not found");
             return;
@@ -366,18 +366,18 @@ class Editor extends Member {
 
     alterGameSettings(gameSettings: IGameSettingsInfo) {
         console.log("ctsAlterGameSettings");
-        if (!roomIdToRoom ||  !roomIdToRoom.get || !this || !this.roomId) {
+        if (!roomIDToRoom ||  !roomIDToRoom.get || !this || !this.roomID) {
             console.log("thisRoom not found");
             return;
         }
-        roomIdToRoom.get(this.roomId)!.gameSettings = gameSettings;
-        this.socket.to(this.roomId).emit("stcGameSettingsInfo", gameSettings);
+        roomIDToRoom.get(this.roomID)!.gameSettings = gameSettings;
+        this.socket.to(this.roomID).emit("stcGameSettingsInfo", gameSettings);
     }
 
     broadcastStartGame() {
         // global in nature, so it will mainly eal with the room
         console.log("ctsStartGame");
-        roomIdToRoom.get(this.roomId)!.setUpGame();
+        roomIDToRoom.get(this.roomID)!.setUpGame();
     }
 
     sendSettingsEnabled() {
@@ -386,7 +386,7 @@ class Editor extends Member {
     }
 
     isVIP() {
-        const thisRoom = roomIdToRoom.get(this.roomId);
+        const thisRoom = roomIDToRoom.get(this.roomID);
         if (!thisRoom) {
             console.log("thisRoom not found");
             return;

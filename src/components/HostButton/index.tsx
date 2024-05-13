@@ -13,7 +13,7 @@ import { emitCreateGameHost } from "../../context/SocketRequestors";
 
 function HostButton() {
     const [ open, setOpen ] = React.useState(false);
-    const [ roomId, setRoomId ] = React.useState<string | null>(null);
+    const [ roomID, setRoomID ] = React.useState<string | null>(null);
     const [ shareLink, setShareLink ] = React.useState<string | null>(null);
     const navigate = useNavigate();
 
@@ -24,20 +24,20 @@ function HostButton() {
     const handleClick = () => {
         setOpen((prev) => !prev);
         if (!open) {
-            const roomId = generateAlphaString(roomCodeLength);
-            const shareLink = `${location.protocol}//${location.host}/${roomId}`;
-            setRoomId(roomId);
+            const roomID = generateAlphaString(roomCodeLength);
+            const shareLink = `${location.protocol}//${location.host}/${roomID}`;
+            setRoomID(roomID);
             setShareLink(shareLink);
             clipboard.copy(shareLink);
-            emitCreateGameHost(roomId);
-            navigate(`/${roomId}`);
+            emitCreateGameHost(roomID);
+            navigate(`/${roomID}`);
         }
     };
 
     const alerts = open && (
         <div style={roomCodeStyles}>
             <Alert severity="warning">
-                Enter room code: <b>{roomId}</b>
+                Enter room code: <b>{roomID}</b>
             </Alert>
             {clipboard.copied && <Alert severity="success">
                 Copied to clipboard: <b>{shareLink}</b>
