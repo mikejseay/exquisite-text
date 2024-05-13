@@ -114,13 +114,18 @@ class Member {
             console.log("roomIDToRoom not found");
             return;
         }
+        const roomID = roomIDToRoom.get(this.roomID);
+        if (!roomID) {
+            console.log("roomID not found");
+            return;
+        }
         this.io
             .to(this.socket.id)
             .emit(
                 "stcUserTableInfo",
                 shouldTest
                     ? userInfoTestData
-                    : roomIDToRoom.get(this.roomID)!.currentUserTableInfo(),
+                    : roomID.currentUserTableInfo(),
             );
     }
 
