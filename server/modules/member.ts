@@ -16,6 +16,7 @@ import {
 } from "../../src/types";
 import { userInfo as userInfoTestData } from "../../src/data/userInfo";
 import { poemsLines as poemsLinesTestData } from "../../src/data/multiplePoems";
+import { getRoom } from "../utilities/sockets";
 
 class Member {
     // represents an Editor or Spectator (which extend this)
@@ -110,23 +111,19 @@ class Member {
 
     sendUserTableInfo(shouldTest: boolean) {
         console.log(this.name, "requestUserTableInfo");
-        if (!roomIDToRoom || !this.roomID) {
-            console.log("roomIDToRoom not found");
-            return;
+        const room = getRoom(this.roomID);
+        if (room) {
+            this.io
+                .to(this.socket.id)
+                .emit(
+                    "stcUserTableInfo",
+                    shouldTest
+                        ? userInfoTestData
+                        : room.currentUserTableInfo(),
+                );
+        } else {
+            console.log("Failed to get room details for user table info");
         }
-        const roomID = roomIDToRoom.get(this.roomID);
-        if (!roomID) {
-            console.log("roomID not found");
-            return;
-        }
-        this.io
-            .to(this.socket.id)
-            .emit(
-                "stcUserTableInfo",
-                shouldTest
-                    ? userInfoTestData
-                    : roomID.currentUserTableInfo(),
-            );
     }
 
     sendPoemsLinesInfo(shouldTest: boolean) {
@@ -170,13 +167,14 @@ class Member {
 
     sendGameSettingsInfo() {
         console.log(this.name, "requestGameSettingsInfo");
-        if (!roomIDToRoom || !this.roomID) {
-            console.log("roomIDToRoom not found");
-            return;
+        const room = getRoom(this.roomID);
+        if (room) {
+            this.io
+                .to(this.socket.id)
+                .emit("stcGameSettingsInfo", room.gameSettings);
+        } else {
+            console.log("Failed to get room details for game settings");
         }
-        this.io
-            .to(this.socket.id)
-            .emit("stcGameSettingsInfo", roomIDToRoom.get(this.roomID)!.gameSettings);
     }
 
     sendSettingsEnabled() {

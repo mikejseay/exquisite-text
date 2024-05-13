@@ -19,6 +19,7 @@ import {
 } from "./globals";
 import type Poem from "./collaboration";
 import Member from "./member";
+import { getEditorSocketID } from "../utilities/sockets";
 
 class Editor extends Member {
     targetEditorID: string;
@@ -186,15 +187,15 @@ class Editor extends Member {
 
         this.lastActivity = Date.now(); // they typed = active
 
-        const thisRoom = roomIDToRoom.get(this.roomID);
-        if (!thisRoom || !thisRoom.editors) {
-            console.log("thisRoom.editors not found");
-            return;
+        console.log(this.name, "emitToEditor");
+        const socketID = getEditorSocketID(this.roomID, this.targetEditorID);
+        if (socketID) {
+            this.io
+                .to(socketID)
+                .emit("stcLineEditorWatch", value);
+        } else {
+            console.log("Failed to get editor socket ID");
         }
-        this.io
-            .to(thisRoom.editors.get(this.targetEditorID)!.socket.id)
-            .emit("stcLineEditorWatch", value);
-
         const thisPoem = this.poemQueue[0];
         if (!isNil(thisPoem)) {
             thisPoem.sendLineEditToSpectators(value);
