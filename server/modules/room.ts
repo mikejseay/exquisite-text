@@ -40,13 +40,10 @@ class Room {
 
     editors: Map<string, Editor>;
     spectators: Map<string, Spectator>;
-    gameSettings: IGameSettingsInfo;
     gameOngoing: boolean;
-    nPoemsInRotation: number;
+    nUnfinishedWorks: number;
     activityInterval: ReturnType<typeof setInterval>;
     createdAt: number;
-    finishedPoems: Array<Poem>;
-    finishedCanvas: Point[][];
 
     constructor(
         io: Server<
@@ -64,9 +61,8 @@ class Room {
 
         this.editors = new Map(); // deviceID to editorObj
         this.spectators = new Map(); // deviceID to spectatorObj
-        this.gameSettings = defaultGameSettings;
         this.gameOngoing = false;
-        this.nPoemsInRotation = 0;
+        this.nUnfinishedWorks = 0;
 
         // check user activity every 30 seconds
         this.activityInterval = setInterval(
@@ -74,8 +70,6 @@ class Room {
             checkActivityInterval,
         );
         this.createdAt = Date.now();
-        this.finishedPoems = [];
-        this.finishedCanvas = [];
     }
 
     addEditor(deviceUUID: string, editorObj: Editor) {
@@ -127,39 +121,6 @@ class Room {
         this.io.in(this.roomID).emit("stcUserTableInfo", this.currentUserTableInfo());
     }
 
-    setUpGame() {
-        console.log("setUpGame with this.editors", this.editors);
-        const nParts = this.gameSettings["nRounds"] * this.editors.size + 2;
-
-        // have each editor set their important properties
-        let nPoemsToHandOut = this.gameSettings["nPoems"];
-        this.nPoemsInRotation = nPoemsToHandOut;
-        let poemIndex = 0;
-        for (const thisEditor of this.editors.values()) {
-            thisEditor.lastActivity = Date.now(); // refresh AFK timers upon game start
-            thisEditor.prepareForGame();
-
-            // give the editor a new poem
-            if (nPoemsToHandOut > 0) {
-                const thisPoem = new Poem(this.io, this.roomID, nParts, poemIndex); // creates Poem object
-                thisEditor.poemQueue.push(thisPoem);
-                thisEditor.isCurrentlyEditing = true;
-                nPoemsToHandOut--;
-                poemIndex++;
-            }
-        }
-
-        // should tell editors to navigate to /game and spectators to /spectate
-        this.io.in(`${this.roomID}_Editors`).emit("stcNavigate", "/game");
-        this.io.in(`${this.roomID}_Spectators`).emit("stcNavigate", "/spectate");
-        this.gameOngoing = true;
-
-        for (const thisEditor of this.editors.values()) {
-            thisEditor.sendActivity();
-            thisEditor.sendLastLineStatus();
-        }
-    }
-
     reorganizeEditors() {
         for (const thisEditor of this.editors.values()) {
             thisEditor.prepareForGame();
@@ -198,11 +159,6 @@ class Room {
         }
     }
 
-    storePoem(poemObj: Poem) {
-        console.log(this.roomID, "storing poem", poemObj.ID);
-        this.finishedPoems.push(poemObj);
-    }
-
     sendToEnd() {
         console.log(this.roomID, "sending everyone to the end screen");
         this.io.in(this.roomID).emit("stcNavigate", "/end");
@@ -213,8 +169,6 @@ class Room {
         await sleep(30000);
         console.log(this.roomID, "self-destructing");
 
-        // wait a bit then self-destruct the room and everyone in it!
-        console.log("finishedPoems", this.finishedPoems.length);
         for (const [ editorID, thisEditor ] of this.editors.entries()) {
             delete deviceIDToRoomID[editorID];
             // since this.editors is a map from editor's device ID to the Member this should delete the object
@@ -247,4 +201,63 @@ class Room {
     }
 }
 
-export default Room;
+class PoemRoom extends Room {
+    gameSettings: IGameSettingsInfo;
+    finishedWorks: Array<Poem>;
+    finishedCanvas: Point[][];
+
+    constructor(
+        io: Server<ClientToServerEvents,
+            ServerToClientEvents,
+            InterServerEvents,
+            SocketData>,
+        hostSocket: Socket,
+        room: string,
+    ) {
+        super(io, hostSocket, room);
+        this.gameSettings = defaultGameSettings;
+        this.finishedWorks = [];
+        this.finishedCanvas = [];
+    }
+
+    storePoem(poemObj: Poem) {
+        console.log(this.roomID, "storing poem", poemObj.ID);
+        this.finishedWorks.push(poemObj);
+    }
+
+    setUpGame() {
+        console.log("setUpGame with this.editors", this.editors);
+        const nParts = this.gameSettings["nRounds"] * this.editors.size + 2;
+
+        // have each editor set their important properties
+        let nPoemsToHandOut = this.gameSettings["nPoems"];
+        this.nUnfinishedWorks = nPoemsToHandOut;
+        let poemIndex = 0;
+        for (const thisEditor of this.editors.values()) {
+            thisEditor.lastActivity = Date.now(); // refresh AFK timers upon game start
+            thisEditor.prepareForGame();
+
+            // give the editor a new poem
+            if (nPoemsToHandOut > 0) {
+                const thisPoem = new Poem(this.io, this.roomID, nParts, poemIndex); // creates Poem object
+                thisEditor.poemQueue.push(thisPoem);
+                thisEditor.isCurrentlyEditing = true;
+                nPoemsToHandOut--;
+                poemIndex++;
+            }
+        }
+
+        // should tell editors to navigate to /game and spectators to /spectate
+        this.io.in(`${this.roomID}_Editors`).emit("stcNavigate", "/game");
+        this.io.in(`${this.roomID}_Spectators`).emit("stcNavigate", "/spectate");
+        this.gameOngoing = true;
+
+        for (const thisEditor of this.editors.values()) {
+            thisEditor.sendActivity();
+            thisEditor.sendLastLineStatus();
+        }
+    }
+
+}
+
+export default PoemRoom;

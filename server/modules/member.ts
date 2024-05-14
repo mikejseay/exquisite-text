@@ -147,8 +147,8 @@ class Member {
             console.log("thisRoom not found");
             return;
         }
-        console.log(this.name, "request poems from room which has", thisRoom.finishedPoems.length);
-        for (const poemObj of thisRoom.finishedPoems) {
+        console.log(this.name, "request poems from room which has", thisRoom.finishedWorks.length);
+        for (const poemObj of thisRoom.finishedWorks) {
             // TODO: Explore this, this could improve server-side efficiency:
             // this.io.in(this.roomID).emit("stcPoemLines", Array.from(poemObj.lines));
             this.io

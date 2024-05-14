@@ -19,7 +19,7 @@ import {
 } from "./globals";
 import type Poem from "./collaboration";
 import Member from "./member";
-import { getEditorSocketID } from "../utilities/sockets";
+import { getEditorSocketID, getRoom } from "../utilities/sockets";
 
 class Editor extends Member {
     targetEditorID: string;
@@ -187,7 +187,6 @@ class Editor extends Member {
 
         this.lastActivity = Date.now(); // they typed = active
 
-        console.log(this.name, "emitToEditor");
         const socketID = getEditorSocketID(this.roomID, this.targetEditorID);
         if (socketID) {
             this.io
@@ -313,10 +312,10 @@ class Editor extends Member {
             console.log("thisRoom not found");
             return;
         }
-        thisRoom.nPoemsInRotation--;
+        thisRoom.nUnfinishedWorks--;
         // if all editors' poem queues are empty
-        // remove each of the editor/spectator deviceIDs from deviceIDToRoomID
-        if (thisRoom.nPoemsInRotation === 0) {
+        // remove each of the editor/spectator deviceIDs from deviceIDToRoomId
+        if (thisRoom.nUnfinishedWorks === 0) {
             console.log(
                 "no poems left to finish; forget everyone's device, delete room and poem globals",
             );
@@ -367,18 +366,20 @@ class Editor extends Member {
 
     alterGameSettings(gameSettings: IGameSettingsInfo) {
         console.log("ctsAlterGameSettings");
-        if (!roomIDToRoom ||  !roomIDToRoom.get || !this || !this.roomID) {
-            console.log("thisRoom not found");
-            return;
+        const room = getRoom(this.roomID);
+        if (room) {
+            room.gameSettings = gameSettings;
+            this.socket.to(this.roomID).emit("stcGameSettingsInfo", gameSettings);
         }
-        roomIDToRoom.get(this.roomID)!.gameSettings = gameSettings;
-        this.socket.to(this.roomID).emit("stcGameSettingsInfo", gameSettings);
     }
 
     broadcastStartGame() {
         // global in nature, so it will mainly eal with the room
         console.log("ctsStartGame");
-        roomIDToRoom.get(this.roomID)!.setUpGame();
+        const room = getRoom(this.roomID);
+        if (room) {
+            room.setUpGame();
+        }
     }
 
     sendSettingsEnabled() {
