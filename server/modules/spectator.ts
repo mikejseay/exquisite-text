@@ -56,7 +56,7 @@ class PoemSpectator extends Spectator {
             return;
         }
         for (const thisEditor of thisRoom.editors.values()) {
-            for (const thisPoem of thisEditor.poemQueue) {
+            for (const thisPoem of thisEditor.workQueue) {
                 thisPoem.sendAllLinesTo(this.socket.id);
             }
         }

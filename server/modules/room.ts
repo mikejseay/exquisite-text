@@ -240,7 +240,7 @@ class PoemRoom extends Room {
             // give the editor a new poem
             if (nPoemsToHandOut > 0) {
                 const thisPoem = new Poem(this.io, this.roomID, nParts, poemIndex); // creates Poem object
-                thisEditor.poemQueue.push(thisPoem);
+                thisEditor.workQueue.push(thisPoem);
                 thisEditor.isCurrentlyEditing = true;
                 nPoemsToHandOut--;
                 poemIndex++;
