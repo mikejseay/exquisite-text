@@ -18,6 +18,13 @@ class Spectator extends Member {
         thisRoom.removeSpectator(this.deviceID);
     }
 
+    disconnect() {
+        this.lastActivity = Date.now(); // refresh activity
+        super.disconnect();
+    }
+}
+
+class PoemSpectator extends Spectator {
     setReceive() {
         super.setReceive();
         this.socket.on("ctsRequestCanvas", () => this.sendCanvas());
@@ -55,11 +62,6 @@ class Spectator extends Member {
         }
     }
 
-    disconnect() {
-        this.lastActivity = Date.now(); // refresh activity
-        super.disconnect();
-    }
-
     reinstateContext() {
         // TODO: Placeholder
         // super.reinstateContext();
@@ -67,4 +69,4 @@ class Spectator extends Member {
     }
 }
 
-export default Spectator;
+export default PoemSpectator;
