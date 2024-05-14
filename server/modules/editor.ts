@@ -46,6 +46,12 @@ class Editor extends Member {
         this.poemQueue = [];
         this.isCurrentlyEditing = false;
     }
+    
+    sendPoemAsLines(poemObj: Poem) {
+        // crucial method that sends the poem to all users
+        // make sure the correct members receive this
+        this.io.in(this.roomID).emit("stcPoemLines", Array.from(poemObj.lines));
+    }
 
     prepareForGame() {
         console.log("prepareForGame in room", this.roomID);

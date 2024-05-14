@@ -7,7 +7,6 @@ import {
     roomIDToRoom,
     socketIDToDeviceID,
 } from "./globals";
-import type Poem from "./collaboration";
 import {
     ClientToServerEvents,
     InterServerEvents,
@@ -78,35 +77,27 @@ class Member {
         this.unsetReceive(); // remove listeners
     }
 
-    // setSend
-    // errors about join fail
-    // command to go to a certain view
-    // supply lobby subscription to keep game view up to date during configuration
-    // supply completed poems
-
-    // setReceive
-    // getUserTableInfo
-
     setReceive() {
         this.socket.on("ctsRequestUserTableInfo", (shouldTest) => this.sendUserTableInfo(shouldTest));
-        this.socket.on("ctsRequestPoemsLines", (shouldTest) => this.sendPoemsLinesInfo(shouldTest));
         this.socket.on("ctsRequestGameSettingsInfo", () => this.sendGameSettingsInfo());
         this.socket.on("ctsRequestSettingsEnabled", () => this.sendSettingsEnabled());
         this.socket.on("ctsLeave", () => this.leaveRoom());
-
         // These are all reserved events
         this.socket.on("disconnect", () => this.disconnect());
         this.socket.on("disconnecting", () => this.disconnecting());
+        // only used to test the end screen, but we allow it to be parasitic for now
+        this.socket.on("ctsRequestPoemsLines", (shouldTest) => this.sendPoemsLinesInfo(shouldTest));
     }
 
     unsetReceive() {
         this.socket.removeAllListeners("ctsRequestUserTableInfo");
-        this.socket.removeAllListeners("ctsRequestPoemsLines");
         this.socket.removeAllListeners("ctsRequestGameSettingsInfo");
         this.socket.removeAllListeners("ctsRequestSettingsEnabled");
         this.socket.removeAllListeners("ctsLeave");
         this.socket.removeAllListeners("disconnect");
         this.socket.removeAllListeners("disconnecting");
+        // only used to test the end screen, but we allow it to be parasitic for now
+        this.socket.removeAllListeners("ctsRequestPoemsLines");
     }
 
     sendUserTableInfo(shouldTest: boolean) {
@@ -126,6 +117,7 @@ class Member {
         }
     }
 
+    // only used to test the end screen, but we allow it to be parasitic for now
     sendPoemsLinesInfo(shouldTest: boolean) {
         const thisRoom = roomIDToRoom.get(this.roomID);
 
@@ -218,12 +210,6 @@ class Member {
             " disconnecting from",
             this.socket.rooms,
         );
-    }
-
-    sendPoemAsLines(poemObj: Poem) {
-    // crucial method that sends the poem to all users
-    // make sure the correct members receive this
-        this.io.in(this.roomID).emit("stcPoemLines", Array.from(poemObj.lines));
     }
 }
 
