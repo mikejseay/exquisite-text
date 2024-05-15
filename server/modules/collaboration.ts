@@ -14,7 +14,8 @@ import { storeLine } from "../queries";
 // Classes to create: Drawing, DrawingRoom, DrawingSpectator, DrawingEditor
 // Move parasitic functions for canvas test into new classes
 // Implement some UI element to create DrawingRoom rather than PoemRoom
-// Modify sockets.ts to handle
+// Modify modules/sockets.ts to handle user wanting to join a Drawing Room as editor/spectator
+// Finish front-end components for Canvas analogous to Poem stuff, starting with Canvas / CanvasSpectator screens
 
 class Collaboration {
     io: Server<
