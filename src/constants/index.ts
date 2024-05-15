@@ -1,6 +1,6 @@
 import {
-    IGameSettingsInfo,
     ILineConstraintDict,
+    IPoemSettingsInfo,
     LineLength,
 } from "../types";
 
@@ -39,7 +39,7 @@ export const lineConstraints: ILineConstraintDict = {
 export const nPoemsInLibrary = 100;
 export const nPoemsPerPage = 10;
 export const maxEditors = 4;
-export const defaultGameSettings: IGameSettingsInfo = {
+export const defaultGameSettings: IPoemSettingsInfo = {
     lineLength: LineLength.short,
     nPoems: 1,
     nRounds: 2,

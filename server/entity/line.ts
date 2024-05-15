@@ -5,7 +5,7 @@ export const Line = pgSequelConn.define(
     "line",
     {
     // Model attributes are defined here
-        poemID: {
+        ID: {
             allowNull: false,
             type: DataTypes.CHAR(36), // uuidv4 is always 36 chars
         },

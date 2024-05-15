@@ -31,7 +31,7 @@ export interface IUserTableInfo {
     editorColors: Array<string>;
 }
 
-export interface IGameSettingsInfo {
+export interface IPoemSettingsInfo {
     lineLength: LineLength;
     nRounds: number;
     nPoems: number;
@@ -49,7 +49,7 @@ export interface IPoem {
 }
 
 export interface ILine {
-    poemID: string;
+    ID: string;
     lineIndex: number;
     content: string;
     authorDevice: string;
@@ -75,7 +75,7 @@ export interface ServerToClientEvents {
     stcRoomCode: (a: string) => void;
     stcJoinError: (a: string) => void;
     stcUserTableInfo: (a: IUserTableInfo) => void;
-    stcGameSettingsInfo: (a: IGameSettingsInfo) => void;
+    stcGameSettingsInfo: (a: IPoemSettingsInfo) => void;
     stcGameSettingsEnabled: (a: boolean) => void;
     stcNavigate: (a: string) => void;
     stcEditorActive: (a: boolean) => void;
@@ -93,10 +93,10 @@ export interface ClientToServerEvents {
     ctsEditLine: (a: string) => void;
     ctsRecognizeDevice: (a: string) => void;
     ctsCreateGameHost: (a: string) => void;
-    ctsJoinAs: (role: Role, roomId: string, name: string) => void;
+    ctsJoinAs: (role: Role, roomID: string, name: string) => void;
     ctsRequestGameSettingsInfo: () => void;
     ctsRequestLastLineStatus: () => void;
-    ctsAlterGameSettings: (a: IGameSettingsInfo) => void;
+    ctsAlterGameSettings: (a: IPoemSettingsInfo) => void;
     ctsRequestSettingsEnabled: () => void;
     ctsStartGame: () => void;
     ctsRequestEditorActive: () => void;
@@ -191,4 +191,23 @@ export interface ISocketInfo {
     strokeHistory: Point[][] | null;
     setStrokeHistory: (value: Point[][] |
         ((prevVar: Point[][]) => Point[][])) => void;
+}
+
+export enum ContributionType {
+    POEM,
+    DRAWING,
+}
+
+type TestTypeProps =
+    | {
+    contributionType: ContributionType.POEM,
+    content: string,
+}
+    | {
+    contributionType: ContributionType.DRAWING,
+    content: Point[][],
+}
+
+function testTypes({ contributionType, content }: TestTypeProps) {
+    return [ contributionType, content ];
 }

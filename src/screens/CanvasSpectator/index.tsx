@@ -17,6 +17,9 @@ const CanvasSpectator: React.FC = () => {
         setHasJoinedRoom(true);
     }
 
+    // TODO: Inside this useEffect, we want to receive the canvas vector (strokeHistory)
+    // We want to draw it,
+    // Then we want to clip it without ever showing the user the whole thing
     useEffect(() => {
         console.log("strokeHistory in CanvasSpectator:", strokeHistory);
         strokeHistory?.forEach(strokeArray => drawOnCanvas(strokeArray, canvasRef));

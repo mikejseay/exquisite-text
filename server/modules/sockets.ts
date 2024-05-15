@@ -5,9 +5,9 @@
 import { Server } from "socket.io";
 
 import Host from "./host";
-import Editor from "./editor";
-import Spectator from "./spectator";
-import Room from "./room";
+import { PoemEditor } from "./editor";
+import { PoemSpectator } from "./spectator";
+import { PoemRoom } from "./room";
 import {
     ClientToServerEvents,
     InterServerEvents,
@@ -18,10 +18,10 @@ import {
 import { maxEditors } from "../../src/constants";
 
 import {
-    deviceIDToRoomId,
+    deviceIDToRoomID,
     deviceIDToSocketID,
-    roomIdToHost,
-    roomIdToRoom,
+    roomIDToHost,
+    roomIDToRoom,
     socketIDToDeviceID,
 } from "./globals";
 
@@ -45,13 +45,13 @@ function sockets(
             console.log("new socket", socket.id, "from device", deviceID);
 
             const isDeviceInARoom: boolean = Object.prototype.hasOwnProperty.call(
-                deviceIDToRoomId,
+                deviceIDToRoomID,
                 deviceID,
             );
             if (isDeviceInARoom) {
                 // try to reconnect them to that room in the correct role
-                const roomId = deviceIDToRoomId[deviceID];
-                const theRoom = roomIdToRoom.get(roomId);
+                const roomID = deviceIDToRoomID[deviceID];
+                const theRoom = roomIDToRoom.get(roomID);
                 if (!theRoom) {
                     console.log("theRoom not found");
                     return;
@@ -59,7 +59,7 @@ function sockets(
                 const editorDeviceIDsInRoom = Array.from(theRoom.editors.keys());
                 const spectatorDeviceIDsInRoom = Array.from(theRoom.spectators.keys());
 
-                let theMember: Editor | Spectator | undefined;
+                let theMember: PoemEditor | PoemSpectator | undefined;
                 let targetView: string;
                 if (editorDeviceIDsInRoom.includes(deviceID)) {
                     theMember = theRoom.editors.get(deviceID);
@@ -78,8 +78,7 @@ function sockets(
                     theMember.socket = socket; // connect the new socket
                     theMember.joinRoom(); // re-join the correct rooms
                     // TODO: next big important piece: reinstate context on re-join
-                    theMember.reinstateContext();  // something like this
-                // theMember.setReceive(); // amazingly, this isn't necessary...
+                    theMember.reinstateContext();
                 }
 
                 io.to(socket.id).emit("stcNavigate", targetView); // navigate to correct view
@@ -89,40 +88,40 @@ function sockets(
             deviceIDToSocketID[deviceID] = socket.id; // will overwrite previous
         });
 
-        socket.on("ctsCreateGameHost", (roomId) => {
-            console.log("createGameHost for ", socket.id, "joining", roomId);
-            // notice we don't add the host device to deviceIDToRoomId
+        socket.on("ctsCreateGameHost", (roomID) => {
+            console.log("createGameHost for ", socket.id, "joining", roomID);
+            // notice we don't add the host device to deviceIDToRoomID
             const thisHost = new Host(
                 io,
                 socket,
-                roomId,
+                roomID,
                 socketIDToDeviceID[socket.id],
                 "HOST",
             );
             thisHost.joinRoom();
-            roomIdToHost.set(roomId, thisHost);
-            const thisRoom = new Room(io, socket, roomId);
-            roomIdToRoom.set(roomId, thisRoom);
-            console.log("room", roomId, "created with ", socket.id, "as host");
+            roomIDToHost.set(roomID, thisHost);
+            const thisRoom = new PoemRoom(io, socket, roomID);
+            roomIDToRoom.set(roomID, thisRoom);
+            console.log("room", roomID, "created with ", socket.id, "as host");
         });
 
-        socket.on("ctsJoinAs", (role: Role, roomId: string, name: string, isTest = false) => {
+        socket.on("ctsJoinAs", (role: Role, roomID: string, name: string, isTest = false) => {
             console.log(
                 "socket",
                 socket.id,
                 "ctsJoinAs",
                 role,
                 "to room",
-                roomId,
+                roomID,
                 "with name",
                 name,
             );
-            if (!roomIdToRoom.has(roomId)) {
-                console.log(roomId, "does not exist");
-                io.to(socket.id).emit("stcJoinError", "Room does not exist.");
+            if (!roomIDToRoom.has(roomID)) {
+                console.log(roomID, "does not exist");
+                io.to(socket.id).emit("stcJoinError", "PoemRoom does not exist.");
                 return;
             }
-            const targetRoom = roomIdToRoom.get(roomId);
+            const targetRoom = roomIDToRoom.get(roomID);
             console.log("current state of socketIDToDeviceID is", socketIDToDeviceID);
             const deviceID = socketIDToDeviceID[socket.id];
             if (!targetRoom) {
@@ -131,7 +130,7 @@ function sockets(
             }
             if (role === Role.EDITOR) {
                 if (targetRoom.gameOngoing) {
-                    console.log(roomId, "game is already ongoing");
+                    console.log(roomID, "game is already ongoing");
                     io.to(socket.id).emit(
                         "stcJoinError",
                         "Game already ongoing. Join as spectator?",
@@ -146,9 +145,9 @@ function sockets(
                     );
                     return;
                 }
-                deviceIDToRoomId[deviceID] = roomId;
+                deviceIDToRoomID[deviceID] = roomID;
                 console.log("about to make editor obj with deviceID", deviceID, "and name", name);
-                const thisEditor = new Editor(io, socket, roomId, deviceID, name);
+                const thisEditor = new PoemEditor(io, socket, roomID, deviceID, name);
                 console.log("editor object created with deviceID", thisEditor.deviceID);
                 thisEditor.joinRoom();
                 console.log("room joined");
@@ -156,20 +155,20 @@ function sockets(
                     io.to(socket.id).emit("stcNavigate", "/lobby");
                 }
                 console.log("sent navigate message");
-                // io.to(socket.id).emit("stcRoomCode", roomId);
+                // io.to(socket.id).emit("stcRoomCode", roomID);
                 // console.log("sent room code");
                 targetRoom.addEditor(deviceID, thisEditor);
                 console.log("editor added to room");
             } else if (role === Role.SPECTATOR) {
-                deviceIDToRoomId[deviceID] = roomId;
-                const thisSpectator = new Spectator(io, socket, roomId, deviceID, name);
+                deviceIDToRoomID[deviceID] = roomID;
+                const thisSpectator = new PoemSpectator(io, socket, roomID, deviceID, name);
                 thisSpectator.joinRoom();
                 if (!isTest) {
                     if (targetRoom.gameOngoing) {
                         io.to(socket.id).emit("stcNavigate", "/spectate");
                     } else {
                         io.to(socket.id).emit("stcNavigate", "/lobby");
-                        // io.to(socket.id).emit("stcRoomCode", roomId);
+                        // io.to(socket.id).emit("stcRoomCode", roomID);
                         // console.log("sent room code");
                     }
                 }

@@ -1,12 +1,12 @@
 import { Server, Socket } from "socket.io";
 
-import { deviceIDToRoomId, deviceIDToSocketID, roomIdToHost, roomIdToRoom, socketIDToDeviceID } from "./globals";
-import Spectator from "./spectator";
-import Editor from "./editor";
-import Poem from "./poem";
+import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "./globals";
+import { PoemSpectator } from "./spectator";
+import { PoemEditor } from "./editor";
+import { Poem } from "./collaboration";
 import {
     ClientToServerEvents,
-    IGameSettingsInfo,
+    IPoemSettingsInfo,
     IUserTableInfo,
     InterServerEvents,
     Point,
@@ -36,17 +36,14 @@ class Room {
         InterServerEvents,
         SocketData
     >;
-    roomId: string;
+    roomID: string;
 
-    editors: Map<string, Editor>;
-    spectators: Map<string, Spectator>;
-    gameSettings: IGameSettingsInfo;
+    editors: Map<string, PoemEditor>;
+    spectators: Map<string, PoemSpectator>;
     gameOngoing: boolean;
-    nPoemsInRotation: number;
+    nUnfinishedWorks: number;
     activityInterval: ReturnType<typeof setInterval>;
     createdAt: number;
-    finishedPoems: Array<Poem>;
-    finishedCanvas: Point[][];
 
     constructor(
         io: Server<
@@ -60,13 +57,12 @@ class Room {
     ) {
         this.io = io;
         this.hostSocket = hostSocket;
-        this.roomId = room;
+        this.roomID = room;
 
         this.editors = new Map(); // deviceID to editorObj
         this.spectators = new Map(); // deviceID to spectatorObj
-        this.gameSettings = defaultGameSettings;
         this.gameOngoing = false;
-        this.nPoemsInRotation = 0;
+        this.nUnfinishedWorks = 0;
 
         // check user activity every 30 seconds
         this.activityInterval = setInterval(
@@ -74,11 +70,9 @@ class Room {
             checkActivityInterval,
         );
         this.createdAt = Date.now();
-        this.finishedPoems = [];
-        this.finishedCanvas = [];
     }
 
-    addEditor(deviceUUID: string, editorObj: Editor) {
+    addEditor(deviceUUID: string, editorObj: PoemEditor) {
         console.log("addEditor with deviceUUID", deviceUUID);
         this.editors.set(deviceUUID, editorObj);
         this.sendCurrentUserTableInfo(); // give the room updated user info
@@ -90,7 +84,7 @@ class Room {
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }
 
-    addSpectator(deviceUUID: string, spectatorObj: Spectator) {
+    addSpectator(deviceUUID: string, spectatorObj: PoemSpectator) {
         this.spectators.set(deviceUUID, spectatorObj);
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }
@@ -124,40 +118,7 @@ class Room {
     }
 
     sendCurrentUserTableInfo() {
-        this.io.in(this.roomId).emit("stcUserTableInfo", this.currentUserTableInfo());
-    }
-
-    setUpGame() {
-        console.log("setUpGame with this.editors", this.editors);
-        const targetLines = this.gameSettings["nRounds"] * this.editors.size + 2;
-
-        // have each editor set their important properties
-        let nPoemsToHandOut = this.gameSettings["nPoems"];
-        this.nPoemsInRotation = nPoemsToHandOut;
-        let poemIndex = 0;
-        for (const thisEditor of this.editors.values()) {
-            thisEditor.lastActivity = Date.now(); // refresh AFK timers upon game start
-            thisEditor.prepareForGame();
-
-            // give the editor a new poem
-            if (nPoemsToHandOut > 0) {
-                const thisPoem = new Poem(targetLines, poemIndex, this.io, this.roomId); // creates Poem object
-                thisEditor.poemQueue.push(thisPoem);
-                thisEditor.isCurrentlyEditing = true;
-                nPoemsToHandOut--;
-                poemIndex++;
-            }
-        }
-
-        // should tell editors to navigate to /game and spectators to /spectate
-        this.io.in(`${this.roomId}_Editors`).emit("stcNavigate", "/game");
-        this.io.in(`${this.roomId}_Spectators`).emit("stcNavigate", "/spectate");
-        this.gameOngoing = true;
-
-        for (const thisEditor of this.editors.values()) {
-            thisEditor.sendActivity();
-            thisEditor.sendLastLineStatus();
-        }
+        this.io.in(this.roomID).emit("stcUserTableInfo", this.currentUserTableInfo());
     }
 
     reorganizeEditors() {
@@ -168,13 +129,13 @@ class Room {
 
     checkActivity() {
         const currentTime = Date.now();
-        console.log(this.roomId, "checking activity at", currentTime);
+        console.log(this.roomID, "checking activity at", currentTime);
         if (
             this.editors.size === 0 &&
             this.spectators.size === 0 &&
             currentTime - this.createdAt > maxRoomTimeSpentEmpty
         ) {
-            console.log(this.roomId, "spent too long with no members, destroying");
+            console.log(this.roomID, "spent too long with no members, destroying");
             this.selfDestruct();
             return;
         }
@@ -198,30 +159,23 @@ class Room {
         }
     }
 
-    storePoem(poemObj: Poem) {
-        console.log(this.roomId, "storing poem", poemObj.poemID);
-        this.finishedPoems.push(poemObj);
-    }
-
     sendToEnd() {
-        console.log(this.roomId, "sending everyone to the end screen");
-        this.io.in(this.roomId).emit("stcNavigate", "/end");
+        console.log(this.roomID, "sending everyone to the end screen");
+        this.io.in(this.roomID).emit("stcNavigate", "/end");
     }
 
     async selfDestruct() {
-        console.log(this.roomId, "will self-destruct in 30 seconds");
+        console.log(this.roomID, "will self-destruct in 30 seconds");
         await sleep(30000);
-        console.log(this.roomId, "self-destructing");
+        console.log(this.roomID, "self-destructing");
 
-        // wait a bit then self-destruct the room and everyone in it!
-        console.log("finishedPoems", this.finishedPoems.length);
         for (const [ editorID, thisEditor ] of this.editors.entries()) {
-            delete deviceIDToRoomId[editorID];
+            delete deviceIDToRoomID[editorID];
             // since this.editors is a map from editor's device ID to the Member this should delete the object
             // including its socket?
             thisEditor.connected = false;
-            delete deviceIDToRoomId[editorID];
-            thisEditor.socket.leave(this.roomId);
+            delete deviceIDToRoomID[editorID];
+            thisEditor.socket.leave(this.roomID);
             thisEditor.unsetReceive();
             delete socketIDToDeviceID[thisEditor.socket.id];
             delete deviceIDToSocketID[editorID];
@@ -231,10 +185,10 @@ class Room {
             spectatorID,
             thisSpectator,
         ] of this.spectators.entries()) {
-            delete deviceIDToRoomId[spectatorID];
+            delete deviceIDToRoomID[spectatorID];
             thisSpectator.connected = false;
-            delete deviceIDToRoomId[spectatorID];
-            thisSpectator.socket.leave(this.roomId);
+            delete deviceIDToRoomID[spectatorID];
+            thisSpectator.socket.leave(this.roomID);
             thisSpectator.unsetReceive();
             delete socketIDToDeviceID[thisSpectator.socket.id];
             delete deviceIDToSocketID[spectatorID];
@@ -242,9 +196,68 @@ class Room {
         }
 
         clearInterval(this.activityInterval);
-        roomIdToHost.delete(this.roomId);
-        roomIdToRoom.delete(this.roomId);
+        roomIDToHost.delete(this.roomID);
+        roomIDToRoom.delete(this.roomID);
     }
 }
 
-export default Room;
+export class PoemRoom extends Room {
+    gameSettings: IPoemSettingsInfo;
+    finishedWorks: Array<Poem>;
+    // allowed to be parasitic for now
+    finishedCanvas: Point[][];
+
+    constructor(
+        io: Server<ClientToServerEvents,
+            ServerToClientEvents,
+            InterServerEvents,
+            SocketData>,
+        hostSocket: Socket,
+        room: string,
+    ) {
+        super(io, hostSocket, room);
+        this.gameSettings = defaultGameSettings;
+        this.finishedWorks = [];
+        // allowed to be parasitic for now
+        this.finishedCanvas = [];
+    }
+
+    storePoem(poemObj: Poem) {
+        console.log(this.roomID, "storing poem", poemObj.ID);
+        this.finishedWorks.push(poemObj);
+    }
+
+    setUpGame() {
+        console.log("setUpGame with this.editors", this.editors);
+        const nContributions = this.gameSettings["nRounds"] * this.editors.size + 2;
+
+        // have each editor set their important properties
+        let nPoemsToHandOut = this.gameSettings["nPoems"];
+        this.nUnfinishedWorks = nPoemsToHandOut;
+        let poemIndex = 0;
+        for (const thisEditor of this.editors.values()) {
+            thisEditor.lastActivity = Date.now(); // refresh AFK timers upon game start
+            thisEditor.prepareForGame();
+
+            // give the editor a new poem
+            if (nPoemsToHandOut > 0) {
+                const thisPoem = new Poem(this.io, this.roomID, nContributions, poemIndex); // creates Poem object
+                thisEditor.contributionQueue.push(thisPoem);
+                thisEditor.isCurrentlyEditing = true;
+                nPoemsToHandOut--;
+                poemIndex++;
+            }
+        }
+
+        // should tell editors to navigate to /game and spectators to /spectate
+        this.io.in(`${this.roomID}_Editors`).emit("stcNavigate", "/game");
+        this.io.in(`${this.roomID}_Spectators`).emit("stcNavigate", "/spectate");
+        this.gameOngoing = true;
+
+        for (const thisEditor of this.editors.values()) {
+            thisEditor.sendActivity();
+            thisEditor.sendLastLineStatus();
+        }
+    }
+
+}

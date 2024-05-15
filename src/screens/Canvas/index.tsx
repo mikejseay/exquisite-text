@@ -16,7 +16,6 @@ const defaultPressure = 0.1;
 const lineColor = "grey";
 
 /* TODO:
-    [ ] Check for usages of 
     [ ] Ensure that spectator receives entire drawing instead of just single frame
     [ ] Modularize all server socket functions to work with both poems and canvases
     [ ] For the watcher, the cursor is not in right spot until writer starts writing:
@@ -134,6 +133,7 @@ const Canvas: React.FC = () => {
 
     const submitCanvas = () => {
         console.log("submitCanvas:", localStrokeHistory);
+        console.log({ localStrokeHistory });
         emitSendCanvas(localStrokeHistory);
     };
 

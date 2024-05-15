@@ -2,12 +2,11 @@ import isNil from "lodash/isNil";
 import { Server, Socket } from "socket.io";
 
 import {
-    deviceIDToRoomId,
+    deviceIDToRoomID,
     deviceIDToSocketID,
-    roomIdToRoom,
+    roomIDToRoom,
     socketIDToDeviceID,
 } from "./globals";
-import type Poem from "./poem";
 import {
     ClientToServerEvents,
     InterServerEvents,
@@ -16,6 +15,7 @@ import {
 } from "../../src/types";
 import { userInfo as userInfoTestData } from "../../src/data/userInfo";
 import { poemsLines as poemsLinesTestData } from "../../src/data/multiplePoems";
+import { getRoom } from "../utilities/sockets";
 
 class Member {
     // represents an Editor or Spectator (which extend this)
@@ -35,7 +35,7 @@ class Member {
         InterServerEvents,
         SocketData
     >;
-    roomId: string;
+    roomID: string;
     deviceID: string;
     name: string;
     lastActivity: number;
@@ -49,13 +49,13 @@ class Member {
             SocketData
         >,
         socket: Socket,
-        roomId: string,
+        roomID: string,
         deviceID: string,
         name: string,
     ) {
         this.io = io;
         this.socket = socket;
-        this.roomId = roomId;
+        this.roomID = roomID;
         this.deviceID = deviceID;
         this.name = name;
         this.lastActivity = Date.now(); // current time since epoch in ms
@@ -64,68 +64,62 @@ class Member {
 
     joinRoom() {
         this.connected = true;
-        this.socket.join(this.roomId);
+        this.socket.join(this.roomID);
         this.setReceive(); // listen for certain messages from client
     }
 
     leaveRoom() {
         this.connected = false;
-        console.log(this.name, " leaving ", this.roomId);
+        console.log(this.name, " leaving ", this.roomID);
         this.io.to(this.socket.id).emit("stcNavigate", "/"); // navigate home (if possible)
-        delete deviceIDToRoomId[this.deviceID];
-        this.socket.leave(this.roomId);
+        delete deviceIDToRoomID[this.deviceID];
+        this.socket.leave(this.roomID);
         this.unsetReceive(); // remove listeners
     }
 
-    // setSend
-    // errors about join fail
-    // command to go to a certain view
-    // supply lobby subscription to keep game view up to date during configuration
-    // supply completed poems
-
-    // setReceive
-    // getUserTableInfo
-
     setReceive() {
         this.socket.on("ctsRequestUserTableInfo", (shouldTest) => this.sendUserTableInfo(shouldTest));
-        this.socket.on("ctsRequestPoemsLines", (shouldTest) => this.sendPoemsLinesInfo(shouldTest));
         this.socket.on("ctsRequestGameSettingsInfo", () => this.sendGameSettingsInfo());
         this.socket.on("ctsRequestSettingsEnabled", () => this.sendSettingsEnabled());
         this.socket.on("ctsLeave", () => this.leaveRoom());
-
         // These are all reserved events
         this.socket.on("disconnect", () => this.disconnect());
         this.socket.on("disconnecting", () => this.disconnecting());
+        // only used to test the end screen, but we allow it to be parasitic for now
+        this.socket.on("ctsRequestPoemsLines", (shouldTest) => this.sendPoemsLinesInfo(shouldTest));
     }
 
     unsetReceive() {
         this.socket.removeAllListeners("ctsRequestUserTableInfo");
-        this.socket.removeAllListeners("ctsRequestPoemsLines");
         this.socket.removeAllListeners("ctsRequestGameSettingsInfo");
         this.socket.removeAllListeners("ctsRequestSettingsEnabled");
         this.socket.removeAllListeners("ctsLeave");
         this.socket.removeAllListeners("disconnect");
         this.socket.removeAllListeners("disconnecting");
+        // only used to test the end screen, but we allow it to be parasitic for now
+        this.socket.removeAllListeners("ctsRequestPoemsLines");
     }
 
     sendUserTableInfo(shouldTest: boolean) {
         console.log(this.name, "requestUserTableInfo");
-        if (!roomIdToRoom || !this.roomId) {
-            console.log("roomIdToRoom not found");
-            return;
+        const room = getRoom(this.roomID);
+        if (room) {
+            this.io
+                .to(this.socket.id)
+                .emit(
+                    "stcUserTableInfo",
+                    shouldTest
+                        ? userInfoTestData
+                        : room.currentUserTableInfo(),
+                );
+        } else {
+            console.log("Failed to get room details for user table info");
         }
-        this.io
-            .to(this.socket.id)
-            .emit(
-                "stcUserTableInfo",
-                shouldTest
-                    ? userInfoTestData
-                    : roomIdToRoom.get(this.roomId)!.currentUserTableInfo(),
-            );
     }
 
+    // only used to test the end screen, but we allow it to be parasitic for now
     sendPoemsLinesInfo(shouldTest: boolean) {
-        const thisRoom = roomIdToRoom.get(this.roomId);
+        const thisRoom = roomIDToRoom.get(this.roomID);
 
         if (shouldTest) {
             console.log("sending test poemsLines data in a way that is unusual");
@@ -145,10 +139,10 @@ class Member {
             console.log("thisRoom not found");
             return;
         }
-        console.log(this.name, "request poems from room which has", thisRoom.finishedPoems.length);
-        for (const poemObj of thisRoom.finishedPoems) {
+        console.log(this.name, "request poems from room which has", thisRoom.finishedWorks.length);
+        for (const poemObj of thisRoom.finishedWorks) {
             // TODO: Explore this, this could improve server-side efficiency:
-            // this.io.in(this.roomId).emit("stcPoemLines", Array.from(poemObj.lines));
+            // this.io.in(this.roomID).emit("stcPoemLines", Array.from(poemObj.lines));
             this.io
                 .to(this.socket.id)
                 .emit(
@@ -160,18 +154,19 @@ class Member {
 
     requestRoomCode() {
         console.log(this.name, "requestRoomCode");
-        this.io.to(this.socket.id).emit("stcRoomCode", this.roomId);
+        this.io.to(this.socket.id).emit("stcRoomCode", this.roomID);
     }
 
     sendGameSettingsInfo() {
         console.log(this.name, "requestGameSettingsInfo");
-        if (!roomIdToRoom || !this.roomId) {
-            console.log("roomIdToRoom not found");
-            return;
+        const room = getRoom(this.roomID);
+        if (room) {
+            this.io
+                .to(this.socket.id)
+                .emit("stcGameSettingsInfo", room.gameSettings);
+        } else {
+            console.log("Failed to get room details for game settings");
         }
-        this.io
-            .to(this.socket.id)
-            .emit("stcGameSettingsInfo", roomIdToRoom.get(this.roomId)!.gameSettings);
     }
 
     sendSettingsEnabled() {
@@ -188,7 +183,7 @@ class Member {
         this.connected = false;
 
         // if in the room but the game hasn't started yet (lobby), remove them
-        const thisRoom = roomIdToRoom.get(this.roomId);
+        const thisRoom = roomIDToRoom.get(this.roomID);
         if (!isNil(thisRoom) && !thisRoom.gameOngoing) {
             this.leaveRoom();
         }
@@ -197,7 +192,7 @@ class Member {
         delete socketIDToDeviceID[this.socket.id];
         // deviceIDToSocketID
         delete deviceIDToSocketID[this.deviceID];
-        // roomIdToRoom
+        // roomIDToRoom
 
         // do cleanup intelligently
         // remove from socket map
@@ -215,12 +210,6 @@ class Member {
             " disconnecting from",
             this.socket.rooms,
         );
-    }
-
-    sendPoemAsLines(poemObj: Poem) {
-    // crucial method that sends the poem to all users
-    // make sure the correct members receive this
-        this.io.in(this.roomId).emit("stcPoemLines", Array.from(poemObj.lines));
     }
 }
 
