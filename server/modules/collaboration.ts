@@ -10,11 +10,11 @@ import {
 } from "../../src/types";
 import { storeLine } from "../queries";
 
-// TODO: Break this up into a superclass called Collaboration and Poem extends Collaboration
-// Make replica of Poem called Drawing that's analogous
-// e.g:
-// class Collaboration
-// Poem extends Collaboration
+// TODO: create specialized classes for Drawing
+// Classes to create: Drawing, DrawingRoom, DrawingSpectator, DrawingEditor
+// Move parasitic functions for canvas test into new classes
+// Implement some UI element to create DrawingRoom rather than PoemRoom
+// Modify sockets.ts to handle
 
 class Collaboration {
     io: Server<
@@ -49,7 +49,7 @@ class Collaboration {
     }
 }
 
-class Poem extends Collaboration {
+export class Poem extends Collaboration {
     // represents a single poem
 
     halfLine: string;
@@ -111,5 +111,3 @@ class Poem extends Collaboration {
         this.io.to(socketID).emit("stcLineSpectator", this.indexInGame, line);
     }
 }
-
-export default Poem;

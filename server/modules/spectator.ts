@@ -25,7 +25,7 @@ class Spectator extends Member {
     }
 }
 
-class PoemSpectator extends Spectator {
+export class PoemSpectator extends Spectator {
     setReceive() {
         super.setReceive();
         // allowed to be parasitic for now
@@ -72,5 +72,3 @@ class PoemSpectator extends Spectator {
         this.sendAllPoemLines();
     }
 }
-
-export default PoemSpectator;

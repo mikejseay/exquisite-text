@@ -5,9 +5,9 @@
 import { Server } from "socket.io";
 
 import Host from "./host";
-import Editor from "./editor";
-import Spectator from "./spectator";
-import Room from "./room";
+import { PoemEditor } from "./editor";
+import { PoemSpectator } from "./spectator";
+import { PoemRoom } from "./room";
 import {
     ClientToServerEvents,
     InterServerEvents,
@@ -59,7 +59,7 @@ function sockets(
                 const editorDeviceIDsInRoom = Array.from(theRoom.editors.keys());
                 const spectatorDeviceIDsInRoom = Array.from(theRoom.spectators.keys());
 
-                let theMember: Editor | Spectator | undefined;
+                let theMember: PoemEditor | PoemSpectator | undefined;
                 let targetView: string;
                 if (editorDeviceIDsInRoom.includes(deviceID)) {
                     theMember = theRoom.editors.get(deviceID);
@@ -100,7 +100,7 @@ function sockets(
             );
             thisHost.joinRoom();
             roomIDToHost.set(roomID, thisHost);
-            const thisRoom = new Room(io, socket, roomID);
+            const thisRoom = new PoemRoom(io, socket, roomID);
             roomIDToRoom.set(roomID, thisRoom);
             console.log("room", roomID, "created with ", socket.id, "as host");
         });
@@ -118,7 +118,7 @@ function sockets(
             );
             if (!roomIDToRoom.has(roomID)) {
                 console.log(roomID, "does not exist");
-                io.to(socket.id).emit("stcJoinError", "Room does not exist.");
+                io.to(socket.id).emit("stcJoinError", "PoemRoom does not exist.");
                 return;
             }
             const targetRoom = roomIDToRoom.get(roomID);
@@ -147,7 +147,7 @@ function sockets(
                 }
                 deviceIDToRoomID[deviceID] = roomID;
                 console.log("about to make editor obj with deviceID", deviceID, "and name", name);
-                const thisEditor = new Editor(io, socket, roomID, deviceID, name);
+                const thisEditor = new PoemEditor(io, socket, roomID, deviceID, name);
                 console.log("editor object created with deviceID", thisEditor.deviceID);
                 thisEditor.joinRoom();
                 console.log("room joined");
@@ -161,7 +161,7 @@ function sockets(
                 console.log("editor added to room");
             } else if (role === Role.SPECTATOR) {
                 deviceIDToRoomID[deviceID] = roomID;
-                const thisSpectator = new Spectator(io, socket, roomID, deviceID, name);
+                const thisSpectator = new PoemSpectator(io, socket, roomID, deviceID, name);
                 thisSpectator.joinRoom();
                 if (!isTest) {
                     if (targetRoom.gameOngoing) {

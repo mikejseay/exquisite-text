@@ -1,8 +1,8 @@
-import Editor from "../modules/editor";
 import { roomIDToRoom } from "../modules/globals";
-import Room from "../modules/room";
+import { PoemEditor } from "../modules/editor";
+import { PoemRoom } from "../modules/room";
 
-export function getRoom(roomID: string | undefined): Room | undefined {
+export function getRoom(roomID: string | undefined): PoemRoom | undefined {
     if (!roomIDToRoom || !roomID) {
         console.error("roomIDToRoom map or roomID is undefined");
         return undefined;
@@ -20,14 +20,14 @@ export function getEditorSocketID(roomID: string | undefined, editorID: string |
         console.error("roomIDToRoom map or roomID or editorID is undefined");
         return undefined;
     }
-    const room: Room | undefined = roomIDToRoom.get(roomID);
+    const room: PoemRoom | undefined = roomIDToRoom.get(roomID);
     if (!room || !room.editors) {
         console.error("Editors not found in the room or room not found for ID:", roomID);
         return undefined;
     }
-    const editor: Editor | undefined = room.editors.get(editorID);
+    const editor: PoemEditor | undefined = room.editors.get(editorID);
     if (!editor || !editor.socket) {
-        console.error("Editor or editor's socket not found for ID:", editorID);
+        console.error("PoemEditor or editor's socket not found for ID:", editorID);
         return undefined;
     }
     return editor.socket.id;

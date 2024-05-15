@@ -1,9 +1,9 @@
 import { Server, Socket } from "socket.io";
 
 import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "./globals";
-import Spectator from "./spectator";
-import Editor from "./editor";
-import Poem from "./collaboration";
+import { PoemSpectator } from "./spectator";
+import { PoemEditor } from "./editor";
+import { Poem } from "./collaboration";
 import {
     ClientToServerEvents,
     IPoemSettingsInfo,
@@ -38,8 +38,8 @@ class Room {
     >;
     roomID: string;
 
-    editors: Map<string, Editor>;
-    spectators: Map<string, Spectator>;
+    editors: Map<string, PoemEditor>;
+    spectators: Map<string, PoemSpectator>;
     gameOngoing: boolean;
     nUnfinishedWorks: number;
     activityInterval: ReturnType<typeof setInterval>;
@@ -72,7 +72,7 @@ class Room {
         this.createdAt = Date.now();
     }
 
-    addEditor(deviceUUID: string, editorObj: Editor) {
+    addEditor(deviceUUID: string, editorObj: PoemEditor) {
         console.log("addEditor with deviceUUID", deviceUUID);
         this.editors.set(deviceUUID, editorObj);
         this.sendCurrentUserTableInfo(); // give the room updated user info
@@ -84,7 +84,7 @@ class Room {
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }
 
-    addSpectator(deviceUUID: string, spectatorObj: Spectator) {
+    addSpectator(deviceUUID: string, spectatorObj: PoemSpectator) {
         this.spectators.set(deviceUUID, spectatorObj);
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }
@@ -201,7 +201,7 @@ class Room {
     }
 }
 
-class PoemRoom extends Room {
+export class PoemRoom extends Room {
     gameSettings: IPoemSettingsInfo;
     finishedWorks: Array<Poem>;
     // allowed to be parasitic for now
@@ -261,5 +261,3 @@ class PoemRoom extends Room {
     }
 
 }
-
-export default PoemRoom;
