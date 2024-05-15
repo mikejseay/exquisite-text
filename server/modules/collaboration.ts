@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid 
 import {
     ClientToServerEvents,
     ILine,
-    InterServerEvents,
+    InterServerEvents, Point,
     ServerToClientEvents,
     SocketData,
 } from "../../src/types";
@@ -24,10 +24,10 @@ class Collaboration {
         SocketData
     >;
     roomID: string;
-    nParts: number;
-    indexInGame: number;
-    ID: string;
-    mostRecentEditor: string;
+    nContributions: number; // number of contributions to the artwork
+    indexInGame: number; // index amongst the game's multiple Collaborations
+    ID: string; // uuid assigned to this Collaboration
+    mostRecentEditor: string; // deviceID (uuid)
 
     constructor(
         io: Server<
@@ -37,12 +37,12 @@ class Collaboration {
             SocketData
         >,
         roomID: string,
-        nParts: number,
+        nContributions: number,
         indexInGame: number,
     ) {
         this.io = io;
         this.roomID = roomID;
-        this.nParts = nParts;
+        this.nContributions = nContributions;
         this.indexInGame = indexInGame;
         this.ID = uuidv4();
         this.mostRecentEditor = "";
@@ -67,10 +67,10 @@ class Poem extends Collaboration {
             SocketData
         >,
         roomID: string,
-        nParts: number,
+        nContributions: number,
         indexInGame: number,
     ) {
-        super(io, roomID, nParts, indexInGame);
+        super(io, roomID, nContributions, indexInGame);
         this.halfLine = "";
         this.lines = new Set<ILine>();
     }

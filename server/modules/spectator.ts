@@ -1,5 +1,6 @@
 import { roomIDToRoom } from "./globals";
 import Member from "./member";
+import { getRoom } from "../utilities/sockets";
 
 class Spectator extends Member {
     joinRoom() {
@@ -10,7 +11,7 @@ class Spectator extends Member {
     leaveRoom() {
         super.leaveRoom();
         this.socket.leave(`${this.roomID}_Spectators`);
-        const thisRoom = roomIDToRoom.get(this.roomID);
+        const thisRoom = getRoom(this.roomID);
         if (!thisRoom) {
             console.log("thisRoom not found");
             return;
@@ -27,14 +28,17 @@ class Spectator extends Member {
 class PoemSpectator extends Spectator {
     setReceive() {
         super.setReceive();
+        // allowed to be parasitic for now
         this.socket.on("ctsRequestCanvas", () => this.sendCanvas());
     }
 
     unsetReceive() {
         super.unsetReceive();
+        // allowed to be parasitic for now
         this.socket.removeAllListeners("ctsRequestCanvas");
     }
 
+    // allowed to be parasitic for now
     sendCanvas() {
         const thisRoom = roomIDToRoom.get(this.roomID);
         if (!thisRoom) {
@@ -56,7 +60,7 @@ class PoemSpectator extends Spectator {
             return;
         }
         for (const thisEditor of thisRoom.editors.values()) {
-            for (const thisPoem of thisEditor.workQueue) {
+            for (const thisPoem of thisEditor.contributionQueue) {
                 thisPoem.sendAllLinesTo(this.socket.id);
             }
         }

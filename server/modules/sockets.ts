@@ -78,8 +78,7 @@ function sockets(
                     theMember.socket = socket; // connect the new socket
                     theMember.joinRoom(); // re-join the correct rooms
                     // TODO: next big important piece: reinstate context on re-join
-                    theMember.reinstateContext();  // something like this
-                // theMember.setReceive(); // amazingly, this isn't necessary...
+                    theMember.reinstateContext();
                 }
 
                 io.to(socket.id).emit("stcNavigate", targetView); // navigate to correct view

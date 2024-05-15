@@ -6,7 +6,7 @@ import Editor from "./editor";
 import Poem from "./collaboration";
 import {
     ClientToServerEvents,
-    IGameSettingsInfo,
+    IPoemSettingsInfo,
     IUserTableInfo,
     InterServerEvents,
     Point,
@@ -202,8 +202,9 @@ class Room {
 }
 
 class PoemRoom extends Room {
-    gameSettings: IGameSettingsInfo;
+    gameSettings: IPoemSettingsInfo;
     finishedWorks: Array<Poem>;
+    // allowed to be parasitic for now
     finishedCanvas: Point[][];
 
     constructor(
@@ -217,6 +218,7 @@ class PoemRoom extends Room {
         super(io, hostSocket, room);
         this.gameSettings = defaultGameSettings;
         this.finishedWorks = [];
+        // allowed to be parasitic for now
         this.finishedCanvas = [];
     }
 
@@ -227,7 +229,7 @@ class PoemRoom extends Room {
 
     setUpGame() {
         console.log("setUpGame with this.editors", this.editors);
-        const nParts = this.gameSettings["nRounds"] * this.editors.size + 2;
+        const nContributions = this.gameSettings["nRounds"] * this.editors.size + 2;
 
         // have each editor set their important properties
         let nPoemsToHandOut = this.gameSettings["nPoems"];
@@ -239,8 +241,8 @@ class PoemRoom extends Room {
 
             // give the editor a new poem
             if (nPoemsToHandOut > 0) {
-                const thisPoem = new Poem(this.io, this.roomID, nParts, poemIndex); // creates Poem object
-                thisEditor.workQueue.push(thisPoem);
+                const thisPoem = new Poem(this.io, this.roomID, nContributions, poemIndex); // creates Poem object
+                thisEditor.contributionQueue.push(thisPoem);
                 thisEditor.isCurrentlyEditing = true;
                 nPoemsToHandOut--;
                 poemIndex++;
