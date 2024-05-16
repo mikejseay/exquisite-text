@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import GamepadIcon from "@mui/icons-material/Gamepad";
+import ArticleIcon from "@mui/icons-material/Article";
+import BrushIcon from "@mui/icons-material/Brush";
 import Fab from "@mui/material/Fab";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
@@ -39,9 +40,11 @@ function HostButton() {
             <Alert severity="warning">
                 Enter room code: <b>{roomID}</b>
             </Alert>
-            {clipboard.copied && <Alert severity="success">
-                Copied to clipboard: <b>{shareLink}</b>
-            </Alert>}
+            {clipboard.copied && (
+                <Alert severity="success">
+                    Copied to clipboard: <b>{shareLink}</b>
+                </Alert>
+            )}
         </div>
     );
 
@@ -49,13 +52,22 @@ function HostButton() {
         <div className={"create-game-fab"}>
             <Box>
                 <Fab
-                    aria-label="new"
+                    aria-label="create poem"
                     color="primary"
                     onClick={handleClick}
                     size="small"
                     sx={hostFAB}
                 >
-                    <GamepadIcon />
+                    <ArticleIcon />
+                </Fab>
+                <Fab
+                    aria-label="create drawing"
+                    color="secondary"
+                    onClick={handleClick}
+                    size="small"
+                    sx={{ ...hostFAB, marginLeft: 6 }}
+                >
+                    <BrushIcon />
                 </Fab>
                 {alerts}
             </Box>
