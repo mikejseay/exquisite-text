@@ -35,12 +35,12 @@ export default function Join() {
     };
 
     const handleWritePress = () => {
-        emitJoinAs(Role.EDITOR, roomID, name);
+        emitJoinAs(roomID, name, Role.EDITOR);
         setRoomCode(roomID.toUpperCase());
     };
 
     const handleSpectatePress = () => {
-        emitJoinAs(Role.SPECTATOR, roomID, name);
+        emitJoinAs(roomID, name, Role.SPECTATOR);
         setRoomCode(roomID.toUpperCase());
     };
 

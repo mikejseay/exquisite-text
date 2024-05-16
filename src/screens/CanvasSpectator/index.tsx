@@ -12,7 +12,7 @@ const CanvasSpectator: React.FC = () => {
 
     if (!hasJoinedRoom) {
         emitRecognizeDevice();
-        emitJoinAs(Role.SPECTATOR, "ROOM", "MIKEY", true);
+        emitJoinAs("ROOM", "MIKEY", Role.SPECTATOR, true);
         emitRequestCanvas();
         setHasJoinedRoom(true);
     }

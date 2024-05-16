@@ -4,7 +4,7 @@ import { centered, floatingToggleAnimate } from "./styles";
 import IconButton from "@mui/material/IconButton";
 import KeyboardIcon from "@mui/icons-material/Keyboard";
 import {
-    emitCreateGameHost,
+    emitCreateRoomAndHost,
     emitRecognizeDevice,
     emitRequestPoemsLines,
     emitRequestUserTableInfo,
@@ -16,7 +16,7 @@ function End({ shouldTest = false }: { shouldTest: boolean }) {
     const [ rendered, setRendered ] = React.useState(false);
     if (shouldTest && !rendered) {
         emitRecognizeDevice();
-        emitCreateGameHost(Medium.POETRY, "ROOM");
+        emitCreateRoomAndHost("ROOM", Medium.POETRY);
         emitRequestUserTableInfo(true);
         emitRequestPoemsLines(true);
         setRendered(true);

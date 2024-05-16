@@ -1,7 +1,6 @@
 import { roomIDToRoom } from "../modules/globals";
 import { DrawingEditor, PoemEditor } from "../modules/editor";
 import { DrawingRoom, PoemRoom } from "../modules/room";
-import { Medium } from "../../src/types";
 
 export function getRoom(roomID: string | undefined): PoemRoom | DrawingRoom | undefined {
     if (!roomIDToRoom || !roomID) {

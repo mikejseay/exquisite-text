@@ -10,7 +10,7 @@ import { useClipboard } from "use-clipboard-copy";
 import { hostFAB, roomCodeStyles } from "./styles";
 import { generateAlphaString } from "../../helpers";
 import { roomCodeLength } from "../../constants";
-import { emitCreateGameHost } from "../../context/SocketRequestors";
+import { emitCreateRoomAndHost } from "../../context/SocketRequestors";
 import { Medium } from "../../types";
 
 function HostButton() {
@@ -31,7 +31,7 @@ function HostButton() {
             setRoomID(roomID);
             setShareLink(shareLink);
             clipboard.copy(shareLink);
-            emitCreateGameHost(medium, roomID);
+            emitCreateRoomAndHost(roomID, medium);
             navigate(`/${roomID}`);
         }
     };

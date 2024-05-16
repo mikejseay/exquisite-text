@@ -83,7 +83,7 @@ function sockets(
             deviceIDToSocketID[deviceID] = socket.id; // will overwrite previous
         });
 
-        socket.on("ctsCreateGameHost", (medium: Medium, roomID: string) => {
+        socket.on("ctsCreateRoomAndHost", (roomID: string, medium: Medium) => {
             console.log("createGameHost for ", socket.id, "joining", roomID);
             // notice we don't add the host device to deviceIDToRoomID
             const thisHost = new Host(
@@ -101,6 +101,8 @@ function sockets(
                 thisRoom = new PoemRoom(io, socket, roomID);
             } else if (medium == Medium.DRAWING) {
                 thisRoom = new DrawingRoom(io, socket, roomID);
+            } else {
+                throw new Error("Unknown medium type.");
             }
 
             if (thisRoom) {
@@ -111,7 +113,7 @@ function sockets(
             console.log("room", roomID, "created as medium", medium, " with ", socket.id, "as host");
         });
 
-        socket.on("ctsJoinAs", (role: Role, roomID: string, name: string, isTest = false) => {
+        socket.on("ctsJoinAs", (roomID: string, name: string, role: Role, isTest = false) => {
             console.log(
                 "socket",
                 socket.id,
@@ -160,6 +162,8 @@ function sockets(
                     thisEditor = new PoemEditor(io, socket, roomID, deviceID, name);
                 } else if (targetRoom.medium == Medium.DRAWING) {
                     thisEditor = new DrawingEditor(io, socket, roomID, deviceID, name);
+                } else {
+                    throw new Error("Unknown medium type.");
                 }
 
                 if (thisEditor) {
@@ -185,6 +189,8 @@ function sockets(
                     thisSpectator = new PoemSpectator(io, socket, roomID, deviceID, name);
                 } else if (targetRoom.medium == Medium.DRAWING) {
                     thisSpectator = new DrawingSpectator(io, socket, roomID, deviceID, name);
+                } else {
+                    throw new Error("Unknown medium type.");
                 }
 
                 if (thisSpectator) {
