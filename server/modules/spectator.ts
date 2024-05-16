@@ -1,6 +1,7 @@
 import { roomIDToRoom } from "./globals";
 import Member from "./member";
 import { getRoom } from "../utilities/sockets";
+import { DrawingRoom } from "./room";
 
 class Spectator extends Member {
     joinRoom() {
@@ -26,33 +27,6 @@ class Spectator extends Member {
 }
 
 export class PoemSpectator extends Spectator {
-    setReceive() {
-        super.setReceive();
-        // allowed to be parasitic for now
-        this.socket.on("ctsRequestCanvas", () => this.sendCanvas());
-    }
-
-    unsetReceive() {
-        super.unsetReceive();
-        // allowed to be parasitic for now
-        this.socket.removeAllListeners("ctsRequestCanvas");
-    }
-
-    // allowed to be parasitic for now
-    sendCanvas() {
-        const thisRoom = roomIDToRoom.get(this.roomID);
-        if (!thisRoom) {
-            console.log("thisRoom not found");
-            return;
-        }
-        const canvas = thisRoom.finishedCanvas;
-        // for (const thisEditor of thisRoom.editors.values()) {
-        // }
-        this.io
-            .to(this.socket.id)
-            .emit("stcStrokeHistory", canvas);
-    }
-
     sendAllPoemLines() {
         const thisRoom = roomIDToRoom.get(this.roomID);
         if (!thisRoom) {
@@ -70,5 +44,37 @@ export class PoemSpectator extends Spectator {
         // TODO: Placeholder
         // super.reinstateContext();
         this.sendAllPoemLines();
+    }
+}
+
+export class DrawingSpectator extends Spectator {
+    setReceive() {
+        super.setReceive();
+        this.socket.on("ctsRequestCanvas", () => this.sendCanvas());
+    }
+
+    unsetReceive() {
+        super.unsetReceive();
+        this.socket.removeAllListeners("ctsRequestCanvas");
+    }
+
+    sendCanvas() {
+        console.log("sendCanvas activated");
+        const thisRoom = getRoom(this.roomID) as DrawingRoom;
+        if (!thisRoom) {
+            console.log("thisRoom not found");
+            return;
+        }
+        const canvas = thisRoom.finishedCanvas;
+        console.log("sendCanvas activated sending", canvas);
+        // for (const thisEditor of thisRoom.editors.values()) {
+        // }
+        this.io
+            .to(this.socket.id)
+            .emit("stcStrokeHistory", canvas);
+    }
+
+    reinstateContext() {
+        // for compatibility
     }
 }

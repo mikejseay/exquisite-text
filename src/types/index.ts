@@ -1,6 +1,12 @@
 import type { Key } from "react";
 import type { NavigateFunction } from "react-router-dom";
 
+export enum Medium {
+    ART = "Art",
+    POETRY = "Poetry",
+    DRAWING = "Drawing",
+}
+
 export enum Role {
     EDITOR = "Editor",
     SPECTATOR = "Spectator"
@@ -92,7 +98,7 @@ export interface ClientToServerEvents {
     ctsRequestLineEdit: () => void;
     ctsEditLine: (a: string) => void;
     ctsRecognizeDevice: (a: string) => void;
-    ctsCreateGameHost: (a: string) => void;
+    ctsCreateGameHost: (a: Medium, b: string) => void;
     ctsJoinAs: (role: Role, roomID: string, name: string) => void;
     ctsRequestGameSettingsInfo: () => void;
     ctsRequestLastLineStatus: () => void;

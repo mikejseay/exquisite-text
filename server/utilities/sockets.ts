@@ -1,8 +1,9 @@
 import { roomIDToRoom } from "../modules/globals";
-import { PoemEditor } from "../modules/editor";
-import { PoemRoom } from "../modules/room";
+import { DrawingEditor, PoemEditor } from "../modules/editor";
+import { DrawingRoom, PoemRoom } from "../modules/room";
+import { Medium } from "../../src/types";
 
-export function getRoom(roomID: string | undefined): PoemRoom | undefined {
+export function getRoom(roomID: string | undefined): PoemRoom | DrawingRoom | undefined {
     if (!roomIDToRoom || !roomID) {
         console.error("roomIDToRoom map or roomID is undefined");
         return undefined;
@@ -20,12 +21,12 @@ export function getEditorSocketID(roomID: string | undefined, editorID: string |
         console.error("roomIDToRoom map or roomID or editorID is undefined");
         return undefined;
     }
-    const room: PoemRoom | undefined = roomIDToRoom.get(roomID);
+    const room: PoemRoom | DrawingRoom | undefined = roomIDToRoom.get(roomID);
     if (!room || !room.editors) {
         console.error("Editors not found in the room or room not found for ID:", roomID);
         return undefined;
     }
-    const editor: PoemEditor | undefined = room.editors.get(editorID);
+    const editor: PoemEditor | DrawingEditor | undefined = room.editors.get(editorID);
     if (!editor || !editor.socket) {
         console.error("PoemEditor or editor's socket not found for ID:", editorID);
         return undefined;

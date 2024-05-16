@@ -1,14 +1,15 @@
 import { Server, Socket } from "socket.io";
 
 import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "./globals";
-import { PoemSpectator } from "./spectator";
-import { PoemEditor } from "./editor";
+import { DrawingSpectator, PoemSpectator } from "./spectator";
+import { DrawingEditor, PoemEditor } from "./editor";
 import { Poem } from "./collaboration";
 import {
     ClientToServerEvents,
     IPoemSettingsInfo,
     IUserTableInfo,
     InterServerEvents,
+    Medium,
     Point,
     ServerToClientEvents,
     SocketData,
@@ -38,12 +39,16 @@ class Room {
     >;
     roomID: string;
 
-    editors: Map<string, PoemEditor>;
-    spectators: Map<string, PoemSpectator>;
+    editors: Map<string, PoemEditor | DrawingEditor>;
+    spectators: Map<string, PoemSpectator | DrawingSpectator>;
     gameOngoing: boolean;
     nUnfinishedWorks: number;
     activityInterval: ReturnType<typeof setInterval>;
     createdAt: number;
+    // poem-specific for now until we figure out how to type generally
+    gameSettings: IPoemSettingsInfo;
+    finishedWorks: Array<Poem>;
+    medium: Medium;
 
     constructor(
         io: Server<
@@ -70,9 +75,12 @@ class Room {
             checkActivityInterval,
         );
         this.createdAt = Date.now();
+        this.gameSettings = defaultGameSettings;
+        this.finishedWorks = [];
+        this.medium = Medium.ART;
     }
 
-    addEditor(deviceUUID: string, editorObj: PoemEditor) {
+    addEditor(deviceUUID: string, editorObj: PoemEditor | DrawingEditor) {
         console.log("addEditor with deviceUUID", deviceUUID);
         this.editors.set(deviceUUID, editorObj);
         this.sendCurrentUserTableInfo(); // give the room updated user info
@@ -84,7 +92,7 @@ class Room {
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }
 
-    addSpectator(deviceUUID: string, spectatorObj: PoemSpectator) {
+    addSpectator(deviceUUID: string, spectatorObj: PoemSpectator | DrawingSpectator) {
         this.spectators.set(deviceUUID, spectatorObj);
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }
@@ -202,10 +210,6 @@ class Room {
 }
 
 export class PoemRoom extends Room {
-    gameSettings: IPoemSettingsInfo;
-    finishedWorks: Array<Poem>;
-    // allowed to be parasitic for now
-    finishedCanvas: Point[][];
 
     constructor(
         io: Server<ClientToServerEvents,
@@ -216,10 +220,7 @@ export class PoemRoom extends Room {
         room: string,
     ) {
         super(io, hostSocket, room);
-        this.gameSettings = defaultGameSettings;
-        this.finishedWorks = [];
-        // allowed to be parasitic for now
-        this.finishedCanvas = [];
+        this.medium = Medium.POETRY;
     }
 
     storePoem(poemObj: Poem) {
@@ -258,6 +259,24 @@ export class PoemRoom extends Room {
             thisEditor.sendActivity();
             thisEditor.sendLastLineStatus();
         }
+    }
+
+}
+
+export class DrawingRoom extends Room {
+    finishedCanvas: Point[][];
+
+    constructor(
+        io: Server<ClientToServerEvents,
+            ServerToClientEvents,
+            InterServerEvents,
+            SocketData>,
+        hostSocket: Socket,
+        room: string,
+    ) {
+        super(io, hostSocket, room);
+        this.finishedCanvas = [];
+        this.medium = Medium.DRAWING;
     }
 
 }

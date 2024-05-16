@@ -1,7 +1,7 @@
 import { socket } from "../components/SocketHandler";
 import { v4 as uuidv4 } from "uuid";
 import isNil from "lodash/isNil";
-import { LineLength, Point } from "../types";
+import { LineLength, Medium, Point } from "../types";
 
 export const emitRecognizeDevice = () => {
 
@@ -31,8 +31,8 @@ export const emitRequestPoemsLines = (shouldTest = false) => {
     socket.emit("ctsRequestPoemsLines", shouldTest);
 };
 
-export const emitCreateGameHost = (name: string) => {
-    socket.emit("ctsCreateGameHost", name);
+export const emitCreateGameHost = (medium: Medium, name: string) => {
+    socket.emit("ctsCreateGameHost", medium, name);
 };
 
 export const emitJoinAs = (memberType: string, roomID: string, name: string, isTest = false) => {
@@ -96,5 +96,6 @@ export const emitSendCanvas = (value: Point[][] | null) => {
 };
 
 export const emitRequestCanvas = () => {
+    console.log("emitRequestCanvas activated");
     socket.emit("ctsRequestCanvas");
 };

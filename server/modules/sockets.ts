@@ -5,25 +5,20 @@
 import { Server } from "socket.io";
 
 import Host from "./host";
-import { PoemEditor } from "./editor";
-import { PoemSpectator } from "./spectator";
-import { PoemRoom } from "./room";
+import { DrawingEditor, PoemEditor } from "./editor";
+import { DrawingSpectator, PoemSpectator } from "./spectator";
+import { DrawingRoom, PoemRoom } from "./room";
 import {
     ClientToServerEvents,
     InterServerEvents,
+    Medium,
     Role,
     ServerToClientEvents,
     SocketData,
 } from "../../src/types";
 import { maxEditors } from "../../src/constants";
 
-import {
-    deviceIDToRoomID,
-    deviceIDToSocketID,
-    roomIDToHost,
-    roomIDToRoom,
-    socketIDToDeviceID,
-} from "./globals";
+import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "./globals";
 
 // The module exports a single function poem that takes the Socket.IO server instance as a parameter.
 function sockets(
@@ -59,7 +54,7 @@ function sockets(
                 const editorDeviceIDsInRoom = Array.from(theRoom.editors.keys());
                 const spectatorDeviceIDsInRoom = Array.from(theRoom.spectators.keys());
 
-                let theMember: PoemEditor | PoemSpectator | undefined;
+                let theMember: PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator | undefined;
                 let targetView: string;
                 if (editorDeviceIDsInRoom.includes(deviceID)) {
                     theMember = theRoom.editors.get(deviceID);
@@ -88,7 +83,7 @@ function sockets(
             deviceIDToSocketID[deviceID] = socket.id; // will overwrite previous
         });
 
-        socket.on("ctsCreateGameHost", (roomID) => {
+        socket.on("ctsCreateGameHost", (medium: Medium, roomID: string) => {
             console.log("createGameHost for ", socket.id, "joining", roomID);
             // notice we don't add the host device to deviceIDToRoomID
             const thisHost = new Host(
@@ -100,9 +95,20 @@ function sockets(
             );
             thisHost.joinRoom();
             roomIDToHost.set(roomID, thisHost);
-            const thisRoom = new PoemRoom(io, socket, roomID);
-            roomIDToRoom.set(roomID, thisRoom);
-            console.log("room", roomID, "created with ", socket.id, "as host");
+            let thisRoom: PoemRoom | DrawingRoom | null = null;
+
+            if (medium == Medium.POETRY) {
+                thisRoom = new PoemRoom(io, socket, roomID);
+            } else if (medium == Medium.DRAWING) {
+                thisRoom = new DrawingRoom(io, socket, roomID);
+            }
+
+            if (thisRoom) {
+                roomIDToRoom.set(roomID, thisRoom);
+            } else {
+                throw new Error("Room not defined.");
+            }
+            console.log("room", roomID, "created as medium", medium, " with ", socket.id, "as host");
         });
 
         socket.on("ctsJoinAs", (role: Role, roomID: string, name: string, isTest = false) => {
@@ -118,7 +124,7 @@ function sockets(
             );
             if (!roomIDToRoom.has(roomID)) {
                 console.log(roomID, "does not exist");
-                io.to(socket.id).emit("stcJoinError", "PoemRoom does not exist.");
+                io.to(socket.id).emit("stcJoinError", "Room does not exist.");
                 return;
             }
             const targetRoom = roomIDToRoom.get(roomID);
@@ -147,32 +153,57 @@ function sockets(
                 }
                 deviceIDToRoomID[deviceID] = roomID;
                 console.log("about to make editor obj with deviceID", deviceID, "and name", name);
-                const thisEditor = new PoemEditor(io, socket, roomID, deviceID, name);
-                console.log("editor object created with deviceID", thisEditor.deviceID);
-                thisEditor.joinRoom();
-                console.log("room joined");
-                if (!isTest) {
-                    io.to(socket.id).emit("stcNavigate", "/lobby");
+
+                let thisEditor: PoemEditor | DrawingEditor | null = null;
+
+                if (targetRoom.medium == Medium.POETRY) {
+                    thisEditor = new PoemEditor(io, socket, roomID, deviceID, name);
+                } else if (targetRoom.medium == Medium.DRAWING) {
+                    thisEditor = new DrawingEditor(io, socket, roomID, deviceID, name);
                 }
-                console.log("sent navigate message");
-                // io.to(socket.id).emit("stcRoomCode", roomID);
-                // console.log("sent room code");
-                targetRoom.addEditor(deviceID, thisEditor);
-                console.log("editor added to room");
+
+                if (thisEditor) {
+                    console.log("editor object created with deviceID", thisEditor.deviceID);
+                    thisEditor.joinRoom();
+                    console.log("room joined");
+                    if (!isTest) {
+                        io.to(socket.id).emit("stcNavigate", "/lobby");
+                    }
+                    console.log("sent navigate message");
+                    // io.to(socket.id).emit("stcRoomCode", roomID);
+                    // console.log("sent room code");
+                    targetRoom.addEditor(deviceID, thisEditor);
+                    console.log("editor added to room");
+                } else {
+                    throw new Error("Editor not defined.");
+                }
             } else if (role === Role.SPECTATOR) {
                 deviceIDToRoomID[deviceID] = roomID;
-                const thisSpectator = new PoemSpectator(io, socket, roomID, deviceID, name);
-                thisSpectator.joinRoom();
-                if (!isTest) {
-                    if (targetRoom.gameOngoing) {
-                        io.to(socket.id).emit("stcNavigate", "/spectate");
-                    } else {
-                        io.to(socket.id).emit("stcNavigate", "/lobby");
-                        // io.to(socket.id).emit("stcRoomCode", roomID);
-                        // console.log("sent room code");
-                    }
+                let thisSpectator: PoemSpectator | DrawingSpectator | null = null;
+
+                if (targetRoom.medium == Medium.POETRY) {
+                    thisSpectator = new PoemSpectator(io, socket, roomID, deviceID, name);
+                } else if (targetRoom.medium == Medium.DRAWING) {
+                    thisSpectator = new DrawingSpectator(io, socket, roomID, deviceID, name);
                 }
-                targetRoom.addSpectator(deviceID, thisSpectator);
+
+                if (thisSpectator) {
+                    console.log("spectator object created with deviceID", thisSpectator.deviceID);
+                    thisSpectator.joinRoom();
+                    console.log("room joined");
+                    if (!isTest) {
+                        if (targetRoom.gameOngoing) {
+                            io.to(socket.id).emit("stcNavigate", "/spectate");
+                        } else {
+                            io.to(socket.id).emit("stcNavigate", "/lobby");
+                        }
+                    }
+                    console.log("sent navigate message");
+                    targetRoom.addSpectator(deviceID, thisSpectator);
+                    console.log("editor added to room");
+                } else {
+                    throw new Error("Spectator not defined.");
+                }
             }
         });
     });

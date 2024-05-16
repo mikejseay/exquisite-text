@@ -20,6 +20,7 @@ import {
 import type { Poem } from "./collaboration";
 import Member from "./member";
 import { getEditorSocketID, getRoom } from "../utilities/sockets";
+import { DrawingRoom, PoemRoom } from "./room";
 
 class Editor extends Member {
     targetEditorID: string;
@@ -155,8 +156,6 @@ export class PoemEditor extends Editor {
 
     setReceive() {
         super.setReceive();
-        // parasitic for now
-        this.socket.on("ctsSendCanvas", (value: Point[][]) => this.receiveCanvas(value));
         this.socket.on("ctsRequestLineEdit", () => this.sendLineEdit()); // initial populate
         this.socket.on("ctsEditLine", (value) => this.handleLineEdit(value)); // whenever the input box is edited.
         this.socket.on("ctsSendLineParts", (firstPart, secondPart) =>
@@ -172,8 +171,6 @@ export class PoemEditor extends Editor {
 
     unsetReceive() {
         super.unsetReceive();
-        // parasitic for now
-        this.socket.removeAllListeners("ctsSendCanvas");
         this.socket.removeAllListeners("ctsRequestLineEdit");
         this.socket.removeAllListeners("ctsEditLine");
         this.socket.removeAllListeners("ctsSendLineParts");
@@ -183,20 +180,9 @@ export class PoemEditor extends Editor {
         this.socket.removeAllListeners("ctsStartGame");
     }
 
-    // parasitic for now
-    receiveCanvas(strokeHistory: Point[][]) {
-        console.log("receiveCanvas:", strokeHistory);
-        const thisRoom = roomIDToRoom.get(this.roomID);
-        if (!thisRoom || !thisRoom.editors) {
-            console.log("thisRoom.editors not found");
-            return;
-        }
-        thisRoom.finishedCanvas = strokeHistory;
-    }
-
     alterGameSettings(gameSettings: IPoemSettingsInfo) {
         console.log("ctsAlterGameSettings");
-        const room = getRoom(this.roomID);
+        const room = getRoom(this.roomID) as PoemRoom;
         if (room) {
             room.gameSettings = gameSettings;
             this.socket.to(this.roomID).emit("stcGameSettingsInfo", gameSettings);
@@ -206,7 +192,7 @@ export class PoemEditor extends Editor {
     broadcastStartGame() {
         // global in nature, so it will mainly eal with the room
         console.log("ctsStartGame");
-        const room = getRoom(this.roomID);
+        const room = getRoom(this.roomID) as PoemRoom;
         if (room) {
             room.setUpGame();
         }
@@ -396,7 +382,7 @@ export class PoemEditor extends Editor {
         this.sendPoemAsLines(poemObj);
 
         // save the poem into the Room object
-        const thisRoom = roomIDToRoom.get(this.roomID);
+        const thisRoom = getRoom(this.roomID) as PoemRoom;
         if (!thisRoom) {
             console.log("thisRoom not found");
             return;
@@ -416,4 +402,40 @@ export class PoemEditor extends Editor {
         this.sendActivity();
         this.sendLastLineStatus();
     }
+}
+
+export class DrawingEditor extends Editor {
+
+    setReceive() {
+        super.setReceive();
+        this.socket.on("ctsSendCanvas", (value: Point[][]) => this.receiveCanvas(value));
+    }
+
+    unsetReceive() {
+        super.unsetReceive();
+        this.socket.removeAllListeners("ctsSendCanvas");
+    }
+
+    receiveCanvas(strokeHistory: Point[][]) {
+        console.log("receiveCanvas:", strokeHistory);
+        const thisRoom = getRoom(this.roomID) as DrawingRoom;
+        if (!thisRoom || !thisRoom.editors) {
+            console.log("thisRoom.editors not found");
+            return;
+        }
+        thisRoom.finishedCanvas = strokeHistory;
+    }
+
+    possibleStartNewTurn() {
+        // for compatibility
+    }
+
+    sendLastLineStatus() {
+        // for compatibility
+    }
+
+    reinstateContext() {
+        // for compatibility
+    }
+
 }

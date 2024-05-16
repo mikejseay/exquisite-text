@@ -11,6 +11,7 @@ import { hostFAB, roomCodeStyles } from "./styles";
 import { generateAlphaString } from "../../helpers";
 import { roomCodeLength } from "../../constants";
 import { emitCreateGameHost } from "../../context/SocketRequestors";
+import { Medium } from "../../types";
 
 function HostButton() {
     const [ open, setOpen ] = React.useState(false);
@@ -22,7 +23,7 @@ function HostButton() {
         copiedTimeout: 6_000, // timeout duration in milliseconds
     });
 
-    const handleClick = () => {
+    const handleClick = (medium: Medium) => {
         setOpen((prev) => !prev);
         if (!open) {
             const roomID = generateAlphaString(roomCodeLength);
@@ -30,7 +31,7 @@ function HostButton() {
             setRoomID(roomID);
             setShareLink(shareLink);
             clipboard.copy(shareLink);
-            emitCreateGameHost(roomID);
+            emitCreateGameHost(medium, roomID);
             navigate(`/${roomID}`);
         }
     };
@@ -54,7 +55,9 @@ function HostButton() {
                 <Fab
                     aria-label="create poem"
                     color="primary"
-                    onClick={handleClick}
+                    onClick={() => {
+                        handleClick(Medium.POETRY);
+                    }}
                     size="small"
                     sx={hostFAB}
                 >
@@ -63,7 +66,9 @@ function HostButton() {
                 <Fab
                     aria-label="create drawing"
                     color="secondary"
-                    onClick={handleClick}
+                    onClick={() => {
+                        handleClick(Medium.DRAWING);
+                    }}
                     size="small"
                     sx={{ ...hostFAB, marginLeft: 6 }}
                 >

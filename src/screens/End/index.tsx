@@ -9,13 +9,14 @@ import {
     emitRequestPoemsLines,
     emitRequestUserTableInfo,
 } from "../../context/SocketRequestors";
+import { Medium } from "../../types";
 
 function End({ shouldTest = false }: { shouldTest: boolean }) {
 
     const [ rendered, setRendered ] = React.useState(false);
     if (shouldTest && !rendered) {
         emitRecognizeDevice();
-        emitCreateGameHost("ROOM");
+        emitCreateGameHost(Medium.POETRY, "ROOM");
         emitRequestUserTableInfo(true);
         emitRequestPoemsLines(true);
         setRendered(true);
