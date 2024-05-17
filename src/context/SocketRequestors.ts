@@ -1,7 +1,7 @@
 import { socket } from "../components/SocketHandler";
 import { v4 as uuidv4 } from "uuid";
 import isNil from "lodash/isNil";
-import { LineLength, Point } from "../types";
+import { LineLength, Medium, Point, Role } from "../types";
 
 export const emitRecognizeDevice = () => {
 
@@ -31,13 +31,13 @@ export const emitRequestPoemsLines = (shouldTest = false) => {
     socket.emit("ctsRequestPoemsLines", shouldTest);
 };
 
-export const emitCreateGameHost = (name: string) => {
-    socket.emit("ctsCreateGameHost", name);
+export const emitCreateRoomAndHost = (roomID: string, medium: Medium) => {
+    socket.emit("ctsCreateRoomAndHost", roomID, medium);
 };
 
-export const emitJoinAs = (memberType: string, roomID: string, name: string, isTest = false) => {
+export const emitJoinAs = (roomID: string, name: string, memberType: Role, isTest = false) => {
     console.log("emitJoinAs activated as", name, "is trying to join", roomID, "as", memberType);
-    socket.emit("ctsJoinAs", memberType, roomID.toUpperCase(), name.toUpperCase(), isTest);
+    socket.emit("ctsJoinAs", roomID.toUpperCase(), name.toUpperCase(), memberType, isTest);
 };
 
 export const emitAlterGameSettings = (newLineLength: LineLength, nPoems: number, nRounds: number) => {
@@ -96,5 +96,6 @@ export const emitSendCanvas = (value: Point[][] | null) => {
 };
 
 export const emitRequestCanvas = () => {
+    console.log("emitRequestCanvas activated");
     socket.emit("ctsRequestCanvas");
 };

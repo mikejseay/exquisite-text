@@ -4,18 +4,19 @@ import { centered, floatingToggleAnimate } from "./styles";
 import IconButton from "@mui/material/IconButton";
 import KeyboardIcon from "@mui/icons-material/Keyboard";
 import {
-    emitCreateGameHost,
+    emitCreateRoomAndHost,
     emitRecognizeDevice,
     emitRequestPoemsLines,
     emitRequestUserTableInfo,
 } from "../../context/SocketRequestors";
+import { Medium } from "../../types";
 
 function End({ shouldTest = false }: { shouldTest: boolean }) {
 
     const [ rendered, setRendered ] = React.useState(false);
     if (shouldTest && !rendered) {
         emitRecognizeDevice();
-        emitCreateGameHost("ROOM");
+        emitCreateRoomAndHost("ROOM", Medium.POETRY);
         emitRequestUserTableInfo(true);
         emitRequestPoemsLines(true);
         setRendered(true);
