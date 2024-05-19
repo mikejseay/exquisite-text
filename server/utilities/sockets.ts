@@ -68,24 +68,24 @@ export function standardReconnect(
         InterServerEvents,
         SocketData>,
     socket: Socket,
-    theMember: PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator | undefined,
+    member: PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator | undefined,
 ) {
-    if (theMember && theMember.socket) {
+    if (member && member.socket) {
         // send socket (tab) that's currently connected to the disconnected view
-        console.log("disconnecting previous socket for deviceID", theMember.deviceID);
-        io.to(theMember.socket.id).emit("stcNavigate", "/disconnected");
-        theMember.socket.disconnect(); // force disconnect on original socket
-        console.log("connecting new socket for deviceID", theMember.deviceID);
-        theMember.socket = socket; // connect the new socket to same Member
-        theMember.joinRoom(); // re-join the correct rooms
-        console.log("about to reinstate context for", theMember.deviceID);
-        theMember.reinstateContext();
+        console.log("disconnecting previous socket for deviceID", member.deviceID);
+        io.to(member.socket.id).emit("stcNavigate", "/disconnected");
+        member.socket.disconnect(); // force disconnect on original socket
+        console.log("connecting new socket for deviceID", member.deviceID);
+        member.socket = socket; // connect the new socket to same Member
+        member.joinRoom(); // re-join the correct rooms
+        console.log("about to reinstate context for", member.deviceID);
+        member.reinstateContext();
     }
 }
 
 // only used to test the end screen, but we allow it to be parasitic for now
 export function sendPoemsLinesInfo(poemMember: Host | PoemEditor | PoemSpectator, shouldTest: boolean) {
-    const thisRoom = roomIDToRoom.get(poemMember.roomID);
+    const room = roomIDToRoom.get(poemMember.roomID);
 
     if (shouldTest) {
         console.log("sending test poemsLines data in a way that is unusual");
@@ -101,12 +101,12 @@ export function sendPoemsLinesInfo(poemMember: Host | PoemEditor | PoemSpectator
         return;
     }
 
-    if (!thisRoom) {
-        console.log("thisRoom not found");
+    if (!room) {
+        console.log("room not found");
         return;
     }
-    console.log(poemMember.name, "request poems from room which has", thisRoom.finishedWorks.length);
-    for (const poemObj of thisRoom.finishedWorks) {
+    console.log(poemMember.name, "request poems from room which has", room.finishedWorks.length);
+    for (const poemObj of room.finishedWorks) {
         // TODO: Explore this, this could improve server-side efficiency:
         // poemMember.io.in(poemMember.roomID).emit("stcPoemLines", Array.from(poemObj.lines));
         poemMember.io

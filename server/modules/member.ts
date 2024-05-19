@@ -134,8 +134,8 @@ class Member {
 
         // If game still in lobby state, remove user from room, since an AFK
         // user would be quite annoying right after the game starts.
-        const thisRoom = roomIDToRoom.get(this.roomID);
-        if (!isNil(thisRoom) && thisRoom.gameState === GameState.LOBBY) {
+        const room = roomIDToRoom.get(this.roomID);
+        if (!isNil(room) && room.gameState === GameState.LOBBY) {
             this.leaveRoom();
         }
 

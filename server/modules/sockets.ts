@@ -56,72 +56,72 @@ function sockets(
 
             // if already in a room, reconnect gracefully
             const roomID = deviceIDToRoomID[deviceID];
-            const theRoom = getRoom(roomID);
-            if (!theRoom) {
-                console.log("theRoom", roomID, "not found while trying to recognize", deviceID);
+            const room = getRoom(roomID);
+            if (!room) {
+                console.log("room", roomID, "not found while trying to recognize", deviceID);
                 return;
             }
 
-            let theRole: Role;
-            const editorDeviceIDsInRoom = Array.from(theRoom.editors.keys());
-            const spectatorDeviceIDsInRoom = Array.from(theRoom.spectators.keys());
+            let role: Role;
+            const editorDeviceIDsInRoom = Array.from(room.editors.keys());
+            const spectatorDeviceIDsInRoom = Array.from(room.spectators.keys());
             if (editorDeviceIDsInRoom.includes(deviceID)) {
-                theRole = Role.EDITOR;
+                role = Role.EDITOR;
             } else if (spectatorDeviceIDsInRoom.includes(deviceID)) {
-                theRole = Role.SPECTATOR;
+                role = Role.SPECTATOR;
             } else {
                 console.log("role not identified when recognizing", deviceID);
                 return;
             }
 
-            let theMember: PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator | undefined;
-            if (theRole === Role.EDITOR) {
-                theMember = theRoom.editors.get(deviceID);
-            } else if (theRole === Role.SPECTATOR) {
-                theMember = theRoom.spectators.get(deviceID);
+            let member: PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator | undefined;
+            if (role === Role.EDITOR) {
+                member = room.editors.get(deviceID);
+            } else if (role === Role.SPECTATOR) {
+                member = room.spectators.get(deviceID);
             }
-            if (!theMember) {
-                console.log("theMember not found");
+            if (!member) {
+                console.log("member not found");
                 return;
             }
-            standardReconnect(io, socket, theMember);
+            standardReconnect(io, socket, member);
             // If user disconnected while game was still in LOBBY, we removed them from the game.
             // If they reconnected before the game started, add them back to the game.
-            if (theRoom.gameState === GameState.LOBBY) {
-                if (theRole === Role.EDITOR) {
-                    theRoom.addEditor(deviceID, theMember as PoemEditor | DrawingEditor);
-                } else if (theRole === Role.SPECTATOR) {
-                    theRoom.addSpectator(deviceID, theMember as PoemSpectator | DrawingSpectator);
+            if (room.gameState === GameState.LOBBY) {
+                if (role === Role.EDITOR) {
+                    room.addEditor(deviceID, member as PoemEditor | DrawingEditor);
+                } else if (role === Role.SPECTATOR) {
+                    room.addSpectator(deviceID, member as PoemSpectator | DrawingSpectator);
                 }
             }
-            const targetRoute = getRouteForGameStateAndRole(theRoom.gameState, theRole);
+            const targetRoute = getRouteForGameStateAndRole(room.gameState, role);
             io.to(socket.id).emit("stcNavigate", targetRoute);
         });
 
         socket.on("ctsCreateRoomAndHost", (roomID: string, medium: Medium) => {
             console.log("createGameHost for ", socket.id, "joining", roomID);
             // notice we don't add the host device to deviceIDToRoomID
-            const thisHost = new Host(
+            const host = new Host(
                 io,
                 socket,
                 roomID,
                 socketIDToDeviceID[socket.id],
                 "HOST",
             );
-            thisHost.joinRoom();
-            roomIDToHost.set(roomID, thisHost);
-            let thisRoom: PoemRoom | DrawingRoom | null = null;
+            host.joinRoom();
+            roomIDToHost.set(roomID, host);
+            let room: PoemRoom | DrawingRoom | null = null;
 
             if (medium == Medium.POETRY) {
-                thisRoom = new PoemRoom(io, socket, roomID);
+                room = new PoemRoom(io, socket, roomID);
             } else if (medium == Medium.DRAWING) {
-                thisRoom = new DrawingRoom(io, socket, roomID);
+                room = new DrawingRoom(io, socket, roomID);
             } else {
                 throw new Error("Unknown medium type.");
             }
 
-            if (thisRoom) {
-                roomIDToRoom.set(roomID, thisRoom);
+            if (room) {
+                roomIDToRoom.set(roomID, room);
             } else {
                 throw new Error("Room not defined.");
             }
@@ -144,15 +144,15 @@ function sockets(
                 io.to(socket.id).emit("stcJoinError", "Room does not exist.");
                 return;
             }
-            const targetRoom = roomIDToRoom.get(roomID);
+            const room = roomIDToRoom.get(roomID);
             console.log("current state of socketIDToDeviceID is", socketIDToDeviceID);
             const deviceID = socketIDToDeviceID[socket.id];
-            if (!targetRoom) {
-                console.log("targetRoom not found");
+            if (!room) {
+                console.log("room not found");
                 return;
             }
             if (role === Role.EDITOR) {
-                if (targetRoom.gameState !== GameState.LOBBY) {
+                if (room.gameState !== GameState.LOBBY) {
                     console.log(roomID, "game already started");
                     io.to(socket.id).emit(
                         "stcJoinError",
@@ -160,7 +160,7 @@ function sockets(
                     );
                     return;
                 }
-                if (targetRoom.editors.size >= maxEditors) {
+                if (room.editors.size >= maxEditors) {
                     console.log("trying to join as editor but it's already full");
                     io.to(socket.id).emit(
                         "stcJoinError",
@@ -171,44 +171,44 @@ function sockets(
                 deviceIDToRoomID[deviceID] = roomID;
                 console.log("about to make editor obj with deviceID", deviceID, "and name", name);
 
-                let thisEditor: PoemEditor | DrawingEditor | null = null;
-                if (targetRoom.medium == Medium.POETRY) {
-                    thisEditor = new PoemEditor(io, socket, roomID, deviceID, name);
-                } else if (targetRoom.medium == Medium.DRAWING) {
-                    thisEditor = new DrawingEditor(io, socket, roomID, deviceID, name);
+                let editor: PoemEditor | DrawingEditor | null = null;
+                if (room.medium == Medium.POETRY) {
+                    editor = new PoemEditor(io, socket, roomID, deviceID, name);
+                } else if (room.medium == Medium.DRAWING) {
+                    editor = new DrawingEditor(io, socket, roomID, deviceID, name);
                 } else {
                     throw new Error("Unknown medium type.");
                 }
 
-                console.log("editor object created with deviceID", thisEditor.deviceID);
-                thisEditor.joinRoom();
+                console.log("editor object created with deviceID", editor.deviceID);
+                editor.joinRoom();
                 // If *joining* a game as an editor, the only possibility is the lobby
                 if (!isTest) {
                     io.to(socket.id).emit("stcNavigate", "/lobby");
                 }
-                targetRoom.addEditor(deviceID, thisEditor);
+                room.addEditor(deviceID, editor);
 
             } else if (role === Role.SPECTATOR) {
                 deviceIDToRoomID[deviceID] = roomID;
-                let thisSpectator: PoemSpectator | DrawingSpectator | null = null;
+                let spectator: PoemSpectator | DrawingSpectator | null = null;
 
-                if (targetRoom.medium == Medium.POETRY) {
-                    thisSpectator = new PoemSpectator(io, socket, roomID, deviceID, name);
-                } else if (targetRoom.medium == Medium.DRAWING) {
-                    thisSpectator = new DrawingSpectator(io, socket, roomID, deviceID, name);
+                if (room.medium == Medium.POETRY) {
+                    spectator = new PoemSpectator(io, socket, roomID, deviceID, name);
+                } else if (room.medium == Medium.DRAWING) {
+                    spectator = new DrawingSpectator(io, socket, roomID, deviceID, name);
                 } else {
                     throw new Error("Unknown medium type.");
                 }
 
-                console.log("spectator object created with deviceID", thisSpectator.deviceID);
-                thisSpectator.joinRoom();
+                console.log("spectator object created with deviceID", spectator.deviceID);
+                spectator.joinRoom();
                 // If joining a game as spectator, we can go to any screen
                 if (!isTest) {
-                    const targetRoute = getRouteForGameStateAndRole(targetRoom.gameState, Role.SPECTATOR);
+                    const targetRoute = getRouteForGameStateAndRole(room.gameState, Role.SPECTATOR);
                     console.log("navigating spectator to", targetRoute);
                     io.to(socket.id).emit("stcNavigate", targetRoute);
                 }
-                targetRoom.addSpectator(deviceID, thisSpectator);
+                room.addSpectator(deviceID, spectator);
             }
         });
     });
