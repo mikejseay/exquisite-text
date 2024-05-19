@@ -2,8 +2,31 @@ import { roomIDToRoom } from "../modules/globals";
 import { DrawingEditor, PoemEditor } from "../modules/editor";
 import { DrawingRoom, PoemRoom } from "../modules/room";
 import { Server, Socket } from "socket.io";
-import { ClientToServerEvents, InterServerEvents, ServerToClientEvents, SocketData } from "../../src/types";
+import {
+    ClientToServerEvents,
+    GameState,
+    InterServerEvents,
+    Role,
+    ServerToClientEvents,
+    SocketData,
+} from "../../src/types";
 import { DrawingSpectator, PoemSpectator } from "../modules/spectator";
+
+
+export function getRouteForGameStateAndRole(gameState: GameState, role: Role): string {
+    if (gameState === GameState.LOBBY) {
+        return "/lobby";
+    } else if (gameState === GameState.END) {
+        return "/end";
+    } else if (gameState === GameState.GAME) {
+        if (role === Role.EDITOR) {
+            return "/game";
+        } else if (role === Role.SPECTATOR) {
+            return "/spectate";
+        }
+    }
+    throw new Error("unknown game state / role in getRouteForGameStateAndRole");
+}
 
 export function getRoom(roomID: string | undefined): PoemRoom | DrawingRoom | undefined {
     if (!roomIDToRoom || !roomID) {
@@ -46,11 +69,14 @@ export function reconnectRoutine(
     theMember: PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator | undefined,
 ) {
     if (theMember && theMember.socket) {
-        // if the socket is still connected, send them to disconnected view
+        // send socket (tab) that's currently connected to the disconnected view
+        console.log("disconnecting previous socket for deviceID", theMember.deviceID);
         io.to(theMember.socket.id).emit("stcNavigate", "/disconnected");
         theMember.socket.disconnect(); // force disconnect on original socket
+        console.log("connecting new socket for deviceID", theMember.deviceID);
         theMember.socket = socket; // connect the new socket to same Member
         theMember.joinRoom(); // re-join the correct rooms
+        console.log("about to reinstate context for", theMember.deviceID);
         theMember.reinstateContext();
     }
 }

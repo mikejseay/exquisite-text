@@ -1,18 +1,8 @@
 import isNil from "lodash/isNil";
 import { Server, Socket } from "socket.io";
 
-import {
-    deviceIDToRoomID,
-    deviceIDToSocketID,
-    roomIDToRoom,
-    socketIDToDeviceID,
-} from "./globals";
-import {
-    ClientToServerEvents,
-    InterServerEvents,
-    ServerToClientEvents,
-    SocketData,
-} from "../../src/types";
+import { deviceIDToRoomID, deviceIDToSocketID, roomIDToRoom, socketIDToDeviceID } from "./globals";
+import { ClientToServerEvents, GameState, InterServerEvents, ServerToClientEvents, SocketData } from "../../src/types";
 import { userInfo as userInfoTestData } from "../../src/data/userInfo";
 import { poemsLines as poemsLinesTestData } from "../../src/data/multiplePoems";
 import { getRoom } from "../utilities/sockets";
@@ -182,9 +172,10 @@ class Member {
         console.log(this.socket.id, "disconnected");
         this.connected = false;
 
-        // if in the room but the game hasn't started yet (lobby), remove them
+        // If game still in lobby state, remove user from room, since an AFK
+        // user would be quite annoying right after the game starts.
         const thisRoom = roomIDToRoom.get(this.roomID);
-        if (!isNil(thisRoom) && !thisRoom.gameOngoing) {
+        if (!isNil(thisRoom) && thisRoom.gameState === GameState.LOBBY) {
             this.leaveRoom();
         }
 
@@ -214,6 +205,10 @@ class Member {
 
     reinstateContext() {
         this.requestRoomCode();
+        // re-instate user info
+        this.sendUserTableInfo(false);
+        // re-instate any known poems
+        this.sendPoemsLinesInfo(false);
     }
 }
 

@@ -3,9 +3,11 @@ import { Server, Socket } from "socket.io";
 import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "./globals";
 import { DrawingSpectator, PoemSpectator } from "./spectator";
 import { DrawingEditor, PoemEditor } from "./editor";
+import Member from "./member";
 import { Poem } from "./collaboration";
 import {
     ClientToServerEvents,
+    GameState,
     IPoemSettingsInfo,
     IUserTableInfo,
     InterServerEvents,
@@ -41,7 +43,7 @@ class Room {
 
     editors: Map<string, PoemEditor | DrawingEditor>;
     spectators: Map<string, PoemSpectator | DrawingSpectator>;
-    gameOngoing: boolean;
+    gameState: GameState;
     nUnfinishedWorks: number;
     activityInterval: ReturnType<typeof setInterval>;
     createdAt: number;
@@ -66,7 +68,7 @@ class Room {
 
         this.editors = new Map(); // deviceID to editorObj
         this.spectators = new Map(); // deviceID to spectatorObj
-        this.gameOngoing = false;
+        this.gameState = GameState.LOBBY; // initialize in Lobby
         this.nUnfinishedWorks = 0;
 
         // check user activity every 30 seconds
@@ -178,34 +180,26 @@ class Room {
         console.log(this.roomID, "self-destructing");
 
         for (const [ editorID, thisEditor ] of this.editors.entries()) {
-            delete deviceIDToRoomID[editorID];
-            // since this.editors is a map from editor's device ID to the Member this should delete the object
-            // including its socket?
-            thisEditor.connected = false;
-            delete deviceIDToRoomID[editorID];
-            thisEditor.socket.leave(this.roomID);
-            thisEditor.unsetReceive();
-            delete socketIDToDeviceID[thisEditor.socket.id];
-            delete deviceIDToSocketID[editorID];
+            this.cleanUpMember(editorID, thisEditor);
             this.editors.delete(editorID);
         }
-        for (const [
-            spectatorID,
-            thisSpectator,
-        ] of this.spectators.entries()) {
-            delete deviceIDToRoomID[spectatorID];
-            thisSpectator.connected = false;
-            delete deviceIDToRoomID[spectatorID];
-            thisSpectator.socket.leave(this.roomID);
-            thisSpectator.unsetReceive();
-            delete socketIDToDeviceID[thisSpectator.socket.id];
-            delete deviceIDToSocketID[spectatorID];
+        for (const [ spectatorID, thisSpectator ] of this.spectators.entries()) {
+            this.cleanUpMember(spectatorID, thisSpectator);
             this.spectators.delete(spectatorID);
         }
 
         clearInterval(this.activityInterval);
         roomIDToHost.delete(this.roomID);
         roomIDToRoom.delete(this.roomID);
+    }
+
+    cleanUpMember(deviceID: string, thisMember: Member) {
+        delete deviceIDToRoomID[deviceID];
+        thisMember.connected = false;
+        thisMember.socket.leave(thisMember.roomID);
+        thisMember.unsetReceive();
+        delete socketIDToDeviceID[thisMember.socket.id];
+        delete deviceIDToSocketID[deviceID];
     }
 }
 
@@ -251,9 +245,9 @@ export class PoemRoom extends Room {
         }
 
         // should tell editors to navigate to /game and spectators to /spectate
+        this.gameState = GameState.GAME;
         this.io.in(`${this.roomID}_Editors`).emit("stcNavigate", "/game");
         this.io.in(`${this.roomID}_Spectators`).emit("stcNavigate", "/spectate");
-        this.gameOngoing = true;
 
         for (const thisEditor of this.editors.values()) {
             thisEditor.sendActivity();

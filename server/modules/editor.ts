@@ -1,9 +1,9 @@
 import isNil from "lodash/isNil";
 import { Server, Socket } from "socket.io";
 import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid for lines
-
 import {
     ClientToServerEvents,
+    GameState,
     IPoem,
     IPoemSettingsInfo,
     InterServerEvents,
@@ -14,9 +14,7 @@ import {
 import { storePoem } from "../queries";
 import { lineSepString } from "../../src/constants";
 
-import {
-    roomIDToRoom,
-} from "./globals";
+import { roomIDToRoom } from "./globals";
 import type { Poem } from "./collaboration";
 import Member from "./member";
 import { getEditorSocketID, getRoom } from "../utilities/sockets";
@@ -89,7 +87,7 @@ class Editor extends Member {
         }
         thisRoom.removeEditor(this.deviceID);
 
-        if (thisRoom.gameOngoing) {
+        if (thisRoom.gameState === GameState.GAME) {
             // hand off any poems in your queue to the next person
             if (thisRoom.editors.size > 0) {
                 const nextEditor = thisRoom.editors.get(this.targetEditorID);
@@ -109,12 +107,14 @@ class Editor extends Member {
                 );
                 thisRoom.selfDestruct();
             }
-        } else {
+        } else if (thisRoom.gameState === GameState.LOBBY) {
             // if we are still in the lobby then tell first editor to check whether they are VIP
             const firstEditor: Editor | undefined = thisRoom.editors.values().next().value;
             if (!isNil(firstEditor)) {
                 firstEditor.sendSettingsEnabled();
             }
+        } else if (thisRoom.gameState === GameState.END) {
+            console.log("leaveRoom on End screen, not sure what to do...");
         }
     }
 
@@ -346,7 +346,7 @@ export class PoemEditor extends Editor {
             console.log(
                 "no poems left to finish; forget everyone's device, delete room and poem globals",
             );
-            thisRoom.gameOngoing = false;
+            thisRoom.gameState = GameState.END;
             thisRoom.sendToEnd();  // send everyone to the end screen
             thisRoom.selfDestruct();  // self-destruct after some time
 
