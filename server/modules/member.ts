@@ -211,6 +211,10 @@ class Member {
             this.socket.rooms,
         );
     }
+
+    reinstateContext() {
+        this.requestRoomCode();
+    }
 }
 
 export default Member;

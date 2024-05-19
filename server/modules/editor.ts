@@ -398,6 +398,7 @@ export class PoemEditor extends Editor {
     }
 
     reinstateContext() {
+        super.reinstateContext();
         this.sendLineEdit();
         this.sendActivity();
         this.sendLastLineStatus();
@@ -433,9 +434,4 @@ export class DrawingEditor extends Editor {
     sendLastLineStatus() {
         // for compatibility
     }
-
-    reinstateContext() {
-        // for compatibility
-    }
-
 }

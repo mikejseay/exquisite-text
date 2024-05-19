@@ -19,6 +19,7 @@ import {
 import { maxEditors } from "../../src/constants";
 
 import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "./globals";
+import { getRoom, reconnectRoutine } from "../utilities/sockets";
 
 // The module exports a single function poem that takes the Socket.IO server instance as a parameter.
 function sockets(
@@ -43,44 +44,46 @@ function sockets(
                 deviceIDToRoomID,
                 deviceID,
             );
-            if (isDeviceInARoom) {
-                // try to reconnect them to that room in the correct role
-                const roomID = deviceIDToRoomID[deviceID];
-                const theRoom = roomIDToRoom.get(roomID);
-                if (!theRoom) {
-                    console.log("theRoom not found");
-                    return;
+
+            // if device not already in a room, add it to globals and exit
+            if (!isDeviceInARoom) {
+                socketIDToDeviceID[socket.id] = deviceID; // since socket is always uuid, won't overwrite
+                deviceIDToSocketID[deviceID] = socket.id; // will overwrite previous
+                return;
+            }
+
+            // if already in a room, reconnect gracefully
+            const roomID = deviceIDToRoomID[deviceID];
+            const theRoom = getRoom(roomID);
+            if (!theRoom) {
+                console.log("theRoom", roomID, "not found while trying to recognize", deviceID);
+                return;
+            }
+            const editorDeviceIDsInRoom = Array.from(theRoom.editors.keys());
+            const spectatorDeviceIDsInRoom = Array.from(theRoom.spectators.keys());
+            const isEditor = editorDeviceIDsInRoom.includes(deviceID);
+            const isSpectator = spectatorDeviceIDsInRoom.includes(deviceID);
+            let theMember: PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator | undefined;
+            if (isEditor) {
+                theMember = theRoom.editors.get(deviceID);
+            } else if (isSpectator) {
+                theMember = theRoom.spectators.get(deviceID);
+            }
+            if (!theMember) {
+                console.log("theMember not found");
+                return;
+            }
+            reconnectRoutine(io, socket, theMember);
+            if (theRoom.gameOngoing) {
+                io.to(socket.id).emit("stcNavigate", "/game");
+            } else {
+                if (isEditor) {
+                    theRoom.addEditor(deviceID, theMember as PoemEditor | DrawingEditor);
+                } else if (isSpectator) {
+                    theRoom.addSpectator(deviceID, theMember as PoemSpectator | DrawingSpectator);
                 }
-                const editorDeviceIDsInRoom = Array.from(theRoom.editors.keys());
-                const spectatorDeviceIDsInRoom = Array.from(theRoom.spectators.keys());
-
-                let theMember: PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator | undefined;
-                let targetView: string;
-                if (editorDeviceIDsInRoom.includes(deviceID)) {
-                    theMember = theRoom.editors.get(deviceID);
-                    targetView = "/game";
-                } else if (spectatorDeviceIDsInRoom.includes(deviceID)) {
-                    theMember = theRoom.spectators.get(deviceID);
-                    targetView = "/spectate";
-                } else {
-                    targetView = "/";
-                }
-
-                if (theMember && theMember.socket) {
-                // if the socket is still connected, send them to disconnected view
-                    io.to(theMember.socket.id).emit("stcNavigate", "/disconnected");
-                    theMember.socket.disconnect(); // force disconnect
-                    theMember.socket = socket; // connect the new socket
-                    theMember.joinRoom(); // re-join the correct rooms
-                    // TODO: next big important piece: reinstate context on re-join
-                    theMember.reinstateContext();
-                }
-
-                io.to(socket.id).emit("stcNavigate", targetView); // navigate to correct view
-            } // else this device isn't in a room yet, nothing to do
-
-            socketIDToDeviceID[socket.id] = deviceID; // since socket is always uuid, won't overwrite
-            deviceIDToSocketID[deviceID] = socket.id; // will overwrite previous
+                io.to(socket.id).emit("stcNavigate", "/lobby");
+            }
         });
 
         socket.on("ctsCreateRoomAndHost", (roomID: string, medium: Medium) => {
@@ -157,7 +160,6 @@ function sockets(
                 console.log("about to make editor obj with deviceID", deviceID, "and name", name);
 
                 let thisEditor: PoemEditor | DrawingEditor | null = null;
-
                 if (targetRoom.medium == Medium.POETRY) {
                     thisEditor = new PoemEditor(io, socket, roomID, deviceID, name);
                 } else if (targetRoom.medium == Medium.DRAWING) {

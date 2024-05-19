@@ -1,6 +1,9 @@
 import { roomIDToRoom } from "../modules/globals";
 import { DrawingEditor, PoemEditor } from "../modules/editor";
 import { DrawingRoom, PoemRoom } from "../modules/room";
+import { Server, Socket } from "socket.io";
+import { ClientToServerEvents, InterServerEvents, ServerToClientEvents, SocketData } from "../../src/types";
+import { DrawingSpectator, PoemSpectator } from "../modules/spectator";
 
 export function getRoom(roomID: string | undefined): PoemRoom | DrawingRoom | undefined {
     if (!roomIDToRoom || !roomID) {
@@ -31,4 +34,23 @@ export function getEditorSocketID(roomID: string | undefined, editorID: string |
         return undefined;
     }
     return editor.socket.id;
+}
+
+
+export function reconnectRoutine(
+    io: Server<ClientToServerEvents,
+        ServerToClientEvents,
+        InterServerEvents,
+        SocketData>,
+    socket: Socket,
+    theMember: PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator | undefined,
+) {
+    if (theMember && theMember.socket) {
+        // if the socket is still connected, send them to disconnected view
+        io.to(theMember.socket.id).emit("stcNavigate", "/disconnected");
+        theMember.socket.disconnect(); // force disconnect on original socket
+        theMember.socket = socket; // connect the new socket to same Member
+        theMember.joinRoom(); // re-join the correct rooms
+        theMember.reinstateContext();
+    }
 }

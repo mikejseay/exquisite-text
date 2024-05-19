@@ -42,7 +42,7 @@ export class PoemSpectator extends Spectator {
 
     reinstateContext() {
         // TODO: Placeholder
-        // super.reinstateContext();
+        super.reinstateContext();
         this.sendAllPoemLines();
     }
 }
@@ -72,9 +72,5 @@ export class DrawingSpectator extends Spectator {
         this.io
             .to(this.socket.id)
             .emit("stcStrokeHistory", canvas);
-    }
-
-    reinstateContext() {
-        // for compatibility
     }
 }
