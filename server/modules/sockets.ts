@@ -20,7 +20,7 @@ import {
 import { maxEditors } from "../../src/constants";
 
 import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "./globals";
-import { getRoom, getRouteForGameStateAndRole, reconnectRoutine } from "../utilities/sockets";
+import { getRoom, getRouteForGameStateAndRole, standardReconnect } from "../utilities/sockets";
 
 // The module exports a single function poem that takes the Socket.IO server instance as a parameter.
 function sockets(
@@ -70,6 +70,7 @@ function sockets(
             } else if (spectatorDeviceIDsInRoom.includes(deviceID)) {
                 theRole = Role.SPECTATOR;
             } else {
+                console.log("role not identified when recognizing", deviceID);
                 return;
             }
 
@@ -83,7 +84,7 @@ function sockets(
                 console.log("theMember not found");
                 return;
             }
-            reconnectRoutine(io, socket, theMember);
+            standardReconnect(io, socket, theMember);
             // If user disconnected while game was still in LOBBY, we removed them from the game.
             // If they reconnected before the game started, add them back to the game.
             if (theRoom.gameState === GameState.LOBBY) {

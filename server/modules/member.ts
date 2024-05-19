@@ -83,7 +83,6 @@ class Member {
         this.socket.removeAllListeners("ctsLeave");
         this.socket.removeAllListeners("disconnect");
         this.socket.removeAllListeners("disconnecting");
-
     }
 
     sendUserTableInfo(shouldTest: boolean) {
@@ -166,7 +165,6 @@ class Member {
 
     reinstateContext() {
         this.requestRoomCode();
-        // re-instate user info
         this.sendUserTableInfo(false);
     }
 }

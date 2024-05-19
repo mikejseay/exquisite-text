@@ -62,7 +62,7 @@ export function getEditorSocketID(roomID: string | undefined, editorID: string |
 }
 
 
-export function reconnectRoutine(
+export function standardReconnect(
     io: Server<ClientToServerEvents,
         ServerToClientEvents,
         InterServerEvents,
