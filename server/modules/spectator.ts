@@ -1,6 +1,6 @@
 import { roomIDToRoom } from "./globals";
 import Member from "./member";
-import { getRoom } from "../utilities/sockets";
+import { getRoom, sendPoemsLinesInfo } from "../utilities/sockets";
 import { DrawingRoom } from "./room";
 
 class Spectator extends Member {
@@ -12,12 +12,12 @@ class Spectator extends Member {
     leaveRoom() {
         super.leaveRoom();
         this.socket.leave(`${this.roomID}_Spectators`);
-        const thisRoom = getRoom(this.roomID);
-        if (!thisRoom) {
-            console.log("thisRoom not found");
+        const room = getRoom(this.roomID);
+        if (!room) {
+            console.log("room not found");
             return;
         }
-        thisRoom.removeSpectator(this.deviceID);
+        room.removeSpectator(this.deviceID);
     }
 
     disconnect() {
@@ -28,22 +28,23 @@ class Spectator extends Member {
 
 export class PoemSpectator extends Spectator {
     sendAllPoemLines() {
-        const thisRoom = roomIDToRoom.get(this.roomID);
-        if (!thisRoom) {
-            console.log("thisRoom not found");
+        const room = roomIDToRoom.get(this.roomID);
+        if (!room) {
+            console.log("room not found");
             return;
         }
-        for (const thisEditor of thisRoom.editors.values()) {
-            for (const thisPoem of thisEditor.contributionQueue) {
-                thisPoem.sendAllLinesTo(this.socket.id);
+        for (const editor of room.editors.values()) {
+            for (const poem of editor.contributionQueue) {
+                poem.sendAllLinesTo(this.socket.id);
             }
         }
     }
 
     reinstateContext() {
         // TODO: Placeholder
-        // super.reinstateContext();
-        this.sendAllPoemLines();
+        super.reinstateContext();
+        this.sendAllPoemLines(); // sends poems that are in progress
+        sendPoemsLinesInfo(this, false); // sends completed poems for end of game
     }
 }
 
@@ -60,21 +61,17 @@ export class DrawingSpectator extends Spectator {
 
     sendCanvas() {
         console.log("sendCanvas activated");
-        const thisRoom = getRoom(this.roomID) as DrawingRoom;
-        if (!thisRoom) {
-            console.log("thisRoom not found");
+        const room = getRoom(this.roomID) as DrawingRoom;
+        if (!room) {
+            console.log("room not found");
             return;
         }
-        const canvas = thisRoom.finishedCanvas;
+        const canvas = room.finishedCanvas;
         console.log("sendCanvas activated sending", canvas);
-        // for (const thisEditor of thisRoom.editors.values()) {
+        // for (const editor of room.editors.values()) {
         // }
         this.io
             .to(this.socket.id)
             .emit("stcStrokeHistory", canvas);
-    }
-
-    reinstateContext() {
-        // for compatibility
     }
 }

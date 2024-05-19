@@ -1,4 +1,5 @@
 import Member from "./member";
+import { sendPoemsLinesInfo } from "../utilities/sockets";
 
 class Host extends Member {
     // does not enforce device ID constraint
@@ -10,14 +11,17 @@ class Host extends Member {
         this.setReceive(); // listen for certain messages from client
     }
 
-    // TODO: re-comment this when done testing socket info context refactor
-    // requestPoemsLinesInfo() {
-    //     console.log(this.name, "requesting poems, do nothing...");
-    // }
+    setReceive() {
+        super.setReceive();
+        // only used to test the end screen, but we allow it to be parasitic for now
+        this.socket.on("ctsRequestPoemsLines", (shouldTest) => sendPoemsLinesInfo(this, shouldTest));
+    }
 
-    // setSend
-    // super.setSend()
-    // eventually send cool game state info to inform hostGameView
+    unsetReceive() {
+        super.unsetReceive();
+        // only used to test the end screen, but we allow it to be parasitic for now
+        this.socket.removeAllListeners("ctsRequestPoemsLines");
+    }
 }
 
 export default Host;

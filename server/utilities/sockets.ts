@@ -1,6 +1,34 @@
 import { roomIDToRoom } from "../modules/globals";
 import { DrawingEditor, PoemEditor } from "../modules/editor";
 import { DrawingRoom, PoemRoom } from "../modules/room";
+import { Server, Socket } from "socket.io";
+import {
+    ClientToServerEvents,
+    GameState,
+    InterServerEvents,
+    Role,
+    ServerToClientEvents,
+    SocketData,
+} from "../../src/types";
+import { DrawingSpectator, PoemSpectator } from "../modules/spectator";
+import { poemsLines as poemsLinesTestData } from "../../src/data/multiplePoems";
+import Host from "../modules/host";
+
+
+export function getRouteForGameStateAndRole(gameState: GameState, role: Role): string {
+    if (gameState === GameState.LOBBY) {
+        return "/lobby";
+    } else if (gameState === GameState.END) {
+        return "/end";
+    } else if (gameState === GameState.GAME) {
+        if (role === Role.EDITOR) {
+            return "/game";
+        } else if (role === Role.SPECTATOR) {
+            return "/spectate";
+        }
+    }
+    throw new Error("unknown game state / role in getRouteForGameStateAndRole");
+}
 
 export function getRoom(roomID: string | undefined): PoemRoom | DrawingRoom | undefined {
     if (!roomIDToRoom || !roomID) {
@@ -31,4 +59,61 @@ export function getEditorSocketID(roomID: string | undefined, editorID: string |
         return undefined;
     }
     return editor.socket.id;
+}
+
+
+export function standardReconnect(
+    io: Server<ClientToServerEvents,
+        ServerToClientEvents,
+        InterServerEvents,
+        SocketData>,
+    socket: Socket,
+    member: PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator | undefined,
+) {
+    if (member && member.socket) {
+        // send socket (tab) that's currently connected to the disconnected view
+        console.log("disconnecting previous socket for deviceID", member.deviceID);
+        io.to(member.socket.id).emit("stcNavigate", "/disconnected");
+        member.socket.disconnect(); // force disconnect on original socket
+        console.log("connecting new socket for deviceID", member.deviceID);
+        member.socket = socket; // connect the new socket to same Member
+        member.joinRoom(); // re-join the correct rooms
+        console.log("about to reinstate context for", member.deviceID);
+        member.reinstateContext();
+    }
+}
+
+// only used to test the end screen, but we allow it to be parasitic for now
+export function sendPoemsLinesInfo(poemMember: Host | PoemEditor | PoemSpectator, shouldTest: boolean) {
+    const room = roomIDToRoom.get(poemMember.roomID);
+
+    if (shouldTest) {
+        console.log("sending test poemsLines data in a way that is unusual");
+        // poemsLinesTestData is an array of arrays of lines
+        for (const linesArray of poemsLinesTestData) {
+            poemMember.io
+                .to(poemMember.socket.id)
+                .emit(
+                    "stcPoemLines",
+                    linesArray,
+                );
+        }
+        return;
+    }
+
+    if (!room) {
+        console.log("room not found");
+        return;
+    }
+    console.log(poemMember.name, "request poems from room which has", room.finishedWorks.length);
+    for (const poemObj of room.finishedWorks) {
+        // TODO: Explore this, this could improve server-side efficiency:
+        // poemMember.io.in(poemMember.roomID).emit("stcPoemLines", Array.from(poemObj.lines));
+        poemMember.io
+            .to(poemMember.socket.id)
+            .emit(
+                "stcPoemLines",
+                Array.from(poemObj.lines),
+            );
+    }
 }

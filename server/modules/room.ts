@@ -3,9 +3,11 @@ import { Server, Socket } from "socket.io";
 import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "./globals";
 import { DrawingSpectator, PoemSpectator } from "./spectator";
 import { DrawingEditor, PoemEditor } from "./editor";
+import Member from "./member";
 import { Poem } from "./collaboration";
 import {
     ClientToServerEvents,
+    GameState,
     IPoemSettingsInfo,
     IUserTableInfo,
     InterServerEvents,
@@ -41,7 +43,7 @@ class Room {
 
     editors: Map<string, PoemEditor | DrawingEditor>;
     spectators: Map<string, PoemSpectator | DrawingSpectator>;
-    gameOngoing: boolean;
+    gameState: GameState;
     nUnfinishedWorks: number;
     activityInterval: ReturnType<typeof setInterval>;
     createdAt: number;
@@ -66,7 +68,7 @@ class Room {
 
         this.editors = new Map(); // deviceID to editorObj
         this.spectators = new Map(); // deviceID to spectatorObj
-        this.gameOngoing = false;
+        this.gameState = GameState.LOBBY; // initialize in Lobby
         this.nUnfinishedWorks = 0;
 
         // check user activity every 30 seconds
@@ -108,14 +110,14 @@ class Room {
         const spectatorNames: IUserTableInfo["spectators"] = [];
         const editorColorMap: IUserTableInfo["editorColorMap"] = {};
         let editorIndex = 0;
-        for (const thisEditor of this.editors.values()) {
-            editorNames.push(thisEditor.name);
+        for (const editor of this.editors.values()) {
+            editorNames.push(editor.name);
             editorColors.push(editorColorDefaultsArr[editorIndex]);
-            editorColorMap[thisEditor.deviceID] = editorColorDefaultsArr[editorIndex];
+            editorColorMap[editor.deviceID] = editorColorDefaultsArr[editorIndex];
             editorIndex++;
         }
-        for (const thisSpectator of this.spectators.values()) {
-            spectatorNames.push(thisSpectator.name);
+        for (const spectator of this.spectators.values()) {
+            spectatorNames.push(spectator.name);
         }
         return {
             editors: editorNames,
@@ -130,8 +132,8 @@ class Room {
     }
 
     reorganizeEditors() {
-        for (const thisEditor of this.editors.values()) {
-            thisEditor.prepareForGame();
+        for (const editor of this.editors.values()) {
+            editor.prepareForGame();
         }
     }
 
@@ -147,22 +149,22 @@ class Room {
             this.selfDestruct();
             return;
         }
-        for (const thisSpectator of this.spectators.values()) {
+        for (const spectator of this.spectators.values()) {
             if (
-                !thisSpectator.connected &&
-                currentTime - thisSpectator.lastActivity > maxMemberTimeSpentInactive
+                !spectator.connected &&
+                currentTime - spectator.lastActivity > maxMemberTimeSpentInactive
             ) {
-                thisSpectator.leaveRoom();
-                console.log("booting", thisSpectator.name, "based on inactivity");
+                spectator.leaveRoom();
+                console.log("booting", spectator.name, "based on inactivity");
             }
         }
-        for (const thisEditor of this.editors.values()) {
+        for (const editor of this.editors.values()) {
             if (
-                thisEditor.isCurrentlyEditing &&
-                currentTime - thisEditor.lastActivity > maxMemberTimeSpentInactive
+                editor.isCurrentlyEditing &&
+                currentTime - editor.lastActivity > maxMemberTimeSpentInactive
             ) {
-                thisEditor.leaveRoom();
-                console.log("booting", thisEditor.name, "based on inactivity");
+                editor.leaveRoom();
+                console.log("booting", editor.name, "based on inactivity");
             }
         }
     }
@@ -177,35 +179,27 @@ class Room {
         await sleep(30000);
         console.log(this.roomID, "self-destructing");
 
-        for (const [ editorID, thisEditor ] of this.editors.entries()) {
-            delete deviceIDToRoomID[editorID];
-            // since this.editors is a map from editor's device ID to the Member this should delete the object
-            // including its socket?
-            thisEditor.connected = false;
-            delete deviceIDToRoomID[editorID];
-            thisEditor.socket.leave(this.roomID);
-            thisEditor.unsetReceive();
-            delete socketIDToDeviceID[thisEditor.socket.id];
-            delete deviceIDToSocketID[editorID];
+        for (const [ editorID, editor ] of this.editors.entries()) {
+            this.cleanUpMember(editorID, editor);
             this.editors.delete(editorID);
         }
-        for (const [
-            spectatorID,
-            thisSpectator,
-        ] of this.spectators.entries()) {
-            delete deviceIDToRoomID[spectatorID];
-            thisSpectator.connected = false;
-            delete deviceIDToRoomID[spectatorID];
-            thisSpectator.socket.leave(this.roomID);
-            thisSpectator.unsetReceive();
-            delete socketIDToDeviceID[thisSpectator.socket.id];
-            delete deviceIDToSocketID[spectatorID];
+        for (const [ spectatorID, spectator ] of this.spectators.entries()) {
+            this.cleanUpMember(spectatorID, spectator);
             this.spectators.delete(spectatorID);
         }
 
         clearInterval(this.activityInterval);
         roomIDToHost.delete(this.roomID);
         roomIDToRoom.delete(this.roomID);
+    }
+
+    cleanUpMember(deviceID: string, member: Member) {
+        delete deviceIDToRoomID[deviceID];
+        member.connected = false;
+        member.socket.leave(member.roomID);
+        member.unsetReceive();
+        delete socketIDToDeviceID[member.socket.id];
+        delete deviceIDToSocketID[deviceID];
     }
 }
 
@@ -236,28 +230,28 @@ export class PoemRoom extends Room {
         let nPoemsToHandOut = this.gameSettings["nPoems"];
         this.nUnfinishedWorks = nPoemsToHandOut;
         let poemIndex = 0;
-        for (const thisEditor of this.editors.values()) {
-            thisEditor.lastActivity = Date.now(); // refresh AFK timers upon game start
-            thisEditor.prepareForGame();
+        for (const editor of this.editors.values()) {
+            editor.lastActivity = Date.now(); // refresh AFK timers upon game start
+            editor.prepareForGame();
 
             // give the editor a new poem
             if (nPoemsToHandOut > 0) {
-                const thisPoem = new Poem(this.io, this.roomID, nContributions, poemIndex); // creates Poem object
-                thisEditor.contributionQueue.push(thisPoem);
-                thisEditor.isCurrentlyEditing = true;
+                const poem = new Poem(this.io, this.roomID, nContributions, poemIndex); // creates Poem object
+                editor.contributionQueue.push(poem);
+                editor.isCurrentlyEditing = true;
                 nPoemsToHandOut--;
                 poemIndex++;
             }
         }
 
         // should tell editors to navigate to /game and spectators to /spectate
+        this.gameState = GameState.GAME;
         this.io.in(`${this.roomID}_Editors`).emit("stcNavigate", "/game");
         this.io.in(`${this.roomID}_Spectators`).emit("stcNavigate", "/spectate");
-        this.gameOngoing = true;
 
-        for (const thisEditor of this.editors.values()) {
-            thisEditor.sendActivity();
-            thisEditor.sendLastLineStatus();
+        for (const editor of this.editors.values()) {
+            editor.sendActivity();
+            editor.sendLastLineStatus();
         }
     }
 

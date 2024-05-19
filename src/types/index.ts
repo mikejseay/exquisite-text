@@ -1,6 +1,12 @@
 import type { Key } from "react";
 import type { NavigateFunction } from "react-router-dom";
 
+export enum GameState {
+    LOBBY = "Lobby",
+    GAME = "Game",
+    END = "End",
+}
+
 export enum Medium {
     ART = "Art",
     POETRY = "Poetry",
