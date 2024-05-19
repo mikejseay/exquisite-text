@@ -17,7 +17,7 @@ import { lineSepString } from "../../src/constants";
 import { roomIDToRoom } from "./globals";
 import type { Poem } from "./collaboration";
 import Member from "./member";
-import { getEditorSocketID, getRoom } from "../utilities/sockets";
+import { getEditorSocketID, getRoom, sendPoemsLinesInfo } from "../utilities/sockets";
 import { DrawingRoom, PoemRoom } from "./room";
 
 class Editor extends Member {
@@ -402,6 +402,7 @@ export class PoemEditor extends Editor {
         this.sendLineEdit();
         this.sendActivity();
         this.sendLastLineStatus();
+        sendPoemsLinesInfo(this, false);
     }
 }
 

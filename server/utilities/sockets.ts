@@ -11,6 +11,8 @@ import {
     SocketData,
 } from "../../src/types";
 import { DrawingSpectator, PoemSpectator } from "../modules/spectator";
+import { poemsLines as poemsLinesTestData } from "../../src/data/multiplePoems";
+import Host from "../modules/host";
 
 
 export function getRouteForGameStateAndRole(gameState: GameState, role: Role): string {
@@ -78,5 +80,40 @@ export function reconnectRoutine(
         theMember.joinRoom(); // re-join the correct rooms
         console.log("about to reinstate context for", theMember.deviceID);
         theMember.reinstateContext();
+    }
+}
+
+// only used to test the end screen, but we allow it to be parasitic for now
+export function sendPoemsLinesInfo(poemMember: Host | PoemEditor | PoemSpectator, shouldTest: boolean) {
+    const thisRoom = roomIDToRoom.get(poemMember.roomID);
+
+    if (shouldTest) {
+        console.log("sending test poemsLines data in a way that is unusual");
+        // poemsLinesTestData is an array of arrays of lines
+        for (const linesArray of poemsLinesTestData) {
+            poemMember.io
+                .to(poemMember.socket.id)
+                .emit(
+                    "stcPoemLines",
+                    linesArray,
+                );
+        }
+        return;
+    }
+
+    if (!thisRoom) {
+        console.log("thisRoom not found");
+        return;
+    }
+    console.log(poemMember.name, "request poems from room which has", thisRoom.finishedWorks.length);
+    for (const poemObj of thisRoom.finishedWorks) {
+        // TODO: Explore this, this could improve server-side efficiency:
+        // poemMember.io.in(poemMember.roomID).emit("stcPoemLines", Array.from(poemObj.lines));
+        poemMember.io
+            .to(poemMember.socket.id)
+            .emit(
+                "stcPoemLines",
+                Array.from(poemObj.lines),
+            );
     }
 }

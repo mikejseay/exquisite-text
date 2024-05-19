@@ -1,6 +1,6 @@
 import { roomIDToRoom } from "./globals";
 import Member from "./member";
-import { getRoom } from "../utilities/sockets";
+import { getRoom, sendPoemsLinesInfo } from "../utilities/sockets";
 import { DrawingRoom } from "./room";
 
 class Spectator extends Member {
@@ -43,7 +43,8 @@ export class PoemSpectator extends Spectator {
     reinstateContext() {
         // TODO: Placeholder
         super.reinstateContext();
-        this.sendAllPoemLines();
+        this.sendAllPoemLines(); // sends poems that are in progress
+        sendPoemsLinesInfo(this, false); // sends completed poems for end of game
     }
 }
 

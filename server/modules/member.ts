@@ -4,7 +4,6 @@ import { Server, Socket } from "socket.io";
 import { deviceIDToRoomID, deviceIDToSocketID, roomIDToRoom, socketIDToDeviceID } from "./globals";
 import { ClientToServerEvents, GameState, InterServerEvents, ServerToClientEvents, SocketData } from "../../src/types";
 import { userInfo as userInfoTestData } from "../../src/data/userInfo";
-import { poemsLines as poemsLinesTestData } from "../../src/data/multiplePoems";
 import { getRoom } from "../utilities/sockets";
 
 class Member {
@@ -75,8 +74,6 @@ class Member {
         // These are all reserved events
         this.socket.on("disconnect", () => this.disconnect());
         this.socket.on("disconnecting", () => this.disconnecting());
-        // only used to test the end screen, but we allow it to be parasitic for now
-        this.socket.on("ctsRequestPoemsLines", (shouldTest) => this.sendPoemsLinesInfo(shouldTest));
     }
 
     unsetReceive() {
@@ -86,8 +83,7 @@ class Member {
         this.socket.removeAllListeners("ctsLeave");
         this.socket.removeAllListeners("disconnect");
         this.socket.removeAllListeners("disconnecting");
-        // only used to test the end screen, but we allow it to be parasitic for now
-        this.socket.removeAllListeners("ctsRequestPoemsLines");
+
     }
 
     sendUserTableInfo(shouldTest: boolean) {
@@ -104,41 +100,6 @@ class Member {
                 );
         } else {
             console.log("Failed to get room details for user table info");
-        }
-    }
-
-    // only used to test the end screen, but we allow it to be parasitic for now
-    sendPoemsLinesInfo(shouldTest: boolean) {
-        const thisRoom = roomIDToRoom.get(this.roomID);
-
-        if (shouldTest) {
-            console.log("sending test poemsLines data in a way that is unusual");
-            // poemsLinesTestData is an array of arrays of lines
-            for (const linesArray of poemsLinesTestData) {
-                this.io
-                    .to(this.socket.id)
-                    .emit(
-                        "stcPoemLines",
-                        linesArray,
-                    );
-            }
-            return;
-        }
-
-        if (!thisRoom) {
-            console.log("thisRoom not found");
-            return;
-        }
-        console.log(this.name, "request poems from room which has", thisRoom.finishedWorks.length);
-        for (const poemObj of thisRoom.finishedWorks) {
-            // TODO: Explore this, this could improve server-side efficiency:
-            // this.io.in(this.roomID).emit("stcPoemLines", Array.from(poemObj.lines));
-            this.io
-                .to(this.socket.id)
-                .emit(
-                    "stcPoemLines",
-                    Array.from(poemObj.lines),
-                );
         }
     }
 
@@ -207,8 +168,6 @@ class Member {
         this.requestRoomCode();
         // re-instate user info
         this.sendUserTableInfo(false);
-        // re-instate any known poems
-        this.sendPoemsLinesInfo(false);
     }
 }
 
