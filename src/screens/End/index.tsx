@@ -10,6 +10,7 @@ import {
     emitRequestUserTableInfo,
 } from "../../context/SocketRequestors";
 import { Medium } from "../../types";
+import LeaveButton from "../../components/LeaveButton";
 
 function End({ shouldTest = false }: { shouldTest: boolean }) {
 
@@ -40,6 +41,7 @@ function End({ shouldTest = false }: { shouldTest: boolean }) {
             <span>Done! If you&apos;d like to play again, make a new room.</span>
             <br />
             <MultiplePoems shouldAnimate={shouldAnimate} />
+            <LeaveButton />
         </div>
     );
 }
