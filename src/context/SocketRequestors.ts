@@ -2,6 +2,7 @@ import { socket } from "../components/SocketHandler";
 import { v4 as uuidv4 } from "uuid";
 import isNil from "lodash/isNil";
 import { LineLength, Medium, Point, Role } from "../types";
+import { defaultGameSettings } from "../constants";
 
 export const emitRecognizeDevice = () => {
 
@@ -40,12 +41,14 @@ export const emitJoinAs = (roomID: string, name: string, memberType: Role, isTes
     socket.emit("ctsJoinAs", roomID.toUpperCase(), name.toUpperCase(), memberType, isTest);
 };
 
-export const emitAlterGameSettings = (newLineLength: LineLength, nPoems: number, nRounds: number) => {
-    socket.emit("ctsAlterGameSettings", {
-        lineLength: newLineLength,
-        nPoems,
-        nRounds,
-    });
+interface IGameSettings {
+    lineLength?: LineLength;
+    nPoems?: number;
+    nRounds?: number;
+    nDrawings?: number;
+}
+export const emitAlterGameSettings = (gameSettings: IGameSettings) => {
+    socket.emit("ctsAlterGameSettings", gameSettings);
 };
 
 export const emitStartGame = () => {

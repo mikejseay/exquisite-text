@@ -1,5 +1,5 @@
 import { socket } from "../components/SocketHandler";
-import { ILine, IPoemSettingsInfo, ISocketInfoListeners, IUserTableInfo, Point } from "../types";
+import { IGameSettingsInfo, ILine, ISocketInfoListeners, IUserTableInfo, Point } from "../types";
 import { shortDur } from "../constants";
 
 export const socketListeners = ({
@@ -11,6 +11,7 @@ export const socketListeners = ({
     setLineLength,
     setNRounds,
     setNPoems,
+    setNDrawings,
     setLines,
     setLineEdits,
     setPoemInput,
@@ -41,10 +42,11 @@ export const socketListeners = ({
         setRoomCode(info);
     };
 
-    const receiveGameSettingsInfo = (info: IPoemSettingsInfo) => {
+    const receiveGameSettingsInfo = (info: IGameSettingsInfo) => {
         setLineLength(info["lineLength"]);
         setNRounds(info["nRounds"]);
         setNPoems(info["nPoems"]);
+        setNDrawings(info["nDrawings"]);
     };
 
     const receiveGameSettingsEnabled = (enabled: boolean) => {

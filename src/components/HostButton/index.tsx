@@ -2,6 +2,7 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import ArticleIcon from "@mui/icons-material/Article";
 import BrushIcon from "@mui/icons-material/Brush";
+import GamepadIcon from "@mui/icons-material/Gamepad";
 import Fab from "@mui/material/Fab";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";

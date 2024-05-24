@@ -8,7 +8,7 @@ import { Poem } from "./collaboration";
 import {
     ClientToServerEvents,
     GameState,
-    IPoemSettingsInfo,
+    IGameSettingsInfo,
     IUserTableInfo,
     InterServerEvents,
     Medium,
@@ -48,7 +48,7 @@ class Room {
     activityInterval: ReturnType<typeof setInterval>;
     createdAt: number;
     // poem-specific for now until we figure out how to type generally
-    gameSettings: IPoemSettingsInfo;
+    gameSettings: IGameSettingsInfo;
     finishedWorks: Array<Poem>;
     medium: Medium;
 
@@ -273,4 +273,26 @@ export class DrawingRoom extends Room {
         this.medium = Medium.DRAWING;
     }
 
+    setUpGame() {
+        console.log("setUpGame with this.editors", this.editors);
+        const nContributions = this.gameSettings["nRounds"] * this.editors.size + 2;
+
+        // have each editor set their important properties
+        let nPoemsToHandOut = this.gameSettings["nPoems"];
+        this.nUnfinishedWorks = nPoemsToHandOut;
+        let poemIndex = 0;
+        for (const editor of this.editors.values()) {
+            editor.lastActivity = Date.now(); // refresh AFK timers upon game start
+            editor.prepareForGame();
+
+            // give the editor a new poem
+            if (nPoemsToHandOut > 0) {
+                const poem = new Poem(this.io, this.roomID, nContributions, poemIndex); // creates Poem object
+                editor.contributionQueue.push(poem);
+                editor.isCurrentlyEditing = true;
+                nPoemsToHandOut--;
+                poemIndex++;
+            }
+        }
+    }
 }

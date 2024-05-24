@@ -4,9 +4,10 @@ import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid 
 import {
     ClientToServerEvents,
     GameState,
+    IGameSettingsInfo,
     IPoem,
-    IPoemSettingsInfo,
     InterServerEvents,
+    Medium,
     Point,
     ServerToClientEvents,
     SocketData,
@@ -150,6 +151,25 @@ class Editor extends Member {
         }
         return room.editors.keys().next().value === this.deviceID;
     }
+
+
+    alterGameSettings(gameSettings: IGameSettingsInfo) {
+        console.log("ctsAlterGameSettings");
+        const room = getRoom(this.roomID);
+        if (room) {
+            room.gameSettings = gameSettings;
+            this.socket.to(this.roomID).emit("stcGameSettingsInfo", gameSettings);
+        }
+    }
+
+    broadcastStartGame() {
+        // global in nature, so it will mainly eal with the room
+        console.log("ctsStartGame");
+        const room = getRoom(this.roomID);
+        if (room) {
+            room.setUpGame();
+        }
+    }
 }
 
 export class PoemEditor extends Editor {
@@ -178,24 +198,6 @@ export class PoemEditor extends Editor {
         this.socket.removeAllListeners("ctsRequestLastLineStatus");
         this.socket.removeAllListeners("ctsAlterGameSettings");
         this.socket.removeAllListeners("ctsStartGame");
-    }
-
-    alterGameSettings(gameSettings: IPoemSettingsInfo) {
-        console.log("ctsAlterGameSettings");
-        const room = getRoom(this.roomID) as PoemRoom;
-        if (room) {
-            room.gameSettings = gameSettings;
-            this.socket.to(this.roomID).emit("stcGameSettingsInfo", gameSettings);
-        }
-    }
-
-    broadcastStartGame() {
-        // global in nature, so it will mainly eal with the room
-        console.log("ctsStartGame");
-        const room = getRoom(this.roomID) as PoemRoom;
-        if (room) {
-            room.setUpGame();
-        }
     }
 
     sendLineEdit() {
@@ -411,11 +413,17 @@ export class DrawingEditor extends Editor {
     setReceive() {
         super.setReceive();
         this.socket.on("ctsSendCanvas", (value: Point[][]) => this.receiveCanvas(value));
+        this.socket.on("ctsAlterGameSettings", (value) =>
+            this.alterGameSettings(value),
+        );
+        this.socket.on("ctsStartGame", () => this.broadcastStartGame());
     }
 
     unsetReceive() {
         super.unsetReceive();
         this.socket.removeAllListeners("ctsSendCanvas");
+        this.socket.removeAllListeners("ctsAlterGameSettings");
+        this.socket.removeAllListeners("ctsStartGame");
     }
 
     receiveCanvas(strokeHistory: Point[][]) {

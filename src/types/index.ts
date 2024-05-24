@@ -19,8 +19,8 @@ export enum Role {
 }
 
 export enum LineLength {
-    short = "short",
-    long = "long",
+    SHORT = "short",
+    LONG = "long",
 }
 
 export interface ILineConstraints {
@@ -43,10 +43,11 @@ export interface IUserTableInfo {
     editorColors: Array<string>;
 }
 
-export interface IPoemSettingsInfo {
+export interface IGameSettingsInfo {
     lineLength: LineLength;
     nRounds: number;
     nPoems: number;
+    nDrawings: number;
 }
 
 export interface IPoems {
@@ -87,7 +88,7 @@ export interface ServerToClientEvents {
     stcRoomCode: (a: string) => void;
     stcJoinError: (a: string) => void;
     stcUserTableInfo: (a: IUserTableInfo) => void;
-    stcGameSettingsInfo: (a: IPoemSettingsInfo) => void;
+    stcGameSettingsInfo: (a: IGameSettingsInfo) => void;
     stcGameSettingsEnabled: (a: boolean) => void;
     stcNavigate: (a: string) => void;
     stcEditorActive: (a: boolean) => void;
@@ -108,7 +109,7 @@ export interface ClientToServerEvents {
     ctsJoinAs: (roomID: string, name: string, role: Role, isTest: boolean) => void;
     ctsRequestGameSettingsInfo: () => void;
     ctsRequestLastLineStatus: () => void;
-    ctsAlterGameSettings: (a: IPoemSettingsInfo) => void;
+    ctsAlterGameSettings: (a: IGameSettingsInfo) => void;
     ctsRequestSettingsEnabled: () => void;
     ctsStartGame: () => void;
     ctsRequestEditorActive: () => void;
@@ -152,6 +153,8 @@ export interface ISocketInfoListeners {
     // React.useState<number>(defaultGameSettings.nPoems);
     setNPoems: (value: number |
         ((prevVar: number) => number)) => void;
+    setNDrawings: (value: number |
+        ((prevVar: number) => number)) => void;
     // React.useState<Array<Array<string>>>([ [], [], [], [] ]);
     setLines: (value: Array<Array<string>> |
         ((prevVar: Array<Array<string>>) => Array<Array<string>>)) => void;
@@ -176,34 +179,36 @@ export interface ISocketInfoListeners {
 }
 
 export interface ISocketInfo {
-    userInfo: IUserTableInfo | null;
-    poemsLines: Array<ILine[]> | null;
+    // agnostic
+    editorActive: boolean | null;
     joinErrorMessage: string | null;
     roomCode: string | null;
-    setRoomCode: (value: string |
-        ((prevVar: string) => string)) => void;
+    setRoomCode: (value: string | ((prevVar: string) => string)) => void;
     settingsEnabled: boolean | null;
-    lineLength: LineLength | null;
-    nRounds: number | null;
-    nPoems: number | null;
-    setLineLength: (value: LineLength |
-        ((prevVar: LineLength) => LineLength)) => void;
-    setNRounds: (value: number |
-        ((prevVar: number) => number)) => void;
-    setNPoems: (value: number |
-        ((prevVar: number) => number)) => void;
-    lines: Array<Array<string>> | null;
+    userInfo: IUserTableInfo | null;
+
+    // poems
     lineEdits: Array<string> | null;
+    lineLength: LineLength | null;
+    lines: Array<Array<string>> | null;
+    nPoems: number | null;
+    nRounds: number | null;
+    onLastLine: boolean | null;
     poemInput: string | null;
     poemInputSpectate: string | null;
-    onLastLine: boolean | null;
-    editorActive: boolean | null;
-    setPoemInput: (value: string |
-        ((prevVar: string) => string)) => void;
+    poemsLines: Array<ILine[]> | null;
+    setLineLength: (value: LineLength | ((prevVar: LineLength) => LineLength)) => void;
+    setNPoems: (value: number | ((prevVar: number) => number)) => void;
+    setNRounds: (value: number | ((prevVar: number) => number)) => void;
+    setPoemInput: (value: string | ((prevVar: string) => string)) => void;
+
+    // drawings
+    nDrawings: number | null;
+    setNDrawings: (value: number | ((prevVar: number) => number)) => void;
+    setStrokeHistory: (value: Point[][] | ((prevVar: Point[][]) => Point[][])) => void;
     strokeHistory: Point[][] | null;
-    setStrokeHistory: (value: Point[][] |
-        ((prevVar: Point[][]) => Point[][])) => void;
 }
+
 
 export enum ContributionType {
     POEM,

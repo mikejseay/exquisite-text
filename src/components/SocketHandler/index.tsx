@@ -29,9 +29,10 @@ export default function SocketHandler({ children }: Props) {
     const [ joinErrorMessage, setJoinErrorMessage ] = React.useState<string>("");
     const [ roomCode, setRoomCode ] = React.useState<string>("");
     const [ settingsEnabled, setSettingsEnabled ] = React.useState<boolean>(false);
-    const [ lineLength, setLineLength ] = React.useState<LineLength>(LineLength.short);
+    const [ lineLength, setLineLength ] = React.useState<LineLength>(LineLength.SHORT);
     const [ nRounds, setNRounds ] = React.useState<number>(defaultGameSettings.nRounds);
     const [ nPoems, setNPoems ] = React.useState<number>(defaultGameSettings.nPoems);
+    const [ nDrawings, setNDrawings ] = React.useState<number>(defaultGameSettings.nDrawings);
     const [ lines, setLines ] = React.useState<Array<Array<string>>>([ [], [], [], [] ]);
     const [ lineEdits, setLineEdits ] = React.useState<Array<string>>([ "", "", "", "" ]);
     const [ poemInput, setPoemInput ] = React.useState<string>("");
@@ -52,6 +53,7 @@ export default function SocketHandler({ children }: Props) {
         setLineLength,
         setNRounds,
         setNPoems,
+        setNDrawings,
         setLines,
         setLineEdits,
         setPoemInput,
@@ -75,9 +77,11 @@ export default function SocketHandler({ children }: Props) {
             lineLength,
             nRounds,
             nPoems,
+            nDrawings,
             setLineLength,
             setNRounds,
             setNPoems,
+            setNDrawings,
             lines,
             lineEdits,
             poemInput,

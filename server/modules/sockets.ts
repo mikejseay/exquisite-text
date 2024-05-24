@@ -117,7 +117,7 @@ function sockets(
             } else if (medium == Medium.DRAWING) {
                 room = new DrawingRoom(io, socket, roomID);
             } else {
-                throw new Error("Unknown medium type.");
+                throw new Error(`Unknown medium type: ${medium}`);
             }
 
             if (room) {
