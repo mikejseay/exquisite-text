@@ -273,6 +273,7 @@ export class DrawingRoom extends Room {
         this.medium = Medium.DRAWING;
     }
 
+    // TODO: This needs to be made Drawing specific as opposed to Poem
     setUpGame() {
         console.log("setUpGame with this.editors", this.editors);
         const nContributions = this.gameSettings["nRounds"] * this.editors.size + 2;
