@@ -56,10 +56,7 @@ async function mainThree() {
     // the placeholder entry actually allows an input (chat_history) to be a *list* of messages,
     // and it expands the list to fill in the whole chat
     const prompt = ChatPromptTemplate.fromMessages([
-        [
-            "system",
-            "You are a helpful assistant who remembers all details the user shares with you.",
-        ],
+        [ "system", "You are a helpful assistant who remembers all details the user shares with you." ],
         [ "placeholder", "{chat_history}" ],
         [ "human", "{input}" ],
     ]);
@@ -73,6 +70,7 @@ async function mainThree() {
     const withMessageHistory = new RunnableWithMessageHistory({
         runnable: chain,
         getMessageHistory: async (sessionId) => {
+            // BTW this logic is so dope for initializing entries into global maps
             if (messageHistories[sessionId] === undefined) {
                 messageHistories[sessionId] = new InMemoryChatMessageHistory();
             }
@@ -82,67 +80,43 @@ async function mainThree() {
         historyMessagesKey: "chat_history",
     });
 
-    // create a config object that keeps track of the session ID
-    // withMessageHistory expects to receive this config
-    const config = {
-        configurable: {
-            sessionId: "abc2",
-        },
-    };
+    // in preparation of using our new chain that now automatically keeps track of chat history,
+    // we must create a config object that keeps track of the session ID
+    const config = { configurable: { sessionId: "abc2" } };
 
-    // here's how you invoke withMessageHistory
-    const response = await withMessageHistory.invoke(
-        {
-            input: "Hi! I'm Bob",
-        },
-        config,
-    );
+    // invoke new chain with input object and config as args
+    const response = await withMessageHistory.invoke({ input: "Hi! I'm Bob" }, config);
     console.log("response", response.content);
     // Hi, Bob! How can I assist you today?
 
-    const followupResponse = await withMessageHistory.invoke(
-        {
-            input: "What's my name?",
-        },
-        config,
-    );
+    // use the chain again, and it automatically keeps track of history
+    const followupResponse = await withMessageHistory.invoke({ input: "What's my name?" }, config);
     console.log("followupResponse", followupResponse.content);
     // Your name is Bob. How can I help you, Bob?
 
-    const configTwo = {
-        configurable: {
-            sessionId: "abc3",
-        },
-    };
-    const newSessionResponse = await withMessageHistory.invoke(
-        {
-            input: "What's my name?",
-        },
-        configTwo,
-    );
+    // let's make a new session by making a new config
+    // if you make a new session, you get a new history
+    const configTwo = { configurable: { sessionId: "abc3" } };
+    const newSessionResponse = await withMessageHistory.invoke({ input: "What's my name?" }, configTwo);
     console.log("newSessionResponse", newSessionResponse.content);
     // I'm sorry, but you haven't shared your name with me yet. Can you please tell me your name?
 
-    const sameSessionResponse = await withMessageHistory.invoke(
-        {
-            input: "What's my name?",
-        },
-        config,
-    );
+    // upon re-using the first config, we can see that it retains a separate history
+    const sameSessionResponse = await withMessageHistory.invoke({ input: "What's my name, again?" }, config);
     console.log("sameSessionResponse", sameSessionResponse.content);
     // Your name is Bob. How can I assist you today, Bob?
 }
 
 async function mainFour() {
     // level 4: limit the memory of the model to a certain number of messages
-    // model, global to keep track of histories, and prompt are all the same
+
+    // re-declare the model
     const model: ChatOpenAI = new ChatOpenAI({ model: "gpt-4o" });
+    // global to keep track of histories
     const messageHistories: Record<string, InMemoryChatMessageHistory> = {};
+    // and prompt (same as last time)
     const prompt = ChatPromptTemplate.fromMessages([
-        [
-            "system",
-            "You are a helpful assistant who remembers all details the user shares with you.",
-        ],
+        [ "system", "You are a helpful assistant who remembers all details the user shares with you." ],
         [ "placeholder", "{chat_history}" ],
         [ "human", "{input}" ],
     ]);
@@ -150,24 +124,39 @@ async function mainFour() {
     // here's the new idea: we create a function that, given a Record that represents all the inputs
     // into the chat prompt template, can apply a function to part of those inputs. specifically,
     // we take the chat_history part (a list of messages) and slice the most recent 10 messages out of it
+    // NOTE: I HAD TO MODIFY TYPES TO GET THIS TO WORK
+
+    // ORIGINAL FUNCTION FROM TUTORIAL
+    // const filterMessages = ({ chat_history }: { chat_history: BaseMessage[] }) => {
+    //     return chat_history.slice(-10);
+    // };
+
+    // WORKING FUNCTION WITH MODIFIED TYPES
     const filterMessages = ({ chat_history }: Record<string, unknown>) => {
         return (chat_history as BaseMessage[]).slice(-10);
     };
 
-    // here's how you add this function to the chain: you make a "runnable sequence" from a list.
-    // the first element of the list is the result of the assign method of a "runnable passthrough"
-    // the assign method assigns an input variable to a function and returns a new piece in the chain
-    // the new piece takes "chat_history" and applies filterMessages, returning a shorter list of messages
-    // as usual, the result goes into the prompt template, and then the model
+    // to incorporate this function, we represent the chain as a list with these items:
+    // 1) a "runnable passthrough assignment" object that applies the function to part of the input
+    // 2) our prompt template
+    // 3) the LLM model
+
+    // here's the syntax for creating the "runnable passthrough assignment"
+    // the assign method takes an object that maps a variable in the input to a function
+    // here, we apply filterMessages to "chat_history", returning a shorter list of messages
+    const passThroughAssignment = RunnablePassthrough.assign({ chat_history: filterMessages });
+
+    // here's the syntax for creating the new chain that contains the pass through assignment
+    // specifically, we create a "runnable sequence" and use its "from" method
+    // which takes the list of components in our chain
     const chain = RunnableSequence.from([
-        RunnablePassthrough.assign({
-            chat_history: filterMessages,
-        }),
+        passThroughAssignment,
         prompt,
         model,
     ]);
 
-    // let's make up a history of chat messages
+    // now we're ready to use an automatically-clipped chat history
+    // to demonstrate, let's make up a long history of 12 chat messages
     const messages = [
         new HumanMessage({ content: "hi! I'm bob" }),               // 12
         new AIMessage({ content: "hi!" }),                          // 11
@@ -184,17 +173,14 @@ async function mainFour() {
     ];
 
     // "chain" now clips message history; the bot can't remember more than 10 messages back
-    const responseOne = await chain.invoke({
-        chat_history: messages,
-        input: "what's my name?",
-    });
+
+    // the first question refers to chat history 12 messages back, so the bot can't remember
+    const responseOne = await chain.invoke({ chat_history: messages, input: "what's my name?" });
     console.log("responseOne", responseOne.content);
     // You haven't shared your name with me yet. What is your name?
 
-    const responseTwo = await chain.invoke({
-        chat_history: messages,
-        input: "what's my fav ice cream",
-    });
+    // the second question refers to chat history 10 messages back, so the bot can remember
+    const responseTwo = await chain.invoke({ chat_history: messages, input: "what's my fav ice cream" });
     console.log("responseTwo", responseTwo.content);
     // Your favorite ice cream is vanilla.
 
@@ -218,28 +204,14 @@ async function mainFour() {
     });
 
     // initialize a new session
-    const config = {
-        configurable: {
-            sessionId: "abc4",
-        },
-    };
-    const responseThree = await withMessageHistory.invoke(
-        {
-            input: "what's my name?",
-        },
-        config,
-    );
+    const config = { configurable: { sessionId: "abc4" } };
+    const responseThree = await withMessageHistory.invoke({ input: "what's my name?" }, config);
     console.log("responseThree", responseThree.content);
     // You haven’t told me your name yet. What is your name?
 
     // now, since we just added another pair of messages into the history (for a total of 14)
     // the message with the info about the favorite ice cream falls out of short-term memory
-    const responseFour = await withMessageHistory.invoke(
-        {
-            input: "whats my favorite ice cream?",
-        },
-        config,
-    );
+    const responseFour = await withMessageHistory.invoke({ input: "whats my favorite ice cream?" }, config);
     console.log("responseFour", responseFour.content);
     // You haven't mentioned your favorite ice cream yet. What's your favorite flavor?
 }
