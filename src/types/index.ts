@@ -106,11 +106,13 @@ export interface ClientToServerEvents {
     ctsRecognizeDevice: (a: string) => void;
     ctsCreateRoomAndHost: (a: string, b: Medium) => void;
     ctsJoinAs: (roomID: string, name: string, role: Role, isTest: boolean) => void;
+    ctsJoinAsBot: (roomID: string, name: string, botDeviceID: string) => void;
     ctsRequestGameSettingsInfo: () => void;
     ctsRequestLastLineStatus: () => void;
     ctsAlterGameSettings: (a: IPoemSettingsInfo) => void;
     ctsRequestSettingsEnabled: () => void;
     ctsStartGame: () => void;
+    ctsAddPoemBot: () => void;
     ctsRequestEditorActive: () => void;
     ctsSendLineParts: (a: string, b: string) => void;
     ctsSendLastLine: (a: string) => void;

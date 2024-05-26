@@ -8,9 +8,6 @@ dotenv.config({ path: __dirname + "/../.env" });
 
 async function main() {
 
-    // create a parser
-    const parser = new StringOutputParser();
-
     // instantiate model
     const model: ChatOpenAI = new ChatOpenAI({ model: "gpt-4o" });
 
@@ -22,6 +19,9 @@ async function main() {
     ];
     const result = await model.invoke(messages);
     console.log({ result });
+
+    // create a parser to extract text output
+    const parser = new StringOutputParser();
 
     // apply parser to raw result to get just the text output
     const parsedResult = await parser.invoke(result);

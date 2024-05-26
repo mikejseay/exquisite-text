@@ -6,6 +6,7 @@ import * as React from "react";
 
 import { LineLength } from "../../types";
 import {
+    emitAddPoemBot,
     emitAlterGameSettings,
     emitRequestGameSettingsInfo,
     emitRequestSettingsEnabled,
@@ -22,9 +23,10 @@ function GameSettings() {
         setLineLength,
         setNRounds,
         setNPoems,
+        userInfo,
     } = useSocketInfo();
 
-    if (settingsEnabled === null) {
+    if (settingsEnabled === null || userInfo === null) {
         return null;
     }
 
@@ -35,6 +37,9 @@ function GameSettings() {
         emitRequestGameSettingsInfo();
         setRendered(true);
     }
+
+    // extract editors data from userInfo to determine whether room is full
+    const { editors } = userInfo;
 
     // these will only ever take place for the VIP editor
     const handleLineLength = (event: React.MouseEvent<HTMLElement>, newLineLength: LineLength) => {
@@ -63,6 +68,10 @@ function GameSettings() {
 
     const handlePressStartGameButton = () => {
         emitStartGame();
+    };
+
+    const handlePressAddBotButton = () => {
+        emitAddPoemBot();
     };
 
     return (
@@ -114,6 +123,14 @@ function GameSettings() {
                         <ToggleButton value={4}>4</ToggleButton>
                     </ToggleButtonGroup>
                 </div>
+
+                <Button
+                    disabled={!settingsEnabled || editors.length >= 4}
+                    onClick={handlePressAddBotButton}
+                    variant="contained"
+                >
+                    Add Bot
+                </Button>
 
                 <Button
                     disabled={!settingsEnabled}

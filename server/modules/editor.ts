@@ -19,27 +19,26 @@ import type { Poem } from "./collaboration";
 import Member from "./member";
 import { getEditorSocketID, getRoom, sendPoemsLinesInfo } from "../utilities/sockets";
 import { DrawingRoom, PoemRoom } from "./room";
+import { completeHalfLine } from "./poem_bot";
 
 class Editor extends Member {
-    targetEditorID: string;
+    targetEditorID: string; // device ID
     turnPosition: number;
     contributionQueue: Array<Poem>; // element type does not matter | Array<Drawing>;
     isCurrentlyEditing: boolean;
 
     constructor(
-        io: Server<
-            ClientToServerEvents,
+        io: Server<ClientToServerEvents,
             ServerToClientEvents,
             InterServerEvents,
-            SocketData
-        >,
-        hostSocket: Socket,
+            SocketData>,
+        socket: Socket,
         roomID: string,
         deviceID: string,
         name: string,
     ) {
-        super(io, hostSocket, roomID, deviceID, name);
-        this.targetEditorID = "";
+        super(io, socket, roomID, deviceID, name);
+        this.targetEditorID = ""; // device ID
         this.turnPosition = 0;
         this.contributionQueue = [];
         this.isCurrentlyEditing = false;
@@ -167,6 +166,7 @@ export class PoemEditor extends Editor {
             this.alterGameSettings(value),
         );
         this.socket.on("ctsStartGame", () => this.broadcastStartGame());
+        this.socket.on("ctsAddPoemBot", () => this.requestAddPoemBotToRoom());
     }
 
     unsetReceive() {
@@ -190,11 +190,19 @@ export class PoemEditor extends Editor {
     }
 
     broadcastStartGame() {
-        // global in nature, so it will mainly eal with the room
+        // global in nature, so it will mainly deal with the room
         console.log("ctsStartGame");
         const room = getRoom(this.roomID) as PoemRoom;
         if (room) {
             room.setUpGame();
+        }
+    }
+
+    requestAddPoemBotToRoom() {
+        console.log("ctsAddPoemBot");
+        const room = getRoom(this.roomID) as PoemRoom;
+        if (room) {
+            room.addPoemBot();
         }
     }
 
@@ -239,7 +247,7 @@ export class PoemEditor extends Editor {
 
     handleLineParts(firstPart: string, secondPart: string) {
         const room = roomIDToRoom.get(this.roomID);
-        const poemToPass = this.contributionQueue.shift();
+        const poemToPass = this.contributionQueue.shift(); // shift = pop from front
         if (isNil(poemToPass)) {
             return;
         }
@@ -411,6 +419,27 @@ export class PoemEditor extends Editor {
         this.sendActivity();
         this.sendLastLineStatus();
         sendPoemsLinesInfo(this, false);
+    }
+}
+
+export class PoemBot extends PoemEditor {
+    // override parent properties & methods as needed
+
+    async possibleStartNewTurn() {
+        if (this.hasWorkInQueue()) {
+            // do AI logic to take half Line and produce a new 1.5 lines
+            const poem = this.contributionQueue[0];
+            const halfLine = poem.halfLine;
+            // const completion = halfLine + " that it's shaped like a globe: the heavens\n" +
+            //     "painted in cerulean on";
+            const completion = await completeHalfLine(this.deviceID, halfLine);
+            const parts = completion.split("\n");
+            if (parts.length >= 2) {
+                this.handleLineParts(parts[0], parts[1]);
+            } else {
+                console.log("parts had length < 2 in PoemBot.possibleStartNewTurn");
+            }
+        }
     }
 }
 
