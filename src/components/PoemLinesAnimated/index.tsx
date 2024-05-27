@@ -70,7 +70,7 @@ function PoemLinesAnimated({
                 delay={200}
             />
             <Card>
-                <CardContent style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
+                <CardContent style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", marginTop: "2rem" }}>
                     {editors.map((editorName, editorIndex) => {
                         return (
                             <Box key={editorIndex} style={{ margin: "0.5rem", display: "flex", alignItems: "center" }}>

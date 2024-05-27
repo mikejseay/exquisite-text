@@ -30,6 +30,8 @@ export interface ILineConstraints {
     maxCharsOnLineTwo: number;
     idealCharsOnLineOne: number;
     idealCharsOnLineTwo: number;
+    idealWordsOnLineOne: number;
+    idealWordsOnLineTwo: number;
 }
 
 export type ILineConstraintDict = {

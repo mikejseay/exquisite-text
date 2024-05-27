@@ -10,7 +10,8 @@ import {
     socketIDToDeviceID,
 } from "./globals";
 import { DrawingSpectator, PoemSpectator } from "./spectator";
-import { DrawingEditor, PoemEditor } from "./editor";
+import type { DrawingEditor, PoemEditor } from "./editor";
+import { PoemBot } from "./editor";
 import Member from "./member";
 import { Poem } from "./collaboration";
 import {
@@ -288,6 +289,14 @@ export class PoemRoom extends Room {
 
     }
 
+    hasPoemBot() {
+        for (const value of this.editors.values()) {
+            if (value instanceof PoemBot) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 export class DrawingRoom extends Room {

@@ -12,14 +12,14 @@ import {
     SocketData,
 } from "../../src/types";
 import { storePoem } from "../queries";
-import { lineSepString } from "../../src/constants";
-
+import { lineConstraints, lineSepString } from "../../src/constants";
 import { roomIDToRoom } from "./globals";
 import type { Poem } from "./collaboration";
 import Member from "./member";
 import { getEditorSocketID, getRoom, sendPoemsLinesInfo } from "../utilities/sockets";
 import { DrawingRoom, PoemRoom } from "./room";
-import { completeHalfLine } from "./poem_bot";
+import { guaranteeHalfLineCompletion } from "./poem_bot";
+import { delay } from "../llm_utils/llm_funcs";
 
 class Editor extends Member {
     targetEditorID: string; // device ID
@@ -426,19 +426,32 @@ export class PoemBot extends PoemEditor {
     // override parent properties & methods as needed
 
     async possibleStartNewTurn() {
+        // wait 4 seconds to simulate the bot thinking and test the analysis feature
+        await delay(4000);
         if (this.hasWorkInQueue()) {
+            // pre-determine the optimal line lengths
+            const room = getRoom(this.roomID);
+            if (!room) {
+                return;
+            }
+            const lineLength = room.gameSettings.lineLength;
+            const nFirst = lineConstraints[lineLength].idealWordsOnLineOne;
+            const nSecond = lineConstraints[lineLength].idealWordsOnLineTwo;
+
             // do AI logic to take half Line and produce a new 1.5 lines
             const poem = this.contributionQueue[0];
             const halfLine = poem.halfLine;
-            // const completion = halfLine + " that it's shaped like a globe: the heavens\n" +
-            //     "painted in cerulean on";
-            const completion = await completeHalfLine(this.deviceID, halfLine);
-            const parts = completion.split("\n");
-            if (parts.length >= 2) {
-                this.handleLineParts(parts[0], parts[1]);
-            } else {
-                console.log("parts had length < 2 in PoemBot.possibleStartNewTurn");
-            }
+            const forceIncomplete = halfLine.includes(".");
+            console.log("possibleStartNewTurn invoking guaranteeHalfLineCompletion");
+            const parts = await guaranteeHalfLineCompletion(
+                this.deviceID,
+                halfLine,
+                nFirst,
+                nSecond,
+                forceIncomplete,
+                poem.analysis,
+            );
+            this.handleLineParts(parts[0], parts[1]);
         }
     }
 }
