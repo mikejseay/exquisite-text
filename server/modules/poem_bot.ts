@@ -6,6 +6,9 @@ import * as dotenv from "dotenv";
 import { botDeviceIDToMessageHistory } from "./globals";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { analyzeSystemPrompt, analyzeUserPrompt, completeSystemPrompt, completeUserPrompt } from "../llm_utils/prompts";
+import { IPoemSettingsInfo } from "../../src/types";
+import { lineConstraints } from "../../src/constants";
+import { canBeFixedByShifting, isAcceptableShape, processPoetryLines } from "../llm_utils/llm_funcs";
 
 dotenv.config({ path: __dirname + "/../.env" });
 
@@ -18,12 +21,12 @@ const completePoetryPrompt = ChatPromptTemplate.fromMessages([
     [ "placeholder", "{chat_history}" ],
     [ "human", completeUserPrompt ],
 ]);
-const model: ChatOpenAI = new ChatOpenAI({ model: "gpt-4o" });
+const modelHighTemp: ChatOpenAI = new ChatOpenAI({ model: "gpt-4o" , temperature: 1.4 });
 const parser = new StringOutputParser();
 
-const analyzePoetryChain = analyzePoetryPrompt.pipe(model).pipe(parser);
+const analyzePoetryChain = analyzePoetryPrompt.pipe(modelHighTemp).pipe(parser);
 const completePoetryChain = new RunnableWithMessageHistory({
-    runnable: completePoetryPrompt.pipe(model).pipe(parser),
+    runnable: completePoetryPrompt.pipe(modelHighTemp).pipe(parser),
     getMessageHistory: async (sessionId) => {
         // BTW this logic is so dope for initializing entries into global maps
         if (botDeviceIDToMessageHistory[sessionId] === undefined) {
@@ -48,52 +51,68 @@ export async function analyzeBeginning(poemStart: string) {
 export async function guaranteeHalfLineCompletion(
     botDeviceID: string,
     halfLine: string,
-    nFirst: number, // number of words on first line
-    nSecond: number, // number of words on second line
+    gameSettings: IPoemSettingsInfo,
     forceIncomplete: boolean, // whether to force the AI to leave second line incomplete
     poemAnalysis: string, // an analysis of the poem to provide
 ) {
 
-    console.log({
-        botDeviceID: botDeviceID,
-        halfLine: halfLine,
-        nFirst: nFirst,
-        nSecond: nSecond,
-        forceIncomplete: forceIncomplete,
-        poemAnalysis: poemAnalysis,
-    });
+    const lineLength = gameSettings.lineLength;
+    const nWordsFirst = lineConstraints[lineLength].idealWordsOnLineOne;
+    const nWordsSecondInit = lineConstraints[lineLength].idealWordsOnLineTwo;
+    const nCharsFirst = lineConstraints[lineLength].idealCharsOnLineOne;
+    const nCharsSecond = lineConstraints[lineLength].idealCharsOnLineTwo;
 
     // forceIncomplete is intended to force an unresolved ending of the AI's completion
     // we ask it to double the number of words on the second line, then clip the extra words off
-    let nSecondGiven;
-    if (forceIncomplete) {
-        nSecondGiven = nSecond * 2;
-    } else {
-        nSecondGiven = nSecond;
-    }
 
     // this while loop wrapper implements a "retry" mechanism to make sure the completion is at least two lines
     let validInput = false;
-    let completion;
+    let partsFinal;
     while (!validInput) {
-        completion = await completeHalfLine(botDeviceID, halfLine, nFirst, nSecondGiven, forceIncomplete, poemAnalysis);
-        if (completion.split("\n").length >= 2) {
-            validInput = true;
-        } else {
+        const nWordsSecond = (forceIncomplete
+            ? (nWordsSecondInit * 2)
+            : nWordsSecondInit);
+        console.log({
+            botDeviceID: botDeviceID,
+            halfLine: halfLine,
+            gameSettings: gameSettings,
+            nWordsFirst: nWordsFirst,
+            nWordsSecond: nWordsSecond,
+            poemAnalysis: poemAnalysis,
+        });
+        const completion = await completeHalfLine(
+            botDeviceID,
+            halfLine,
+            nWordsFirst,
+            nWordsSecond,
+            poemAnalysis,
+        );
+        console.log("original completion:\n", completion);
+        const parts = completion.split("\n");
+        if (parts.length < 2) {
             console.log("completion had fewer than 2 lines, retrying.");
+        } else {
+            validInput = true;
+            // if we wanted to force an incomplete second line, clip it to the original requested # of words
+            if (isAcceptableShape(parts[0], parts[1], nCharsFirst, nCharsSecond, forceIncomplete)) {
+                partsFinal = parts;
+            } else if (canBeFixedByShifting(parts[0], parts[1], nCharsFirst, nCharsSecond)) {
+                partsFinal = processPoetryLines(parts[0], parts[1]);
+            } else {
+                partsFinal = parts;
+                validInput = false;
+                console.log("completion was neither an acceptable shape nor could be fixed by shifting, retrying");
+            }
+            if (forceIncomplete) {
+                partsFinal[1] = partsFinal[1].split(" ").slice(0, nWordsSecondInit).join(" ");
+            }
         }
     }
-    if (!completion) {
-        throw new Error("undefined completion.");
+    if (!partsFinal) {
+        throw new Error("undefined partsFinal.");
     }
-    const parts = completion.split("\n");
-
-    // if we wanted to force an incomplete second line, clip it to the original request # of words
-    if (forceIncomplete) {
-        parts[1] = parts[1].split(" ").slice(0, nSecond).join(" ");
-    }
-
-    return parts;
+    console.log(partsFinal);
+    return partsFinal;
 }
 
 export async function completeHalfLine(
@@ -101,12 +120,11 @@ export async function completeHalfLine(
     halfLine: string,
     nFirst: number, // number of words on first line
     nSecond: number, // number of words on second line
-    forceIncomplete: boolean, // whether to force the AI to leave second line incomplete
     poemAnalysis: string, // an analysis of the poem to provide
 ) {
     // each bot device ID gets its own session (shared across poems)
     const config = { configurable: { sessionId: botDeviceID } };
-    const completion = await completePoetryChain.invoke(
+    return await completePoetryChain.invoke(
         {
             poem_analysis: poemAnalysis,
             n_first: nFirst.toString(),
@@ -115,7 +133,4 @@ export async function completeHalfLine(
         },
         config,
     );
-    console.log(completion);
-
-    return completion;
 }

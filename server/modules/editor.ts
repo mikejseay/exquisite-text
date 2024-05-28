@@ -12,7 +12,7 @@ import {
     SocketData,
 } from "../../src/types";
 import { storePoem } from "../queries";
-import { lineConstraints, lineSepString } from "../../src/constants";
+import { lineSepString } from "../../src/constants";
 import { roomIDToRoom } from "./globals";
 import type { Poem } from "./collaboration";
 import Member from "./member";
@@ -426,28 +426,27 @@ export class PoemBot extends PoemEditor {
     // override parent properties & methods as needed
 
     async possibleStartNewTurn() {
-        // wait 4 seconds to simulate the bot thinking and test the analysis feature
-        await delay(4000);
         if (this.hasWorkInQueue()) {
             // pre-determine the optimal line lengths
             const room = getRoom(this.roomID);
             if (!room) {
                 return;
             }
-            const lineLength = room.gameSettings.lineLength;
-            const nFirst = lineConstraints[lineLength].idealWordsOnLineOne;
-            const nSecond = lineConstraints[lineLength].idealWordsOnLineTwo;
 
             // do AI logic to take half Line and produce a new 1.5 lines
             const poem = this.contributionQueue[0];
+
+            // if the poem has exactly one line, wait 6 seconds to analyze the beginning
+            if (poem.lines.size === 1) {
+                await delay(6000);
+            }
             const halfLine = poem.halfLine;
             const forceIncomplete = halfLine.includes(".");
             console.log("possibleStartNewTurn invoking guaranteeHalfLineCompletion");
             const parts = await guaranteeHalfLineCompletion(
                 this.deviceID,
                 halfLine,
-                nFirst,
-                nSecond,
+                room.gameSettings,
                 forceIncomplete,
                 poem.analysis,
             );
