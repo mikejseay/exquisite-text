@@ -1,5 +1,5 @@
 import { socket } from "../components/SocketHandler";
-import { IGameSettingsInfo, ILine, ISocketInfoListeners, IUserTableInfo, Point } from "../types";
+import { IGameSettingsInfo, ILine, IPanel, ISocketInfoListeners, IUserTableInfo, Point } from "../types";
 import { shortDur } from "../constants";
 
 export const socketListeners = ({
@@ -13,6 +13,7 @@ export const socketListeners = ({
     setNPoems,
     setNDrawings,
     setLines,
+    setPanels,
     setLineEdits,
     setPoemInput,
     setPoemInputSpectate,
@@ -53,9 +54,16 @@ export const socketListeners = ({
         setSettingsEnabled(enabled);
     };
 
-    const receiveLineSpectator = (poemIndex: number, line: string) => {
+    const receiveLineSpectator = (collaborationIndex: number, content: ILine["content"]) => {
         setLines(prevLines => {
-            return [ ...prevLines.slice(0, poemIndex), [ ...prevLines[poemIndex], line ], ...prevLines.slice(poemIndex + 1) ];
+            return [ ...prevLines.slice(0, collaborationIndex), [ ...prevLines[collaborationIndex], content ], ...prevLines.slice(collaborationIndex + 1) ];
+        },
+        );
+    };
+
+    const receivePanelSpectator = (collaborationIndex: number, content: IPanel["content"]) => {
+        setPanels(prevLines => {
+            return [ ...prevLines.slice(0, collaborationIndex), [ ...prevLines[collaborationIndex], content ], ...prevLines.slice(collaborationIndex + 1) ];
         },
         );
     };
@@ -101,10 +109,11 @@ export const socketListeners = ({
     socket.on("stcGameSettingsInfo", receiveGameSettingsInfo);
     socket.on("stcGameSettingsEnabled", receiveGameSettingsEnabled);
     socket.on("stcLineSpectator", receiveLineSpectator);
+    socket.on("stcPanelSpectator", receivePanelSpectator);
     socket.on("stcLineEditSpectator", receiveLineEditSpectator);
     socket.on("stcLineEdit", receiveLineEdit);
     socket.on("stcLineEditorWatch", receiveLineEditorWatch);
-    socket.on("stcLastLine", receiveLastLine);
+    socket.on("stcLastContribution", receiveLastLine);
     socket.on("stcEditorActive", receiveEditorActive);
     socket.on("stcNavigate", receiveNavigate);
     socket.on("stcStrokeHistory", receiveStrokeHistory);
@@ -117,10 +126,11 @@ export const socketListeners = ({
         socket.off("stcGameSettingsInfo", receiveGameSettingsInfo);
         socket.off("stcGameSettingsEnabled", receiveGameSettingsEnabled);
         socket.off("stcLineSpectator", receiveLineSpectator);
+        socket.off("stcPanelSpectator", receivePanelSpectator);
         socket.off("stcLineEditSpectator", receiveLineEditSpectator);
         socket.off("stcLineEdit", receiveLineEdit);
         socket.off("stcLineEditorWatch", receiveLineEditorWatch);
-        socket.off("stcLastLine", receiveLastLine);
+        socket.off("stcLastContribution", receiveLastLine);
         socket.off("stcEditorActive", receiveEditorActive);
         socket.off("stcNavigate", receiveNavigate);
         socket.off("stcStrokeHistory", receiveStrokeHistory);

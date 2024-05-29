@@ -276,7 +276,7 @@ export class DrawingRoom extends Room {
     // TODO: This needs to be made Drawing specific as opposed to Poem
     setUpGame() {
         console.log("setUpGame with this.editors", this.editors);
-        const nContributions = this.gameSettings["nRounds"] * this.editors.size + 2;
+        const nContributions = 3;
 
         // have each editor set their important properties
         let nDrawingsToHandOut = this.gameSettings["nDrawings"];
@@ -286,10 +286,10 @@ export class DrawingRoom extends Room {
             editor.lastActivity = Date.now(); // refresh AFK timers upon game start
             editor.prepareForGame();
 
-            // give the editor a new poem
+            // give the editor a new drawing
             if (nDrawingsToHandOut > 0) {
-                const poem = new Poem(this.io, this.roomID, nContributions, drawingIndex); // creates Poem object
-                editor.contributionQueue.push(poem);
+                const drawing = new Poem(this.io, this.roomID, nContributions, drawingIndex); // creates Poem object
+                editor.contributionQueue.push(drawing);
                 editor.isCurrentlyEditing = true;
                 nDrawingsToHandOut--;
                 drawingIndex++;

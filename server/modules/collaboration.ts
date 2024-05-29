@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid 
 import {
     ClientToServerEvents,
     ILine,
+    IPanel,
     InterServerEvents, Point,
     ServerToClientEvents,
     SocketData,
@@ -101,6 +102,65 @@ export class Poem extends Collaboration {
     sendAllLinesTo(socketID: string) {
     // this is used to bring a new spectator up to date
         this.lines.forEach((line) => this.sendLine(line.content, socketID));
+    }
+
+    sendLine(line: string, socketID: string) {
+        this.io.to(socketID).emit("stcLineSpectator", this.indexInGame, line);
+    }
+}
+
+// TODO: Make drawing specific
+export class Drawing extends Collaboration {
+    // represents a single drawing
+
+    panelHint: Point[][];
+    panels: Set<IPanel>;
+
+    constructor(
+
+        io: Server<
+            ClientToServerEvents,
+            ServerToClientEvents,
+            InterServerEvents,
+            SocketData
+        >,
+        roomID: string,
+        nContributions: number,
+        indexInGame: number,
+    ) {
+        super(io, roomID, nContributions, indexInGame);
+        this.panelHint = [];
+        this.panels = new Set<IPanel>;
+    }
+
+    submitPanel(authorID: string, content: Point[][]) {
+        const panel = {
+            ID: this.ID,
+            lineIndex: this.panels.size,
+            content: content,
+            authorDevice: authorID,
+            passerDevice: this.mostRecentEditor, // previous editor, starts at ""
+            editLength: this.panelHint.length, // previous line length, starts at 0
+            addedAt: new Date(),
+        };
+        this.panels.add(panel);
+
+        this.mostRecentEditor = authorID;
+        // this.panelHint = panelHint;
+        this.io
+            .in(`${this.roomID}_Spectators`)
+            .emit("stcLineSpectator", this.indexInGame, content);
+    }
+
+    sendLineEditToSpectators(value: string) {
+        this.io
+            .in(`${this.roomID}_Spectators`)
+            .emit("stcLineEditSpectator", this.indexInGame, value);
+    }
+
+    sendAllLinesTo(socketID: string) {
+    // this is used to bring a new spectator up to date
+        this.panels.forEach((line) => this.sendLine(line.content, socketID));
     }
 
     sendLine(line: string, socketID: string) {

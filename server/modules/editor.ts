@@ -281,9 +281,9 @@ export class PoemEditor extends Editor {
             );
 
             if (poem.lines.size === poem.nContributions - 2) {
-                this.io.to(this.socket.id).emit("stcLastLine", true);
+                this.io.to(this.socket.id).emit("stcLastContribution", true);
             } else {
-                this.io.to(this.socket.id).emit("stcLastLine", false);
+                this.io.to(this.socket.id).emit("stcLastContribution", false);
             }
             this.io.to(this.socket.id).emit("stcEditorActive", true);
             this.isCurrentlyEditing = true;
@@ -312,7 +312,7 @@ export class PoemEditor extends Editor {
 
     sendLastLineStatus() {
         console.log("requestLastLineStatus");
-        this.io.to(this.socket.id).emit("stcLastLine", this.currentlyOnLastLine());
+        this.io.to(this.socket.id).emit("stcLastContribution", this.currentlyOnLastLine());
     }
 
     handleLastLine(lastPart: string) {

@@ -61,14 +61,21 @@ export interface IPoem {
     title: string;
 }
 
-export interface ILine {
+interface IContribution {
     ID: string;
     lineIndex: number;
-    content: string;
     authorDevice: string;
     passerDevice: string;
     editLength: number;
     addedAt: Date;
+}
+
+export interface ILine extends IContribution {
+    content: string;
+}
+
+export interface IPanel extends IContribution {
+    content: Point[][];
 }
 
 export interface Point {
@@ -85,6 +92,7 @@ interface CanvasHistory {
 export interface ServerToClientEvents {
     stcLineEdit: (a: string) => void;
     stcPoemLines: (a: ILine[]) => void;
+    stcDrawingPanels: (a: IPanel[]) => void;
     stcRoomCode: (a: string) => void;
     stcJoinError: (a: string) => void;
     stcUserTableInfo: (a: IUserTableInfo) => void;
@@ -92,10 +100,13 @@ export interface ServerToClientEvents {
     stcGameSettingsEnabled: (a: boolean) => void;
     stcNavigate: (a: string) => void;
     stcEditorActive: (a: boolean) => void;
-    stcLastLine: (a: boolean) => void;
+    stcLastContribution: (a: boolean) => void;
     stcLineEditorWatch: (a: string) => void;
-    stcLineSpectator: (a: number, b: string) => void;
+    // stcLineEditorWatch: (a: string) => void; // TODO: stcPanelEditorWatch for realtime drawing watching
+    stcLineSpectator: (indexInGame: number, content: ILine["content"]) => void;
+    stcPanelSpectator: (indexInGame: number, content: IPanel["content"]) => void;
     stcLineEditSpectator: (a: number, b: string) => void;
+    // stcLineEditSpectator: (a: number, b: string) => void; // TODO: stcLineEditSpectator for realtime drawing watching
     stcStrokeHistory: (a: Point[][]) => void;
 }
 
@@ -156,8 +167,10 @@ export interface ISocketInfoListeners {
     setNDrawings: (value: number |
         ((prevVar: number) => number)) => void;
     // React.useState<Array<Array<string>>>([ [], [], [], [] ]);
-    setLines: (value: Array<Array<string>> |
+    setLines: (value: Array<Array<ILine["content"]>> |
         ((prevVar: Array<Array<string>>) => Array<Array<string>>)) => void;
+    setPanels: (value: Array<Array<IPanel["content"]>> |
+        ((prevVar: Array<Array<IPanel["content"]>>) => Array<Array<IPanel["content"]>>)) => void;
     // React.useState<Array<string>>([ "", "", "", "" ]);
     setLineEdits: (value: Array<string> |
         ((prevVar: Array<string>) => Array<string>)) => void;
@@ -190,7 +203,7 @@ export interface ISocketInfo {
     // poems
     lineEdits: Array<string> | null;
     lineLength: LineLength | null;
-    lines: Array<Array<string>> | null;
+    lines: Array<Array<ILine["content"]>> | null;
     nPoems: number | null;
     nRounds: number | null;
     onLastLine: boolean | null;
@@ -203,6 +216,7 @@ export interface ISocketInfo {
     setPoemInput: (value: string | ((prevVar: string) => string)) => void;
 
     // drawings
+    panels: Array<Array<IPanel["content"]>> | null;
     nDrawings: number | null;
     setNDrawings: (value: number | ((prevVar: number) => number)) => void;
     setStrokeHistory: (value: Point[][] | ((prevVar: Point[][]) => Point[][])) => void;

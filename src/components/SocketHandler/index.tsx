@@ -1,6 +1,6 @@
 import * as React from "react";
 import { SocketInfoContext } from "../../context/SocketInfoProvider";
-import { ILine, IUserTableInfo, LineLength, Point } from "../../types";
+import { ILine, IPanel, IUserTableInfo, LineLength, Point } from "../../types";
 import { defaultGameSettings } from "../../constants";
 import { socketListeners } from "../../context/SocketListeners";
 import { useNavigate } from "react-router-dom";
@@ -33,7 +33,8 @@ export default function SocketHandler({ children }: Props) {
     const [ nRounds, setNRounds ] = React.useState<number>(defaultGameSettings.nRounds);
     const [ nPoems, setNPoems ] = React.useState<number>(defaultGameSettings.nPoems);
     const [ nDrawings, setNDrawings ] = React.useState<number>(defaultGameSettings.nDrawings);
-    const [ lines, setLines ] = React.useState<Array<Array<string>>>([ [], [], [], [] ]);
+    const [ lines, setLines ] = React.useState<Array<Array<ILine["content"]>>>([ [], [], [], [] ]);
+    const [ panels, setPanels ] = React.useState<Array<Array<IPanel["content"]>>>([ [], [], [], [] ]);
     const [ lineEdits, setLineEdits ] = React.useState<Array<string>>([ "", "", "", "" ]);
     const [ poemInput, setPoemInput ] = React.useState<string>("");
     const [ poemInputSpectate, setPoemInputSpectate ] = React.useState<string>("");
@@ -55,6 +56,7 @@ export default function SocketHandler({ children }: Props) {
         setNPoems,
         setNDrawings,
         setLines,
+        setPanels,
         setLineEdits,
         setPoemInput,
         setPoemInputSpectate,
@@ -84,6 +86,7 @@ export default function SocketHandler({ children }: Props) {
             setNDrawings,
             lines,
             lineEdits,
+            panels,
             poemInput,
             poemInputSpectate,
             onLastLine,
