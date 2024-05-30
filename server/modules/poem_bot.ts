@@ -68,7 +68,8 @@ export async function guaranteeHalfLineCompletion(
     // this while loop wrapper implements a "retry" mechanism to make sure the completion is at least two lines
     let validInput = false;
     let partsFinal;
-    while (!validInput) {
+    let nTries = 0;
+    while (!validInput && nTries < 5) {
         const nWordsSecond = (forceIncomplete
             ? (nWordsSecondInit * 2)
             : nWordsSecondInit);
@@ -87,6 +88,7 @@ export async function guaranteeHalfLineCompletion(
             nWordsSecond,
             poemAnalysis,
         );
+        nTries += 1;
         console.log("original completion:\n", completion);
         const parts = completion.split("\n");
         if (parts.length < 2) {

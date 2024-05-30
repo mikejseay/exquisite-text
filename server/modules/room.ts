@@ -39,6 +39,7 @@ const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "develop
 const serverPath: URL["pathname"] | URL["href"] = isDevelopment
     ? "http://localhost:3000"
     : "/";
+console.log({ serverPath }, "in room.ts");
 
 class Room {
     // represents a socket.io room and a game of Exquisite Text
