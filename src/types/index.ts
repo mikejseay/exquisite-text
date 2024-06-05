@@ -91,6 +91,7 @@ interface CanvasHistory {
 
 export interface ServerToClientEvents {
     stcLineEdit: (a: string) => void;
+    stcDrawingPanel: (a: IPanel) => void;
     stcPoemLines: (a: ILine[]) => void;
     stcDrawingPanels: (a: IPanel[]) => void;
     stcRoomCode: (a: string) => void;

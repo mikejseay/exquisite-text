@@ -5,9 +5,9 @@ import {
     ClientToServerEvents,
     GameState,
     IGameSettingsInfo,
+    IPanel,
     IPoem,
     InterServerEvents,
-    Medium,
     Point,
     ServerToClientEvents,
     SocketData,
@@ -16,7 +16,7 @@ import { storePoem } from "../queries";
 import { lineSepString } from "../../src/constants";
 
 import { roomIDToRoom } from "./globals";
-import type { Poem } from "./collaboration";
+import type { Drawing, Poem } from "./collaboration";
 import Member from "./member";
 import { getEditorSocketID, getRoom, sendPoemsLinesInfo } from "../utilities/sockets";
 import { DrawingRoom, PoemRoom } from "./room";
@@ -24,7 +24,7 @@ import { DrawingRoom, PoemRoom } from "./room";
 class Editor extends Member {
     targetEditorID: string;
     turnPosition: number;
-    contributionQueue: Array<Poem>; // element type does not matter | Array<Drawing>;
+    contributionQueue: Array<Poem | Drawing>;
     isCurrentlyEditing: boolean;
 
     constructor(
@@ -206,7 +206,7 @@ export class PoemEditor extends Editor {
         // the halfLine of the first Poem in the queue (if this editor is active)
 
         if (this.hasWorkInQueue()) {
-            this.io.to(this.socket.id).emit("stcLineEdit", this.contributionQueue[0].halfLine);
+            this.io.to(this.socket.id).emit("stcLineEdit", (this.contributionQueue[0] as Poem)?.halfLine);
         }
     }
 
@@ -233,21 +233,21 @@ export class PoemEditor extends Editor {
         } else {
             console.log("Failed to get editor socket ID");
         }
-        const poem = this.contributionQueue[0];
+        const poem = this.contributionQueue[0] as Poem;
         if (!isNil(poem)) {
             poem.sendLineEditToSpectators(value);
         }
     }
 
     handleLineParts(firstPart: string, secondPart: string) {
-        const room = roomIDToRoom.get(this.roomID);
-        const poemToPass = this.contributionQueue.shift();
-        if (isNil(poemToPass)) {
+        const room = getRoom(this.roomID) as PoemRoom;
+        const drawingToPass = this.contributionQueue.shift() as Poem;
+        if (isNil(drawingToPass)) {
             return;
         }
 
-        poemToPass.submitLine(this.deviceID, firstPart, secondPart);
-        poemToPass.sendLineEditToSpectators(secondPart);
+        drawingToPass.submitLine(this.deviceID, firstPart, secondPart);
+        drawingToPass.sendLineEditToSpectators(secondPart);
         // should be a reference!!!
         if (!room) {
             console.log("room not found");
@@ -258,7 +258,7 @@ export class PoemEditor extends Editor {
             console.log("nextEditor not found");
             return;
         }
-        nextEditor.contributionQueue.push(poemToPass);
+        nextEditor.contributionQueue.push(drawingToPass);
 
         // trigger editors to check their queue and update their activity state
         // and view (i.e. the correct lineEdit if necessary)
@@ -272,8 +272,8 @@ export class PoemEditor extends Editor {
     possibleStartNewTurn() {
         if (this.hasWorkInQueue()) {
             this.lastActivity = Date.now(); // give them some time to type
-            this.io.to(this.socket.id).emit("stcLineEdit", this.contributionQueue[0].halfLine);
-            const poem = this.contributionQueue[0];
+            this.io.to(this.socket.id).emit("stcLineEdit", (this.contributionQueue[0] as Poem).halfLine);
+            const poem = this.contributionQueue[0] as Poem;
             console.log(
                 "we think the poem has",
                 poem.lines.size,
@@ -289,6 +289,205 @@ export class PoemEditor extends Editor {
             this.isCurrentlyEditing = true;
         } else {
             this.io.to(this.socket.id).emit("stcLineEdit", "");
+            this.io.to(this.socket.id).emit("stcEditorActive", false);
+            this.isCurrentlyEditing = false;
+        } // otherwise, leave it the way it was?
+    }
+
+    currentlyOnLastLine() {
+        const poem = this.contributionQueue[0] as Poem;
+        if (poem) {
+            const currentLength = poem.lines.size;
+            console.log(
+                "we think the poem has ",
+                currentLength,
+                "of",
+                poem.nContributions - 2,
+            );
+            return currentLength >= poem.nContributions - 2;
+        } else {
+            return false;
+        }
+    }
+
+    sendLastLineStatus() {
+        console.log("requestLastLineStatus");
+        this.io.to(this.socket.id).emit("stcLastContribution", this.currentlyOnLastLine());
+    }
+
+    handleLastLine(lastPart: string) {
+        console.log("handleLastLine in ", this.name);
+        const poemToPass = this.contributionQueue.shift() as Poem;
+        if (isNil(poemToPass)) {
+            return;
+        }
+        poemToPass.lines.add({
+            ID: poemToPass.ID,
+            lineIndex: poemToPass.lines.size,
+            content: lastPart,
+            authorDevice: this.deviceID,
+            passerDevice: poemToPass.mostRecentEditor, // previous editor, starts at ""
+            editLength: poemToPass.halfLine.length, // previous line length, starts at 0
+            addedAt: new Date(),
+        });
+
+        // This is the last moment at which the server contains the full poem object (array of lines)
+        // Most likely we should store the poem inside the room
+        // So that we can pass them back to the members as needed
+        this.handlePoem(poemToPass);
+
+        const room = roomIDToRoom.get(this.roomID);
+        if (!room) {
+            console.log("room not found");
+            return;
+        }
+        room.nUnfinishedWorks--;
+        // if all editors' poem queues are empty
+        // remove each of the editor/spectator deviceIDs from deviceIDToRoomId
+        if (room.nUnfinishedWorks === 0) {
+            console.log(
+                "no poems left to finish; forget everyone's device, delete room and poem globals",
+            );
+            room.gameState = GameState.END;
+            room.sendToEnd();  // send everyone to the end screen
+            room.selfDestruct();  // self-destruct after some time
+
+            // console.log("deviceIDToRoomID", deviceIDToRoomID);
+            // console.log("roomIDToHost", roomIDToHost);
+            // console.log("roomIDToRoom", roomIDToRoom);
+            // console.log("room.editors", room.editors);
+            // console.log("room.spectators", room.spectators);
+        }
+    }
+
+    handlePoem(poemObj: Poem) {
+        let poemString = "";
+        for (const line of poemObj.lines) {
+            poemString += line.content + lineSepString;
+        }
+
+        const poem: IPoem = {
+            content: poemString,
+            createdAt: new Date(),
+            id: uuidv4(),
+            title: `exquisite text #${Math.round(Math.random() * 100)}`,
+        };
+
+        // add the poem to the database
+        if (process.env.IS_LIBRARY_ENABLED === "true") {
+            storePoem(poem);
+        }
+
+        // broadcast the poem to room members via sockets
+        // this.sendPoem(poem);
+        // try out the new view
+        this.sendPoemAsLines(poemObj);
+
+        // save the poem into the Room object
+        const room = getRoom(this.roomID) as PoemRoom;
+        if (!room) {
+            console.log("room not found");
+            return;
+        }
+        room.storePoem(poemObj);
+
+    }
+
+    sendPoemAsLines(poemObj: Poem) {
+        // crucial method that sends the poem to all users
+        // make sure the correct members receive this
+        this.io.in(this.roomID).emit("stcPoemLines", Array.from(poemObj.lines));
+    }
+
+    reinstateContext() {
+        super.reinstateContext();
+        this.sendLineEdit();
+        this.sendActivity();
+        this.sendLastLineStatus();
+        sendPoemsLinesInfo(this, false);
+    }
+}
+
+export class DrawingEditor extends Editor {
+    setReceive() {
+        super.setReceive();
+        this.socket.on("ctsSendCanvas", (value: Point[][]) => this.receiveCanvas(value));
+        this.socket.on("ctsAlterGameSettings", (value) =>
+            this.alterGameSettings(value),
+        );
+        this.socket.on("ctsStartGame", () => this.broadcastStartGame());
+    }
+
+    unsetReceive() {
+        super.unsetReceive();
+        this.socket.removeAllListeners("ctsSendCanvas");
+        this.socket.removeAllListeners("ctsAlterGameSettings");
+        this.socket.removeAllListeners("ctsStartGame");
+    }
+
+    receiveCanvas(strokeHistory: Point[][]) {
+        console.log("receiveCanvas:", strokeHistory);
+        const room = getRoom(this.roomID) as DrawingRoom;
+        if (!room || !room.editors) {
+            console.log("room.editors not found");
+            return;
+        }
+        room.finishedCanvas = strokeHistory;
+    }
+
+    handlePanel(panelContent: IPanel["content"]) {
+        const room = getRoom(this.roomID) as DrawingRoom;
+        const drawingToPass = this.contributionQueue.shift() as Drawing;
+        if (isNil(drawingToPass)) {
+            return;
+        }
+
+        drawingToPass.submitPanel(this.deviceID, panelContent);
+
+        if (!room) {
+            console.log("room not found");
+            return;
+        }
+        const nextEditor = room.editors.get(this.targetEditorID);
+        if (!nextEditor) {
+            console.log("nextEditor not found");
+            return;
+        }
+        nextEditor.contributionQueue.push(drawingToPass);
+
+        // trigger editors to check their queue and update their activity state
+        // and view (i.e. the correct lineEdit if necessary)
+        // only THIS editor should check its own queue and populate accordingly
+        this.possibleStartNewTurn();
+        if (!nextEditor.isCurrentlyEditing) {
+            nextEditor.possibleStartNewTurn();
+        }
+    }
+
+    possibleStartNewTurn() {
+        if (this.hasWorkInQueue()) {
+            this.lastActivity = Date.now(); // give them some time to type
+            // TODO: NEXT
+            // Fix this rest of editor
+            const latestPanel = Array.from((this.contributionQueue[0] as Drawing)?.panels).pop();
+            if (!latestPanel) throw new Error("All your pylons I mean panels are belong to us :(");
+            this.io.to(this.socket.id).emit("stcDrawingPanel", latestPanel);
+            const drawing = this.contributionQueue[0] as Drawing;
+            console.log(
+                "we think the drawing has",
+                drawing.panels.size,
+                "submissions so far",
+            );
+
+            if (drawing.panels.size === drawing.nContributions - 1) {
+                this.io.to(this.socket.id).emit("stcLastContribution", true);
+            } else {
+                this.io.to(this.socket.id).emit("stcLastContribution", false);
+            }
+            this.io.to(this.socket.id).emit("stcEditorActive", true);
+            this.isCurrentlyEditing = true;
+        } else {
+            this.io.to(this.socket.id).emit("stcDrawingPanel", "");
             this.io.to(this.socket.id).emit("stcEditorActive", false);
             this.isCurrentlyEditing = false;
         } // otherwise, leave it the way it was?
@@ -401,46 +600,8 @@ export class PoemEditor extends Editor {
 
     reinstateContext() {
         super.reinstateContext();
-        this.sendLineEdit();
         this.sendActivity();
         this.sendLastLineStatus();
         sendPoemsLinesInfo(this, false);
-    }
-}
-
-export class DrawingEditor extends Editor {
-
-    setReceive() {
-        super.setReceive();
-        this.socket.on("ctsSendCanvas", (value: Point[][]) => this.receiveCanvas(value));
-        this.socket.on("ctsAlterGameSettings", (value) =>
-            this.alterGameSettings(value),
-        );
-        this.socket.on("ctsStartGame", () => this.broadcastStartGame());
-    }
-
-    unsetReceive() {
-        super.unsetReceive();
-        this.socket.removeAllListeners("ctsSendCanvas");
-        this.socket.removeAllListeners("ctsAlterGameSettings");
-        this.socket.removeAllListeners("ctsStartGame");
-    }
-
-    receiveCanvas(strokeHistory: Point[][]) {
-        console.log("receiveCanvas:", strokeHistory);
-        const room = getRoom(this.roomID) as DrawingRoom;
-        if (!room || !room.editors) {
-            console.log("room.editors not found");
-            return;
-        }
-        room.finishedCanvas = strokeHistory;
-    }
-
-    possibleStartNewTurn() {
-        // for compatibility
-    }
-
-    sendLastLineStatus() {
-        // for compatibility
     }
 }

@@ -4,7 +4,7 @@ import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socke
 import { DrawingSpectator, PoemSpectator } from "./spectator";
 import { DrawingEditor, PoemEditor } from "./editor";
 import Member from "./member";
-import { Poem } from "./collaboration";
+import { Drawing, Poem } from "./collaboration";
 import {
     ClientToServerEvents,
     GameState,
@@ -49,7 +49,7 @@ class Room {
     createdAt: number;
     // poem-specific for now until we figure out how to type generally
     gameSettings: IGameSettingsInfo;
-    finishedWorks: Array<Poem>;
+    finishedWorks: Array<Poem | Drawing>;
     medium: Medium;
 
     constructor(
@@ -273,7 +273,6 @@ export class DrawingRoom extends Room {
         this.medium = Medium.DRAWING;
     }
 
-    // TODO: This needs to be made Drawing specific as opposed to Poem
     setUpGame() {
         console.log("setUpGame with this.editors", this.editors);
         const nContributions = 3;
@@ -295,5 +294,10 @@ export class DrawingRoom extends Room {
                 drawingIndex++;
             }
         }
+    }
+
+    storeDrawing(drawingObj: Drawing) {
+        console.log(this.roomID, "storing drawing", drawingObj.ID);
+        this.finishedWorks.push(drawingObj);
     }
 }

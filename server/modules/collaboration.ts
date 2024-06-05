@@ -146,24 +146,18 @@ export class Drawing extends Collaboration {
         this.panels.add(panel);
 
         this.mostRecentEditor = authorID;
-        // this.panelHint = panelHint;
+        this.panelHint = []; // half of content or something
         this.io
             .in(`${this.roomID}_Spectators`)
-            .emit("stcLineSpectator", this.indexInGame, content);
+            .emit("stcPanelSpectator", this.indexInGame, content);
     }
 
-    sendLineEditToSpectators(value: string) {
-        this.io
-            .in(`${this.roomID}_Spectators`)
-            .emit("stcLineEditSpectator", this.indexInGame, value);
-    }
-
-    sendAllLinesTo(socketID: string) {
+    sendAllPanelsTo(socketID: string) {
     // this is used to bring a new spectator up to date
-        this.panels.forEach((line) => this.sendLine(line.content, socketID));
+        this.panels.forEach((panel) => this.sendPanel(panel.content, socketID));
     }
 
-    sendLine(line: string, socketID: string) {
-        this.io.to(socketID).emit("stcLineSpectator", this.indexInGame, line);
+    sendPanel(panel: IPanel["content"], socketID: string) {
+        this.io.to(socketID).emit("stcPanelSpectator", this.indexInGame, panel);
     }
 }
