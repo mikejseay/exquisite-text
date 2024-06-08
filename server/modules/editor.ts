@@ -494,16 +494,16 @@ export class DrawingEditor extends Editor {
     }
 
     currentlyOnLastLine() {
-        const poem = this.contributionQueue[0];
-        if (poem) {
-            const currentLength = poem.lines.size;
+        const drawing = this.contributionQueue[0] as Drawing;
+        if (drawing) {
+            const currentLength = drawing.lines.size;
             console.log(
                 "we think the poem has ",
                 currentLength,
                 "of",
-                poem.nContributions - 2,
+                drawing.nContributions - 2,
             );
-            return currentLength >= poem.nContributions - 2;
+            return currentLength >= drawing.nContributions - 2;
         } else {
             return false;
         }
@@ -516,24 +516,24 @@ export class DrawingEditor extends Editor {
 
     handleLastLine(lastPart: string) {
         console.log("handleLastLine in ", this.name);
-        const poemToPass = this.contributionQueue.shift();
-        if (isNil(poemToPass)) {
+        const drawingToPass = this.contributionQueue.shift() as Drawing;
+        if (isNil(drawingToPass)) {
             return;
         }
-        poemToPass.lines.add({
-            ID: poemToPass.ID,
-            lineIndex: poemToPass.lines.size,
+        drawingToPass.lines.add({
+            ID: drawingToPass.ID,
+            lineIndex: drawingToPass.lines.size,
             content: lastPart,
             authorDevice: this.deviceID,
-            passerDevice: poemToPass.mostRecentEditor, // previous editor, starts at ""
-            editLength: poemToPass.halfLine.length, // previous line length, starts at 0
+            passerDevice: drawingToPass.mostRecentEditor, // previous editor, starts at ""
+            editLength: drawingToPass.halfLine.length, // previous line length, starts at 0
             addedAt: new Date(),
         });
 
         // This is the last moment at which the server contains the full poem object (array of lines)
         // Most likely we should store the poem inside the room
         // So that we can pass them back to the members as needed
-        this.handlePoem(poemToPass);
+        this.handlePoem(drawingToPass);
 
         const room = roomIDToRoom.get(this.roomID);
         if (!room) {
