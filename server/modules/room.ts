@@ -251,7 +251,7 @@ export class PoemRoom extends Room {
 
         for (const editor of this.editors.values()) {
             editor.sendActivity();
-            editor.sendLastLineStatus();
+            editor.sendLastContributionStatus();
         }
     }
 

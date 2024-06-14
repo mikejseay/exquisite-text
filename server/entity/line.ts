@@ -9,7 +9,7 @@ export const Line = pgSequelConn.define(
             allowNull: false,
             type: DataTypes.CHAR(36), // uuidv4 is always 36 chars
         },
-        lineIndex: {
+        contributionIndex: {
             allowNull: false,
             type: DataTypes.SMALLINT,
         },

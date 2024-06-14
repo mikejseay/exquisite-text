@@ -13,6 +13,7 @@ import {
 import { DrawingSpectator, PoemSpectator } from "../modules/spectator";
 import { poemsLines as poemsLinesTestData } from "../../src/data/multiplePoems";
 import Host from "../modules/host";
+import { Drawing, Poem } from "../modules/collaboration";
 
 
 export function getRouteForGameStateAndRole(gameState: GameState, role: Role): string {
@@ -84,15 +85,15 @@ export function standardReconnect(
 }
 
 // only used to test the end screen, but we allow it to be parasitic for now
-export function sendPoemsLinesInfo(poemMember: Host | PoemEditor | PoemSpectator, shouldTest: boolean) {
-    const room = roomIDToRoom.get(poemMember.roomID);
+export function sendCollaborationContributionsInfo(member: Host | PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator, shouldTest: boolean) {
+    const room = roomIDToRoom.get(member.roomID);
 
     if (shouldTest) {
         console.log("sending test poemsLines data in a way that is unusual");
         // poemsLinesTestData is an array of arrays of lines
         for (const linesArray of poemsLinesTestData) {
-            poemMember.io
-                .to(poemMember.socket.id)
+            member.io
+                .to(member.socket.id)
                 .emit(
                     "stcPoemLines",
                     linesArray,
@@ -105,15 +106,24 @@ export function sendPoemsLinesInfo(poemMember: Host | PoemEditor | PoemSpectator
         console.log("room not found");
         return;
     }
-    console.log(poemMember.name, "request poems from room which has", room.finishedWorks.length);
-    for (const poemObj of room.finishedWorks) {
+    console.log(member.name, "request collaborations from room which has", room.finishedWorks.length);
+    for (const collaborationObj of room.finishedWorks) {
         // TODO: Explore this, this could improve server-side efficiency:
         // poemMember.io.in(poemMember.roomID).emit("stcPoemLines", Array.from(poemObj.lines));
-        poemMember.io
-            .to(poemMember.socket.id)
-            .emit(
-                "stcPoemLines",
-                Array.from(poemObj.lines),
-            );
+        if ("lines" in collaborationObj) {
+            member.io
+                .to(member.socket.id)
+                .emit(
+                    "stcPoemLines",
+                    Array.from((collaborationObj as Poem).lines),
+                );
+        } else {
+            member.io
+                .to(member.socket.id)
+                .emit(
+                    "stcDrawingPanels",
+                    Array.from((collaborationObj as Drawing).panels),
+                );
+        }
     }
 }

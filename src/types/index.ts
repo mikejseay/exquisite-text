@@ -54,28 +54,47 @@ export interface IPoems {
     [id: string]: IPoem;
 }
 
-export interface IPoem {
+interface ICollaboration {
     id: Key;
-    content: string;
     createdAt: Date;
     title: string;
 }
 
-interface IContribution {
-    ID: string;
-    lineIndex: number;
-    authorDevice: string;
-    passerDevice: string;
-    editLength: number;
-    addedAt: Date;
+export interface IPoem extends ICollaboration {
+    content: string;
 }
 
+export interface IDrawing extends ICollaboration {
+    // NOTE: Work out best format for back-end storage
+    // content: [Point[][], Point[][], Point[][]];
+    content: Point[][],
+}
+
+// TODO: Type guards
+// function isPoem(obj: any): obj is Poem {
+//     return "lines" in obj;
+// }
+
+// function isDrawing(obj: any): obj is Drawing {
+//     return "panels" in obj;
+// }
+
+interface IContribution {
+    ID: string;
+    contributionIndex: number;
+    authorDevice: string;
+    passerDevice: string;
+    addedAt: Date;
+}
+    
 export interface ILine extends IContribution {
     content: string;
+    editLength: number;
 }
 
 export interface IPanel extends IContribution {
     content: Point[][];
+    hintSize: number;
 }
 
 export interface Point {

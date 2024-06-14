@@ -75,7 +75,7 @@ export class Poem extends Collaboration {
     submitLine(authorID: string, firstPart: string, secondPart: string) {
         const myLine = {
             ID: this.ID,
-            lineIndex: this.lines.size,
+            contributionIndex: this.lines.size,
             content: firstPart,
             authorDevice: authorID,
             passerDevice: this.mostRecentEditor, // previous editor, starts at ""
@@ -136,11 +136,11 @@ export class Drawing extends Collaboration {
     submitPanel(authorID: string, content: Point[][]) {
         const panel = {
             ID: this.ID,
-            lineIndex: this.panels.size,
+            contributionIndex: this.panels.size,
             content: content,
             authorDevice: authorID,
             passerDevice: this.mostRecentEditor, // previous editor, starts at ""
-            editLength: this.panelHint.length, // previous line length, starts at 0
+            hintSize: this.panelHint.length, // previous line length, starts at 0
             addedAt: new Date(),
         };
         this.panels.add(panel);
