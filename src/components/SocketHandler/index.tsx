@@ -38,7 +38,7 @@ export default function SocketHandler({ children }: Props) {
     const [ lineEdits, setLineEdits ] = React.useState<Array<string>>([ "", "", "", "" ]);
     const [ poemInput, setPoemInput ] = React.useState<string>("");
     const [ poemInputSpectate, setPoemInputSpectate ] = React.useState<string>("");
-    const [ onLastLine, setOnLastLine ] = React.useState<boolean>(false);
+    const [ onLastContribution, setOnLastContribution ] = React.useState<boolean>(false);
     const [ editorActive, setEditorActive ] = React.useState<boolean>(false);
     const [ strokeHistory, setStrokeHistory ] = React.useState<Point[][]>([]);
 
@@ -60,7 +60,7 @@ export default function SocketHandler({ children }: Props) {
         setLineEdits,
         setPoemInput,
         setPoemInputSpectate,
-        setOnLastLine,
+        setOnLastContribution,
         setEditorActive,
         navigate,
         setStrokeHistory,
@@ -89,7 +89,7 @@ export default function SocketHandler({ children }: Props) {
             panels,
             poemInput,
             poemInputSpectate,
-            onLastLine,
+            onLastContribution,
             editorActive,
             setPoemInput,
             strokeHistory,

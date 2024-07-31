@@ -183,7 +183,7 @@ export class PoemEditor extends Editor {
             this.handleLineParts(firstPart, secondPart),
         );
         this.socket.on("ctsSendLastLine", (value) => this.handleLastLine(value)); // whenever a new line has been submitted into the poem.
-        this.socket.on("ctsRequestLastLineStatus", () => this.sendLastContributionStatus());
+        this.socket.on("ctsRequestLastContributionStatus", () => this.sendLastContributionStatus());
         this.socket.on("ctsAlterGameSettings", (value) =>
             this.alterGameSettings(value),
         );
@@ -196,7 +196,7 @@ export class PoemEditor extends Editor {
         this.socket.removeAllListeners("ctsEditLine");
         this.socket.removeAllListeners("ctsSendLineParts");
         this.socket.removeAllListeners("ctsSendLastLine");
-        this.socket.removeAllListeners("ctsRequestLastLineStatus");
+        this.socket.removeAllListeners("ctsRequestLastContributionStatus");
         this.socket.removeAllListeners("ctsAlterGameSettings");
         this.socket.removeAllListeners("ctsStartGame");
     }
@@ -412,7 +412,9 @@ export class PoemEditor extends Editor {
 export class DrawingEditor extends Editor {
     setReceive() {
         super.setReceive();
-        this.socket.on("ctsSendCanvas", (value: Point[][]) => this.receiveCanvas(value));
+        this.socket.on("ctsSendPanel", (value: Point[][]) => this.handlePanel(value));
+        this.socket.on("ctsSendLastPanel", (value) => this.handleLastPanel(value)); // whenever a new line has been submitted into the poem.
+        this.socket.on("ctsRequestLastContributionStatus", () => this.sendLastContributionStatus());
         this.socket.on("ctsAlterGameSettings", (value) =>
             this.alterGameSettings(value),
         );
@@ -421,23 +423,17 @@ export class DrawingEditor extends Editor {
 
     unsetReceive() {
         super.unsetReceive();
-        this.socket.removeAllListeners("ctsSendCanvas");
+        this.socket.removeAllListeners("ctsSendPanel");
         this.socket.removeAllListeners("ctsAlterGameSettings");
         this.socket.removeAllListeners("ctsStartGame");
     }
 
-    receiveCanvas(strokeHistory: Point[][]) {
-        console.log("receiveCanvas:", strokeHistory);
-        const room = getRoom(this.roomID) as DrawingRoom;
-        if (!room || !room.editors) {
-            console.log("room.editors not found");
-            return;
-        }
-        room.finishedCanvas = strokeHistory;
-    }
-
     handlePanel(panelContent: IPanel["content"]) {
+        console.log("handlePanel activated with panelContent", panelContent);
+        // tmp to maintain testing functionality
         const room = getRoom(this.roomID) as DrawingRoom;
+        room.finishedCanvas = panelContent;
+        // TODO: make contributionQueue work for Drawings
         const drawingToPass = this.contributionQueue.shift() as Drawing;
         if (isNil(drawingToPass)) {
             return;
@@ -518,7 +514,7 @@ export class DrawingEditor extends Editor {
     }
 
     handleLastPanel(lastPart: IPanel["content"]) {
-        console.log("handleLastLine in ", this.name);
+        console.log("handleLastPanel in ", this.name);
         const drawingToPass = this.contributionQueue.shift() as Drawing;
         if (isNil(drawingToPass)) {
             console.log("No drawing to pass");

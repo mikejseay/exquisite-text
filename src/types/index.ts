@@ -86,7 +86,7 @@ interface IContribution {
     passerDevice: string;
     addedAt: Date;
 }
-    
+
 export interface ILine extends IContribution {
     content: string;
     editLength: number;
@@ -139,15 +139,16 @@ export interface ClientToServerEvents {
     ctsCreateRoomAndHost: (a: string, b: Medium) => void;
     ctsJoinAs: (roomID: string, name: string, role: Role, isTest: boolean) => void;
     ctsRequestGameSettingsInfo: () => void;
-    ctsRequestLastLineStatus: () => void;
+    ctsRequestLastContributionStatus: () => void;
     ctsAlterGameSettings: (a: IGameSettingsInfo) => void;
     ctsRequestSettingsEnabled: () => void;
     ctsStartGame: () => void;
     ctsRequestEditorActive: () => void;
     ctsSendLineParts: (a: string, b: string) => void;
     ctsSendLastLine: (a: string) => void;
+    ctsSendLastPanel: (a: Point[][]) => void;
     ctsLeave: () => void;
-    ctsSendCanvas: (a: Point[][]) => void;
+    ctsSendPanel: (a: Point[][]) => void;
     ctsRequestCanvas: () => void;
 }
 
@@ -201,7 +202,7 @@ export interface ISocketInfoListeners {
     setPoemInputSpectate: (value: string |
         ((prevVar: string) => string)) => void;
     // React.useState<boolean>(false);
-    setOnLastLine: (value: boolean |
+    setOnLastContribution: (value: boolean |
         ((prevVar: boolean) => boolean)) => void;
     // React.useState<boolean>(false);
     setEditorActive: (value: boolean |
@@ -226,7 +227,7 @@ export interface ISocketInfo {
     lines: Array<Array<ILine["content"]>> | null;
     nPoems: number | null;
     nRounds: number | null;
-    onLastLine: boolean | null;
+    onLastContribution: boolean | null;
     poemInput: string | null;
     poemInputSpectate: string | null;
     poemsLines: Array<ILine[]> | null;

@@ -17,7 +17,7 @@ export const socketListeners = ({
     setLineEdits,
     setPoemInput,
     setPoemInputSpectate,
-    setOnLastLine,
+    setOnLastContribution,
     setEditorActive,
     navigate,
     setStrokeHistory,
@@ -84,8 +84,8 @@ export const socketListeners = ({
         setPoemInputSpectate(lineEditorWatchVal);
     };
 
-    const receiveLastLine = (lastLine: boolean) => {
-        setOnLastLine(lastLine);
+    const receiveLastContribution = (lastLine: boolean) => {
+        setOnLastContribution(lastLine);
     };
 
     const receiveEditorActive = (editorActiveFromServer: boolean) => {
@@ -113,7 +113,7 @@ export const socketListeners = ({
     socket.on("stcLineEditSpectator", receiveLineEditSpectator);
     socket.on("stcLineEdit", receiveLineEdit);
     socket.on("stcLineEditorWatch", receiveLineEditorWatch);
-    socket.on("stcLastContribution", receiveLastLine);
+    socket.on("stcLastContribution", receiveLastContribution);
     socket.on("stcEditorActive", receiveEditorActive);
     socket.on("stcNavigate", receiveNavigate);
     socket.on("stcStrokeHistory", receiveStrokeHistory);
@@ -130,7 +130,7 @@ export const socketListeners = ({
         socket.off("stcLineEditSpectator", receiveLineEditSpectator);
         socket.off("stcLineEdit", receiveLineEdit);
         socket.off("stcLineEditorWatch", receiveLineEditorWatch);
-        socket.off("stcLastContribution", receiveLastLine);
+        socket.off("stcLastContribution", receiveLastContribution);
         socket.off("stcEditorActive", receiveEditorActive);
         socket.off("stcNavigate", receiveNavigate);
         socket.off("stcStrokeHistory", receiveStrokeHistory);

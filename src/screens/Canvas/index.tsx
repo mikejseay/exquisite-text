@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Button from "@mui/material/Button";
 import { Medium, Point, Role } from "../../types";
-import { emitCreateRoomAndHost, emitJoinAs, emitRecognizeDevice, emitSendCanvas } from "../../context/SocketRequestors";
+import { emitCreateRoomAndHost, emitJoinAs, emitRecognizeDevice, emitSendPanel } from "../../context/SocketRequestors";
+import { useSocketInfo } from "../../context/SocketInfoProvider";
 
 type ExtendedTouch = Touch & {
     force?: number;
@@ -21,7 +22,9 @@ const lineColor = "grey";
     [ ] For the watcher, the cursor is not in right spot until writer starts writing:
         As a part of reinstateContext, find the editor you're supposed to be spectating,
         Find the poem they're editing, get the current line edit, and send it via "stcLineEditorWatch"
-
+    [ ] useEffect sensitive to onLastPanel, converts button / changes functionality
+    [ ] useEffect sensitive to editorActive, enables/disables the Canvas
+    [ ] Implement "receive panel hint from previous player"
 */
 
 export function drawOnCanvas (newPoints: Point[], canvasRef: React.MutableRefObject<HTMLCanvasElement | null>) {
@@ -67,6 +70,8 @@ export function drawOnCanvas (newPoints: Point[], canvasRef: React.MutableRefObj
 }
 
 const Canvas: React.FC = () => {
+    const { editorActive, onLastContribution } = useSocketInfo();
+
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [ points, setPoints ] = useState<Point[]>([]);
     const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
@@ -80,6 +85,11 @@ const Canvas: React.FC = () => {
     const [ coordinates, setCoordinates ] = useState<{ x: number, y: number}>({ x: 0, y: 0 });
     const [ hasJoinedRoom, setHasJoinedRoom ] = useState<boolean>(false);
 
+    // TODO: handle all functionality that must toggle with editorActive
+    React.useEffect(() => {
+        return;
+    }, [ editorActive ]);
+
     if (!hasJoinedRoom) {
         emitCreateRoomAndHost("ROOM", Medium.DRAWING);
         emitRecognizeDevice();
@@ -87,7 +97,8 @@ const Canvas: React.FC = () => {
         setHasJoinedRoom(true);
     }
 
-    const switchPlayer = () => {
+    // TODO: use emitSendPanel to send the panel
+    function passTurn() {
         const canvas = canvasRef.current;
         const context = canvas?.getContext("2d");
         if (canvas && context) {
@@ -129,12 +140,20 @@ const Canvas: React.FC = () => {
                 setLocalStrokeHistory([]);
             }
         }
-    };
+    }
+
+    // TODO: use emitSendLastPanel to send the panel
+    function completeDrawing() {
+        // emitSendLastPanel
+        // initialize the Canvas (?)
+        // return component to "inactive editor" state
+        return;
+    }
 
     const submitCanvas = () => {
         console.log("submitCanvas:", localStrokeHistory);
         console.log({ localStrokeHistory });
-        emitSendCanvas(localStrokeHistory);
+        emitSendPanel(localStrokeHistory);
     };
 
     const handleStart = useCallback((e: React.MouseEvent<Element, MouseEvent> | React.TouchEvent<Element>) => {
@@ -259,10 +278,13 @@ const Canvas: React.FC = () => {
                 {"Coordinates: " + JSON.stringify(coordinates)}
             </p>
             <Button onClick={() => setAllowDirect(!allowDirect)}>Toggle Direct</Button>
-            <Button onClick={switchPlayer}>
-                {player < 2
-                    ? "Pass"
-                    : "Finish"}
+            {/* TODO: */}
+            <Button onClick={onLastContribution
+                ? completeDrawing
+                : passTurn}>
+                {onLastContribution
+                    ? "Complete Drawing"
+                    : "Pass"}
             </Button>
             <Button onClick={submitCanvas}>Submit Canvas</Button>
             <canvas

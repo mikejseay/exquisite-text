@@ -48,7 +48,7 @@ async function storePoem({ title, content }: IPoem) {
 
 async function storeLine({
     ID,
-    lineIndex,
+    contributionIndex,
     content,
     authorDevice,
     passerDevice,
@@ -58,7 +58,7 @@ async function storeLine({
     try {
         await Line.create({
             ID,
-            lineIndex,
+            contributionIndex,
             content,
             authorDevice,
             passerDevice,

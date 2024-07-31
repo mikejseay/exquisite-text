@@ -16,7 +16,7 @@ export const SocketInfoContext = createContext<ISocketInfo>({
     lines: null,
     nPoems: null,
     nRounds: null,
-    onLastLine: null,
+    onLastContribution: null,
     poemInput: null,
     poemInputSpectate: null,
     poemsLines: null,
@@ -26,6 +26,7 @@ export const SocketInfoContext = createContext<ISocketInfo>({
     setPoemInput: () => null,
 
     // drawings
+    panels: null,
     nDrawings: null,
     setNDrawings: () => null,
     setStrokeHistory: () => null,

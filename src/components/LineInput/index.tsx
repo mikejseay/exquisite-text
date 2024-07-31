@@ -46,7 +46,7 @@ const LineInput = () => {
     const {
         poemInput,
         poemInputSpectate,
-        onLastLine,
+        onLastContribution,
         editorActive,
         setPoemInput,
         lineLength,
@@ -54,7 +54,7 @@ const LineInput = () => {
     if (
         poemInput === null ||
         poemInputSpectate === null ||
-        onLastLine === null ||
+        onLastContribution === null ||
         editorActive === null ||
         lineLength === null
     ) {
@@ -72,14 +72,14 @@ const LineInput = () => {
 
     // see lastLineListener and editorActiveListener
     React.useEffect(() => {
-        if (onLastLine) {
+        if (onLastContribution) {
             setMaxCharsOnLineTwo(useLineConstraints.maxCharsOnLineOne);
             setIdealCharsOnLineTwo(useLineConstraints.idealCharsOnLineOne);
         } else {
             setMaxCharsOnLineTwo(useLineConstraints.maxCharsOnLineTwo);
             setIdealCharsOnLineTwo(useLineConstraints.idealCharsOnLineTwo);
         }
-    }, [ onLastLine ]);
+    }, [ onLastContribution ]);
 
     React.useEffect(() => {
         setShouldDisplaySecondLine(false);
@@ -95,12 +95,12 @@ const LineInput = () => {
         }
     }, [ editorActive ]);
 
-    const [ open, setOpen ] = React.useState(false);
+    const [ completeEarlyBoxOpen, setCompleteEarlyBoxOpen ] = React.useState(false);
     const handleClick = () => {
-        setOpen((prev) => !prev);
+        setCompleteEarlyBoxOpen((prev) => !prev);
     };
     const handleClickAway = () => {
-        setOpen(false);
+        setCompleteEarlyBoxOpen(false);
     };
 
     const [ passEnabled, setPassEnabled, passEnabledRef ] = useStateRef(false);
@@ -138,13 +138,13 @@ const LineInput = () => {
         } else {
             setShouldDisplaySecondLine(true);
             if (progressProp < 0.6) {
-                if (onLastLine) {
+                if (onLastContribution) {
                     setHelpMessage("Last line. Make it count!");
                 } else {
                     setHelpMessage("Start the next line (Next player will see this.)");
                 }
             } else {
-                if (onLastLine) {
+                if (onLastContribution) {
                     setHelpMessage("Perfect. Finish the poem!");
                 } else {
                     setHelpMessage("Perfect. Pass the turn!");
@@ -273,7 +273,7 @@ const LineInput = () => {
     // might not be necessary, but it's kind of nice
     // note we use passEnabledRef instead of passEnabled because it gets the current value
         if (passEnabledRef.current && (ctrlKey || metaKey) && (key === "Enter" || charCode === 13)) {
-            if (onLastLine) {
+            if (onLastContribution) {
                 completePoem();
             } else {
                 passTurn();
@@ -374,12 +374,12 @@ const LineInput = () => {
                     >
                         <Button
                             variant={"contained"}
-                            onClick={onLastLine
+                            onClick={onLastContribution
                                 ? completePoem
                                 : passTurn}
                             disabled={!passEnabled}
                         >
-                            {onLastLine
+                            {onLastContribution
                                 ? "Complete Poem"
                                 : "Pass"}
                         </Button>
@@ -397,7 +397,7 @@ const LineInput = () => {
                         >
                             <PlaylistAddCheckIcon />
                         </Fab>
-                        {open
+                        {completeEarlyBoxOpen
                             ? (
                                 <Box sx={completeConfirmBox}>
                                     <p style={{ margin: "0 0 0.5em 0" }}><WarningIcon />

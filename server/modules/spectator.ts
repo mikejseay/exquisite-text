@@ -1,7 +1,8 @@
 import { roomIDToRoom } from "./globals";
 import Member from "./member";
 import { getRoom, sendCollaborationContributionsInfo } from "../utilities/sockets";
-import { DrawingRoom } from "./room";
+import type { DrawingRoom, PoemRoom } from "./room";
+import type { Poem } from "./collaboration";
 
 class Spectator extends Member {
     joinRoom() {
@@ -28,14 +29,14 @@ class Spectator extends Member {
 
 export class PoemSpectator extends Spectator {
     sendAllPoemLines() {
-        const room = roomIDToRoom.get(this.roomID);
+        const room = roomIDToRoom.get(this.roomID) as PoemRoom;
         if (!room) {
             console.log("room not found");
             return;
         }
         for (const editor of room.editors.values()) {
             for (const poem of editor.contributionQueue) {
-                poem.sendAllLinesTo(this.socket.id);
+                (poem as Poem).sendAllLinesTo(this.socket.id);
             }
         }
     }
@@ -60,8 +61,8 @@ export class DrawingSpectator extends Spectator {
     }
 
     sendCanvas() {
-        console.log("sendCanvas activated");
         const room = getRoom(this.roomID) as DrawingRoom;
+        console.log("sendCanvas activated by room", this.roomID);
         if (!room) {
             console.log("room not found");
             return;

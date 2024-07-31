@@ -77,7 +77,7 @@ export const emitRequestEditorActive = () => {
 };
 
 export const emitRequestLastLineStatus = () => {
-    socket.emit("ctsRequestLastLineStatus");
+    socket.emit("ctsRequestLastContributionStatus");
 };
 */
 
@@ -93,9 +93,13 @@ export const emitSendLastLine = (value: string | null) => {
     socket.emit("ctsSendLastLine", value);
 };
 
-export const emitSendCanvas = (value: Point[][] | null) => {
+export const emitSendPanel = (value: Point[][] | null) => {
     console.log("sendCanvas:", value);
-    socket.emit("ctsSendCanvas", value);
+    socket.emit("ctsSendPanel", value);
+};
+
+export const emitSendLastPanel = (value: string | null) => {
+    socket.emit("ctsSendLastPanel", value);
 };
 
 export const emitRequestCanvas = () => {
