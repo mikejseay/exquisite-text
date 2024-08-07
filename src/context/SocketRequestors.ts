@@ -98,7 +98,7 @@ export const emitSendPanel = (value: Point[][] | null) => {
     socket.emit("ctsSendPanel", value);
 };
 
-export const emitSendLastPanel = (value: string | null) => {
+export const emitSendLastPanel = (value: Point[][] | null) => {
     socket.emit("ctsSendLastPanel", value);
 };
 

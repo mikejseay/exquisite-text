@@ -103,11 +103,6 @@ export interface Point {
     lineWidth: number;
   }
 
-interface CanvasHistory {
-    user: string;
-    strokeHistory: Point[][]
-}
-
 export interface ServerToClientEvents {
     stcLineEdit: (a: string) => void;
     stcDrawingPanel: (a: IPanel) => void;

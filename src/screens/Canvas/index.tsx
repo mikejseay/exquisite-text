@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Button from "@mui/material/Button";
 import { Medium, Point, Role } from "../../types";
-import { emitCreateRoomAndHost, emitJoinAs, emitRecognizeDevice, emitSendPanel } from "../../context/SocketRequestors";
+import { emitCreateRoomAndHost, emitJoinAs, emitRecognizeDevice, emitSendLastPanel, emitSendPanel } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 
 type ExtendedTouch = Touch & {
@@ -70,9 +70,10 @@ export function drawOnCanvas (newPoints: Point[], canvasRef: React.MutableRefObj
 }
 
 const Canvas: React.FC = () => {
-    const { editorActive, onLastContribution } = useSocketInfo();
-
+    const { strokeHistory, editorActive, onLastContribution } = useSocketInfo();
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const [ isCanvasVisible, setIsCanvasVisible ] = useState(true);
+    const [ isPassCompleteDisabled, setIsPassCompleteDisabled ] = useState(false);
     const [ points, setPoints ] = useState<Point[]>([]);
     const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
     const [ playerCanvases, setPlayerCanvases ] = useState<ImageData[]>([]);
@@ -87,9 +88,30 @@ const Canvas: React.FC = () => {
 
     // TODO: handle all functionality that must toggle with editorActive
     React.useEffect(() => {
+        if (!editorActive) return;
+
+        // Process the stroke history to visually clip it
+        const canvas = canvasRef.current;
+        const context = canvas?.getContext("2d");
+        if (canvas && context) {
+            // Clear canvas
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Redraw stroke history onto blank canvas
+            strokeHistory?.forEach(strokeArray => drawOnCanvas(strokeArray, canvasRef));
+
+            //// This accomplishes the clipping of the image: ////
+
+            // Shift canvas contents upward by 0.8 times the canvas height (old method)
+            const imageData = context.getImageData(0, context.canvas.height * (1 - overlap), context.canvas.width, context.canvas.height);
+            context.putImageData(imageData, 0, 0);
+            context.clearRect(context.canvas.width, context.canvas.height * overlap, 0, context.canvas.height);
+        }
         return;
     }, [ editorActive ]);
 
+    // TODO: Actually allow the player to be different
+    // Probably setting up some of that logic of going from the lobby to starting a game
     if (!hasJoinedRoom) {
         emitCreateRoomAndHost("ROOM", Medium.DRAWING);
         emitRecognizeDevice();
@@ -97,56 +119,66 @@ const Canvas: React.FC = () => {
         setHasJoinedRoom(true);
     }
 
-    // TODO: use emitSendPanel to send the panel
     function passTurn() {
-        const canvas = canvasRef.current;
-        const context = canvas?.getContext("2d");
-        if (canvas && context) {
-            // Extract the whole canvas
-            const playerCanvas = context.getImageData(0, 0, canvas.width, canvas.height);
+        emitSendPanel(localStrokeHistory);
+        // const canvas = canvasRef.current;
+        // const context = canvas?.getContext("2d");
+        // if (canvas && context) {
+        //     // //// This accomplishes the clipping of the image: ////
 
-            // Add it to a list of canvases per player
-            const newPlayerCanvases = [ ...playerCanvases, playerCanvas ];
-            setPlayerCanvases(newPlayerCanvases);
+        //     // // Extract the whole canvas
+        //     const playerCanvas = context.getImageData(0, 0, canvas.width, canvas.height);
 
-            // Shift canvas contents upward by 0.8 times the canvas height (old method)
-            const imageData = context.getImageData(0, context.canvas.height * (1 - overlap), context.canvas.width, context.canvas.height);
-            context.putImageData(imageData, 0, 0);
-            context.clearRect(context.canvas.width, context.canvas.height * overlap, 0, context.canvas.height);
+        //     // // Add it to a list of canvases per player
+        //     const newPlayerCanvases = [ ...playerCanvases, playerCanvas ];
+        //     setPlayerCanvases(newPlayerCanvases);
 
-            // Shift canvas contents upward by 0.8 times the canvas height (new method)
-            // context.globalCompositeOperation = "copy";
-            // context.drawImage(context.canvas, 0, -context.canvas.height * (1 - overlap));
-            // context.globalCompositeOperation = "source-over";
+        //     // // Shift canvas contents upward by 0.8 times the canvas height (old method)
+        //     const imageData = context.getImageData(0, context.canvas.height * (1 - overlap), context.canvas.width, context.canvas.height);
+        //     context.putImageData(imageData, 0, 0);
+        //     context.clearRect(context.canvas.width, context.canvas.height * overlap, 0, context.canvas.height);
 
-            // Completion: If the third panel is being submitted, clear the canvas, then construct a new one
-            // using the "full available height", then paste the image data from each individual player's canvas
-            // into the three vertical panels, shifting downwards by 0.8 times the canvas height each time.
-            if (player === 2) {
-                context.clearRect(0, 0, canvas.width, canvas.height);
-                let yOffset = 0;
+        //     // Shift canvas contents upward by 0.8 times the canvas height (new method)
+        //     // context.globalCompositeOperation = "copy";
+        //     // context.drawImage(context.canvas, 0, -context.canvas.height * (1 - overlap));
+        //     // context.globalCompositeOperation = "source-over";
+
+        //     // TODO: This will be more for end view or spectator view
+        //     // Completion: If the third panel is being submitted, clear the canvas, then construct a new one
+        //     // using the "full available height", then paste the image data from each individual player's canvas
+        //     // into the three vertical panels, shifting downwards by 0.8 times the canvas height each time.
+        //     if (player === 2) {
+        //         context.clearRect(0, 0, canvas.width, canvas.height);
+        //         let yOffset = 0;
 
 
-                canvas.style.height = `${window.innerHeight * fullCanvasHeightRatioOfWindow}px`;
-                canvas.height = window.innerHeight * devicePixelRatio * fullCanvasHeightRatioOfWindow;
+        //         canvas.style.height = `${window.innerHeight * fullCanvasHeightRatioOfWindow}px`;
+        //         canvas.height = window.innerHeight * devicePixelRatio * fullCanvasHeightRatioOfWindow;
 
-                newPlayerCanvases.forEach((pc) => {
-                    context.putImageData(pc, 0, yOffset);
-                    yOffset += Math.floor(pc.height * (1 - overlap));
-                });
-            } else {
-                setPlayer(player + 1);
-                setPoints([]);
-                setLocalStrokeHistory([]);
-            }
-        }
+        //         newPlayerCanvases.forEach((pc) => {
+        //             context.putImageData(pc, 0, yOffset);
+        //             yOffset += Math.floor(pc.height * (1 - overlap));
+        //         });
+        //     } else {
+        //         // setPlayer((prev) => prev + 1);
+        //         setPoints([]);
+        //         setLocalStrokeHistory([]);
+        //     }
+        // }
+        setPoints([]);
+        setLocalStrokeHistory([]);
     }
 
-    // TODO: use emitSendLastPanel to send the panel
     function completeDrawing() {
-        // emitSendLastPanel
-        // initialize the Canvas (?)
-        // return component to "inactive editor" state
+        // post the current input to the lines
+        emitSendLastPanel(localStrokeHistory);
+        console.log({ localStrokeHistory });
+
+        // initialize the Canvas
+        setLocalStrokeHistory([]);
+        setIsCanvasVisible(false);
+        setIsPassCompleteDisabled(false);
+
         return;
     }
 
@@ -279,7 +311,7 @@ const Canvas: React.FC = () => {
             </p>
             <Button onClick={() => setAllowDirect(!allowDirect)}>Toggle Direct</Button>
             {/* TODO: */}
-            <Button onClick={onLastContribution
+            <Button disabled={isPassCompleteDisabled} onClick={onLastContribution
                 ? completeDrawing
                 : passTurn}>
                 {onLastContribution
@@ -287,17 +319,19 @@ const Canvas: React.FC = () => {
                     : "Pass"}
             </Button>
             <Button onClick={submitCanvas}>Submit Canvas</Button>
-            <canvas
-                ref={canvasRef}
-                onMouseDown={handleStart}
-                onTouchStart={handleStart}
-                onMouseMove={handleMove}
-                onTouchMove={handleMove}
-                onMouseUp={handleEnd}
-                onTouchEnd={handleEnd}
-            >
-                Sorry, your browser is too old for this demo.
-            </canvas>
+            {isCanvasVisible && 
+                <canvas
+                    ref={canvasRef}
+                    onMouseDown={handleStart}
+                    onTouchStart={handleStart}
+                    onMouseMove={handleMove}
+                    onTouchMove={handleMove}
+                    onMouseUp={handleEnd}
+                    onTouchEnd={handleEnd}
+                >
+                    Sorry, your browser is too old for this demo.
+                </canvas>
+            }
         </div>
     );
 };

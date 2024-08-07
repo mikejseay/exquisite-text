@@ -62,10 +62,11 @@ export const socketListeners = ({
     };
 
     const receivePanelSpectator = (collaborationIndex: number, content: IPanel["content"]) => {
-        setPanels(prevLines => {
-            return [ ...prevLines.slice(0, collaborationIndex), [ ...prevLines[collaborationIndex], content ], ...prevLines.slice(collaborationIndex + 1) ];
-        },
-        );
+        setPanels((prevPanels) => {
+            const panelsToSet = [ ...prevPanels.slice(0, collaborationIndex), [ ...prevPanels[collaborationIndex], content ], ...prevPanels.slice(collaborationIndex + 1) ];
+            console.log({ panelsToSet });
+            return panelsToSet;
+        });
     };
 
     const receiveLineEditSpectator = (poemIndex: number, value: string) => {
@@ -97,6 +98,7 @@ export const socketListeners = ({
         navigate(targetRoute);
     };
 
+    // receivePanel, as it were ;)
     const receiveStrokeHistory = (strokeHistory: Point[][]) => {
         console.log("receiveStrokeHistory activated targeting", JSON.stringify(strokeHistory));
         setStrokeHistory(strokeHistory);

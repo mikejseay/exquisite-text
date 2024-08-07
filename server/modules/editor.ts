@@ -242,14 +242,13 @@ export class PoemEditor extends Editor {
 
     handleLineParts(firstPart: string, secondPart: string) {
         const room = getRoom(this.roomID) as PoemRoom;
-        const drawingToPass = this.contributionQueue.shift() as Poem;
-        if (isNil(drawingToPass)) {
+        const poemToPass = this.contributionQueue.shift() as Poem;
+        if (isNil(poemToPass)) {
             return;
         }
 
-        drawingToPass.submitLine(this.deviceID, firstPart, secondPart);
-        drawingToPass.sendLineEditToSpectators(secondPart);
-        // should be a reference!!!
+        poemToPass.submitLine(this.deviceID, firstPart, secondPart);
+        poemToPass.sendLineEditToSpectators(secondPart);
         if (!room) {
             console.log("room not found");
             return;
@@ -259,7 +258,7 @@ export class PoemEditor extends Editor {
             console.log("nextEditor not found");
             return;
         }
-        nextEditor.contributionQueue.push(drawingToPass);
+        nextEditor.contributionQueue.push(poemToPass);
 
         // trigger editors to check their queue and update their activity state
         // and view (i.e. the correct lineEdit if necessary)
@@ -413,7 +412,7 @@ export class DrawingEditor extends Editor {
     setReceive() {
         super.setReceive();
         this.socket.on("ctsSendPanel", (value: Point[][]) => this.handlePanel(value));
-        this.socket.on("ctsSendLastPanel", (value) => this.handleLastPanel(value)); // whenever a new line has been submitted into the poem.
+        this.socket.on("ctsSendLastPanel", (value) => this.handleLastPanel(value));
         this.socket.on("ctsRequestLastContributionStatus", () => this.sendLastContributionStatus());
         this.socket.on("ctsAlterGameSettings", (value) =>
             this.alterGameSettings(value),
@@ -471,7 +470,7 @@ export class DrawingEditor extends Editor {
             const latestPanel = Array.from((drawing)?.panels).pop();
             if (!latestPanel) throw new Error("All your pylons I mean panels are belong to us :(");
 
-            this.io.to(this.socket.id).emit("stcDrawingPanel", latestPanel);
+            this.io.to(this.socket.id).emit("stcStrokeHistory", latestPanel["content"]);
             console.log(
                 "we think the drawing has",
                 drawing.panels.size,
