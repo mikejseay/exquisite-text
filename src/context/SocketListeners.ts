@@ -1,5 +1,5 @@
 import { socket } from "../components/SocketHandler";
-import { IGameSettingsInfo, ILine, IPanel, ISocketInfoListeners, IUserTableInfo, Point } from "../types";
+import { IGameSettingsInfo, ILine, IPanel, ISocketInfoListeners, IUserTableInfo, Medium, Point } from "../types";
 import { shortDur } from "../constants";
 
 export const socketListeners = ({
@@ -21,6 +21,7 @@ export const socketListeners = ({
     setEditorActive,
     navigate,
     setStrokeHistory,
+    setMedium,
 }: ISocketInfoListeners) => {
     // receivePoemsLinesListener
     const receivePoemsLines = (myPoemLines: ILine[]) => {
@@ -104,6 +105,11 @@ export const socketListeners = ({
         setStrokeHistory(strokeHistory);
     };
 
+    const receiveMedium = (medium: Medium) => {
+        console.log("receiveMedium:", medium);
+        setMedium(medium);
+    };
+
     socket.on("stcPoemLines", receivePoemsLines);
     socket.on("stcUserTableInfo", receiveUserTableInfo);
     socket.on("stcJoinError", receiveJoinError);
@@ -119,6 +125,7 @@ export const socketListeners = ({
     socket.on("stcEditorActive", receiveEditorActive);
     socket.on("stcNavigate", receiveNavigate);
     socket.on("stcStrokeHistory", receiveStrokeHistory);
+    socket.on("stcMedium", receiveMedium);
 
     return () => {
         socket.off("stcPoemLines", receivePoemsLines);
@@ -136,5 +143,6 @@ export const socketListeners = ({
         socket.off("stcEditorActive", receiveEditorActive);
         socket.off("stcNavigate", receiveNavigate);
         socket.off("stcStrokeHistory", receiveStrokeHistory);
+        socket.off("stcMedium", receiveMedium);
     };
 };

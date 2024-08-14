@@ -31,6 +31,8 @@ export const SocketInfoContext = createContext<ISocketInfo>({
     setNDrawings: () => null,
     setStrokeHistory: () => null,
     strokeHistory: null,
+    medium: null,
+    setMedium: () => null,
 });
 
 export const useSocketInfo = (): ISocketInfo => {

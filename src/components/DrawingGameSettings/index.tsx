@@ -11,7 +11,6 @@ import {
     emitStartGame,
 } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import Typography from "@mui/material/Typography";
 
 export default function DrawingGameSettings() {
     const {
@@ -58,7 +57,7 @@ export default function DrawingGameSettings() {
                         value={nDrawings}
                         exclusive
                         onChange={handleNDrawings}
-                        disabled={true} // TODO: Get this working then enable this
+                        disabled={false} // TODO: Get this working then enable this
                         // disabled={!settingsEnabled}
                     >
                         <ToggleButton value={1}>1</ToggleButton>

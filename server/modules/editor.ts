@@ -123,11 +123,13 @@ class Editor extends Member {
     setReceive() {
         super.setReceive();
         this.socket.on("ctsRequestEditorActive", () => this.sendActivity());
+        this.socket.on("ctsStartGame", () => this.broadcastStartGame());
     }
 
     unsetReceive() {
         super.unsetReceive();
         this.socket.removeAllListeners("ctsRequestEditorActive");
+        this.socket.removeAllListeners("ctsStartGame");
     }
 
     sendActivity() {
@@ -164,7 +166,7 @@ class Editor extends Member {
     }
 
     broadcastStartGame() {
-        // global in nature, so it will mainly eal with the room
+        // global in nature, so it will mainly deal with the room
         console.log("ctsStartGame");
         const room = getRoom(this.roomID);
         if (room) {
@@ -187,7 +189,6 @@ export class PoemEditor extends Editor {
         this.socket.on("ctsAlterGameSettings", (value) =>
             this.alterGameSettings(value),
         );
-        this.socket.on("ctsStartGame", () => this.broadcastStartGame());
     }
 
     unsetReceive() {
@@ -198,7 +199,6 @@ export class PoemEditor extends Editor {
         this.socket.removeAllListeners("ctsSendLastLine");
         this.socket.removeAllListeners("ctsRequestLastContributionStatus");
         this.socket.removeAllListeners("ctsAlterGameSettings");
-        this.socket.removeAllListeners("ctsStartGame");
     }
 
     sendLineEdit() {
@@ -417,14 +417,12 @@ export class DrawingEditor extends Editor {
         this.socket.on("ctsAlterGameSettings", (value) =>
             this.alterGameSettings(value),
         );
-        this.socket.on("ctsStartGame", () => this.broadcastStartGame());
     }
 
     unsetReceive() {
         super.unsetReceive();
         this.socket.removeAllListeners("ctsSendPanel");
         this.socket.removeAllListeners("ctsAlterGameSettings");
-        this.socket.removeAllListeners("ctsStartGame");
     }
 
     handlePanel(panelContent: IPanel["content"]) {
@@ -493,7 +491,11 @@ export class DrawingEditor extends Editor {
     currentlyOnLastContribution() {
         const drawing = this.contributionQueue[0] as Drawing;
         if (drawing) {
-            const currentLength = drawing.panels.size;
+            console.log({ drawing });
+            console.log("drawing.panels:", drawing?.panels);
+            const currentLength = drawing?.panels
+                ? drawing?.panels?.size
+                : 0;
             console.log(
                 "we think the drawing has ",
                 currentLength,

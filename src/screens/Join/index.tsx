@@ -34,7 +34,7 @@ export default function Join() {
         setIsNameValid(event.target.value.length > 0);
     };
 
-    const handleWritePress = () => {
+    const handlePlayPress = () => {
         emitJoinAs(roomID, name, Role.EDITOR);
         setRoomCode(roomID.toUpperCase());
     };
@@ -92,10 +92,10 @@ export default function Join() {
             >
                 <Button
                     disabled={!(isRoomValid && isNameValid)}
-                    onClick={handleWritePress}
+                    onClick={handlePlayPress}
                     variant="contained"
                 >
-          Write
+          Play
                 </Button>
                 <Button
                     disabled={!(isRoomValid && isNameValid)}

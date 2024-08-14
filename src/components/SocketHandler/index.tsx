@@ -1,6 +1,6 @@
 import * as React from "react";
 import { SocketInfoContext } from "../../context/SocketInfoProvider";
-import { ILine, IPanel, IUserTableInfo, LineLength, Point } from "../../types";
+import { ILine, IPanel, IUserTableInfo, LineLength, Medium, Point } from "../../types";
 import { defaultGameSettings } from "../../constants";
 import { socketListeners } from "../../context/SocketListeners";
 import { useNavigate } from "react-router-dom";
@@ -41,6 +41,7 @@ export default function SocketHandler({ children }: Props) {
     const [ onLastContribution, setOnLastContribution ] = React.useState<boolean>(false);
     const [ editorActive, setEditorActive ] = React.useState<boolean>(false);
     const [ strokeHistory, setStrokeHistory ] = React.useState<Point[][]>([]);
+    const [ medium, setMedium ] = React.useState<Medium>(Medium.ART);
 
     const navigate = useNavigate();
 
@@ -64,6 +65,7 @@ export default function SocketHandler({ children }: Props) {
         setEditorActive,
         navigate,
         setStrokeHistory,
+        setMedium,
     }),
     [ socketListeners ],
     );
@@ -94,6 +96,8 @@ export default function SocketHandler({ children }: Props) {
             setPoemInput,
             strokeHistory,
             setStrokeHistory,
+            medium,
+            setMedium,
         }}>
             {children}
         </SocketInfoContext.Provider>

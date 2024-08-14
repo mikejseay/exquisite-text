@@ -123,6 +123,7 @@ export interface ServerToClientEvents {
     stcLineEditSpectator: (a: number, b: string) => void;
     // stcLineEditSpectator: (a: number, b: string) => void; // TODO: stcLineEditSpectator for realtime drawing watching
     stcStrokeHistory: (a: Point[][]) => void;
+    stcMedium: (medium: Medium) => void;
 }
 
 export interface ClientToServerEvents {
@@ -205,6 +206,8 @@ export interface ISocketInfoListeners {
         navigate: NavigateFunction;
     setStrokeHistory: (value: Point[][] |
         ((prevVar: Point[][]) => Point[][])) => void;
+    setMedium: (medium: Medium |
+        ((prevVar: Medium) => Medium)) => void;
 }
 
 export interface ISocketInfo {
@@ -237,6 +240,8 @@ export interface ISocketInfo {
     setNDrawings: (value: number | ((prevVar: number) => number)) => void;
     setStrokeHistory: (value: Point[][] | ((prevVar: Point[][]) => Point[][])) => void;
     strokeHistory: Point[][] | null;
+    medium: Medium | null;
+    setMedium: (medium: Medium | ((prevVar: Medium) => Medium)) => void;
 }
 
 

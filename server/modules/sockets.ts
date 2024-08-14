@@ -174,11 +174,14 @@ function sockets(
                 let editor: PoemEditor | DrawingEditor | null = null;
                 if (room.medium == Medium.POETRY) {
                     editor = new PoemEditor(io, socket, roomID, deviceID, name);
+                    
                 } else if (room.medium == Medium.DRAWING) {
                     editor = new DrawingEditor(io, socket, roomID, deviceID, name);
                 } else {
                     throw new Error("Unknown medium type.");
                 }
+
+                io.to(socket.id).emit("stcMedium", room.medium);
 
                 console.log("editor object created with deviceID", editor.deviceID);
                 editor.joinRoom();

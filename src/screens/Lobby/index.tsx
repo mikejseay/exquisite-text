@@ -12,18 +12,10 @@ import RoomCode from "../../components/RoomCode";
 import { Medium } from "../../types";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import { useSocketInfo } from "../../context/SocketInfoProvider";
 
 function Lobby() {
-    const [ medium, setMedium ] = useState<Medium>(Medium.POETRY);
-
-    const handleMediumChange = (
-        event: React.MouseEvent<HTMLElement>,
-        newMedium: Medium | null,
-    ) => {
-        if (newMedium !== null) {
-            setMedium(newMedium);
-        }
-    };
+    const { medium } = useSocketInfo();
 
     return (
         <Box 
