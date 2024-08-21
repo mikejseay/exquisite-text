@@ -91,6 +91,7 @@ export const socketListeners = ({
     };
 
     const receiveEditorActive = (editorActiveFromServer: boolean) => {
+        console.log("receiveEditorActive:", { editorActiveFromServer });
         setEditorActive(editorActiveFromServer);
     };
 

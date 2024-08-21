@@ -281,7 +281,7 @@ export class DrawingRoom extends Room {
         let nDrawingsToHandOut = this.gameSettings["nDrawings"];
         this.nUnfinishedWorks = nDrawingsToHandOut;
         let drawingIndex = 0;
-        
+
         for (const editor of this.editors.values()) {
             editor.lastActivity = Date.now(); // refresh AFK timers upon game start
             editor.prepareForGame();
@@ -300,7 +300,7 @@ export class DrawingRoom extends Room {
         this.gameState = GameState.GAME;
         this.io.in(`${this.roomID}_Editors`).emit("stcNavigate", "/game");
         this.io.in(`${this.roomID}_Spectators`).emit("stcNavigate", "/spectate");
-        
+
         for (const editor of this.editors.values()) {
             editor.sendActivity();
             editor.sendLastContributionStatus();

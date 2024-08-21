@@ -454,12 +454,15 @@ export class DrawingEditor extends Editor {
         // only THIS editor should check its own queue and populate accordingly
         this.possibleStartNewTurn();
         if (!nextEditor.isCurrentlyEditing) {
+            console.log("!nextEditor.isCurrentlyEditing");
             nextEditor.possibleStartNewTurn();
         }
     }
 
     possibleStartNewTurn() {
+        console.log("in possibleStartNewTurn");
         if (this.hasWorkInQueue()) {
+            console.log("this.hasWorkInQueue() is truthy");
             this.lastActivity = Date.now(); // give them some time to type
 
             const drawing = this.contributionQueue[0] as Drawing;

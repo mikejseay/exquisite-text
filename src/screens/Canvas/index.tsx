@@ -17,6 +17,8 @@ const defaultPressure = 0.1;
 const lineColor = "grey";
 
 /* TODO:
+    [ ] Spectator view
+    [ ] End view
     [ ] Ensure that spectator receives entire drawing instead of just single frame
     [ ] Modularize all server socket functions to work with both poems and canvases
     [ ] For the watcher, the cursor is not in right spot until writer starts writing:
@@ -84,10 +86,17 @@ const Canvas: React.FC = () => {
     const [ drawType, setDrawType ] = useState<"fill" | "stroke" | "noDrawYet">("noDrawYet");
     const [ player, setPlayer ] = useState<number>(0);
     const [ coordinates, setCoordinates ] = useState<{ x: number, y: number}>({ x: 0, y: 0 });
-    const [ hasJoinedRoom, setHasJoinedRoom ] = useState<boolean>(false);
 
     // TODO: handle all functionality that must toggle with editorActive
     React.useEffect(() => {
+        console.log("editorActive useEffect activated", editorActive);
+        console.log("strokeHistory.length:", strokeHistory?.length);
+        console.log("localStrokeHistory.length:", localStrokeHistory?.length);
+        setIsPassCompleteDisabled(!editorActive);
+        // TODO: This borks mouse canvas size positioning, probably because
+        // viewport is changing in browser window, can use canvas empty placeholder
+        // that is unclickable, or just legit clear that shit:
+        // setIsCanvasVisible(Boolean(editorActive));
         if (!editorActive) return;
 
         // Process the stroke history to visually clip it
@@ -109,15 +118,6 @@ const Canvas: React.FC = () => {
         }
         return;
     }, [ editorActive ]);
-
-    // TODO: Actually allow the player to be different
-    // Probably setting up some of that logic of going from the lobby to starting a game
-    if (!hasJoinedRoom) {
-        emitCreateRoomAndHost("ROOM", Medium.DRAWING);
-        emitRecognizeDevice();
-        emitJoinAs("ROOM", "PETER", Role.EDITOR, true);
-        setHasJoinedRoom(true);
-    }
 
     function passTurn() {
         emitSendPanel(localStrokeHistory);
@@ -165,6 +165,9 @@ const Canvas: React.FC = () => {
         //         setLocalStrokeHistory([]);
         //     }
         // }
+
+        // TODO: Actually clear the canvas, mate
+        // setStrokeHistory([]);
         setPoints([]);
         setLocalStrokeHistory([]);
     }
@@ -181,12 +184,6 @@ const Canvas: React.FC = () => {
 
         return;
     }
-
-    const submitCanvas = () => {
-        console.log("submitCanvas:", localStrokeHistory);
-        console.log({ localStrokeHistory });
-        emitSendPanel(localStrokeHistory);
-    };
 
     const handleStart = useCallback((e: React.MouseEvent<Element, MouseEvent> | React.TouchEvent<Element>) => {
         let pressure = defaultPressure;
@@ -318,7 +315,6 @@ const Canvas: React.FC = () => {
                     ? "Complete Drawing"
                     : "Pass"}
             </Button>
-            <Button onClick={submitCanvas}>Submit Canvas</Button>
             {isCanvasVisible && 
                 <canvas
                     ref={canvasRef}
