@@ -96,7 +96,7 @@ const Canvas: React.FC = () => {
         // TODO: This borks mouse canvas size positioning, probably because
         // viewport is changing in browser window, can use canvas empty placeholder
         // that is unclickable, or just legit clear that shit:
-        // setIsCanvasVisible(Boolean(editorActive));
+        setIsCanvasVisible(Boolean(editorActive));
         if (!editorActive) return;
 
         // Process the stroke history to visually clip it
@@ -315,19 +315,25 @@ const Canvas: React.FC = () => {
                     ? "Complete Drawing"
                     : "Pass"}
             </Button>
-            {isCanvasVisible && 
-                <canvas
-                    ref={canvasRef}
-                    onMouseDown={handleStart}
-                    onTouchStart={handleStart}
-                    onMouseMove={handleMove}
-                    onTouchMove={handleMove}
-                    onMouseUp={handleEnd}
-                    onTouchEnd={handleEnd}
-                >
+            <canvas
+                ref={canvasRef}
+                style={{
+                    pointerEvents: isCanvasVisible
+                        ? "auto"
+                        : "none", // Disable pointer events if editor is not active
+                    opacity: isCanvasVisible
+                        ? 1
+                        : 0.5, // Optionally change opacity to visually indicate inactivity
+                }}
+                onMouseDown={handleStart}
+                onTouchStart={handleStart}
+                onMouseMove={handleMove}
+                onTouchMove={handleMove}
+                onMouseUp={handleEnd}
+                onTouchEnd={handleEnd}
+            >
                     Sorry, your browser is too old for this demo.
-                </canvas>
-            }
+            </canvas>
         </div>
     );
 };
