@@ -10,8 +10,11 @@ import {
     emitRequestUserTableInfo,
 } from "../../context/SocketRequestors";
 import { Medium } from "../../types";
+import { useSocketInfo } from "../../context/SocketInfoProvider";
+import CanvasSpectator from "../CanvasSpectator";
 
 function End({ shouldTest = false }: { shouldTest: boolean }) {
+    const { medium } = useSocketInfo();
 
     const [ rendered, setRendered ] = React.useState(false);
     if (shouldTest && !rendered) {
@@ -26,6 +29,11 @@ function End({ shouldTest = false }: { shouldTest: boolean }) {
     const handleChange = () => {
         setShouldAnimate(!shouldAnimate);
     };
+
+    const displayedCompletedArt = medium === Medium.POETRY
+        ? <MultiplePoems shouldAnimate={shouldAnimate} />
+        : <CanvasSpectator />;
+
     return (
         <div style={centered}>
             <IconButton onClick={handleChange} sx={floatingToggleAnimate}>
@@ -39,7 +47,7 @@ function End({ shouldTest = false }: { shouldTest: boolean }) {
             </IconButton>
             <span>Done! If you&apos;d like to play again, make a new room.</span>
             <br />
-            <MultiplePoems shouldAnimate={shouldAnimate} />
+            {displayedCompletedArt}
         </div>
     );
 }

@@ -529,7 +529,7 @@ export class DrawingEditor extends Editor {
             contributionIndex: drawingToPass.panels.size,
             content: lastPart,
             authorDevice: this.deviceID,
-            passerDevice: drawingToPass.mostRecentEditor, // previous editor, starts at ""
+            passerDevice: drawingToPass.mostRecentEditor,
             hintSize: drawingToPass.panelHint.length,
             addedAt: new Date(),
         });

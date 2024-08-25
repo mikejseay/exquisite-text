@@ -10,12 +10,12 @@ const CanvasSpectator: React.FC = () => {
     const [ hasJoinedRoom, setHasJoinedRoom ] = useState<boolean>(false);
     const { strokeHistory } = useSocketInfo();
 
-    if (!hasJoinedRoom) {
-        emitRecognizeDevice();
-        emitJoinAs("ROOM", "MIKEY", Role.SPECTATOR, true);
-        emitRequestCanvas();
-        setHasJoinedRoom(true);
-    }
+    // if (!hasJoinedRoom) {
+    //     emitRecognizeDevice();
+    //     emitJoinAs("ROOM", "MIKEY", Role.SPECTATOR, true);
+    //     emitRequestCanvas();
+    //     setHasJoinedRoom(true);
+    // }
 
     // TODO: Inside this useEffect, we want to receive the canvas vector (strokeHistory)
     // We want to draw it,
