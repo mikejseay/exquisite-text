@@ -21,6 +21,7 @@ export const socketListeners = ({
     setEditorActive,
     navigate,
     setStrokeHistory,
+    setCompletedDrawings,
     setMedium,
 }: ISocketInfoListeners) => {
     // receivePoemsLinesListener
@@ -106,6 +107,13 @@ export const socketListeners = ({
         setStrokeHistory(strokeHistory);
     };
 
+    // Outermost array contains drawings Point[][][]
+    // Drawings contain panels Point[][]
+    // Panels contain vectorized stroke histories Point[]
+    const receiveCompletedDrawings = (completedDrawings: Point[][][][]) => {
+        setCompletedDrawings(completedDrawings);
+    };
+
     const receiveMedium = (medium: Medium) => {
         console.log("receiveMedium:", medium);
         setMedium(medium);
@@ -126,6 +134,7 @@ export const socketListeners = ({
     socket.on("stcEditorActive", receiveEditorActive);
     socket.on("stcNavigate", receiveNavigate);
     socket.on("stcStrokeHistory", receiveStrokeHistory);
+    socket.on("stcCompletedDrawings", receiveCompletedDrawings);
     socket.on("stcMedium", receiveMedium);
 
     return () => {
@@ -144,6 +153,7 @@ export const socketListeners = ({
         socket.off("stcEditorActive", receiveEditorActive);
         socket.off("stcNavigate", receiveNavigate);
         socket.off("stcStrokeHistory", receiveStrokeHistory);
+        socket.off("stcCompletedDrawings", receiveCompletedDrawings);
         socket.off("stcMedium", receiveMedium);
     };
 };

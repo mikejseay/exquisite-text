@@ -41,6 +41,7 @@ export default function SocketHandler({ children }: Props) {
     const [ onLastContribution, setOnLastContribution ] = React.useState<boolean>(false);
     const [ editorActive, setEditorActive ] = React.useState<boolean>(false);
     const [ strokeHistory, setStrokeHistory ] = React.useState<Point[][]>([]);
+    const [ completedDrawings, setCompletedDrawings ] = React.useState<Point[][][][]>([]);
     const [ medium, setMedium ] = React.useState<Medium>(Medium.ART);
 
     const navigate = useNavigate();
@@ -65,6 +66,7 @@ export default function SocketHandler({ children }: Props) {
         setEditorActive,
         navigate,
         setStrokeHistory,
+        setCompletedDrawings,
         setMedium,
     }),
     [ socketListeners ],
@@ -96,6 +98,8 @@ export default function SocketHandler({ children }: Props) {
             setPoemInput,
             strokeHistory,
             setStrokeHistory,
+            completedDrawings,
+            setCompletedDrawings,
             medium,
             setMedium,
         }}>

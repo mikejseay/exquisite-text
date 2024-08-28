@@ -101,7 +101,7 @@ export interface Point {
     x: number;
     y: number;
     lineWidth: number;
-  }
+}
 
 export interface ServerToClientEvents {
     stcLineEdit: (a: string) => void;
@@ -123,6 +123,7 @@ export interface ServerToClientEvents {
     stcLineEditSpectator: (a: number, b: string) => void;
     // stcLineEditSpectator: (a: number, b: string) => void; // TODO: stcLineEditSpectator for realtime drawing watching
     stcStrokeHistory: (a: Point[][]) => void;
+    stcCompletedDrawings: (a: Point[][][][]) => void;
     stcMedium: (medium: Medium) => void;
 }
 
@@ -206,6 +207,8 @@ export interface ISocketInfoListeners {
         navigate: NavigateFunction;
     setStrokeHistory: (value: Point[][] |
         ((prevVar: Point[][]) => Point[][])) => void;
+    setCompletedDrawings: (value: Point[][][][] |
+        ((prevVar: Point[][][][]) => Point[][][][])) => void;
     setMedium: (medium: Medium |
         ((prevVar: Medium) => Medium)) => void;
 }
@@ -240,6 +243,8 @@ export interface ISocketInfo {
     setNDrawings: (value: number | ((prevVar: number) => number)) => void;
     setStrokeHistory: (value: Point[][] | ((prevVar: Point[][]) => Point[][])) => void;
     strokeHistory: Point[][] | null;
+    setCompletedDrawings: (value: Point[][][][] | ((prevVar: Point[][][][]) => Point[][][][])) => void;
+    completedDrawings: Point[][][][] | null;
     medium: Medium | null;
     setMedium: (medium: Medium | ((prevVar: Medium) => Medium)) => void;
 }

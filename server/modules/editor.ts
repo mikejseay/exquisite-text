@@ -539,7 +539,7 @@ export class DrawingEditor extends Editor {
         // So that we can pass them back to the members as needed
         this.handleDrawing(drawingToPass);
 
-        const room = roomIDToRoom.get(this.roomID);
+        const room = roomIDToRoom.get(this.roomID) as DrawingRoom;
         if (!room) {
             console.log("room not found");
             return;
@@ -548,9 +548,11 @@ export class DrawingEditor extends Editor {
         // if all editors' poem queues are empty
         // remove each of the editor/spectator deviceIDs from deviceIDToRoomId
         if (room.nUnfinishedWorks === 0) {
+            // broadcast completed drawings to everyone
             console.log(
-                "no drawings left to finish; forget everyone's device, delete room and poem globals",
+                "no drawings left to finish; forget everyone's device, delete room and drawing globals",
             );
+            room.sendCompletedDrawings();
             room.gameState = GameState.END;
             room.sendToEnd();  // send everyone to the end screen
             room.selfDestruct();  // self-destruct after some time

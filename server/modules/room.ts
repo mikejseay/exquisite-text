@@ -9,6 +9,7 @@ import {
     ClientToServerEvents,
     GameState,
     IGameSettingsInfo,
+    IPanel,
     IUserTableInfo,
     InterServerEvents,
     Medium,
@@ -204,7 +205,6 @@ class Room {
 }
 
 export class PoemRoom extends Room {
-
     constructor(
         io: Server<ClientToServerEvents,
             ServerToClientEvents,
@@ -258,7 +258,7 @@ export class PoemRoom extends Room {
 }
 
 export class DrawingRoom extends Room {
-    finishedCanvas: Point[][];
+    finishedCanvas: Point[][]; // from testing, probably unused
 
     constructor(
         io: Server<ClientToServerEvents,
@@ -310,5 +310,22 @@ export class DrawingRoom extends Room {
     storeDrawing(drawingObj: Drawing) {
         console.log(this.roomID, "storing drawing", drawingObj.ID);
         this.finishedWorks.push(drawingObj);
+    }
+
+    //     ROOM:
+    //     this.panels = new Set<IPanel>;
+    // }
+    // export interface IPanel extends IContribution {
+    //     content: Point[][];
+    //     hintSize: number;
+    // }
+    // this.finishedWorks is an array of Drawing. drawing.panels is Set<IPanel>
+    // on IPanel, content is Point[][]
+    sendCompletedDrawings() {
+        console.log("sendCompletedDrawings ;))))))))))");
+        const iPanels = Array.from(this.finishedWorks as Drawing[]).map((drawing) => Array.from(drawing?.panels));
+        const completedDrawings = Array.from(iPanels).map((iPanel) => iPanel.map(panel => panel?.content));
+
+        this.io.in(this.roomID).emit("stcCompletedDrawings", completedDrawings);
     }
 }

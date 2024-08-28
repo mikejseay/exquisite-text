@@ -102,7 +102,6 @@ function MultiplePoems({ shouldAnimate }: { shouldAnimate: boolean }) {
                     {renderPoems(reRender)}
                 </Carousel>
                 : renderPoems(reRender)}
-
         </div>
     );
 }

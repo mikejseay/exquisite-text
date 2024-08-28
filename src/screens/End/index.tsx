@@ -36,7 +36,7 @@ function End({ shouldTest = false }: { shouldTest: boolean }) {
 
     return (
         <div style={centered}>
-            <IconButton onClick={handleChange} sx={floatingToggleAnimate}>
+            {medium === Medium.POETRY && <IconButton onClick={handleChange} sx={floatingToggleAnimate}>
                 <KeyboardIcon
                     color={
                         shouldAnimate
@@ -44,7 +44,7 @@ function End({ shouldTest = false }: { shouldTest: boolean }) {
                             : "disabled"
                     }
                 />
-            </IconButton>
+            </IconButton>}
             <span>Done! If you&apos;d like to play again, make a new room.</span>
             <br />
             {displayedCompletedArt}

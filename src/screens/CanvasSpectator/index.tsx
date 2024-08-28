@@ -8,7 +8,7 @@ import { Role } from "../../types";
 const CanvasSpectator: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [ hasJoinedRoom, setHasJoinedRoom ] = useState<boolean>(false);
-    const { strokeHistory } = useSocketInfo();
+    const { strokeHistory, completedDrawings } = useSocketInfo();
 
     // if (!hasJoinedRoom) {
     //     emitRecognizeDevice();
@@ -23,7 +23,7 @@ const CanvasSpectator: React.FC = () => {
     useEffect(() => {
         console.log("strokeHistory in CanvasSpectator:", strokeHistory);
         strokeHistory?.forEach(strokeArray => drawOnCanvas(strokeArray, canvasRef));
-    }, [ strokeHistory ]);
+    }, [ strokeHistory, completedDrawings ]);
 
     // This useEffect defines the panel height
     useEffect(() => {
