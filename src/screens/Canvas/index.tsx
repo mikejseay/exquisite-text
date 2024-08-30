@@ -9,35 +9,34 @@ type ExtendedTouch = Touch & {
     touchType?: string;
 };
 
-export const panelHeightRatioOfWindow = 0.3;
+export const PANEL_HEIGHT_RATIO_OF_WINDOW = 0.3;
 const defaultLineWidth = 30;
-const fullCanvasHeightRatioOfWindow = 0.8;
-const overlap = 0.2;
+export const DRAWING_HEIGHT_RATIO_OF_WINDOW = 0.8;
+export const OVERLAP = 0.2;
 const defaultPressure = 0.1;
 const lineColor = "grey";
 
 /* TODO:
+    [ ] Canvas and panel height are established at the start of the game, and become a property of the room
+    [ ] Players are forced to have canvases of the appropriate height regardless of their window size
     [ ] Spectator view
-    [ ] End view
+    [-] End view
     [ ] Ensure that spectator receives entire drawing instead of just single frame
-    [ ] Modularize all server socket functions to work with both poems and canvases
+    [-] Modularize all server socket functions to work with both poems and canvases
     [ ] For the watcher, the cursor is not in right spot until writer starts writing:
         As a part of reinstateContext, find the editor you're supposed to be spectating,
         Find the poem they're editing, get the current line edit, and send it via "stcLineEditorWatch"
-    [ ] useEffect sensitive to onLastPanel, converts button / changes functionality
-    [ ] useEffect sensitive to editorActive, enables/disables the Canvas
-    [ ] Implement "receive panel hint from previous player"
 */
 
-export function drawOnCanvas (newPoints: Point[], canvasRef: React.MutableRefObject<HTMLCanvasElement | null>) {
+export function drawOnCanvas (newPoints: Point[], canvasRef: React.MutableRefObject<HTMLCanvasElement | null>, yOffset = 0) {
     if (!canvasRef) {
-        console.warn("No canvasRef in CanvasSpectator");
+        console.warn("No canvasRef in drawOnCanvas");
         return;
     }
     const canvas = canvasRef.current;
     const context = canvas?.getContext("2d");
     if (!context) {
-        console.warn("No context in CanvasSpectator");
+        console.warn("No context in drawOnCanvas");
         return;
     }
 
@@ -51,7 +50,7 @@ export function drawOnCanvas (newPoints: Point[], canvasRef: React.MutableRefObj
         context.fillStyle = lineColor;
         context.lineWidth = point.lineWidth;
         context.beginPath();
-        context.arc(point.x, point.y, point.lineWidth / 2, 0, Math.PI * 2);
+        context.arc(point.x, point.y + yOffset, point.lineWidth / 2, 0, Math.PI * 2);
         context.closePath();
         context.fill();
         return;
@@ -64,9 +63,9 @@ export function drawOnCanvas (newPoints: Point[], canvasRef: React.MutableRefObj
         const startPoint = newPoints[i];
         const endPoint = newPoints[i + 1];
 
-        context.moveTo(startPoint.x, startPoint.y);
+        context.moveTo(startPoint.x, startPoint.y + yOffset);
         context.lineWidth = startPoint.lineWidth;
-        context.lineTo(endPoint.x, endPoint.y);
+        context.lineTo(endPoint.x, endPoint.y + yOffset);
         context.stroke();
     }
 }
@@ -112,9 +111,9 @@ const Canvas: React.FC = () => {
             //// This accomplishes the clipping of the image: ////
 
             // Shift canvas contents upward by 0.8 times the canvas height (old method)
-            const imageData = context.getImageData(0, context.canvas.height * (1 - overlap), context.canvas.width, context.canvas.height);
+            const imageData = context.getImageData(0, context.canvas.height * (1 - OVERLAP), context.canvas.width, context.canvas.height);
             context.putImageData(imageData, 0, 0);
-            context.clearRect(context.canvas.width, context.canvas.height * overlap, 0, context.canvas.height);
+            context.clearRect(context.canvas.width, context.canvas.height * OVERLAP, 0, context.canvas.height);
         }
         return;
     }, [ editorActive ]);
@@ -279,9 +278,9 @@ const Canvas: React.FC = () => {
 
         if (!canvas) return;
         canvas.style.width = `${window.innerWidth}px`;
-        canvas.style.height = `${window.innerHeight * panelHeightRatioOfWindow}px`;
+        canvas.style.height = `${window.innerHeight * PANEL_HEIGHT_RATIO_OF_WINDOW}px`;
         canvas.width = window.innerWidth * devicePixelRatio;
-        canvas.height = window.innerHeight * devicePixelRatio * panelHeightRatioOfWindow;
+        canvas.height = window.innerHeight * devicePixelRatio * PANEL_HEIGHT_RATIO_OF_WINDOW;
     }, []);
 
     useEffect(() => {

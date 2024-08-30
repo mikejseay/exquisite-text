@@ -11,7 +11,7 @@ import {
 } from "../../context/SocketRequestors";
 import { Medium } from "../../types";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import CanvasSpectator from "../CanvasSpectator";
+import MultipleDrawings from "../../components/MultipleDrawings";
 
 function End({ shouldTest = false }: { shouldTest: boolean }) {
     const { medium } = useSocketInfo();
@@ -32,7 +32,7 @@ function End({ shouldTest = false }: { shouldTest: boolean }) {
 
     const displayedCompletedArt = medium === Medium.POETRY
         ? <MultiplePoems shouldAnimate={shouldAnimate} />
-        : <CanvasSpectator />;
+        : <MultipleDrawings shouldAnimate={false} />;
 
     return (
         <div style={centered}>
