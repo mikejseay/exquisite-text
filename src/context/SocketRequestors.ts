@@ -1,6 +1,6 @@
 import { socket } from "../components/SocketHandler";
 import { v4 as uuidv4 } from "uuid";
-import isNil from "lodash/isNil";
+import { isNil } from "es-toolkit";
 import { LineLength, Medium, Point, Role } from "../types";
 import { defaultGameSettings } from "../constants";
 

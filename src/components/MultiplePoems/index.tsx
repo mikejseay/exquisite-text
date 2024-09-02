@@ -1,7 +1,7 @@
 import * as React from "react";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import { Carousel } from "react-responsive-carousel";
-import isNil from "lodash/isNil";
+import { isNil } from "es-toolkit";
 
 import { poemTitle } from "./styles";
 import { ILine } from "../../types";

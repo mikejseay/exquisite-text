@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import { Carousel } from "react-responsive-carousel";
-import isNil from "lodash/isNil";
+import { isNil } from "es-toolkit";
 
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { DRAWING_HEIGHT_RATIO_OF_WINDOW, OVERLAP, PANEL_HEIGHT_RATIO_OF_WINDOW, drawOnCanvas } from "../../screens/Canvas";
