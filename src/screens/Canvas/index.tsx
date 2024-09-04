@@ -9,12 +9,17 @@ type ExtendedTouch = Touch & {
     touchType?: string;
 };
 
+const DEFAULT_LINE_WIDTH = 30;
 export const PANEL_HEIGHT_RATIO_OF_WINDOW = 0.3;
-const defaultLineWidth = 30;
 export const DRAWING_HEIGHT_RATIO_OF_WINDOW = 0.8;
 export const OVERLAP = 0.2;
-const defaultPressure = 0.1;
+const DEFAULT_PRESSURE = 0.1;
 const lineColor = "grey";
+
+export const PANEL_HEIGHT = 300;
+export const PANEL_WIDTH = 667;
+
+// iPhone SE: 667 x 375
 
 /* TODO:
     [ ] Canvas and panel height are established at the start of the game, and become a property of the room
@@ -81,7 +86,7 @@ const Canvas: React.FC = () => {
     const [ isMousedown, setIsMousedown ] = useState(false);
     const [ allowDirect, setAllowDirect ] = useState(true);
     const [ lineWidth, setLineWidth ] = useState(0);
-    const [ eventPressure, setEventPressure ] = useState(defaultPressure);
+    const [ eventPressure, setEventPressure ] = useState(DEFAULT_PRESSURE);
     const [ drawType, setDrawType ] = useState<"fill" | "stroke" | "noDrawYet">("noDrawYet");
     const [ player, setPlayer ] = useState<number>(0);
     const [ coordinates, setCoordinates ] = useState<{ x: number, y: number}>({ x: 0, y: 0 });
@@ -119,54 +124,11 @@ const Canvas: React.FC = () => {
     }, [ editorActive ]);
 
     function passTurn() {
+        // Convert pixel values to pixel-free values??
+        // In future let people with more pixels to use them while they're drawing
+        // use window characteristics to determine best aspect ratio for them, and set their
+        // canvas that way
         emitSendPanel(localStrokeHistory);
-        // const canvas = canvasRef.current;
-        // const context = canvas?.getContext("2d");
-        // if (canvas && context) {
-        //     // //// This accomplishes the clipping of the image: ////
-
-        //     // // Extract the whole canvas
-        //     const playerCanvas = context.getImageData(0, 0, canvas.width, canvas.height);
-
-        //     // // Add it to a list of canvases per player
-        //     const newPlayerCanvases = [ ...playerCanvases, playerCanvas ];
-        //     setPlayerCanvases(newPlayerCanvases);
-
-        //     // // Shift canvas contents upward by 0.8 times the canvas height (old method)
-        //     const imageData = context.getImageData(0, context.canvas.height * (1 - overlap), context.canvas.width, context.canvas.height);
-        //     context.putImageData(imageData, 0, 0);
-        //     context.clearRect(context.canvas.width, context.canvas.height * overlap, 0, context.canvas.height);
-
-        //     // Shift canvas contents upward by 0.8 times the canvas height (new method)
-        //     // context.globalCompositeOperation = "copy";
-        //     // context.drawImage(context.canvas, 0, -context.canvas.height * (1 - overlap));
-        //     // context.globalCompositeOperation = "source-over";
-
-        //     // TODO: This will be more for end view or spectator view
-        //     // Completion: If the third panel is being submitted, clear the canvas, then construct a new one
-        //     // using the "full available height", then paste the image data from each individual player's canvas
-        //     // into the three vertical panels, shifting downwards by 0.8 times the canvas height each time.
-        //     if (player === 2) {
-        //         context.clearRect(0, 0, canvas.width, canvas.height);
-        //         let yOffset = 0;
-
-
-        //         canvas.style.height = `${window.innerHeight * fullCanvasHeightRatioOfWindow}px`;
-        //         canvas.height = window.innerHeight * devicePixelRatio * fullCanvasHeightRatioOfWindow;
-
-        //         newPlayerCanvases.forEach((pc) => {
-        //             context.putImageData(pc, 0, yOffset);
-        //             yOffset += Math.floor(pc.height * (1 - overlap));
-        //         });
-        //     } else {
-        //         // setPlayer((prev) => prev + 1);
-        //         setPoints([]);
-        //         setLocalStrokeHistory([]);
-        //     }
-        // }
-
-        // TODO: Actually clear the canvas, mate
-        // setStrokeHistory([]);
         setPoints([]);
         setLocalStrokeHistory([]);
     }
@@ -185,7 +147,7 @@ const Canvas: React.FC = () => {
     }
 
     const handleStart = useCallback((e: React.MouseEvent<Element, MouseEvent> | React.TouchEvent<Element>) => {
-        let pressure = defaultPressure;
+        let pressure = DEFAULT_PRESSURE;
         let x = 0;
         let y = 0;
 
@@ -214,8 +176,8 @@ const Canvas: React.FC = () => {
         setCoordinates({ x, y });
         setIsMousedown(true);
 
-        setLineWidth(Math.log(pressure + 1) * defaultLineWidth);
-        const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * defaultLineWidth };
+        setLineWidth(Math.log(pressure + 1) * DEFAULT_LINE_WIDTH);
+        const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * DEFAULT_LINE_WIDTH };
         setPoints((prev) => [ ...prev, newPoint ]);
         drawOnCanvas([ newPoint ], canvasRef);
     }, [ allowDirect, drawOnCanvas, player ]);
@@ -226,7 +188,7 @@ const Canvas: React.FC = () => {
         }
         e.preventDefault();
 
-        let pressure = defaultPressure;
+        let pressure = DEFAULT_PRESSURE;
         let x = 0;
         let y = 0;
 
@@ -255,8 +217,8 @@ const Canvas: React.FC = () => {
         }
         setCoordinates({ x, y });
 
-        setLineWidth(Math.log(pressure + 1) * defaultLineWidth);
-        const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * defaultLineWidth };
+        setLineWidth(Math.log(pressure + 1) * DEFAULT_LINE_WIDTH);
+        const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * DEFAULT_LINE_WIDTH };
         setPoints((prev) => {
             drawOnCanvas([ prev[prev.length - 1], newPoint ], canvasRef);
             return [ ...prev, newPoint ];
@@ -277,10 +239,10 @@ const Canvas: React.FC = () => {
         const devicePixelRatio = window.devicePixelRatio ?? 1;
 
         if (!canvas) return;
-        canvas.style.width = `${window.innerWidth}px`;
-        canvas.style.height = `${window.innerHeight * PANEL_HEIGHT_RATIO_OF_WINDOW}px`;
-        canvas.width = window.innerWidth * devicePixelRatio;
-        canvas.height = window.innerHeight * devicePixelRatio * PANEL_HEIGHT_RATIO_OF_WINDOW;
+        canvas.style.width = `${PANEL_WIDTH}px`;
+        canvas.style.height = `${PANEL_HEIGHT}px`;
+        canvas.width = PANEL_WIDTH * devicePixelRatio;
+        canvas.height = PANEL_HEIGHT * devicePixelRatio;
     }, []);
 
     useEffect(() => {

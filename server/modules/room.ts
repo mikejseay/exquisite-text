@@ -176,8 +176,8 @@ class Room {
     }
 
     async selfDestruct() {
-        console.log(this.roomID, "will self-destruct in 30 seconds");
-        await sleep(30000);
+        console.log(this.roomID, "will self-destruct in 100 seconds");
+        await sleep(100_000);
         console.log(this.roomID, "self-destructing");
 
         for (const [ editorID, editor ] of this.editors.entries()) {

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { PANEL_HEIGHT_RATIO_OF_WINDOW, drawOnCanvas  } from "../Canvas";
+import { PANEL_HEIGHT, PANEL_HEIGHT_RATIO_OF_WINDOW, PANEL_WIDTH, drawOnCanvas  } from "../Canvas";
 import { emitJoinAs, emitRecognizeDevice, emitRequestCanvas } from "../../context/SocketRequestors";
 import { Role } from "../../types";
 
@@ -31,10 +31,10 @@ const CanvasSpectator: React.FC = () => {
         const devicePixelRatio = window.devicePixelRatio ?? 1;
 
         if (!canvas) return;
-        canvas.style.width = `${window.innerWidth}px`;
-        canvas.style.height = `${window.innerHeight * PANEL_HEIGHT_RATIO_OF_WINDOW}px`;
-        canvas.width = window.innerWidth * devicePixelRatio;
-        canvas.height = window.innerHeight * devicePixelRatio * PANEL_HEIGHT_RATIO_OF_WINDOW;
+        canvas.style.width = `${PANEL_WIDTH}px`;
+        canvas.style.height = `${PANEL_HEIGHT * 3}px`;
+        canvas.width = PANEL_WIDTH * devicePixelRatio;
+        canvas.height = PANEL_HEIGHT * devicePixelRatio * 3;
     }, []);
 
     useEffect(() => {

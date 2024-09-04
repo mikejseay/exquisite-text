@@ -1,10 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import { Carousel } from "react-responsive-carousel";
-import { isNil } from "es-toolkit";
 
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { DRAWING_HEIGHT_RATIO_OF_WINDOW, OVERLAP, PANEL_HEIGHT_RATIO_OF_WINDOW, drawOnCanvas } from "../../screens/Canvas";
+import { PANEL_HEIGHT, PANEL_WIDTH, drawOnCanvas } from "../../screens/Canvas";
 import { title } from "./styles";
 import { Point } from "../../types";
 
@@ -13,37 +12,45 @@ import { Point } from "../../types";
 // Strokes
 // Vector Points
 
-const CompletedDrawing = ({ completedDrawing }: { completedDrawing: Point[][][] }): JSX.Element => {
+const CompletedDrawing = ({ completedDrawing }: { completedDrawing: Point[][][] }): JSX.Element | null => {
+    // This useEffect defines the canvas height
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const canvas = canvasRef.current;
     const context = canvas?.getContext("2d");
-    console.log("completedDrawing in CompletedDrawing:", completedDrawing);
-    if (canvas && context) {
-        const devicePixelRatio = window?.devicePixelRatio ?? 1;
-        const panelHeight = window?.innerHeight * devicePixelRatio * PANEL_HEIGHT_RATIO_OF_WINDOW;
 
-        // Clear canvas
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        let yOffset = 0;
-
-        completedDrawing?.forEach(strokeHistory => {
-            // Redraw stroke history onto blank canvas
-            strokeHistory?.forEach(strokeArray => drawOnCanvas(strokeArray, canvasRef, yOffset));
-            yOffset += Math.floor(panelHeight);
-        });
-    }
-
-    // This useEffect defines the canvas height
     useEffect(() => {
-        const canvas = canvasRef.current;
-        const devicePixelRatio = window.devicePixelRatio ?? 1;
+        console.log("completed drawing in completedDrawing component", completedDrawing );
 
-        if (!canvas) return;
-        canvas.style.width = `${window.innerWidth}px`;
-        canvas.style.height = `${window.innerHeight * DRAWING_HEIGHT_RATIO_OF_WINDOW}px`;
-        canvas.width = window.innerWidth * devicePixelRatio;
-        canvas.height = window.innerHeight * devicePixelRatio * DRAWING_HEIGHT_RATIO_OF_WINDOW;
-    }, []);
+        const devicePixelRatio = window.devicePixelRatio ?? 1;
+        console.log("before canvas not null");
+        // if (!canvas) return;
+        console.log("before canvas null");
+
+        // TODO: use all available pixels instead of fixed size
+        // canvas.style.width = `${window.innerWidth}px`;
+        // canvas.style.height = `${window.innerHeight * DRAWING_HEIGHT_RATIO_OF_WINDOW}px`;
+        // canvas.width = window.innerWidth * devicePixelRatio;
+        // canvas.height = window.innerHeight * devicePixelRatio * DRAWING_HEIGHT_RATIO_OF_WINDOW;
+
+
+        console.log("completedDrawing in CompletedDrawing:", completedDrawing);
+        if (canvas && context) {
+        // Clear canvas
+            canvas.style.width = `${PANEL_WIDTH}px`;
+            canvas.style.height = `${PANEL_HEIGHT * 3}px`;
+            canvas.width = PANEL_WIDTH * devicePixelRatio;
+            canvas.height = PANEL_HEIGHT * devicePixelRatio * 3;
+
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            let yOffset = 0;
+    
+            completedDrawing?.forEach(strokeHistory => {
+            // Redraw stroke history onto blank canvas
+                strokeHistory?.forEach(strokeArray => drawOnCanvas(strokeArray, canvasRef, yOffset));
+                yOffset += PANEL_HEIGHT;
+            });
+        }
+    }, [ canvas, completedDrawing ]);
 
     useEffect(() => {
         const disableScroll = (e: TouchEvent) => e.preventDefault();
@@ -76,11 +83,13 @@ function MultipleDrawings({ shouldAnimate }: { shouldAnimate: boolean }) {
     const [ reRender, setReRenderIndex ] = React.useState<number>(-1);
     const { completedDrawings } = useSocketInfo();
     if (!completedDrawings) {
-        return null;
+        console.log("NO COMPLETED DRAWINGS IN MULTIPLE DRAWINGS!!!!!!!!!!   ");
+        // return null;
     }
+    console.log({ completedDrawings });
 
     const renderDrawings = (reRenderIndex: number) => {
-        return completedDrawings.map((completedDrawing, index) => (
+        return completedDrawings?.map((completedDrawing, index) => (
             <div
                 key = {index}
                 className={"drawing-container"}
@@ -105,7 +114,7 @@ function MultipleDrawings({ shouldAnimate }: { shouldAnimate: boolean }) {
             className={"multiple-drawings"}
             // style={{ width: `${maxWidth + 60}px` }}
         >
-            {completedDrawings.length > 1
+            {completedDrawings && completedDrawings.length > 1
                 ?
                 <Carousel
                     onChange={(slideIndex) => {
