@@ -9,6 +9,7 @@ import {
     IPanel,
     IPoem,
     InterServerEvents,
+    Medium,
     Point,
     ServerToClientEvents,
     SocketData,
@@ -404,7 +405,7 @@ export class PoemEditor extends Editor {
         this.sendLineEdit();
         this.sendActivity();
         this.sendLastContributionStatus();
-        sendCollaborationContributionsInfo(this, false);
+        sendCollaborationContributionsInfo(this);
     }
 }
 
@@ -601,6 +602,6 @@ export class DrawingEditor extends Editor {
         super.reinstateContext();
         this.sendActivity();
         this.sendLastContributionStatus();
-        sendCollaborationContributionsInfo(this, false);
+        sendCollaborationContributionsInfo(this);
     }
 }

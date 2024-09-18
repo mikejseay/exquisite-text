@@ -129,7 +129,8 @@ export interface ServerToClientEvents {
 
 export interface ClientToServerEvents {
     ctsRequestUserTableInfo: (a: boolean) => void;
-    ctsRequestPoemsLines: (a: boolean) => void;
+    ctsRequestPoemsLines: () => void;
+    ctsRequestDrawings: () => void;
     ctsRequestLineEdit: () => void;
     ctsEditLine: (a: string) => void;
     ctsRecognizeDevice: (a: string) => void;

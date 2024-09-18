@@ -28,8 +28,14 @@ export const emitRequestUserTableInfo = (shouldTest = false) => {
     socket.emit("ctsRequestUserTableInfo", shouldTest);
 };
 
-export const emitRequestPoemsLines = (shouldTest = false) => {
-    socket.emit("ctsRequestPoemsLines", shouldTest);
+// Testing
+export const emitRequestPoemsLines = () => {
+    socket.emit("ctsRequestPoemsLines");
+};
+
+// Testing
+export const emitRequestDrawings = () => {
+    socket.emit("ctsRequestDrawings");
 };
 
 export const emitCreateRoomAndHost = (roomID: string, medium: Medium) => {

@@ -45,7 +45,7 @@ export class PoemSpectator extends Spectator {
         // TODO: Placeholder
         super.reinstateContext();
         this.sendAllPoemLines(); // sends poems that are in progress
-        sendCollaborationContributionsInfo(this, false); // sends completed poems for end of game
+        sendCollaborationContributionsInfo(this); // sends completed poems for end of game
     }
 }
 

@@ -24,6 +24,7 @@ import Canvas from "./screens/Canvas";
 import reportWebVitals from "./reportWebVitals";
 import SocketHandler from "./components/SocketHandler";
 import CanvasSpectator from "./screens/CanvasSpectator";
+import { Medium } from "./types";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement,
@@ -66,8 +67,9 @@ function Root() {
                             <Route path="lobby" element={<Lobby />} />
                             <Route path="game" element={<Game />} />
                             <Route path="spectate" element={<Spectate />} />
-                            <Route path="end" element={<End shouldTest={false} />} />
-                            <Route path="endtest" element={<End shouldTest={true} />} />
+                            <Route path="end" element={<End />} />
+                            <Route path="endtestpoem" element={<End testingMedium={Medium.POETRY} />} />
+                            <Route path="endtestdrawing" element={<End testingMedium={Medium.DRAWING} />} />
                             <Route path="canvas" element={<Canvas />} />
                             <Route path="canvasspectator" element={<CanvasSpectator />} />
                             {isComponentEnabled(<Route path="library" element={<Library />} />)}

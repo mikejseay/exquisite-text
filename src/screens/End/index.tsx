@@ -6,6 +6,7 @@ import KeyboardIcon from "@mui/icons-material/Keyboard";
 import {
     emitCreateRoomAndHost,
     emitRecognizeDevice,
+    emitRequestDrawings,
     emitRequestPoemsLines,
     emitRequestUserTableInfo,
 } from "../../context/SocketRequestors";
@@ -13,15 +14,22 @@ import { Medium } from "../../types";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import MultipleDrawings from "../../components/MultipleDrawings";
 
-function End({ shouldTest = false }: { shouldTest: boolean }) {
+function End({ testingMedium }: { testingMedium?: Medium }) {
     const { medium } = useSocketInfo();
 
     const [ rendered, setRendered ] = React.useState(false);
-    if (shouldTest && !rendered) {
+    if (testingMedium && !rendered) {
+        if (testingMedium === Medium.ART) {
+            throw new Error ("Passed Medium.ART into testing route");
+        }
         emitRecognizeDevice();
-        emitCreateRoomAndHost("ROOM", Medium.POETRY);
-        emitRequestUserTableInfo(true);
-        emitRequestPoemsLines(true);
+        emitCreateRoomAndHost("ROOM", testingMedium);
+        if (testingMedium === Medium.POETRY) {
+            emitRequestUserTableInfo(true);
+            emitRequestPoemsLines();
+        } else if (testingMedium === Medium.DRAWING) {
+            emitRequestDrawings();
+        }
         setRendered(true);
     }
 
