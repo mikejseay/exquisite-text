@@ -7,12 +7,19 @@ import { PANEL_HEIGHT, PANEL_WIDTH, drawOnCanvas } from "../../screens/Canvas";
 import { title } from "./styles";
 import { Point } from "../../types";
 
-const CompletedDrawing = ({ completedDrawing }: { completedDrawing: Point[][][] }): JSX.Element | null => {
+const CompletedDrawing = ({
+    completedDrawing,
+    shouldAnimate,
+}: {
+    completedDrawing: Point[][][];
+    shouldAnimate: boolean;
+}): JSX.Element | null => {
     if (completedDrawing?.length === 0) {
         return null;
     }
 
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const animationRef = useRef<number>();
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -21,14 +28,7 @@ const CompletedDrawing = ({ completedDrawing }: { completedDrawing: Point[][][] 
         const context = canvas.getContext("2d");
         if (!context) return;
 
-        console.log("canvas truthy:", Boolean(canvas));
-        console.log("context truthy:", Boolean(context));
-        console.log("completed drawing in completedDrawing component", completedDrawing);
-
         const devicePixelRatio = window.devicePixelRatio ?? 1;
-        console.log("before canvas not null");
-
-        console.log("completedDrawing in CompletedDrawing:", completedDrawing);
 
         // Set canvas dimensions
         canvas.style.width = `${PANEL_WIDTH}px`;
@@ -38,15 +38,55 @@ const CompletedDrawing = ({ completedDrawing }: { completedDrawing: Point[][][] 
 
         // Clear canvas
         context.clearRect(0, 0, canvas.width, canvas.height);
-        let yOffset = 0;
 
-        completedDrawing.forEach((strokeHistory) => {
-            console.log(strokeHistory);
-            // Redraw stroke history onto blank canvas
-            strokeHistory.forEach((strokeArray) => drawOnCanvas(strokeArray, canvasRef, yOffset));
-            yOffset += PANEL_HEIGHT;
-        });
-    }, [ completedDrawing ]);
+        if (shouldAnimate) {
+            // Animation code
+            let panelIndex = 0;
+            let strokeHistoryIndex = 0;
+            let yOffset = 0;
+
+            const totalPanels = completedDrawing.length;
+
+            const draw = () => {
+                if (panelIndex >= totalPanels) {
+                    cancelAnimationFrame(animationRef.current!);
+                    return;
+                }
+
+                const strokeHistory = completedDrawing[panelIndex];
+                const strokeArray = strokeHistory[strokeHistoryIndex];
+
+                if (strokeArray) {
+                    drawOnCanvas(strokeArray, canvasRef, yOffset);
+                    strokeHistoryIndex++;
+                } else {
+                    // Move to next panel
+                    panelIndex++;
+                    strokeHistoryIndex = 0;
+                    yOffset += PANEL_HEIGHT;
+                }
+
+                animationRef.current = requestAnimationFrame(draw);
+            };
+
+            draw();
+
+            return () => {
+                if (animationRef.current) {
+                    cancelAnimationFrame(animationRef.current);
+                }
+            };
+        } else {
+            // Static functionality: draw all at once
+            let yOffset = 0;
+            completedDrawing.forEach((strokeHistory) => {
+                strokeHistory.forEach((strokeArray) => {
+                    drawOnCanvas(strokeArray, canvasRef, yOffset);
+                });
+                yOffset += PANEL_HEIGHT;
+            });
+        }
+    }, [ completedDrawing, shouldAnimate ]);
 
     useEffect(() => {
         const disableScroll = (e: TouchEvent) => e.preventDefault();
@@ -54,6 +94,9 @@ const CompletedDrawing = ({ completedDrawing }: { completedDrawing: Point[][][] 
 
         return () => {
             document.body.removeEventListener("touchmove", disableScroll);
+            if (animationRef.current) {
+                cancelAnimationFrame(animationRef.current);
+            }
         };
     }, []);
 
@@ -74,7 +117,11 @@ const CompletedDrawing = ({ completedDrawing }: { completedDrawing: Point[][][] 
     );
 };
 
-const renderDrawings = (completedDrawings: Point[][][][] | null, reRenderIndex: number) => {
+const renderDrawings = (
+    completedDrawings: Point[][][][] | null,
+    reRenderIndex: number,
+    shouldAnimate: boolean,
+) => {
     return completedDrawings?.map((completedDrawing, index) => (
         <div
             key={index}
@@ -87,7 +134,7 @@ const renderDrawings = (completedDrawings: Point[][][][] | null, reRenderIndex: 
             <div style={title} className={"drawing-title"}>
                 <strong>{`exquisite corpse #${index}`}</strong>
             </div>
-            <CompletedDrawing completedDrawing={completedDrawing} />
+            <CompletedDrawing completedDrawing={completedDrawing} shouldAnimate={shouldAnimate} />
         </div>
     ));
 };
@@ -96,7 +143,6 @@ function MultipleDrawings({ shouldAnimate }: { shouldAnimate: boolean }) {
     const [ reRender, setReRenderIndex ] = React.useState<number>(-1);
     const { completedDrawings } = useSocketInfo();
     if (!completedDrawings || completedDrawings?.length === 0) {
-        console.log("NO COMPLETED DRAWINGS IN MULTIPLE DRAWINGS!!!!!!!!!!   ");
         return null;
     }
 
@@ -110,11 +156,11 @@ function MultipleDrawings({ shouldAnimate }: { shouldAnimate: boolean }) {
                         }}
                         showThumbs={false}
                     >
-                        {renderDrawings(completedDrawings, reRender)}
+                        {renderDrawings(completedDrawings, reRender, shouldAnimate)}
                     </Carousel>
                 )
                 : (
-                    renderDrawings(completedDrawings, reRender)
+                    renderDrawings(completedDrawings, reRender, shouldAnimate)
                 )}
         </div>
     );

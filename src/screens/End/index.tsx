@@ -40,7 +40,7 @@ function End({ testingMedium }: { testingMedium?: Medium }) {
 
     const displayedCompletedArt = medium === Medium.POETRY
         ? <MultiplePoems shouldAnimate={shouldAnimate} />
-        : <MultipleDrawings shouldAnimate={false} />;
+        : <MultipleDrawings shouldAnimate={shouldAnimate} />;
 
     return (
         <div style={centered}>
