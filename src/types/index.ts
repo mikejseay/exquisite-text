@@ -222,6 +222,7 @@ export interface ISocketInfo {
     setRoomCode: (value: string | ((prevVar: string) => string)) => void;
     settingsEnabled: boolean | null;
     userInfo: IUserTableInfo | null;
+    setEditorActive: (value: boolean | ((prevVar: boolean) => boolean)) => void;
 
     // poems
     lineEdits: Array<string> | null;

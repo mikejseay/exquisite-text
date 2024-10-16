@@ -9,6 +9,7 @@ export const SocketInfoContext = createContext<ISocketInfo>({
     setRoomCode: () => null,
     settingsEnabled: null,
     userInfo: null,
+    setEditorActive: () => null,
 
     // poems
     lineEdits: null,

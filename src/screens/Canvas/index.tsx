@@ -25,7 +25,6 @@ export const PANEL_WIDTH = 667;
     [ ] Canvas and panel height are established at the start of the game, and become a property of the room
     [ ] Players are forced to have canvases of the appropriate height regardless of their window size
     [ ] Spectator view
-    [-] End view
     [ ] Ensure that spectator receives entire drawing instead of just single frame
     [-] Modularize all server socket functions to work with both poems and canvases
     [ ] For the watcher, the cursor is not in right spot until writer starts writing:
@@ -76,9 +75,8 @@ export function drawOnCanvas (newPoints: Point[], canvasRef: React.MutableRefObj
 }
 
 const Canvas: React.FC = () => {
-    const { strokeHistory, editorActive, onLastContribution } = useSocketInfo();
+    const { strokeHistory, editorActive, onLastContribution, setEditorActive } = useSocketInfo();
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const [ isCanvasVisible, setIsCanvasVisible ] = useState(true);
     const [ isPassCompleteDisabled, setIsPassCompleteDisabled ] = useState(false);
     const [ points, setPoints ] = useState<Point[]>([]);
     const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
@@ -100,7 +98,7 @@ const Canvas: React.FC = () => {
         // TODO: This borks mouse canvas size positioning, probably because
         // viewport is changing in browser window, can use canvas empty placeholder
         // that is unclickable, or just legit clear that shit:
-        setIsCanvasVisible(Boolean(editorActive));
+        console.log({ editorActive });
         if (!editorActive) return;
 
         // Process the stroke history to visually clip it
@@ -131,6 +129,8 @@ const Canvas: React.FC = () => {
         emitSendPanel(localStrokeHistory);
         setPoints([]);
         setLocalStrokeHistory([]);
+        // TODO: Eventually this should maybe be handled on the backend?
+        setEditorActive(false);
     }
 
     function completeDrawing() {
@@ -140,7 +140,6 @@ const Canvas: React.FC = () => {
 
         // initialize the Canvas
         setLocalStrokeHistory([]);
-        setIsCanvasVisible(false);
         setIsPassCompleteDisabled(false);
 
         return;
@@ -243,6 +242,7 @@ const Canvas: React.FC = () => {
         canvas.style.height = `${PANEL_HEIGHT}px`;
         canvas.width = PANEL_WIDTH * devicePixelRatio;
         canvas.height = PANEL_HEIGHT * devicePixelRatio;
+        console.log("canvas.height:", canvas.height);
     }, []);
 
     useEffect(() => {
@@ -279,10 +279,10 @@ const Canvas: React.FC = () => {
             <canvas
                 ref={canvasRef}
                 style={{
-                    pointerEvents: isCanvasVisible
+                    pointerEvents: editorActive
                         ? "auto"
                         : "none", // Disable pointer events if editor is not active
-                    opacity: isCanvasVisible
+                    opacity: editorActive
                         ? 1
                         : 0.5, // Optionally change opacity to visually indicate inactivity
                 }}
