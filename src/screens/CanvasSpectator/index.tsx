@@ -1,23 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { PANEL_HEIGHT, PANEL_HEIGHT_RATIO_OF_WINDOW, PANEL_WIDTH, drawOnCanvas  } from "../Canvas";
-import { emitJoinAs, emitRecognizeDevice, emitRequestCanvas } from "../../context/SocketRequestors";
-import { Role } from "../../types";
+import { PANEL_HEIGHT, PANEL_WIDTH, drawOnCanvas } from "../Canvas";
 
 
 const CanvasSpectator: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const [ hasJoinedRoom, setHasJoinedRoom ] = useState<boolean>(false);
     const { strokeHistory, completedDrawings } = useSocketInfo();
 
-    // if (!hasJoinedRoom) {
-    //     emitRecognizeDevice();
-    //     emitJoinAs("ROOM", "MIKEY", Role.SPECTATOR, true);
-    //     emitRequestCanvas();
-    //     setHasJoinedRoom(true);
-    // }
-
-    // TODO: Inside this useEffect, we want to receive the canvas vector (strokeHistory)
     // We want to draw it,
     // Then we want to clip it without ever showing the user the whole thing
     useEffect(() => {

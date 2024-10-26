@@ -1,4 +1,5 @@
 module.exports = {
+    "ignorePatterns": [ "src/data/multipleDrawings.ts" ],
     "env": {
         "browser": true,
         "es2021": true,

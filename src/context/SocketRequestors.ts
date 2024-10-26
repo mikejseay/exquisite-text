@@ -2,7 +2,6 @@ import { socket } from "../components/SocketHandler";
 import { v4 as uuidv4 } from "uuid";
 import { isNil } from "es-toolkit";
 import { LineLength, Medium, Point, Role } from "../types";
-import { defaultGameSettings } from "../constants";
 
 export const emitRecognizeDevice = () => {
 
@@ -106,9 +105,4 @@ export const emitSendPanel = (value: Point[][] | null) => {
 
 export const emitSendLastPanel = (value: Point[][] | null) => {
     socket.emit("ctsSendLastPanel", value);
-};
-
-export const emitRequestCanvas = () => {
-    console.log("emitRequestCanvas activated");
-    socket.emit("ctsRequestCanvas");
 };

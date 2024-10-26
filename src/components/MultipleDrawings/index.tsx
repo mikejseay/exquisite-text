@@ -50,7 +50,8 @@ const CompletedDrawing = ({
 
             const draw = () => {
                 if (panelIndex >= totalPanels) {
-                    cancelAnimationFrame(animationRef.current!);
+                    if (!animationRef.current) return;
+                    cancelAnimationFrame(animationRef.current);
                     return;
                 }
 

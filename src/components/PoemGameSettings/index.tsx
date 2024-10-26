@@ -12,7 +12,6 @@ import {
     emitStartGame,
 } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import Typography from "@mui/material/Typography";
 
 function PoemGameSettings() {
     const {
@@ -82,8 +81,8 @@ function PoemGameSettings() {
                         onChange={handleLineLength}
                         disabled={!settingsEnabled}
                     >
-                        <ToggleButton value="short">Short</ToggleButton>
-                        <ToggleButton value="long">Long</ToggleButton>
+                        <ToggleButton value={LineLength.SHORT}>Short</ToggleButton>
+                        <ToggleButton value={LineLength.LONG}>Long</ToggleButton>
                     </ToggleButtonGroup>
                 </div>
 

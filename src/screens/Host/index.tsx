@@ -4,7 +4,6 @@ import UserTable from "../../components/UserTable";
 import PoemGameSettings from "../../components/PoemGameSettings";
 import { generateAlphaString } from "../../helpers";
 import { roomCodeLength } from "../../constants";
-import Typography from "@mui/material/Typography";
 
 export default function Host() {
 

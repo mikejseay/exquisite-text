@@ -85,13 +85,11 @@ const Canvas: React.FC = () => {
     const [ isPassCompleteDisabled, setIsPassCompleteDisabled ] = useState(false);
     const [ points, setPoints ] = useState<Point[]>([]);
     const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
-    const [ playerCanvases, setPlayerCanvases ] = useState<ImageData[]>([]);
     const [ isMousedown, setIsMousedown ] = useState(false);
     const [ allowDirect, setAllowDirect ] = useState(true);
     const [ lineWidth, setLineWidth ] = useState(0);
     const [ eventPressure, setEventPressure ] = useState(DEFAULT_PRESSURE);
     const [ drawType, setDrawType ] = useState<"fill" | "stroke" | "noDrawYet">("noDrawYet");
-    const [ player, setPlayer ] = useState<number>(0);
     const [ coordinates, setCoordinates ] = useState<{ x: number, y: number}>({ x: 0, y: 0 });
 
     // TODO: handle all functionality that must toggle with editorActive
@@ -136,7 +134,7 @@ const Canvas: React.FC = () => {
     function passTurn() {
         // Convert pixel values to pixel-free values??
         // In future let people with more pixels to use them while they're drawing
-        // use window characteristics to determine best aspect ratio for them, and set their
+        // use window characteristics to determine the best aspect ratio for them, and set their
         // canvas that way
         emitSendPanel(localStrokeHistory);
         setPoints([]);
@@ -157,7 +155,7 @@ const Canvas: React.FC = () => {
         return;
     }
 
-    const handleStart = useCallback((e: React.MouseEvent<Element, MouseEvent> | React.TouchEvent<Element>) => {
+    const handleStart = useCallback((e: React.MouseEvent<Element, MouseEvent> | React.TouchEvent) => {
         let pressure = DEFAULT_PRESSURE;
         let x = 0;
         let y = 0;
@@ -191,7 +189,7 @@ const Canvas: React.FC = () => {
         const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * DEFAULT_LINE_WIDTH };
         setPoints((prev) => [ ...prev, newPoint ]);
         drawOnCanvas([ newPoint ], canvasRef);
-    }, [ allowDirect, drawOnCanvas, player ]);
+    }, [ allowDirect, drawOnCanvas ]);
 
     const handleMove = useCallback((e: React.MouseEvent | React.TouchEvent) => {
         if (!isMousedown) {
@@ -234,7 +232,7 @@ const Canvas: React.FC = () => {
             drawOnCanvas([ prev[prev.length - 1], newPoint ], canvasRef);
             return [ ...prev, newPoint ];
         });
-    }, [ allowDirect, drawOnCanvas, isMousedown, player ]);
+    }, [ allowDirect, drawOnCanvas, isMousedown ]);
 
     const handleEnd = useCallback(() => {
         setIsMousedown(false);
@@ -279,8 +277,6 @@ const Canvas: React.FC = () => {
                 {"Line Width: " + lineWidth}
                 <br />
                 {"Draw Type: " + drawType}
-                <br />
-                {"Current Player: " + player}
                 <br />
                 {"Coordinates: " + JSON.stringify(coordinates)}
             </p>

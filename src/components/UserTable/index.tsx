@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import Typography from "@mui/material/Typography";
 
 function UserTable() {
     const { userInfo } = useSocketInfo();

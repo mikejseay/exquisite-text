@@ -1,16 +1,10 @@
 import * as React from "react";
-import { useState } from "react";
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import ArticleIcon from "@mui/icons-material/Article";
-import BrushIcon from "@mui/icons-material/Brush";
 import PoemGameSettings from "../../components/PoemGameSettings";
 import DrawingGameSettings from "../../components/DrawingGameSettings";
 import LeaveButton from "../../components/LeaveButton";
 import UserTable from "../../components/UserTable";
 import RoomCode from "../../components/RoomCode";
 import { Medium } from "../../types";
-import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 
@@ -18,14 +12,14 @@ function Lobby() {
     const { medium } = useSocketInfo();
 
     return (
-        <Box 
-            sx={{ 
-                display: "flex", 
-                flexDirection: "column", 
-                alignItems: "center", 
-                justifyContent: "center", 
-                height: "100vh", 
-                textAlign: "center", 
+        <Box
+            sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "100vh",
+                textAlign: "center",
             }}
         >
             <RoomCode />
