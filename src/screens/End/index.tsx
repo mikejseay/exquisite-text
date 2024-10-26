@@ -33,7 +33,7 @@ function End({ testingMedium }: { testingMedium?: Medium }) {
         setRendered(true);
     }
 
-    const [ shouldAnimate, setShouldAnimate ] = React.useState(true);
+    const [ shouldAnimate, setShouldAnimate ] = React.useState(false);
     const handleChange = () => {
         setShouldAnimate(!shouldAnimate);
     };

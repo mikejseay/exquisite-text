@@ -92,7 +92,7 @@ const CompletedDrawing = ({
                         lineWidth: point.lineWidth * window.devicePixelRatio,
                     })), canvasRef, yOffset);
                 });
-                yOffset += PANEL_HEIGHT;
+                yOffset += PANEL_HEIGHT * (1 - OVERLAP);
             });
         }
     }, [ completedDrawing, shouldAnimate ]);
