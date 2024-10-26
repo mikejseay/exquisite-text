@@ -202,6 +202,18 @@ class Room {
         delete socketIDToDeviceID[member.socket.id];
         delete deviceIDToSocketID[deviceID];
     }
+
+    navigateMembersToGame() {
+        // should tell editors to navigate to /game and spectators to /spectate
+        this.gameState = GameState.GAME;
+        this.io.in(`${this.roomID}_Editors`).emit("stcNavigate", "/game");
+        this.io.in(`${this.roomID}_Spectators`).emit("stcNavigate", "/spectate");
+
+        for (const editor of this.editors.values()) {
+            editor.sendActivity();
+            editor.sendLastContributionStatus();
+        }
+    }
 }
 
 export class PoemRoom extends Room {
@@ -244,15 +256,7 @@ export class PoemRoom extends Room {
             }
         }
 
-        // should tell editors to navigate to /game and spectators to /spectate
-        this.gameState = GameState.GAME;
-        this.io.in(`${this.roomID}_Editors`).emit("stcNavigate", "/game");
-        this.io.in(`${this.roomID}_Spectators`).emit("stcNavigate", "/spectate");
-
-        for (const editor of this.editors.values()) {
-            editor.sendActivity();
-            editor.sendLastContributionStatus();
-        }
+        this.navigateMembersToGame();
     }
 
 }
@@ -296,15 +300,7 @@ export class DrawingRoom extends Room {
             }
         }
 
-        // should tell editors to navigate to /game and spectators to /spectate
-        this.gameState = GameState.GAME;
-        this.io.in(`${this.roomID}_Editors`).emit("stcNavigate", "/game");
-        this.io.in(`${this.roomID}_Spectators`).emit("stcNavigate", "/spectate");
-
-        for (const editor of this.editors.values()) {
-            editor.sendActivity();
-            editor.sendLastContributionStatus();
-        }
+        this.navigateMembersToGame();
     }
 
     storeDrawing(drawingObj: Drawing) {
