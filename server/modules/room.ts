@@ -241,17 +241,23 @@ export class PoemRoom extends Room {
         let nPoemsToHandOut = this.gameSettings["nPoems"];
         this.nUnfinishedWorks = nPoemsToHandOut;
         let poemIndex = 0;
+        // prepare each player for the game
         for (const editor of this.editors.values()) {
             editor.lastActivity = Date.now(); // refresh AFK timers upon game start
             editor.prepareForGame();
-
-            // give the editor a new poem
-            if (nPoemsToHandOut > 0) {
+        }
+        // as long as there are poems, cycle through editors, giving one to each
+        while (nPoemsToHandOut > 0) {
+            for (const editor of this.editors.values()) {
                 const poem = new Poem(this.io, this.roomID, nContributions, poemIndex); // creates Poem object
                 editor.contributionQueue.push(poem);
                 editor.isCurrentlyEditing = true;
                 nPoemsToHandOut--;
                 poemIndex++;
+
+                if (nPoemsToHandOut <= 0) {
+                    break;
+                }
             }
         }
 

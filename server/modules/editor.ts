@@ -255,6 +255,7 @@ export class PoemEditor extends Editor {
             console.log("nextEditor not found");
             return;
         }
+        // Since it's not finished, put the poem into the next player's queue
         nextEditor.contributionQueue.push(poemToPass);
 
         // trigger editors to check their queue and update their activity state
@@ -314,6 +315,7 @@ export class PoemEditor extends Editor {
 
     handleLastLine(lastPart: string) {
         console.log("handleLastLine in ", this.name);
+        // Since the poem is finished, remove it from the queue
         const poemToPass = this.contributionQueue.shift() as Poem;
         if (isNil(poemToPass)) {
             return;
@@ -339,6 +341,10 @@ export class PoemEditor extends Editor {
             return;
         }
         room.nUnfinishedWorks--;
+
+        // We still need to check if we need to start a new turn
+        this.possibleStartNewTurn();
+
         // if all editors' poem queues are empty
         // remove each of the editor/spectator deviceIDs from deviceIDToRoomId
         if (room.nUnfinishedWorks === 0) {

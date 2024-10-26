@@ -84,6 +84,7 @@ const LineInput = () => {
     React.useEffect(() => {
         setShouldDisplaySecondLine(false);
         if (editorActive) {
+            console.log("editor is being set to active");
             setTextAreaVisible(true);
             setHelpMessage("Complete a line of poetry.");
             setPoemDoneVisible(true);
@@ -256,16 +257,11 @@ const LineInput = () => {
     // since there is no separate "complete poem" button now,
     // maybe this button's functionality should change?
     function completePoem() {
-    // post the current input to the lines
-        emitSendLastLine(poemInput);
 
-        // set the input textarea to be blank
-        setPoemInput("");
-        emitEditLine("");
-
-        setTextAreaVisible(false);
-        setPassEnabled(false);
         setPoemDoneVisible(false);
+
+        // post the current input to the lines
+        emitSendLastLine(poemInput);
     }
 
     function handleKeyDown({ charCode, key, ctrlKey, metaKey }: React.KeyboardEvent) {

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { SxProps } from "@mui/system";
-import { FABSpace } from "../../constants";
+import { FABDiameter, FABSpace } from "../../constants";
 
 export const centered: React.CSSProperties = {
     display: "flex",
@@ -11,6 +11,6 @@ export const centered: React.CSSProperties = {
 
 export const floatingToggleAnimate: SxProps = {
     position: "absolute",
-    right: 2 * FABSpace - 5,
+    right: FABDiameter + 2 * FABSpace + 5,
     top: FABSpace,
 };
