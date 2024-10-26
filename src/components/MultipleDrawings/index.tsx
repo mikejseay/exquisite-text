@@ -68,7 +68,7 @@ const CompletedDrawing = ({
                     // Move to next panel
                     panelIndex++;
                     strokeHistoryIndex = 0;
-                    yOffset += PANEL_HEIGHT * (1 - OVERLAP);
+                    yOffset += PANEL_HEIGHT * (1 - OVERLAP) * window.devicePixelRatio;
                 }
 
                 animationRef.current = requestAnimationFrame(draw);
@@ -92,7 +92,7 @@ const CompletedDrawing = ({
                         lineWidth: point.lineWidth * window.devicePixelRatio,
                     })), canvasRef, yOffset);
                 });
-                yOffset += PANEL_HEIGHT * (1 - OVERLAP);
+                yOffset += PANEL_HEIGHT * (1 - OVERLAP) * window.devicePixelRatio;
             });
         }
     }, [ completedDrawing, shouldAnimate ]);
