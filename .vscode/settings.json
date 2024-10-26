@@ -8,6 +8,8 @@
     },
     "editor.formatOnSave": true,
     "eslint.alwaysShowStatus": true,
-    "eslint.format.enable": true
+    "eslint.format.enable": true,
+    "[json]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
   }
-  

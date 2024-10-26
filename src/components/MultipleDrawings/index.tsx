@@ -3,7 +3,7 @@ import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a lo
 import { Carousel } from "react-responsive-carousel";
 
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { PANEL_HEIGHT, PANEL_WIDTH, drawOnCanvas } from "../../screens/Canvas";
+import { DRAWING_HEIGHT, DRAWING_WIDTH, OVERLAP, PANEL_HEIGHT, drawOnCanvas } from "../../screens/Canvas";
 import { title } from "./styles";
 import { Point } from "../../types";
 
@@ -31,10 +31,11 @@ const CompletedDrawing = ({
         const devicePixelRatio = window.devicePixelRatio ?? 1;
 
         // Set canvas dimensions
-        canvas.style.width = `${PANEL_WIDTH}px`;
-        canvas.style.height = `${PANEL_HEIGHT * 3}px`;
-        canvas.width = PANEL_WIDTH * devicePixelRatio;
-        canvas.height = PANEL_HEIGHT * devicePixelRatio * 3;
+        canvas.style.width = `${DRAWING_WIDTH}px`;
+        canvas.style.height = `${DRAWING_HEIGHT}px`;
+        canvas.width = DRAWING_WIDTH * devicePixelRatio;
+        canvas.height = DRAWING_HEIGHT * devicePixelRatio;
+        console.log("canvas.height:", canvas.height);
 
         // Clear canvas
         context.clearRect(0, 0, canvas.width, canvas.height);
@@ -54,7 +55,11 @@ const CompletedDrawing = ({
                 }
 
                 const strokeHistory = completedDrawing[panelIndex];
-                const strokeArray = strokeHistory[strokeHistoryIndex];
+                const strokeArray = strokeHistory[strokeHistoryIndex]?.map(point => ({
+                    x: point.x * window.devicePixelRatio,
+                    y: point.y * window.devicePixelRatio,
+                    lineWidth: point.lineWidth * window.devicePixelRatio,
+                }));
 
                 if (strokeArray) {
                     drawOnCanvas(strokeArray, canvasRef, yOffset);
@@ -63,7 +68,7 @@ const CompletedDrawing = ({
                     // Move to next panel
                     panelIndex++;
                     strokeHistoryIndex = 0;
-                    yOffset += PANEL_HEIGHT;
+                    yOffset += PANEL_HEIGHT * (1 - OVERLAP);
                 }
 
                 animationRef.current = requestAnimationFrame(draw);
@@ -81,7 +86,11 @@ const CompletedDrawing = ({
             let yOffset = 0;
             completedDrawing.forEach((strokeHistory) => {
                 strokeHistory.forEach((strokeArray) => {
-                    drawOnCanvas(strokeArray, canvasRef, yOffset);
+                    drawOnCanvas(strokeArray?.map(point => ({
+                        x: point.x * window.devicePixelRatio,
+                        y: point.y * window.devicePixelRatio,
+                        lineWidth: point.lineWidth * window.devicePixelRatio,
+                    })), canvasRef, yOffset);
                 });
                 yOffset += PANEL_HEIGHT;
             });
@@ -110,6 +119,7 @@ const CompletedDrawing = ({
                 onTouchMove={()=> {return;}}
                 onMouseUp={()=> {return;}}
                 onTouchEnd={()=> {return;}}
+                style={{ border: "1px solid black" }}
             >
                 Sorry, your browser is too old for this demo.
             </canvas>

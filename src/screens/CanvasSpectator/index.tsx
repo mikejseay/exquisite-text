@@ -22,7 +22,11 @@ const CanvasSpectator: React.FC = () => {
     // Then we want to clip it without ever showing the user the whole thing
     useEffect(() => {
         console.log("strokeHistory in CanvasSpectator:", strokeHistory);
-        strokeHistory?.forEach(strokeArray => drawOnCanvas(strokeArray, canvasRef));
+        strokeHistory?.forEach(strokeArray => drawOnCanvas(strokeArray?.map(point => ({
+            x: point.x * window.devicePixelRatio,
+            y: point.y * window.devicePixelRatio,
+            lineWidth: point.lineWidth * window.devicePixelRatio,
+        })), canvasRef));
     }, [ strokeHistory, completedDrawings ]);
 
     // This useEffect defines the panel height
@@ -35,6 +39,7 @@ const CanvasSpectator: React.FC = () => {
         canvas.style.height = `${PANEL_HEIGHT * 3}px`;
         canvas.width = PANEL_WIDTH * devicePixelRatio;
         canvas.height = PANEL_HEIGHT * devicePixelRatio * 3;
+        console.log("canvas.height:", canvas.height);
     }, []);
 
     useEffect(() => {

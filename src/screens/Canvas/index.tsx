@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Button from "@mui/material/Button";
-import { Medium, Point, Role } from "../../types";
-import { emitCreateRoomAndHost, emitJoinAs, emitRecognizeDevice, emitSendLastPanel, emitSendPanel } from "../../context/SocketRequestors";
+import { Point } from "../../types";
+import { emitSendLastPanel, emitSendPanel } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 
 type ExtendedTouch = Touch & {
@@ -16,10 +16,13 @@ export const OVERLAP = 0.2;
 const DEFAULT_PRESSURE = 0.1;
 const lineColor = "grey";
 
-export const PANEL_HEIGHT = 300;
+export const PANEL_HEIGHT = 300; // retina is double
 export const PANEL_WIDTH = 667;
+export const DRAWING_HEIGHT = 3 * PANEL_HEIGHT - 2 * OVERLAP * PANEL_HEIGHT;
+export const DRAWING_WIDTH = PANEL_WIDTH;
 
 // iPhone SE: 667 x 375
+// NOTE: window.devicePixelRatio is 2 for retina screens
 
 /* TODO:
     [ ] Canvas and panel height are established at the start of the game, and become a property of the room
@@ -33,6 +36,8 @@ export const PANEL_WIDTH = 667;
 */
 
 export function drawOnCanvas (newPoints: Point[], canvasRef: React.MutableRefObject<HTMLCanvasElement | null>, yOffset = 0) {
+    if (!newPoints || !newPoints.length) return;
+
     if (!canvasRef) {
         console.warn("No canvasRef in drawOnCanvas");
         return;
@@ -67,9 +72,9 @@ export function drawOnCanvas (newPoints: Point[], canvasRef: React.MutableRefObj
         const startPoint = newPoints[i];
         const endPoint = newPoints[i + 1];
 
-        context.moveTo(startPoint.x, startPoint.y + yOffset);
-        context.lineWidth = startPoint.lineWidth;
-        context.lineTo(endPoint.x, endPoint.y + yOffset);
+        context.moveTo(startPoint?.x, startPoint?.y + yOffset);
+        context.lineWidth = startPoint?.lineWidth;
+        context.lineTo(endPoint?.x, endPoint?.y + yOffset);
         context.stroke();
     }
 }
@@ -91,6 +96,7 @@ const Canvas: React.FC = () => {
 
     // TODO: handle all functionality that must toggle with editorActive
     React.useEffect(() => {
+        console.log("window.devicePixelRatio:", window?.devicePixelRatio);
         console.log("editorActive useEffect activated", editorActive);
         console.log("strokeHistory.length:", strokeHistory?.length);
         console.log("localStrokeHistory.length:", localStrokeHistory?.length);
@@ -109,14 +115,20 @@ const Canvas: React.FC = () => {
             context.clearRect(0, 0, canvas.width, canvas.height);
 
             // Redraw stroke history onto blank canvas
-            strokeHistory?.forEach(strokeArray => drawOnCanvas(strokeArray, canvasRef));
-
+            // TODO: Universalize drawing function for multiply or divide
+            strokeHistory?.forEach(strokeArray => drawOnCanvas(strokeArray?.map(point => ({
+                x: point.x * window.devicePixelRatio,
+                y: point.y * window.devicePixelRatio,
+                lineWidth: point.lineWidth * window.devicePixelRatio,
+            })), canvasRef));
+            console.log({ strokeHistory });
             //// This accomplishes the clipping of the image: ////
 
             // Shift canvas contents upward by 0.8 times the canvas height (old method)
             const imageData = context.getImageData(0, context.canvas.height * (1 - OVERLAP), context.canvas.width, context.canvas.height);
             context.putImageData(imageData, 0, 0);
             context.clearRect(context.canvas.width, context.canvas.height * OVERLAP, 0, context.canvas.height);
+            console.log("context.canvas.height/width:", context.canvas.width, context.canvas.height);
         }
         return;
     }, [ editorActive ]);
@@ -226,7 +238,12 @@ const Canvas: React.FC = () => {
 
     const handleEnd = useCallback(() => {
         setIsMousedown(false);
-        setLocalStrokeHistory((prev) => [ ...prev, points ]);
+        const scaledPoints: Point[] = points.map(point => ({
+            x: point.x / window.devicePixelRatio,
+            y: point.y / window.devicePixelRatio,
+            lineWidth: point.lineWidth / window.devicePixelRatio,
+        }));
+        setLocalStrokeHistory((prev) => [ ...prev, scaledPoints ]);
         setPoints([]);
         setLineWidth(0);
     }, [ points ]);
@@ -285,6 +302,7 @@ const Canvas: React.FC = () => {
                     opacity: editorActive
                         ? 1
                         : 0.5, // Optionally change opacity to visually indicate inactivity
+                    border: "1px solid black",
                 }}
                 onMouseDown={handleStart}
                 onTouchStart={handleStart}
