@@ -1,29 +1,22 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { drawOnCanvas, panelHeightRatioOfWindow  } from "../Canvas";
-import { emitJoinAs, emitRecognizeDevice, emitRequestCanvas } from "../../context/SocketRequestors";
-import { Role } from "../../types";
+import { PANEL_HEIGHT, PANEL_WIDTH, drawOnCanvas } from "../Canvas";
 
 
 const CanvasSpectator: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const [ hasJoinedRoom, setHasJoinedRoom ] = useState<boolean>(false);
-    const { strokeHistory } = useSocketInfo();
+    const { strokeHistory, completedDrawings } = useSocketInfo();
 
-    if (!hasJoinedRoom) {
-        emitRecognizeDevice();
-        emitJoinAs("ROOM", "MIKEY", Role.SPECTATOR, true);
-        emitRequestCanvas();
-        setHasJoinedRoom(true);
-    }
-
-    // TODO: Inside this useEffect, we want to receive the canvas vector (strokeHistory)
     // We want to draw it,
     // Then we want to clip it without ever showing the user the whole thing
     useEffect(() => {
         console.log("strokeHistory in CanvasSpectator:", strokeHistory);
-        strokeHistory?.forEach(strokeArray => drawOnCanvas(strokeArray, canvasRef));
-    }, [ strokeHistory ]);
+        strokeHistory?.forEach(strokeArray => drawOnCanvas(strokeArray?.map(point => ({
+            x: point.x * window.devicePixelRatio,
+            y: point.y * window.devicePixelRatio,
+            lineWidth: point.lineWidth * window.devicePixelRatio,
+        })), canvasRef));
+    }, [ strokeHistory, completedDrawings ]);
 
     // This useEffect defines the panel height
     useEffect(() => {
@@ -31,10 +24,11 @@ const CanvasSpectator: React.FC = () => {
         const devicePixelRatio = window.devicePixelRatio ?? 1;
 
         if (!canvas) return;
-        canvas.style.width = `${window.innerWidth}px`;
-        canvas.style.height = `${window.innerHeight * panelHeightRatioOfWindow}px`;
-        canvas.width = window.innerWidth * devicePixelRatio;
-        canvas.height = window.innerHeight * devicePixelRatio * panelHeightRatioOfWindow;
+        canvas.style.width = `${PANEL_WIDTH}px`;
+        canvas.style.height = `${PANEL_HEIGHT * 3}px`;
+        canvas.width = PANEL_WIDTH * devicePixelRatio;
+        canvas.height = PANEL_HEIGHT * devicePixelRatio * 3;
+        console.log("canvas.height:", canvas.height);
     }, []);
 
     useEffect(() => {

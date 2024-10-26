@@ -26,6 +26,11 @@ Work is tracked for this repository on the [Exquisite Text Project Board](https:
 - [Express](https://expressjs.com/)
 - [Node.js](https://nodejs.org/en/)
 
+After Node is installed, use [Corepack](https://nodejs.org/api/corepack.html) to automatically install the correct version of yarn (as defined in `package.json`):
+
+```sh
+corepack enable
+```
 
 ## Installation & Start
 

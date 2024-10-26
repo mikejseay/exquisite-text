@@ -13,7 +13,7 @@ import {
 } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 
-function GameSettings() {
+function PoemGameSettings() {
     const {
         settingsEnabled,
         lineLength,
@@ -38,11 +38,11 @@ function GameSettings() {
 
     // these will only ever take place for the VIP editor
     const handleLineLength = (event: React.MouseEvent<HTMLElement>, newLineLength: LineLength) => {
-        if (!newLineLength || !nPoems || !nRounds)  {
+        if (!nPoems || !nRounds || !newLineLength)  {
             return;
         }
         setLineLength(newLineLength);
-        emitAlterGameSettings(newLineLength, nPoems, nRounds);
+        emitAlterGameSettings({ lineLength: newLineLength, nPoems, nRounds });
     };
 
     const handleNRounds = (event: React.MouseEvent<HTMLElement>, newNRounds: number) => {
@@ -50,7 +50,7 @@ function GameSettings() {
             return;
         }
         setNRounds(newNRounds);
-        emitAlterGameSettings(lineLength, nPoems, newNRounds);
+        emitAlterGameSettings({ lineLength, nPoems, nRounds: newNRounds });
     };
 
     const handleNPoems = (event: React.MouseEvent<HTMLElement>, newNPoems: number) => {
@@ -58,7 +58,7 @@ function GameSettings() {
             return;
         }
         setNPoems(newNPoems);
-        emitAlterGameSettings(lineLength, newNPoems, nRounds);
+        emitAlterGameSettings({ lineLength, nPoems: newNPoems, nRounds });
     };
 
     const handlePressStartGameButton = () => {
@@ -81,8 +81,8 @@ function GameSettings() {
                         onChange={handleLineLength}
                         disabled={!settingsEnabled}
                     >
-                        <ToggleButton value="short">Short</ToggleButton>
-                        <ToggleButton value="long">Long</ToggleButton>
+                        <ToggleButton value={LineLength.SHORT}>Short</ToggleButton>
+                        <ToggleButton value={LineLength.LONG}>Long</ToggleButton>
                     </ToggleButtonGroup>
                 </div>
 
@@ -127,4 +127,4 @@ function GameSettings() {
     );
 }
 
-export default GameSettings;
+export default PoemGameSettings;

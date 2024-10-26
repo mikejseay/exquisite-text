@@ -1,4 +1,4 @@
-import isNil from "lodash/isNil";
+import { isNil } from "es-toolkit";
 import { Server, Socket } from "socket.io";
 
 import { deviceIDToRoomID, deviceIDToSocketID, roomIDToRoom, socketIDToDeviceID } from "./globals";

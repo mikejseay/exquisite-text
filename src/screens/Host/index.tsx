@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import UserTable from "../../components/UserTable";
-import GameSettings from "../../components/GameSettings";
+import PoemGameSettings from "../../components/PoemGameSettings";
 import { generateAlphaString } from "../../helpers";
 import { roomCodeLength } from "../../constants";
 
@@ -26,7 +26,7 @@ export default function Host() {
             </h2>
             <h2>{`Enter room code: ${roomID}`}</h2>
             <UserTable />
-            <GameSettings />
+            <PoemGameSettings />
         </main>
     );
 }

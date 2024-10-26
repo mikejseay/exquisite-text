@@ -1,10 +1,11 @@
 import { Server } from "socket.io";
 import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid for lines
-
 import {
     ClientToServerEvents,
     ILine,
-    InterServerEvents, Point,
+    IPanel,
+    InterServerEvents,
+    Point,
     ServerToClientEvents,
     SocketData,
 } from "../../src/types";
@@ -74,7 +75,7 @@ export class Poem extends Collaboration {
     submitLine(authorID: string, firstPart: string, secondPart: string) {
         const myLine = {
             ID: this.ID,
-            lineIndex: this.lines.size,
+            contributionIndex: this.lines.size,
             content: firstPart,
             authorDevice: authorID,
             passerDevice: this.mostRecentEditor, // previous editor, starts at ""
@@ -105,5 +106,58 @@ export class Poem extends Collaboration {
 
     sendLine(line: string, socketID: string) {
         this.io.to(socketID).emit("stcLineSpectator", this.indexInGame, line);
+    }
+}
+
+// TODO: Make drawing specific
+export class Drawing extends Collaboration {
+    // represents a single drawing
+
+    panelHint: Point[][];
+    panels: Set<IPanel>;
+
+    constructor(
+
+        io: Server<
+            ClientToServerEvents,
+            ServerToClientEvents,
+            InterServerEvents,
+            SocketData
+        >,
+        roomID: string,
+        nContributions: number,
+        indexInGame: number,
+    ) {
+        super(io, roomID, nContributions, indexInGame);
+        this.panelHint = [];
+        this.panels = new Set<IPanel>;
+    }
+
+    submitPanel(authorID: string, content: Point[][]) {
+        const panel = {
+            ID: this.ID,
+            contributionIndex: this.panels.size,
+            content: content,
+            authorDevice: authorID,
+            passerDevice: this.mostRecentEditor, // previous editor, starts at ""
+            hintSize: this.panelHint.length, // previous line length, starts at 0
+            addedAt: new Date(),
+        };
+        this.panels.add(panel);
+
+        this.mostRecentEditor = authorID;
+        this.panelHint = []; // half of content or something
+        this.io
+            .in(`${this.roomID}_Spectators`)
+            .emit("stcPanelSpectator", this.indexInGame, content);
+    }
+
+    sendAllPanelsTo(socketID: string) {
+    // this is used to bring a new spectator up to date
+        this.panels.forEach((panel) => this.sendPanel(panel.content, socketID));
+    }
+
+    sendPanel(panel: IPanel["content"], socketID: string) {
+        this.io.to(socketID).emit("stcPanelSpectator", this.indexInGame, panel);
     }
 }

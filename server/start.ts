@@ -24,7 +24,7 @@ import app from "./app";
 import sockets from "./modules/sockets";
 
 import debug0 from "debug";
-import isNil from "lodash/isNil";
+import { isNil } from "es-toolkit";
 
 /**
  * Module dependencies.

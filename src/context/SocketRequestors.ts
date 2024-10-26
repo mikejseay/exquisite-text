@@ -1,6 +1,6 @@
 import { socket } from "../components/SocketHandler";
 import { v4 as uuidv4 } from "uuid";
-import isNil from "lodash/isNil";
+import { isNil } from "es-toolkit";
 import { LineLength, Medium, Point, Role } from "../types";
 
 export const emitRecognizeDevice = () => {
@@ -27,8 +27,14 @@ export const emitRequestUserTableInfo = (shouldTest = false) => {
     socket.emit("ctsRequestUserTableInfo", shouldTest);
 };
 
-export const emitRequestPoemsLines = (shouldTest = false) => {
-    socket.emit("ctsRequestPoemsLines", shouldTest);
+// Testing
+export const emitRequestPoemsLines = () => {
+    socket.emit("ctsRequestPoemsLines");
+};
+
+// Testing
+export const emitRequestDrawings = () => {
+    socket.emit("ctsRequestDrawings");
 };
 
 export const emitCreateRoomAndHost = (roomID: string, medium: Medium) => {
@@ -40,12 +46,14 @@ export const emitJoinAs = (roomID: string, name: string, memberType: Role, isTes
     socket.emit("ctsJoinAs", roomID.toUpperCase(), name.toUpperCase(), memberType, isTest);
 };
 
-export const emitAlterGameSettings = (newLineLength: LineLength, nPoems: number, nRounds: number) => {
-    socket.emit("ctsAlterGameSettings", {
-        lineLength: newLineLength,
-        nPoems,
-        nRounds,
-    });
+interface IGameSettings {
+    lineLength?: LineLength;
+    nPoems?: number;
+    nRounds?: number;
+    nDrawings?: number;
+}
+export const emitAlterGameSettings = (gameSettings: IGameSettings) => {
+    socket.emit("ctsAlterGameSettings", gameSettings);
 };
 
 export const emitStartGame = () => {
@@ -74,7 +82,7 @@ export const emitRequestEditorActive = () => {
 };
 
 export const emitRequestLastLineStatus = () => {
-    socket.emit("ctsRequestLastLineStatus");
+    socket.emit("ctsRequestLastContributionStatus");
 };
 */
 
@@ -90,12 +98,11 @@ export const emitSendLastLine = (value: string | null) => {
     socket.emit("ctsSendLastLine", value);
 };
 
-export const emitSendCanvas = (value: Point[][] | null) => {
+export const emitSendPanel = (value: Point[][] | null) => {
     console.log("sendCanvas:", value);
-    socket.emit("ctsSendCanvas", value);
+    socket.emit("ctsSendPanel", value);
 };
 
-export const emitRequestCanvas = () => {
-    console.log("emitRequestCanvas activated");
-    socket.emit("ctsRequestCanvas");
+export const emitSendLastPanel = (value: Point[][] | null) => {
+    socket.emit("ctsSendLastPanel", value);
 };

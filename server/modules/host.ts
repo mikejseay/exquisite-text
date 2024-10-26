@@ -1,5 +1,6 @@
 import Member from "./member";
-import { sendPoemsLinesInfo } from "../utilities/sockets";
+import { sendCompletedArtTestData } from "../utilities/sockets";
+import { Medium } from "../../src/types";
 
 class Host extends Member {
     // does not enforce device ID constraint
@@ -14,13 +15,15 @@ class Host extends Member {
     setReceive() {
         super.setReceive();
         // only used to test the end screen, but we allow it to be parasitic for now
-        this.socket.on("ctsRequestPoemsLines", (shouldTest) => sendPoemsLinesInfo(this, shouldTest));
+        this.socket.on("ctsRequestPoemsLines", () => sendCompletedArtTestData(this, Medium.POETRY));
+        this.socket.on("ctsRequestDrawings", () => sendCompletedArtTestData(this, Medium.DRAWING));
     }
 
     unsetReceive() {
         super.unsetReceive();
         // only used to test the end screen, but we allow it to be parasitic for now
         this.socket.removeAllListeners("ctsRequestPoemsLines");
+        this.socket.removeAllListeners("ctsRequestDrawings");
     }
 }
 

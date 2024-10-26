@@ -4,11 +4,11 @@ import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socke
 import { DrawingSpectator, PoemSpectator } from "./spectator";
 import { DrawingEditor, PoemEditor } from "./editor";
 import Member from "./member";
-import { Poem } from "./collaboration";
+import { Drawing, Poem } from "./collaboration";
 import {
     ClientToServerEvents,
     GameState,
-    IPoemSettingsInfo,
+    IGameSettingsInfo,
     IUserTableInfo,
     InterServerEvents,
     Medium,
@@ -48,8 +48,8 @@ class Room {
     activityInterval: ReturnType<typeof setInterval>;
     createdAt: number;
     // poem-specific for now until we figure out how to type generally
-    gameSettings: IPoemSettingsInfo;
-    finishedWorks: Array<Poem>;
+    gameSettings: IGameSettingsInfo;
+    finishedWorks: Array<Poem | Drawing>;
     medium: Medium;
 
     constructor(
@@ -175,8 +175,8 @@ class Room {
     }
 
     async selfDestruct() {
-        console.log(this.roomID, "will self-destruct in 30 seconds");
-        await sleep(30000);
+        console.log(this.roomID, "will self-destruct in 100 seconds");
+        await sleep(100_000);
         console.log(this.roomID, "self-destructing");
 
         for (const [ editorID, editor ] of this.editors.entries()) {
@@ -201,10 +201,21 @@ class Room {
         delete socketIDToDeviceID[member.socket.id];
         delete deviceIDToSocketID[deviceID];
     }
+
+    navigateMembersToGame() {
+        // should tell editors to navigate to /game and spectators to /spectate
+        this.gameState = GameState.GAME;
+        this.io.in(`${this.roomID}_Editors`).emit("stcNavigate", "/game");
+        this.io.in(`${this.roomID}_Spectators`).emit("stcNavigate", "/spectate");
+
+        for (const editor of this.editors.values()) {
+            editor.sendActivity();
+            editor.sendLastContributionStatus();
+        }
+    }
 }
 
 export class PoemRoom extends Room {
-
     constructor(
         io: Server<ClientToServerEvents,
             ServerToClientEvents,
@@ -250,22 +261,13 @@ export class PoemRoom extends Room {
             }
         }
 
-        // should tell editors to navigate to /game and spectators to /spectate
-        this.gameState = GameState.GAME;
-        this.io.in(`${this.roomID}_Editors`).emit("stcNavigate", "/game");
-        this.io.in(`${this.roomID}_Spectators`).emit("stcNavigate", "/spectate");
-
-        // instate an initial context for each player
-        for (const editor of this.editors.values()) {
-            editor.sendActivity();
-            editor.sendLastLineStatus();
-        }
+        this.navigateMembersToGame();
     }
 
 }
 
 export class DrawingRoom extends Room {
-    finishedCanvas: Point[][];
+    finishedCanvas: Point[][]; // from testing, probably unused
 
     constructor(
         io: Server<ClientToServerEvents,
@@ -280,4 +282,51 @@ export class DrawingRoom extends Room {
         this.medium = Medium.DRAWING;
     }
 
+    setUpGame() {
+        console.log("setUpGame with this.editors", this.editors);
+        const nContributions = 3;
+
+        // have each editor set their important properties
+        let nDrawingsToHandOut = this.gameSettings["nDrawings"];
+        this.nUnfinishedWorks = nDrawingsToHandOut;
+        let drawingIndex = 0;
+
+        for (const editor of this.editors.values()) {
+            editor.lastActivity = Date.now(); // refresh AFK timers upon game start
+            editor.prepareForGame();
+
+            // give the editor a new drawing
+            if (nDrawingsToHandOut > 0) {
+                const drawing = new Drawing(this.io, this.roomID, nContributions, drawingIndex); // creates Poem object
+                editor.contributionQueue.push(drawing);
+                editor.isCurrentlyEditing = true;
+                nDrawingsToHandOut--;
+                drawingIndex++;
+            }
+        }
+
+        this.navigateMembersToGame();
+    }
+
+    storeDrawing(drawingObj: Drawing) {
+        console.log(this.roomID, "storing drawing", drawingObj.ID);
+        this.finishedWorks.push(drawingObj);
+    }
+
+    //     ROOM:
+    //     this.panels = new Set<IPanel>;
+    // }
+    // export interface IPanel extends IContribution {
+    //     content: Point[][];
+    //     hintSize: number;
+    // }
+    // this.finishedWorks is an array of Drawing. drawing.panels is Set<IPanel>
+    // on IPanel, content is Point[][]
+    sendCompletedDrawings() {
+        console.log("sendCompletedDrawings ;))))))))))");
+        const iPanels = Array.from(this.finishedWorks as Drawing[]).map((drawing) => Array.from(drawing?.panels));
+        const completedDrawings = Array.from(iPanels).map((iPanel) => iPanel.map(panel => panel?.content));
+
+        this.io.in(this.roomID).emit("stcCompletedDrawings", completedDrawings);
+    }
 }

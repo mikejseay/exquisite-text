@@ -1,6 +1,6 @@
 import * as React from "react";
 import { SocketInfoContext } from "../../context/SocketInfoProvider";
-import { ILine, IUserTableInfo, LineLength, Point } from "../../types";
+import { ILine, IPanel, IUserTableInfo, LineLength, Medium, Point } from "../../types";
 import { defaultGameSettings } from "../../constants";
 import { socketListeners } from "../../context/SocketListeners";
 import { useNavigate } from "react-router-dom";
@@ -29,16 +29,20 @@ export default function SocketHandler({ children }: Props) {
     const [ joinErrorMessage, setJoinErrorMessage ] = React.useState<string>("");
     const [ roomCode, setRoomCode ] = React.useState<string>("");
     const [ settingsEnabled, setSettingsEnabled ] = React.useState<boolean>(false);
-    const [ lineLength, setLineLength ] = React.useState<LineLength>(LineLength.short);
+    const [ lineLength, setLineLength ] = React.useState<LineLength>(LineLength.SHORT);
     const [ nRounds, setNRounds ] = React.useState<number>(defaultGameSettings.nRounds);
     const [ nPoems, setNPoems ] = React.useState<number>(defaultGameSettings.nPoems);
-    const [ lines, setLines ] = React.useState<Array<Array<string>>>([ [], [], [], [] ]);
+    const [ nDrawings, setNDrawings ] = React.useState<number>(defaultGameSettings.nDrawings);
+    const [ lines, setLines ] = React.useState<Array<Array<ILine["content"]>>>([ [], [], [], [] ]);
+    const [ panels, setPanels ] = React.useState<Array<Array<IPanel["content"]>>>([ [], [], [], [] ]);
     const [ lineEdits, setLineEdits ] = React.useState<Array<string>>([ "", "", "", "" ]);
     const [ poemInput, setPoemInput ] = React.useState<string>("");
     const [ poemInputSpectate, setPoemInputSpectate ] = React.useState<string>("");
-    const [ onLastLine, setOnLastLine ] = React.useState<boolean>(false);
+    const [ onLastContribution, setOnLastContribution ] = React.useState<boolean>(false);
     const [ editorActive, setEditorActive ] = React.useState<boolean>(false);
     const [ strokeHistory, setStrokeHistory ] = React.useState<Point[][]>([]);
+    const [ completedDrawings, setCompletedDrawings ] = React.useState<Point[][][][]>([]);
+    const [ medium, setMedium ] = React.useState<Medium>(Medium.ART);
 
     const navigate = useNavigate();
 
@@ -52,14 +56,18 @@ export default function SocketHandler({ children }: Props) {
         setLineLength,
         setNRounds,
         setNPoems,
+        setNDrawings,
         setLines,
+        setPanels,
         setLineEdits,
         setPoemInput,
         setPoemInputSpectate,
-        setOnLastLine,
+        setOnLastContribution,
         setEditorActive,
         navigate,
         setStrokeHistory,
+        setCompletedDrawings,
+        setMedium,
     }),
     [ socketListeners ],
     );
@@ -71,22 +79,30 @@ export default function SocketHandler({ children }: Props) {
             joinErrorMessage,
             roomCode,
             setRoomCode,
+            setEditorActive,
             settingsEnabled,
             lineLength,
             nRounds,
             nPoems,
+            nDrawings,
             setLineLength,
             setNRounds,
             setNPoems,
+            setNDrawings,
             lines,
             lineEdits,
+            panels,
             poemInput,
             poemInputSpectate,
-            onLastLine,
+            onLastContribution,
             editorActive,
             setPoemInput,
             strokeHistory,
             setStrokeHistory,
+            completedDrawings,
+            setCompletedDrawings,
+            medium,
+            setMedium,
         }}>
             {children}
         </SocketInfoContext.Provider>

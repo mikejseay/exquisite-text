@@ -1,38 +1,51 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Button from "@mui/material/Button";
-import { Medium, Point, Role } from "../../types";
-import { emitCreateRoomAndHost, emitJoinAs, emitRecognizeDevice, emitSendCanvas } from "../../context/SocketRequestors";
+import { Point } from "../../types";
+import { emitSendLastPanel, emitSendPanel } from "../../context/SocketRequestors";
+import { useSocketInfo } from "../../context/SocketInfoProvider";
 
 type ExtendedTouch = Touch & {
     force?: number;
     touchType?: string;
 };
 
-export const panelHeightRatioOfWindow = 0.3;
-const defaultLineWidth = 30;
-const fullCanvasHeightRatioOfWindow = 0.8;
-const overlap = 0.2;
-const defaultPressure = 0.1;
+const DEFAULT_LINE_WIDTH = 30;
+export const PANEL_HEIGHT_RATIO_OF_WINDOW = 0.3;
+export const DRAWING_HEIGHT_RATIO_OF_WINDOW = 0.8;
+export const OVERLAP = 0.2;
+const DEFAULT_PRESSURE = 0.1;
 const lineColor = "grey";
 
+export const PANEL_HEIGHT = 300; // retina is double
+export const PANEL_WIDTH = 667;
+export const DRAWING_HEIGHT = 3 * PANEL_HEIGHT - 2 * OVERLAP * PANEL_HEIGHT;
+export const DRAWING_WIDTH = PANEL_WIDTH;
+
+// iPhone SE: 667 x 375
+// NOTE: window.devicePixelRatio is 2 for retina screens
+
 /* TODO:
+    [ ] Canvas and panel height are established at the start of the game, and become a property of the room
+    [ ] Players are forced to have canvases of the appropriate height regardless of their window size
+    [ ] Spectator view
     [ ] Ensure that spectator receives entire drawing instead of just single frame
-    [ ] Modularize all server socket functions to work with both poems and canvases
+    [-] Modularize all server socket functions to work with both poems and canvases
     [ ] For the watcher, the cursor is not in right spot until writer starts writing:
         As a part of reinstateContext, find the editor you're supposed to be spectating,
         Find the poem they're editing, get the current line edit, and send it via "stcLineEditorWatch"
-
 */
 
-export function drawOnCanvas (newPoints: Point[], canvasRef: React.MutableRefObject<HTMLCanvasElement | null>) {
+export function drawOnCanvas (newPoints: Point[], canvasRef: React.MutableRefObject<HTMLCanvasElement | null>, yOffset = 0) {
+    if (!newPoints || !newPoints.length) return;
+
     if (!canvasRef) {
-        console.warn("No canvasRef in CanvasSpectator");
+        console.warn("No canvasRef in drawOnCanvas");
         return;
     }
     const canvas = canvasRef.current;
     const context = canvas?.getContext("2d");
     if (!context) {
-        console.warn("No context in CanvasSpectator");
+        console.warn("No context in drawOnCanvas");
         return;
     }
 
@@ -46,7 +59,7 @@ export function drawOnCanvas (newPoints: Point[], canvasRef: React.MutableRefObj
         context.fillStyle = lineColor;
         context.lineWidth = point.lineWidth;
         context.beginPath();
-        context.arc(point.x, point.y, point.lineWidth / 2, 0, Math.PI * 2);
+        context.arc(point.x, point.y + yOffset, point.lineWidth / 2, 0, Math.PI * 2);
         context.closePath();
         context.fill();
         return;
@@ -59,86 +72,91 @@ export function drawOnCanvas (newPoints: Point[], canvasRef: React.MutableRefObj
         const startPoint = newPoints[i];
         const endPoint = newPoints[i + 1];
 
-        context.moveTo(startPoint.x, startPoint.y);
-        context.lineWidth = startPoint.lineWidth;
-        context.lineTo(endPoint.x, endPoint.y);
+        context.moveTo(startPoint?.x, startPoint?.y + yOffset);
+        context.lineWidth = startPoint?.lineWidth;
+        context.lineTo(endPoint?.x, endPoint?.y + yOffset);
         context.stroke();
     }
 }
 
 const Canvas: React.FC = () => {
+    const { strokeHistory, editorActive, onLastContribution, setEditorActive } = useSocketInfo();
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const [ isPassCompleteDisabled, setIsPassCompleteDisabled ] = useState(false);
     const [ points, setPoints ] = useState<Point[]>([]);
     const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
-    const [ playerCanvases, setPlayerCanvases ] = useState<ImageData[]>([]);
     const [ isMousedown, setIsMousedown ] = useState(false);
     const [ allowDirect, setAllowDirect ] = useState(true);
     const [ lineWidth, setLineWidth ] = useState(0);
-    const [ eventPressure, setEventPressure ] = useState(defaultPressure);
+    const [ eventPressure, setEventPressure ] = useState(DEFAULT_PRESSURE);
     const [ drawType, setDrawType ] = useState<"fill" | "stroke" | "noDrawYet">("noDrawYet");
-    const [ player, setPlayer ] = useState<number>(0);
     const [ coordinates, setCoordinates ] = useState<{ x: number, y: number}>({ x: 0, y: 0 });
-    const [ hasJoinedRoom, setHasJoinedRoom ] = useState<boolean>(false);
 
-    if (!hasJoinedRoom) {
-        emitCreateRoomAndHost("ROOM", Medium.DRAWING);
-        emitRecognizeDevice();
-        emitJoinAs("ROOM", "PETER", Role.EDITOR, true);
-        setHasJoinedRoom(true);
-    }
+    // TODO: handle all functionality that must toggle with editorActive
+    React.useEffect(() => {
+        console.log("window.devicePixelRatio:", window?.devicePixelRatio);
+        console.log("editorActive useEffect activated", editorActive);
+        console.log("strokeHistory.length:", strokeHistory?.length);
+        console.log("localStrokeHistory.length:", localStrokeHistory?.length);
+        setIsPassCompleteDisabled(!editorActive);
+        // TODO: This borks mouse canvas size positioning, probably because
+        // viewport is changing in browser window, can use canvas empty placeholder
+        // that is unclickable, or just legit clear that shit:
+        console.log({ editorActive });
+        if (!editorActive) return;
 
-    const switchPlayer = () => {
+        // Process the stroke history to visually clip it
         const canvas = canvasRef.current;
         const context = canvas?.getContext("2d");
         if (canvas && context) {
-            // Extract the whole canvas
-            const playerCanvas = context.getImageData(0, 0, canvas.width, canvas.height);
+            // Clear canvas
+            context.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Add it to a list of canvases per player
-            const newPlayerCanvases = [ ...playerCanvases, playerCanvas ];
-            setPlayerCanvases(newPlayerCanvases);
+            // Redraw stroke history onto blank canvas
+            // TODO: Universalize drawing function for multiply or divide
+            strokeHistory?.forEach(strokeArray => drawOnCanvas(strokeArray?.map(point => ({
+                x: point.x * window.devicePixelRatio,
+                y: point.y * window.devicePixelRatio,
+                lineWidth: point.lineWidth * window.devicePixelRatio,
+            })), canvasRef));
+            console.log({ strokeHistory });
+            //// This accomplishes the clipping of the image: ////
 
             // Shift canvas contents upward by 0.8 times the canvas height (old method)
-            const imageData = context.getImageData(0, context.canvas.height * (1 - overlap), context.canvas.width, context.canvas.height);
+            const imageData = context.getImageData(0, context.canvas.height * (1 - OVERLAP), context.canvas.width, context.canvas.height);
             context.putImageData(imageData, 0, 0);
-            context.clearRect(context.canvas.width, context.canvas.height * overlap, 0, context.canvas.height);
-
-            // Shift canvas contents upward by 0.8 times the canvas height (new method)
-            // context.globalCompositeOperation = "copy";
-            // context.drawImage(context.canvas, 0, -context.canvas.height * (1 - overlap));
-            // context.globalCompositeOperation = "source-over";
-
-            // Completion: If the third panel is being submitted, clear the canvas, then construct a new one
-            // using the "full available height", then paste the image data from each individual player's canvas
-            // into the three vertical panels, shifting downwards by 0.8 times the canvas height each time.
-            if (player === 2) {
-                context.clearRect(0, 0, canvas.width, canvas.height);
-                let yOffset = 0;
-
-
-                canvas.style.height = `${window.innerHeight * fullCanvasHeightRatioOfWindow}px`;
-                canvas.height = window.innerHeight * devicePixelRatio * fullCanvasHeightRatioOfWindow;
-
-                newPlayerCanvases.forEach((pc) => {
-                    context.putImageData(pc, 0, yOffset);
-                    yOffset += Math.floor(pc.height * (1 - overlap));
-                });
-            } else {
-                setPlayer(player + 1);
-                setPoints([]);
-                setLocalStrokeHistory([]);
-            }
+            context.clearRect(context.canvas.width, context.canvas.height * OVERLAP, 0, context.canvas.height);
+            console.log("context.canvas.height/width:", context.canvas.width, context.canvas.height);
         }
-    };
+        return;
+    }, [ editorActive ]);
 
-    const submitCanvas = () => {
-        console.log("submitCanvas:", localStrokeHistory);
+    function passTurn() {
+        // Convert pixel values to pixel-free values??
+        // In future let people with more pixels to use them while they're drawing
+        // use window characteristics to determine the best aspect ratio for them, and set their
+        // canvas that way
+        emitSendPanel(localStrokeHistory);
+        setPoints([]);
+        setLocalStrokeHistory([]);
+        // TODO: Eventually this should maybe be handled on the backend?
+        setEditorActive(false);
+    }
+
+    function completeDrawing() {
+        // post the current input to the lines
+        emitSendLastPanel(localStrokeHistory);
         console.log({ localStrokeHistory });
-        emitSendCanvas(localStrokeHistory);
-    };
 
-    const handleStart = useCallback((e: React.MouseEvent<Element, MouseEvent> | React.TouchEvent<Element>) => {
-        let pressure = defaultPressure;
+        // initialize the Canvas
+        setLocalStrokeHistory([]);
+        setIsPassCompleteDisabled(false);
+
+        return;
+    }
+
+    const handleStart = useCallback((e: React.MouseEvent<Element, MouseEvent> | React.TouchEvent) => {
+        let pressure = DEFAULT_PRESSURE;
         let x = 0;
         let y = 0;
 
@@ -167,11 +185,11 @@ const Canvas: React.FC = () => {
         setCoordinates({ x, y });
         setIsMousedown(true);
 
-        setLineWidth(Math.log(pressure + 1) * defaultLineWidth);
-        const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * defaultLineWidth };
+        setLineWidth(Math.log(pressure + 1) * DEFAULT_LINE_WIDTH);
+        const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * DEFAULT_LINE_WIDTH };
         setPoints((prev) => [ ...prev, newPoint ]);
         drawOnCanvas([ newPoint ], canvasRef);
-    }, [ allowDirect, drawOnCanvas, player ]);
+    }, [ allowDirect, drawOnCanvas ]);
 
     const handleMove = useCallback((e: React.MouseEvent | React.TouchEvent) => {
         if (!isMousedown) {
@@ -179,7 +197,7 @@ const Canvas: React.FC = () => {
         }
         e.preventDefault();
 
-        let pressure = defaultPressure;
+        let pressure = DEFAULT_PRESSURE;
         let x = 0;
         let y = 0;
 
@@ -208,17 +226,22 @@ const Canvas: React.FC = () => {
         }
         setCoordinates({ x, y });
 
-        setLineWidth(Math.log(pressure + 1) * defaultLineWidth);
-        const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * defaultLineWidth };
+        setLineWidth(Math.log(pressure + 1) * DEFAULT_LINE_WIDTH);
+        const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * DEFAULT_LINE_WIDTH };
         setPoints((prev) => {
             drawOnCanvas([ prev[prev.length - 1], newPoint ], canvasRef);
             return [ ...prev, newPoint ];
         });
-    }, [ allowDirect, drawOnCanvas, isMousedown, player ]);
+    }, [ allowDirect, drawOnCanvas, isMousedown ]);
 
     const handleEnd = useCallback(() => {
         setIsMousedown(false);
-        setLocalStrokeHistory((prev) => [ ...prev, points ]);
+        const scaledPoints: Point[] = points.map(point => ({
+            x: point.x / window.devicePixelRatio,
+            y: point.y / window.devicePixelRatio,
+            lineWidth: point.lineWidth / window.devicePixelRatio,
+        }));
+        setLocalStrokeHistory((prev) => [ ...prev, scaledPoints ]);
         setPoints([]);
         setLineWidth(0);
     }, [ points ]);
@@ -230,10 +253,11 @@ const Canvas: React.FC = () => {
         const devicePixelRatio = window.devicePixelRatio ?? 1;
 
         if (!canvas) return;
-        canvas.style.width = `${window.innerWidth}px`;
-        canvas.style.height = `${window.innerHeight * panelHeightRatioOfWindow}px`;
-        canvas.width = window.innerWidth * devicePixelRatio;
-        canvas.height = window.innerHeight * devicePixelRatio * panelHeightRatioOfWindow;
+        canvas.style.width = `${PANEL_WIDTH}px`;
+        canvas.style.height = `${PANEL_HEIGHT}px`;
+        canvas.width = PANEL_WIDTH * devicePixelRatio;
+        canvas.height = PANEL_HEIGHT * devicePixelRatio;
+        console.log("canvas.height:", canvas.height);
     }, []);
 
     useEffect(() => {
@@ -254,19 +278,28 @@ const Canvas: React.FC = () => {
                 <br />
                 {"Draw Type: " + drawType}
                 <br />
-                {"Current Player: " + player}
-                <br />
                 {"Coordinates: " + JSON.stringify(coordinates)}
             </p>
             <Button onClick={() => setAllowDirect(!allowDirect)}>Toggle Direct</Button>
-            <Button onClick={switchPlayer}>
-                {player < 2
-                    ? "Pass"
-                    : "Finish"}
+            {/* TODO: */}
+            <Button disabled={isPassCompleteDisabled} onClick={onLastContribution
+                ? completeDrawing
+                : passTurn}>
+                {onLastContribution
+                    ? "Complete Drawing"
+                    : "Pass"}
             </Button>
-            <Button onClick={submitCanvas}>Submit Canvas</Button>
             <canvas
                 ref={canvasRef}
+                style={{
+                    pointerEvents: editorActive
+                        ? "auto"
+                        : "none", // Disable pointer events if editor is not active
+                    opacity: editorActive
+                        ? 1
+                        : 0.5, // Optionally change opacity to visually indicate inactivity
+                    border: "1px solid black",
+                }}
                 onMouseDown={handleStart}
                 onTouchStart={handleStart}
                 onMouseMove={handleMove}
@@ -274,7 +307,7 @@ const Canvas: React.FC = () => {
                 onMouseUp={handleEnd}
                 onTouchEnd={handleEnd}
             >
-                Sorry, your browser is too old for this demo.
+                    Sorry, your browser is too old for this demo.
             </canvas>
         </div>
     );
