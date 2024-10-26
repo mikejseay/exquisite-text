@@ -1,11 +1,11 @@
 import { Server } from "socket.io";
 import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid for lines
-
 import {
     ClientToServerEvents,
     ILine,
     IPanel,
-    InterServerEvents, Point,
+    InterServerEvents,
+    Point,
     ServerToClientEvents,
     SocketData,
 } from "../../src/types";

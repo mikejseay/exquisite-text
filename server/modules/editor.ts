@@ -4,12 +4,10 @@ import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid 
 import {
     ClientToServerEvents,
     GameState,
-    IDrawing,
     IGameSettingsInfo,
     IPanel,
     IPoem,
     InterServerEvents,
-    Medium,
     Point,
     ServerToClientEvents,
     SocketData,
@@ -30,12 +28,10 @@ class Editor extends Member {
     isCurrentlyEditing: boolean;
 
     constructor(
-        io: Server<
-            ClientToServerEvents,
+        io: Server<ClientToServerEvents,
             ServerToClientEvents,
             InterServerEvents,
-            SocketData
-        >,
+            SocketData>,
         hostSocket: Socket,
         roomID: string,
         deviceID: string,

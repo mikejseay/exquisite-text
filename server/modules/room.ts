@@ -9,7 +9,6 @@ import {
     ClientToServerEvents,
     GameState,
     IGameSettingsInfo,
-    IPanel,
     IUserTableInfo,
     InterServerEvents,
     Medium,
