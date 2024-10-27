@@ -7,8 +7,7 @@ import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { DRAWING_HEIGHT, DRAWING_WIDTH, OVERLAP, PANEL_HEIGHT } from "../../screens/Canvas";
 import { title } from "./styles";
 import { Point } from "../../types";
-import { ScaleDirection, scalePoints } from "../../utils/scaleUtils";
-import { drawOnCanvas, setCanvasDimensions } from "../../utils/canvasUtils";
+import { drawOnCanvas, setCanvasDimensions, setCanvasProperties } from "../../utils/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
 
 const CompletedDrawing = ({
@@ -27,6 +26,11 @@ const CompletedDrawing = ({
 
     useDisableScroll();
 
+    // Set initial dimensions of the canvas
+    useEffect(() => {
+        setCanvasDimensions(canvasRef.current, DRAWING_WIDTH, DRAWING_HEIGHT);
+    }, []);
+
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -34,9 +38,9 @@ const CompletedDrawing = ({
         const context = canvas.getContext("2d");
         if (!context) return;
 
-        setCanvasDimensions(canvas, DRAWING_WIDTH, DRAWING_HEIGHT);
-
         context.clearRect(0, 0, canvas.width, canvas.height);
+
+        setCanvasProperties(context);
 
         if (shouldAnimate) {
             let panelIndex = 0;
@@ -52,18 +56,15 @@ const CompletedDrawing = ({
                 }
 
                 const strokeHistory = completedDrawing[panelIndex];
-                const strokeArray = scalePoints(
-                    strokeHistory[strokeHistoryIndex],
-                    ScaleDirection.MULTIPLY,
-                );
+                const strokeArray = strokeHistory[strokeHistoryIndex];
 
                 if (strokeArray) {
-                    drawOnCanvas(strokeArray, canvasRef, yOffset);
+                    drawOnCanvas(strokeArray, yOffset, context);
                     strokeHistoryIndex++;
                 } else {
                     panelIndex++;
                     strokeHistoryIndex = 0;
-                    yOffset += PANEL_HEIGHT * (1 - OVERLAP) * window.devicePixelRatio;
+                    yOffset += PANEL_HEIGHT * (1 - OVERLAP);
                 }
 
                 animationRef.current = requestAnimationFrame(draw);
@@ -80,13 +81,9 @@ const CompletedDrawing = ({
             let yOffset = 0;
             completedDrawing.forEach((strokeHistory) => {
                 strokeHistory.forEach((strokeArray) => {
-                    drawOnCanvas(
-                        scalePoints(strokeArray, ScaleDirection.MULTIPLY),
-                        canvasRef,
-                        yOffset,
-                    );
+                    drawOnCanvas(strokeArray, yOffset, context);
                 });
-                yOffset += PANEL_HEIGHT * (1 - OVERLAP) * window.devicePixelRatio;
+                yOffset += PANEL_HEIGHT * (1 - OVERLAP);
             });
         }
     }, [ completedDrawing, shouldAnimate ]);

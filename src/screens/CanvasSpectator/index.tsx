@@ -1,8 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { PANEL_HEIGHT, PANEL_WIDTH } from "../Canvas";
-import { ScaleDirection, scalePoints } from "../../utils/scaleUtils";
-import { drawOnCanvas, setCanvasDimensions } from "../../utils/canvasUtils";
+import { DRAWING_HEIGHT, DRAWING_WIDTH } from "../Canvas";
+import { drawOnCanvas, setCanvasDimensions, setCanvasProperties } from "../../utils/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
 
 const CanvasSpectator: React.FC = () => {
@@ -11,15 +10,21 @@ const CanvasSpectator: React.FC = () => {
 
     useDisableScroll();
 
+    // Set initial dimensions of the canvas
     useEffect(() => {
-        strokeHistory?.forEach((strokeArray) =>
-            drawOnCanvas(scalePoints(strokeArray, ScaleDirection.MULTIPLY), canvasRef),
-        );
-    }, [ strokeHistory, completedDrawings ]);
+        setCanvasDimensions(canvasRef.current, DRAWING_WIDTH, DRAWING_HEIGHT);
+    }, []);
 
     useEffect(() => {
-        setCanvasDimensions(canvasRef.current, PANEL_WIDTH, PANEL_HEIGHT * 3);
-    }, []);
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const context = canvas.getContext("2d");
+        if (!context) return;
+        setCanvasProperties(context);
+        strokeHistory?.forEach((strokeArray) =>
+            drawOnCanvas(strokeArray, 0, context),
+        );
+    }, [ strokeHistory, completedDrawings ]);
 
     return (
         <div style={{ display: "flex", flexDirection: "column" }}>
