@@ -4,7 +4,6 @@ import Button from "@mui/material/Button";
 import { Point } from "../../types";
 import { emitSendLastPanel, emitSendPanel } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { ScaleDirection, pixelRatio, scalePoints } from "../../utils/scaleUtils";
 import { drawOnCanvas, setCanvasDimensions, setCanvasProperties } from "../../utils/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
 
@@ -124,8 +123,8 @@ const Canvas: React.FC = () => {
 
             if ("touches" in e) {
                 const touch = e.touches[0] as ExtendedTouch;
-                x = (touch.pageX - canvasBounds.left - window.scrollX) * pixelRatio;
-                y = (touch.pageY - canvasBounds.top - window.scrollY) * pixelRatio;
+                x = (touch.pageX - canvasBounds.left - window.scrollX);
+                y = (touch.pageY - canvasBounds.top - window.scrollY);
 
                 if (allowDirect || (touch && touch.touchType !== "direct")) {
                     if (touch.force && touch.force > 0) {
@@ -135,8 +134,8 @@ const Canvas: React.FC = () => {
                 }
             } else {
                 pressure = 1.0;
-                x = (e.pageX - canvasBounds.left - window.scrollX) * pixelRatio;
-                y = (e.pageY - canvasBounds.top - window.scrollY) * pixelRatio;
+                x = (e.pageX - canvasBounds.left - window.scrollX);
+                y = (e.pageY - canvasBounds.top - window.scrollY);
             }
 
             setCoordinates({ x, y });
@@ -175,14 +174,14 @@ const Canvas: React.FC = () => {
                         pressure = touch.force;
                         setEventPressure(pressure);
                     }
-                    x = (touch.pageX - canvasBounds.left - window.scrollX) * pixelRatio;
-                    y = (touch.pageY - canvasBounds.top - window.scrollY) * pixelRatio;
+                    x = (touch.pageX - canvasBounds.left - window.scrollX);
+                    y = (touch.pageY - canvasBounds.top - window.scrollY);
                 }
-                y = (touch.pageY - canvasBounds.top) * pixelRatio;
+                y = (touch.pageY - canvasBounds.top);
             } else {
                 pressure = 1.0;
-                x = (e.pageX - canvasBounds.left - window.scrollX) * pixelRatio;
-                y = (e.pageY - canvasBounds.top - window.scrollY) * pixelRatio;
+                x = (e.pageX - canvasBounds.left - window.scrollX);
+                y = (e.pageY - canvasBounds.top - window.scrollY);
             }
             setCoordinates({ x, y });
 
@@ -199,8 +198,7 @@ const Canvas: React.FC = () => {
 
     const handleEnd = useCallback(() => {
         setIsMousedown(false);
-        const scaledPoints: Point[] = scalePoints(points, ScaleDirection.DIVIDE);
-        setLocalStrokeHistory((prev) => [ ...prev, scaledPoints ]);
+        setLocalStrokeHistory((prev) => [ ...prev, points ]);
         setPoints([]);
         setLineWidth(0);
     }, [ points ]);
