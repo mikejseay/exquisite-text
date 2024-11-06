@@ -229,7 +229,12 @@ const Canvas: React.FC = () => {
             </Button>
             <canvas
                 ref={canvasRef}
+                width={PANEL_WIDTH}
+                height={PANEL_HEIGHT}
                 style={{
+                    aspectRatio: `var(--${PANEL_WIDTH}) / var(--${PANEL_HEIGHT})`,
+                    width: "100%",
+                    height: "auto",
                     pointerEvents: editorActive
                         ? "auto"
                         : "none",

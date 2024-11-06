@@ -20,10 +20,10 @@ import Page from "./screens/Page";
 import Lobby from "./screens/Lobby";
 import Spectate from "./screens/Spectate";
 import Disconnected from "./screens/Disconnected";
-import Canvas from "./screens/Canvas";
+// import Canvas from "./screens/Canvas";
 import reportWebVitals from "./reportWebVitals";
 import SocketHandler from "./components/SocketHandler";
-import CanvasSpectator from "./screens/CanvasSpectator";
+// import CanvasSpectator from "./screens/CanvasSpectator";
 import { Medium } from "./types";
 
 const root = ReactDOM.createRoot(
@@ -70,8 +70,8 @@ function Root() {
                             <Route path="end" element={<End />} />
                             <Route path="endtestpoem" element={<End testingMedium={Medium.POETRY} />} />
                             <Route path="endtestdrawing" element={<End testingMedium={Medium.DRAWING} />} />
-                            <Route path="canvas" element={<Canvas />} />
-                            <Route path="canvasspectator" element={<CanvasSpectator />} />
+                            {/* <Route path="canvas" element={<Canvas />} />
+                            <Route path="canvasspectator" element={<CanvasSpectator />} /> */}
                             {isComponentEnabled(<Route path="library" element={<Library />} />)}
                             {isComponentEnabled(<Route path="page/:id" element={<Page />} />)}
                             <Route path="disconnected" element={<Disconnected />} />
