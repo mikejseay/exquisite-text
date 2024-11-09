@@ -1,14 +1,21 @@
 // src/components/MultipleDrawings/index.tsx
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { Carousel } from "react-responsive-carousel";
 
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { DRAWING_HEIGHT, DRAWING_WIDTH, OVERLAP, PANEL_HEIGHT } from "../../screens/Canvas";
+import {
+    DRAWING_ASPECT_RATIO,
+    DRAWING_HEIGHT_MIN,
+    DRAWING_WIDTH_MIN,
+    OVERLAP,
+    PANEL_HEIGHT_MIN,
+} from "../../screens/Canvas";
 import { title } from "./styles";
 import { Point } from "../../types";
-import { drawOnCanvas, setCanvasDimensions, setCanvasProperties } from "../../utils/canvasUtils";
+import { drawOnCanvas, setCanvasProperties } from "../../utils/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
+import { ScaleDirection, scalePoints } from "../../utils/scaleUtils";
 
 const CompletedDrawing = ({
     completedDrawing,
@@ -23,12 +30,36 @@ const CompletedDrawing = ({
 
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const animationRef = useRef<number>();
+    const [ dimensions, setDimensions ] = useState({ width: DRAWING_WIDTH_MIN, height: DRAWING_HEIGHT_MIN });
+    const [ scaleFactor, setScaleFactor ] = useState<number>(1);
 
     useDisableScroll();
 
     // Set initial dimensions of the canvas
+    // useEffect(() => {
+    //     setCanvasDimensions(canvasRef.current, DRAWING_WIDTH_MIN, DRAWING_HEIGHT_MIN);
+    // }, []);
+
+    // Handle resizing of the window
     useEffect(() => {
-        setCanvasDimensions(canvasRef.current, DRAWING_WIDTH, DRAWING_HEIGHT);
+        const handleResize = () => {
+            // Get the viewport width and calculate the new height to maintain the 2:1 ratio
+            const viewportHeight = window.innerHeight - 150;
+            const newHeight = Math.max(viewportHeight, DRAWING_HEIGHT_MIN); // Enforce minimum width
+            const newWidth = Math.max(newHeight * DRAWING_ASPECT_RATIO, DRAWING_WIDTH_MIN); // Enforce minimum height
+
+            setScaleFactor(newHeight / DRAWING_HEIGHT_MIN);
+            setDimensions({ width: newWidth, height: newHeight });
+        };
+
+        // Initial size setup
+        handleResize();
+
+        // Attach resize event listener
+        window.addEventListener("resize", handleResize);
+
+        // Clean up event listener on component unmount
+        return () => window.removeEventListener("resize", handleResize);
     }, []);
 
     useEffect(() => {
@@ -56,7 +87,11 @@ const CompletedDrawing = ({
                 }
 
                 const strokeHistory = completedDrawing[panelIndex];
-                const strokeArray = strokeHistory[strokeHistoryIndex];
+                const strokeArray = scalePoints(
+                    strokeHistory[strokeHistoryIndex],
+                    ScaleDirection.MULTIPLY,
+                    scaleFactor,
+                );
 
                 if (strokeArray) {
                     drawOnCanvas(strokeArray, yOffset, context);
@@ -64,7 +99,7 @@ const CompletedDrawing = ({
                 } else {
                     panelIndex++;
                     strokeHistoryIndex = 0;
-                    yOffset += PANEL_HEIGHT * (1 - OVERLAP);
+                    yOffset += PANEL_HEIGHT_MIN * (1 - OVERLAP);
                 }
 
                 animationRef.current = requestAnimationFrame(draw);
@@ -81,9 +116,13 @@ const CompletedDrawing = ({
             let yOffset = 0;
             completedDrawing.forEach((strokeHistory) => {
                 strokeHistory.forEach((strokeArray) => {
-                    drawOnCanvas(strokeArray, yOffset, context);
+                    drawOnCanvas(
+                        scalePoints(strokeArray, ScaleDirection.MULTIPLY, scaleFactor),
+                        yOffset,
+                        context,
+                    );
                 });
-                yOffset += PANEL_HEIGHT * (1 - OVERLAP);
+                yOffset += PANEL_HEIGHT_MIN * (1 - OVERLAP);
             });
         }
     }, [ completedDrawing, shouldAnimate ]);
@@ -92,7 +131,14 @@ const CompletedDrawing = ({
         <div style={{ display: "flex", flexDirection: "column" }}>
             <canvas
                 ref={canvasRef}
-                style={{ border: "1px solid black" }}
+                width={dimensions.width}
+                height={dimensions.height}
+                style={{
+                    border: "1px solid black",
+                    width: "auto",           // Makes canvas fill the full width of the viewport
+                    height: "100%",          // Keeps the 2:1 aspect ratio automatically
+                    display: "block",        // Removes any padding/margin caused by inline canvas
+                }}
             >
                 Sorry, your browser is too old for this demo.
             </canvas>

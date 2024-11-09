@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { DRAWING_HEIGHT, DRAWING_WIDTH } from "../Canvas";
+import { DRAWING_HEIGHT_MIN, DRAWING_WIDTH_MIN } from "../Canvas";
 import { drawOnCanvas, setCanvasDimensions, setCanvasProperties } from "../../utils/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
 
@@ -12,7 +12,7 @@ const CanvasSpectator: React.FC = () => {
 
     // Set initial dimensions of the canvas
     useEffect(() => {
-        setCanvasDimensions(canvasRef.current, DRAWING_WIDTH, DRAWING_HEIGHT);
+        setCanvasDimensions(canvasRef.current, DRAWING_WIDTH_MIN, DRAWING_HEIGHT_MIN);
     }, []);
 
     useEffect(() => {

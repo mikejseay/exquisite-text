@@ -4,8 +4,9 @@ import Button from "@mui/material/Button";
 import { Point } from "../../types";
 import { emitSendLastPanel, emitSendPanel } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { drawOnCanvas, setCanvasDimensions, setCanvasProperties } from "../../utils/canvasUtils";
+import { drawOnCanvas, setCanvasProperties } from "../../utils/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
+import { ScaleDirection, scalePoints } from "../../utils/scaleUtils";
 
 type ExtendedTouch = Touch & {
     force?: number;
@@ -18,10 +19,12 @@ export const OVERLAP = 0.2;
 const DEFAULT_PRESSURE = 0.1;
 const lineColor = "grey";
 
-export const PANEL_HEIGHT = 300; // retina is double
-export const PANEL_WIDTH = 667;
-export const DRAWING_HEIGHT = 3 * PANEL_HEIGHT - 2 * OVERLAP * PANEL_HEIGHT;
-export const DRAWING_WIDTH = PANEL_WIDTH;
+export const PANEL_HEIGHT_MIN = 300; // retina is double
+export const PANEL_WIDTH_MIN = 667;
+export const PANEL_ASPECT_RATIO = PANEL_WIDTH_MIN / PANEL_HEIGHT_MIN;
+export const DRAWING_HEIGHT_MIN = 3 * PANEL_HEIGHT_MIN - 2 * OVERLAP * PANEL_HEIGHT_MIN;
+export const DRAWING_WIDTH_MIN = PANEL_WIDTH_MIN;
+export const DRAWING_ASPECT_RATIO = DRAWING_WIDTH_MIN / DRAWING_HEIGHT_MIN;
 
 // iPhone SE: 667 x 375
 // NOTE: window.devicePixelRatio is 2 for retina screens
@@ -50,16 +53,63 @@ const Canvas: React.FC = () => {
     const [ drawType, setDrawType ] = useState<"fill" | "stroke" | "noDrawYet">("noDrawYet");
     const [ player, setPlayer ] = useState<number>(0);
     const [ coordinates, setCoordinates ] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+    const [ dimensions, setDimensions ] = useState({ width: PANEL_WIDTH_MIN, height: PANEL_HEIGHT_MIN });
+    const [ scaleFactor, setScaleFactor ] = useState<number>(1);
 
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
     // Disable scrolling
     useDisableScroll();
 
-    // Set initial dimensions of the canvas
+    // Handle resizing of the window
     useEffect(() => {
-        setCanvasDimensions(canvasRef.current, PANEL_WIDTH, PANEL_HEIGHT);
+        const handleResize = () => {
+            const canvas = canvasRef.current;
+            if (!canvas) return;
+
+            const context = canvas.getContext("2d");
+            if (!context) return;
+
+            // Save the canvas image data so far
+            const imageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
+
+            // Get the viewport width and calculate the new height to maintain the aspect ratio
+            const viewportHeight = window.innerHeight - 100;
+            const viewportWidth = window.innerWidth;
+            const viewportAspectRatio = viewportWidth / viewportHeight;
+            let newWidth;
+            let newHeight;
+            if (viewportAspectRatio < PANEL_ASPECT_RATIO) {
+                newWidth = Math.max(viewportWidth, PANEL_WIDTH_MIN);
+                newHeight = Math.max(newWidth / PANEL_ASPECT_RATIO, PANEL_HEIGHT_MIN);
+            } else {
+                newHeight = Math.max(viewportHeight, PANEL_HEIGHT_MIN);
+                newWidth = Math.max(newHeight * PANEL_ASPECT_RATIO, PANEL_WIDTH_MIN);
+            }
+
+            // Determine the scaling factor and set the dimensions
+            // This will cause the canvas element to resize and clear it
+            setScaleFactor(newWidth / PANEL_WIDTH_MIN);
+            setDimensions({ width: newWidth, height: newHeight });
+
+            // Now re-draw whatever was there before
+            context.putImageData(imageData, 0, 0);
+        };
+
+        // Initial size setup
+        handleResize();
+
+        // Attach resize event listener
+        window.addEventListener("resize", handleResize);
+
+        // Clean up event listener on component unmount
+        return () => window.removeEventListener("resize", handleResize);
     }, []);
+
+    // Set initial dimensions of the canvas
+    // useEffect(() => {
+    //     setCanvasDimensions(canvasRef.current, PANEL_WIDTH_MAX, PANEL_HEIGHT_MIN);
+    // }, []);
 
     // Handle changes in editorActive (when it becomes your turn)
     useEffect(() => {
@@ -198,25 +248,26 @@ const Canvas: React.FC = () => {
 
     const handleEnd = useCallback(() => {
         setIsMousedown(false);
-        setLocalStrokeHistory((prev) => [ ...prev, points ]);
+        const scaledPoints: Point[] = scalePoints(points, ScaleDirection.DIVIDE, scaleFactor);
+        setLocalStrokeHistory((prev) => [ ...prev, scaledPoints ]);
         setPoints([]);
         setLineWidth(0);
     }, [ points ]);
 
     return (
         <div style={{ display: "flex", flexDirection: "column" }}>
-            <p style={{ textAlign: "center" }}>
-                {"Pressure: " + eventPressure}
-                <br />
-                {"Line Width: " + lineWidth}
-                <br />
-                {"Draw Type: " + drawType}
-                <br />
-                {"Current Player: " + player}
-                <br />
-                {"Coordinates: " + JSON.stringify(coordinates)}
-            </p>
-            <Button onClick={() => setAllowDirect(!allowDirect)}>Toggle Direct</Button>
+            {/*<p style={{ textAlign: "center" }}>*/}
+            {/*    {"Pressure: " + eventPressure}*/}
+            {/*    <br />*/}
+            {/*    {"Line Width: " + lineWidth}*/}
+            {/*    <br />*/}
+            {/*    {"Draw Type: " + drawType}*/}
+            {/*    <br />*/}
+            {/*    {"Current Player: " + player}*/}
+            {/*    <br />*/}
+            {/*    {"Coordinates: " + JSON.stringify(coordinates)}*/}
+            {/*</p>*/}
+            {/*<Button onClick={() => setAllowDirect(!allowDirect)}>Toggle Direct</Button>*/}
             <Button
                 disabled={isPassCompleteDisabled}
                 onClick={onLastContribution
@@ -229,6 +280,8 @@ const Canvas: React.FC = () => {
             </Button>
             <canvas
                 ref={canvasRef}
+                width={dimensions.width}
+                height={dimensions.height}
                 style={{
                     pointerEvents: editorActive
                         ? "auto"
@@ -237,6 +290,7 @@ const Canvas: React.FC = () => {
                         ? 1
                         : 0.5,
                     border: "1px solid black",
+                    display: "block",        // Removes any padding/margin caused by inline canvas
                 }}
                 onMouseDown={handleStart}
                 onTouchStart={handleStart}
