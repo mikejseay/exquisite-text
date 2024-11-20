@@ -6,7 +6,8 @@ import { emitSendLastPanel, emitSendPanel } from "../../context/SocketRequestors
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { drawOnCanvas, setCanvasProperties } from "../../utils/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
-import { ScaleDirection, scalePoints } from "../../utils/scaleUtils";
+import { ScaleDirection, pixelRatio, scalePoints } from "../../utils/scaleUtils";
+import { debounce } from "es-toolkit";
 
 type ExtendedTouch = Touch & {
     force?: number;
@@ -70,8 +71,12 @@ const Canvas: React.FC = () => {
             const context = canvas.getContext("2d");
             if (!context) return;
 
+            // context.clearRect(0, 0, canvas.width, canvas.height);
+
+            setCanvasProperties(context);
+    
             // Save the canvas image data so far
-            const imageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
+            // const imageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
 
             // Get the viewport width and calculate the new height to maintain the aspect ratio
             const viewportHeight = window.innerHeight - 100;
@@ -92,19 +97,36 @@ const Canvas: React.FC = () => {
             setScaleFactor(newWidth / PANEL_WIDTH_MIN);
             setDimensions({ width: newWidth, height: newHeight });
 
+            // race condition? set time out to test?
             // Now re-draw whatever was there before
-            context.putImageData(imageData, 0, 0);
+            // context.putImageData(imageData, 0, 0);
+            setTimeout(() => {
+                console.log("Attempting draw of:", localStrokeHistory);
+                console.log("Boolean context:", Boolean(context), context);
+                setCanvasProperties(context);
+                localStrokeHistory?.forEach((strokeArray) =>
+                    drawOnCanvas(scalePoints(strokeArray, ScaleDirection.MULTIPLY, scaleFactor), 0, context),
+                );
+                setCanvasProperties(context);
+            }, 5000);
         };
 
-        // Initial size setup
+        const debouncedHandleResize = debounce(() => {
+            console.log("Debounced handle resize");
+            handleResize();
+        }, 1000);
+
         handleResize();
 
         // Attach resize event listener
-        window.addEventListener("resize", handleResize);
+        window.addEventListener("resize", debouncedHandleResize);
 
         // Clean up event listener on component unmount
-        return () => window.removeEventListener("resize", handleResize);
-    }, []);
+        return () => {
+            debouncedHandleResize.cancel();
+            window.removeEventListener("resize", debouncedHandleResize);
+        };
+    }, [ localStrokeHistory ]);
 
     // Set initial dimensions of the canvas
     // useEffect(() => {
@@ -126,10 +148,12 @@ const Canvas: React.FC = () => {
 
         setCanvasProperties(context);
 
+        // Redraw
         strokeHistory?.forEach((strokeArray) =>
             drawOnCanvas(strokeArray, 0, context),
         );
 
+        // Clip
         const imageData = context.getImageData(
             0,
             context.canvas.height * (1 - OVERLAP),
@@ -280,9 +304,11 @@ const Canvas: React.FC = () => {
             </Button>
             <canvas
                 ref={canvasRef}
-                width={dimensions.width}
-                height={dimensions.height}
+                width={dimensions.width * pixelRatio}
+                height={dimensions.height * pixelRatio}
                 style={{
+                    width: `${dimensions.width}px`,
+                    height: `${dimensions.height}px`,
                     pointerEvents: editorActive
                         ? "auto"
                         : "none",

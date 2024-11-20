@@ -15,7 +15,9 @@ import { title } from "./styles";
 import { Point } from "../../types";
 import { drawOnCanvas, setCanvasProperties } from "../../utils/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
-import { ScaleDirection, scalePoints } from "../../utils/scaleUtils";
+import { ScaleDirection, pixelRatio, scalePoints } from "../../utils/scaleUtils";
+
+const HEADER_HEIGHT = 150;
 
 const CompletedDrawing = ({
     completedDrawing,
@@ -44,7 +46,7 @@ const CompletedDrawing = ({
     useEffect(() => {
         const handleResize = () => {
             // Get the viewport width and calculate the new height to maintain the 2:1 ratio
-            const viewportHeight = window.innerHeight - 150;
+            const viewportHeight = window.innerHeight - HEADER_HEIGHT;
             const newHeight = Math.max(viewportHeight, DRAWING_HEIGHT_MIN); // Enforce minimum width
             const newWidth = Math.max(newHeight * DRAWING_ASPECT_RATIO, DRAWING_WIDTH_MIN); // Enforce minimum height
 
@@ -95,9 +97,9 @@ const CompletedDrawing = ({
 
                 if (strokeArray) {
                     drawOnCanvas(strokeArray, yOffset, context);
-                    strokeHistoryIndex++;
+                    strokeHistoryIndex += 1;
                 } else {
-                    panelIndex++;
+                    panelIndex += 1;
                     strokeHistoryIndex = 0;
                     yOffset += PANEL_HEIGHT_MIN * (1 - OVERLAP);
                 }
@@ -131,13 +133,13 @@ const CompletedDrawing = ({
         <div style={{ display: "flex", flexDirection: "column" }}>
             <canvas
                 ref={canvasRef}
-                width={dimensions.width}
-                height={dimensions.height}
+                width={dimensions.width * pixelRatio}
+                height={dimensions.height * pixelRatio}
                 style={{
                     border: "1px solid black",
-                    width: "auto",           // Makes canvas fill the full width of the viewport
-                    height: "100%",          // Keeps the 2:1 aspect ratio automatically
-                    display: "block",        // Removes any padding/margin caused by inline canvas
+                    width: `${dimensions.width}px`,
+                    height: `${dimensions.height}px`,
+                    display: "block",
                 }}
             >
                 Sorry, your browser is too old for this demo.
