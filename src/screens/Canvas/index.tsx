@@ -14,12 +14,10 @@ type ExtendedTouch = Touch & {
     touchType?: string;
 };
 
-const DEFAULT_LINE_WIDTH = 30;
+const DEFAULT_LINE_WIDTH = 8;
 export const OVERLAP = 0.2;
 
 const DEFAULT_PRESSURE = 0.1;
-// Temporarily set to 'red' for debugging purposes
-export const lineColor = "red"; // Change back to 'grey' after verifying
 
 export const PANEL_HEIGHT_MIN = 300; // retina is double
 export const PANEL_WIDTH_MIN = 667;
@@ -48,11 +46,10 @@ const Canvas: React.FC = () => {
         localStrokeHistoryRef.current = localStrokeHistory;
     }, [ localStrokeHistory ]);
 
-    // Disable scrolling
     useDisableScroll();
 
     // Handle resizing of the window
-    useLayoutEffect(() => { // Changed to useLayoutEffect
+    useLayoutEffect(() => {
         const handleResize = () => {
             const canvas = canvasRef.current;
             if (!canvas) return;
@@ -109,21 +106,10 @@ const Canvas: React.FC = () => {
 
         console.log("Redrawing canvas with dimensions:", dimensions, "and scaleFactor:", scaleFactor);
 
-        // Set canvas properties
         setCanvasProperties(context);
-        console.log("Canvas Properties after setCanvasProperties:", {
-            strokeStyle: context.strokeStyle,
-            fillStyle: context.fillStyle,
-            lineWidth: context.lineWidth,
-            lineCap: context.lineCap,
-            lineJoin: context.lineJoin,
-        });
 
-        // Clear the canvas
         context.clearRect(0, 0, canvas.width, canvas.height);
-        console.log("Canvas cleared");
 
-        // Redraw all strokes
         localStrokeHistoryRef.current?.forEach((strokeArray, index) => {
             drawOnCanvas(
                 scalePoints(strokeArray, ScaleDirection.MULTIPLY, scaleFactor),
@@ -132,8 +118,6 @@ const Canvas: React.FC = () => {
             );
             console.log(`Redrew strokeArray #${index}`);
         });
-
-        console.log("Canvas redrawn");
     }, [ dimensions, scaleFactor ]);
 
     // Handle changes in editorActive (when it becomes your turn)
@@ -223,6 +207,7 @@ const Canvas: React.FC = () => {
             setPoints((prev) => [ ...prev, newPoint ]);
 
             // Set canvas properties before drawing
+            // TODO: setCanvasProperties inside drawOnCanvas
             setCanvasProperties(context);
             drawOnCanvas([ newPoint ], 0, context);
         },
@@ -326,8 +311,7 @@ const Canvas: React.FC = () => {
                         ? 1
                         : 0.5,
                     border: "1px solid black",
-                    backgroundColor: "white", // Added background color for better visibility
-                    display: "block",        // Removes any padding/margin caused by inline canvas
+                    display: "block",
                 }}
                 onMouseDown={handleStart}
                 onTouchStart={handleStart}
