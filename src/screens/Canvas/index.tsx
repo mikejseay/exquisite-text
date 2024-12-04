@@ -1,5 +1,5 @@
 // src/screens/Canvas/index.tsx
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Button from "@mui/material/Button";
 import { Point } from "../../types";
 import { emitSendLastPanel, emitSendPanel } from "../../context/SocketRequestors";
@@ -18,7 +18,8 @@ const DEFAULT_LINE_WIDTH = 30;
 export const OVERLAP = 0.2;
 
 const DEFAULT_PRESSURE = 0.1;
-const lineColor = "grey";
+// Temporarily set to 'red' for debugging purposes
+export const lineColor = "red"; // Change back to 'grey' after verifying
 
 export const PANEL_HEIGHT_MIN = 300; // retina is double
 export const PANEL_WIDTH_MIN = 667;
@@ -26,21 +27,6 @@ export const PANEL_ASPECT_RATIO = PANEL_WIDTH_MIN / PANEL_HEIGHT_MIN;
 export const DRAWING_HEIGHT_MIN = 3 * PANEL_HEIGHT_MIN - 2 * OVERLAP * PANEL_HEIGHT_MIN;
 export const DRAWING_WIDTH_MIN = PANEL_WIDTH_MIN;
 export const DRAWING_ASPECT_RATIO = DRAWING_WIDTH_MIN / DRAWING_HEIGHT_MIN;
-
-// iPhone SE: 667 x 375
-// NOTE: window.devicePixelRatio is 2 for retina screens
-
-/* TODO:
-    [ ] Canvas and panel height are established at the start of the game, and become a property of the room
-    [ ] Players are forced to have canvases of the appropriate height regardless of their window size
-    [ ] Spectator view
-    [ ] Ensure that spectator receives entire drawing instead of just single frame
-    [-] Modularize all server socket functions to work with both poems and canvases
-    [ ] For the watcher, the cursor is not in right spot until writer starts writing:
-        As a part of reinstateContext, find the editor you're supposed to be spectating,
-        Find the poem they're editing, get the current line edit, and send it via "stcLineEditorWatch"
-*/
-
 
 const Canvas: React.FC = () => {
     const { strokeHistory, editorActive, onLastContribution, setEditorActive } = useSocketInfo();
@@ -50,20 +36,23 @@ const Canvas: React.FC = () => {
     const [ isMousedown, setIsMousedown ] = useState(false);
     const [ allowDirect, setAllowDirect ] = useState(true);
     const [ lineWidth, setLineWidth ] = useState(0);
-    const [ eventPressure, setEventPressure ] = useState(DEFAULT_PRESSURE);
     const [ drawType, setDrawType ] = useState<"fill" | "stroke" | "noDrawYet">("noDrawYet");
     const [ player, setPlayer ] = useState<number>(0);
     const [ coordinates, setCoordinates ] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
     const [ dimensions, setDimensions ] = useState({ width: PANEL_WIDTH_MIN, height: PANEL_HEIGHT_MIN });
     const [ scaleFactor, setScaleFactor ] = useState<number>(1);
-
+    const localStrokeHistoryRef = useRef<Point[][]>(localStrokeHistory);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+    useEffect(() => {
+        localStrokeHistoryRef.current = localStrokeHistory;
+    }, [ localStrokeHistory ]);
 
     // Disable scrolling
     useDisableScroll();
 
     // Handle resizing of the window
-    useEffect(() => {
+    useLayoutEffect(() => { // Changed to useLayoutEffect
         const handleResize = () => {
             const canvas = canvasRef.current;
             if (!canvas) return;
@@ -71,19 +60,13 @@ const Canvas: React.FC = () => {
             const context = canvas.getContext("2d");
             if (!context) return;
 
-            // context.clearRect(0, 0, canvas.width, canvas.height);
-
-            setCanvasProperties(context);
-    
-            // Save the canvas image data so far
-            // const imageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
-
-            // Get the viewport width and calculate the new height to maintain the aspect ratio
+            // Calculate new dimensions
             const viewportHeight = window.innerHeight - 100;
             const viewportWidth = window.innerWidth;
             const viewportAspectRatio = viewportWidth / viewportHeight;
-            let newWidth;
-            let newHeight;
+            let newWidth: number;
+            let newHeight: number;
+
             if (viewportAspectRatio < PANEL_ASPECT_RATIO) {
                 newWidth = Math.max(viewportWidth, PANEL_WIDTH_MIN);
                 newHeight = Math.max(newWidth / PANEL_ASPECT_RATIO, PANEL_HEIGHT_MIN);
@@ -92,46 +75,66 @@ const Canvas: React.FC = () => {
                 newWidth = Math.max(newHeight * PANEL_ASPECT_RATIO, PANEL_WIDTH_MIN);
             }
 
-            // Determine the scaling factor and set the dimensions
-            // This will cause the canvas element to resize and clear it
-            setScaleFactor(newWidth / PANEL_WIDTH_MIN);
-            setDimensions({ width: newWidth, height: newHeight });
+            const newScaleFactor = newWidth / PANEL_WIDTH_MIN;
+            console.log("New Scale Factor:", newScaleFactor);
 
-            // race condition? set time out to test?
-            // Now re-draw whatever was there before
-            // context.putImageData(imageData, 0, 0);
-            setTimeout(() => {
-                console.log("Attempting draw of:", localStrokeHistory);
-                console.log("Boolean context:", Boolean(context), context);
-                setCanvasProperties(context);
-                localStrokeHistory?.forEach((strokeArray) =>
-                    drawOnCanvas(scalePoints(strokeArray, ScaleDirection.MULTIPLY, scaleFactor), 0, context),
-                );
-                setCanvasProperties(context);
-            }, 5000);
+            // Update state for layout purposes
+            setDimensions({ width: newWidth, height: newHeight });
+            setScaleFactor(newScaleFactor);
         };
 
         const debouncedHandleResize = debounce(() => {
             console.log("Debounced handle resize");
             handleResize();
-        }, 1000);
+        }, 200); // Reduced debounce delay
 
+        // Initial resize to set up canvas correctly
         handleResize();
 
-        // Attach resize event listener
         window.addEventListener("resize", debouncedHandleResize);
 
-        // Clean up event listener on component unmount
         return () => {
             debouncedHandleResize.cancel();
             window.removeEventListener("resize", debouncedHandleResize);
         };
-    }, [ localStrokeHistory ]);
+    }, []);
 
-    // Set initial dimensions of the canvas
-    // useEffect(() => {
-    //     setCanvasDimensions(canvasRef.current, PANEL_WIDTH_MAX, PANEL_HEIGHT_MIN);
-    // }, []);
+    // Redraw the canvas whenever dimensions or scaleFactor change
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const context = canvas.getContext("2d");
+        if (!context) return;
+
+        console.log("Redrawing canvas with dimensions:", dimensions, "and scaleFactor:", scaleFactor);
+
+        // Set canvas properties
+        setCanvasProperties(context);
+        console.log("Canvas Properties after setCanvasProperties:", {
+            strokeStyle: context.strokeStyle,
+            fillStyle: context.fillStyle,
+            lineWidth: context.lineWidth,
+            lineCap: context.lineCap,
+            lineJoin: context.lineJoin,
+        });
+
+        // Clear the canvas
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        console.log("Canvas cleared");
+
+        // Redraw all strokes
+        localStrokeHistoryRef.current?.forEach((strokeArray, index) => {
+            drawOnCanvas(
+                scalePoints(strokeArray, ScaleDirection.MULTIPLY, scaleFactor),
+                0,
+                context,
+            );
+            console.log(`Redrew strokeArray #${index}`);
+        });
+
+        console.log("Canvas redrawn");
+    }, [ dimensions, scaleFactor ]);
 
     // Handle changes in editorActive (when it becomes your turn)
     useEffect(() => {
@@ -203,7 +206,6 @@ const Canvas: React.FC = () => {
                 if (allowDirect || (touch && touch.touchType !== "direct")) {
                     if (touch.force && touch.force > 0) {
                         pressure = touch.force;
-                        setEventPressure(pressure);
                     }
                 }
             } else {
@@ -215,13 +217,16 @@ const Canvas: React.FC = () => {
             setCoordinates({ x, y });
             setIsMousedown(true);
 
-            setLineWidth(Math.log(pressure + 1) * DEFAULT_LINE_WIDTH);
-            const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * DEFAULT_LINE_WIDTH };
+            const computedLineWidth = Math.log(pressure + 1) * DEFAULT_LINE_WIDTH * scaleFactor;
+            setLineWidth(computedLineWidth);
+            const newPoint = { x, y, lineWidth: computedLineWidth };
             setPoints((prev) => [ ...prev, newPoint ]);
-            // setCanvasProperties(context);
+
+            // Set canvas properties before drawing
+            setCanvasProperties(context);
             drawOnCanvas([ newPoint ], 0, context);
         },
-        [ allowDirect ],
+        [ allowDirect, scaleFactor ],
     );
 
     const handleMove = useCallback(
@@ -246,7 +251,6 @@ const Canvas: React.FC = () => {
                 if (allowDirect || (touch && touch.touchType !== "direct")) {
                     if (touch.force && touch.force > 0) {
                         pressure = touch.force;
-                        setEventPressure(pressure);
                     }
                     x = (touch.pageX - canvasBounds.left - window.scrollX);
                     y = (touch.pageY - canvasBounds.top - window.scrollY);
@@ -259,15 +263,20 @@ const Canvas: React.FC = () => {
             }
             setCoordinates({ x, y });
 
-            setLineWidth(Math.log(pressure + 1) * DEFAULT_LINE_WIDTH);
-            const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * DEFAULT_LINE_WIDTH };
-            // setCanvasProperties(context);
+            const computedLineWidth = Math.log(pressure + 1) * DEFAULT_LINE_WIDTH * scaleFactor;
+            setLineWidth(computedLineWidth);
+            const newPoint = { x, y, lineWidth: computedLineWidth };
+
             setPoints((prev) => {
-                drawOnCanvas([ prev[prev.length - 1], newPoint ], 0, context);
+                const lastPoint = prev[prev.length - 1];
+                if (lastPoint) {
+                    drawOnCanvas([ lastPoint, newPoint ], 0, context);
+                    console.log("Drawn line segment in handleMove:", lastPoint, newPoint);
+                }
                 return [ ...prev, newPoint ];
             });
         },
-        [ allowDirect, isMousedown ],
+        [ allowDirect, isMousedown, scaleFactor ],
     );
 
     const handleEnd = useCallback(() => {
@@ -276,7 +285,8 @@ const Canvas: React.FC = () => {
         setLocalStrokeHistory((prev) => [ ...prev, scaledPoints ]);
         setPoints([]);
         setLineWidth(0);
-    }, [ points ]);
+        console.log("Stroke ended and scaled points added to history");
+    }, [ points, scaleFactor ]);
 
     return (
         <div style={{ display: "flex", flexDirection: "column" }}>
@@ -316,6 +326,7 @@ const Canvas: React.FC = () => {
                         ? 1
                         : 0.5,
                     border: "1px solid black",
+                    backgroundColor: "white", // Added background color for better visibility
                     display: "block",        // Removes any padding/margin caused by inline canvas
                 }}
                 onMouseDown={handleStart}
