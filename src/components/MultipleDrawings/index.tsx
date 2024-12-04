@@ -16,8 +16,8 @@ import { Point } from "../../types";
 import { drawOnCanvas, setCanvasProperties } from "../../utils/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
 import { ScaleDirection, pixelRatio, scalePoints } from "../../utils/scaleUtils";
+import { aboveCanvasHeight } from "../../constants";
 
-const HEADER_HEIGHT = 150;
 
 const CompletedDrawing = ({
     completedDrawing,
@@ -46,7 +46,7 @@ const CompletedDrawing = ({
     useEffect(() => {
         const handleResize = () => {
             // Get the viewport width and calculate the new height to maintain the 2:1 ratio
-            const viewportHeight = window.innerHeight - HEADER_HEIGHT;
+            const viewportHeight = window.innerHeight - aboveCanvasHeight;
             const newHeight = Math.max(viewportHeight, DRAWING_HEIGHT_MIN); // Enforce minimum width
             const newWidth = Math.max(newHeight * DRAWING_ASPECT_RATIO, DRAWING_WIDTH_MIN); // Enforce minimum height
 

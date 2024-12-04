@@ -8,6 +8,7 @@ import { drawOnCanvas, setCanvasProperties } from "../../utils/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
 import { ScaleDirection, pixelRatio, scalePoints } from "../../utils/scaleUtils";
 import { debounce } from "es-toolkit";
+import { aboveCanvasHeight } from "../../constants";
 
 type ExtendedTouch = Touch & {
     force?: number;
@@ -58,7 +59,7 @@ const Canvas: React.FC = () => {
             if (!context) return;
 
             // Calculate new dimensions
-            const viewportHeight = window.innerHeight - 100;
+            const viewportHeight = window.innerHeight - aboveCanvasHeight;
             const viewportWidth = window.innerWidth;
             const viewportAspectRatio = viewportWidth / viewportHeight;
             let newWidth: number;
