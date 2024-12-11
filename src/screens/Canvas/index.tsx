@@ -10,6 +10,11 @@ import { ScaleDirection, pixelRatio, scalePoints } from "../../utils/scaleUtils"
 import { debounce } from "es-toolkit";
 import { aboveCanvasHeight } from "../../constants";
 
+/* TODO:
+    * Fix end screen
+    * When you draw on your screen and resize, the portion of your snippet will disappear
+*/
+
 type ExtendedTouch = Touch & {
     force?: number;
     touchType?: string;
@@ -305,14 +310,14 @@ const Canvas: React.FC = () => {
                 style={{
                     width: `${dimensions.width}px`,
                     height: `${dimensions.height}px`,
+                    border: "1px solid black",
+                    display: "block",
                     pointerEvents: editorActive
                         ? "auto"
                         : "none",
                     opacity: editorActive
                         ? 1
                         : 0.5,
-                    border: "1px solid black",
-                    display: "block",
                 }}
                 onMouseDown={handleStart}
                 onTouchStart={handleStart}

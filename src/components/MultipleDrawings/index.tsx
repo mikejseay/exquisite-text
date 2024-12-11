@@ -1,5 +1,5 @@
 // src/components/MultipleDrawings/index.tsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { Carousel } from "react-responsive-carousel";
 
@@ -17,6 +17,7 @@ import { drawOnCanvas, setCanvasProperties } from "../../utils/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
 import { ScaleDirection, pixelRatio, scalePoints } from "../../utils/scaleUtils";
 import { aboveCanvasHeight } from "../../constants";
+import { debounce } from "es-toolkit";
 
 
 const CompletedDrawing = ({
@@ -42,26 +43,65 @@ const CompletedDrawing = ({
     //     setCanvasDimensions(canvasRef.current, DRAWING_WIDTH_MIN, DRAWING_HEIGHT_MIN);
     // }, []);
 
-    // Handle resizing of the window
-    useEffect(() => {
+    // Handle resizing of the window // mostly matches useLayoutEffect in Canvas/index.tsx
+    useLayoutEffect(() => {
         const handleResize = () => {
-            // Get the viewport width and calculate the new height to maintain the 2:1 ratio
-            const viewportHeight = window.innerHeight - aboveCanvasHeight;
-            const newHeight = Math.max(viewportHeight, DRAWING_HEIGHT_MIN); // Enforce minimum width
-            const newWidth = Math.max(newHeight * DRAWING_ASPECT_RATIO, DRAWING_WIDTH_MIN); // Enforce minimum height
+            const canvas = canvasRef.current;
+            if (!canvas) return;
 
-            setScaleFactor(newHeight / DRAWING_HEIGHT_MIN);
+            const context = canvas.getContext("2d");
+            if (!context) return;
+
+            // Calculate new dimensions
+            const viewportHeight = window.innerHeight - aboveCanvasHeight;
+            const viewportWidth = window.innerWidth;
+            const viewportAspectRatio = viewportWidth / viewportHeight;
+            let newWidth: number;
+            let newHeight: number;
+
+            // Viewport more portrait than drawing
+            if (viewportAspectRatio < DRAWING_ASPECT_RATIO) {
+                console.log("viewportAspectRatio < DRAWING_ASPECT_RATIO");
+                newWidth = Math.max(viewportWidth, DRAWING_WIDTH_MIN);
+                newHeight = Math.max(newWidth / DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN);
+                console.log({ viewportWidth, DRAWING_WIDTH_MIN });
+                console.log("Math.max(viewportWidth, DRAWING_WIDTH_MIN)", Math.max(viewportWidth, DRAWING_WIDTH_MIN),
+                );
+                console.log({ newWidth, DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN });
+                console.log("Math.max(newWidth / DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN)", Math.max(newWidth / DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN),
+                );
+            // Viewport more landscape than drawing
+            } else {
+                console.log("else");
+                newHeight = Math.max(viewportHeight, DRAWING_HEIGHT_MIN);
+                newWidth = Math.max(newHeight * DRAWING_ASPECT_RATIO, DRAWING_WIDTH_MIN);
+                console.log({ viewportHeight, DRAWING_HEIGHT_MIN, newHeight, DRAWING_ASPECT_RATIO, DRAWING_WIDTH_MIN });
+                console.log({ newWidth });
+            }
+
+            const newScaleFactor = newWidth / DRAWING_WIDTH_MIN;
+            console.log({ viewportHeight, viewportWidth, viewportAspectRatio, newWidth, newHeight });
+            console.log("New Scale Factor:", newScaleFactor);
+
+            // Update state for layout purposes
             setDimensions({ width: newWidth, height: newHeight });
+            setScaleFactor(newScaleFactor);
         };
 
-        // Initial size setup
+        const debouncedHandleResize = debounce(() => {
+            console.log("Debounced handle resize");
+            handleResize();
+        }, 200); // Reduced debounce delay
+
+        // Initial resize to set up canvas correctly
         handleResize();
 
-        // Attach resize event listener
-        window.addEventListener("resize", handleResize);
+        window.addEventListener("resize", debouncedHandleResize);
 
-        // Clean up event listener on component unmount
-        return () => window.removeEventListener("resize", handleResize);
+        return () => {
+            debouncedHandleResize.cancel();
+            window.removeEventListener("resize", debouncedHandleResize);
+        };
     }, []);
 
     useEffect(() => {
@@ -127,7 +167,7 @@ const CompletedDrawing = ({
                 yOffset += PANEL_HEIGHT_MIN * (1 - OVERLAP);
             });
         }
-    }, [ completedDrawing, shouldAnimate ]);
+    }, [ completedDrawing, shouldAnimate, dimensions, scaleFactor ]);
 
     return (
         <div style={{ display: "flex", flexDirection: "column" }}>
@@ -136,10 +176,12 @@ const CompletedDrawing = ({
                 width={dimensions.width * pixelRatio}
                 height={dimensions.height * pixelRatio}
                 style={{
-                    border: "1px solid black",
                     width: `${dimensions.width}px`,
                     height: `${dimensions.height}px`,
+                    border: "1px solid black",
                     display: "block",
+                    pointerEvents: "none",
+                    opacity: 1,
                 }}
             >
                 Sorry, your browser is too old for this demo.
