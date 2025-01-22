@@ -2,6 +2,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { Carousel } from "react-responsive-carousel";
+import { debounce } from "es-toolkit";
 
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import {
@@ -17,7 +18,6 @@ import { drawOnCanvas, setCanvasProperties } from "../../utils/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
 import { ScaleDirection, pixelRatio, scalePoints } from "../../utils/scaleUtils";
 import { aboveCanvasHeight } from "../../constants";
-import { debounce } from "es-toolkit";
 
 
 const CompletedDrawing = ({
@@ -141,6 +141,8 @@ const CompletedDrawing = ({
                 } else {
                     panelIndex += 1;
                     strokeHistoryIndex = 0;
+                    // NOT SURE THIS MATH IS RIGHT:
+                    // top header is 108px
                     yOffset += PANEL_HEIGHT_MIN * (1 - OVERLAP);
                 }
 

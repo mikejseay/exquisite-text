@@ -1,18 +1,23 @@
 // src/screens/Canvas/index.tsx
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Button from "@mui/material/Button";
+import { debounce } from "es-toolkit";
+
 import { Point } from "../../types";
 import { emitSendLastPanel, emitSendPanel } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { drawOnCanvas, setCanvasProperties } from "../../utils/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
 import { ScaleDirection, pixelRatio, scalePoints } from "../../utils/scaleUtils";
-import { debounce } from "es-toolkit";
 import { aboveCanvasHeight } from "../../constants";
 
 /* TODO:
-    * Fix end screen
-    * When you draw on your screen and resize, the portion of your snippet will disappear
+    * Snippet at top from prev drawing broken for single player
+    * End screen panel layout is wrong (ballparked with constants?)
+        * On end screen if you resize horizontally between two players it can show slightly different
+        * Layering of the three panels vertically
+        * Fix yOffset w/r/t panel height calculation in MultipleDrawings (L145)
+    * Function to consolidate drawing of snippet code (don't repeat that code)
 */
 
 type ExtendedTouch = Touch & {
@@ -115,6 +120,30 @@ const Canvas: React.FC = () => {
         setCanvasProperties(context);
 
         context.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Redraw
+        strokeHistory?.forEach((strokeArray) =>
+            drawOnCanvas(
+                scalePoints(strokeArray, ScaleDirection.MULTIPLY, scaleFactor),
+                0,
+                context,
+            ),
+        );
+
+        // Clip
+        const imageData = context.getImageData(
+            0,
+            context.canvas.height * (1 - OVERLAP),
+            context.canvas.width,
+            context.canvas.height,
+        );
+        context.putImageData(imageData, 0, 0);
+        context.clearRect(
+            context.canvas.width,
+            context.canvas.height * OVERLAP,
+            0,
+            context.canvas.height,
+        );
 
         localStrokeHistoryRef.current?.forEach((strokeArray, index) => {
             drawOnCanvas(
