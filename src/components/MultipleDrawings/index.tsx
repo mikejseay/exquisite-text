@@ -143,7 +143,7 @@ const CompletedDrawing = ({
                     strokeHistoryIndex = 0;
                     // NOT SURE THIS MATH IS RIGHT:
                     // top header is 108px
-                    yOffset += PANEL_HEIGHT_MIN * (1 - OVERLAP);
+                    yOffset += PANEL_HEIGHT_MIN * scaleFactor * (1 - OVERLAP);
                 }
 
                 animationRef.current = requestAnimationFrame(draw);
@@ -166,7 +166,7 @@ const CompletedDrawing = ({
                         context,
                     );
                 });
-                yOffset += PANEL_HEIGHT_MIN * (1 - OVERLAP);
+                yOffset += PANEL_HEIGHT_MIN * scaleFactor * (1 - OVERLAP);
             });
         }
     }, [ completedDrawing, shouldAnimate, dimensions, scaleFactor ]);
