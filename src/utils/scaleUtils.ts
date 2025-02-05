@@ -8,12 +8,12 @@ export enum ScaleDirection {
     DIVIDE = "DIVIDE",
 }
 
-export function scalePoints(points: Point[], scaleDirection: ScaleDirection): Point[] {
+export function scalePoints(points: Point[], scaleDirection: ScaleDirection, scaleFactor: number): Point[] {
     let factor = 1;
     if (scaleDirection === ScaleDirection.MULTIPLY) {
-        factor = pixelRatio;
+        factor = scaleFactor;
     } else if (scaleDirection === ScaleDirection.DIVIDE) {
-        factor = 1 / pixelRatio;
+        factor = 1 / scaleFactor;
     } else {
         throw new Error("unrecognized ScaleDirection");
     }
