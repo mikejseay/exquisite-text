@@ -13,10 +13,6 @@ import { aboveCanvasHeight } from "../../constants";
 
 /* TODO:
     * Snippet at top from prev drawing broken for single player
-    * End screen panel layout is wrong (ballparked with constants?)
-        * On end screen if you resize horizontally between two players it can show slightly different
-        * Layering of the three panels vertically
-        * Fix yOffset w/r/t panel height calculation in MultipleDrawings (L145)
     * Function to consolidate drawing of snippet code (don't repeat that code)
 */
 
