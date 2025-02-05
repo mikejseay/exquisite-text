@@ -38,11 +38,6 @@ const CompletedDrawing = ({
 
     useDisableScroll();
 
-    // Set initial dimensions of the canvas
-    // useEffect(() => {
-    //     setCanvasDimensions(canvasRef.current, DRAWING_WIDTH_MIN, DRAWING_HEIGHT_MIN);
-    // }, []);
-
     // Handle resizing of the window // mostly matches useLayoutEffect in Canvas/index.tsx
     useLayoutEffect(() => {
         const handleResize = () => {
