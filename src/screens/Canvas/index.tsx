@@ -44,6 +44,7 @@ const Canvas: React.FC = () => {
     const [ drawType, setDrawType ] = useState<"fill" | "stroke" | "noDrawYet">("noDrawYet");
     const [ player, setPlayer ] = useState<number>(0);
     const [ coordinates, setCoordinates ] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+    const [ eventPressure, setEventPressure ] = useState(DEFAULT_PRESSURE);
     const [ dimensions, setDimensions ] = useState({ width: PANEL_WIDTH_MIN, height: PANEL_HEIGHT_MIN });
     const [ scaleFactor, setScaleFactor ] = useState<number>(1);
     const localStrokeHistoryRef = useRef<Point[][]>(localStrokeHistory);
@@ -185,6 +186,7 @@ const Canvas: React.FC = () => {
                 if (allowDirect || (touch && touch.touchType !== "direct")) {
                     if (touch.force && touch.force > 0) {
                         pressure = touch.force;
+                        setEventPressure(pressure);
                     }
                 }
             } else {
@@ -231,6 +233,7 @@ const Canvas: React.FC = () => {
                 if (allowDirect || (touch && touch.touchType !== "direct")) {
                     if (touch.force && touch.force > 0) {
                         pressure = touch.force;
+                        setEventPressure(pressure);
                     }
                     x = (touch.pageX - canvasBounds.left - window.scrollX);
                     y = (touch.pageY - canvasBounds.top - window.scrollY);
