@@ -12,8 +12,8 @@ import { ScaleDirection, pixelRatio, scalePoints } from "../../utils/scaleUtils"
 import { aboveCanvasHeight } from "../../constants";
 
 /* TODO:
-    * Snippet at top from prev drawing broken for single player
     * Function to consolidate drawing of snippet code (don't repeat that code)
+    * Spectator functionality
 */
 
 type ExtendedTouch = Touch & {
@@ -149,43 +149,7 @@ const Canvas: React.FC = () => {
             );
             console.log(`Redrew strokeArray #${index}`);
         });
-    }, [ dimensions, scaleFactor ]);
-
-    // Handle changes in editorActive (when it becomes your turn)
-    useEffect(() => {
-        setIsPassCompleteDisabled(!editorActive);
-        if (!editorActive) return;
-
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        const context = canvas.getContext("2d");
-        if (!context) return;
-
-        context.clearRect(0, 0, canvas.width, canvas.height);
-
-        setCanvasProperties(context);
-
-        // Redraw
-        strokeHistory?.forEach((strokeArray) =>
-            drawOnCanvas(strokeArray, 0, context),
-        );
-
-        // Clip
-        const imageData = context.getImageData(
-            0,
-            context.canvas.height * (1 - OVERLAP),
-            context.canvas.width,
-            context.canvas.height,
-        );
-        context.putImageData(imageData, 0, 0);
-        context.clearRect(
-            context.canvas.width,
-            context.canvas.height * OVERLAP,
-            0,
-            context.canvas.height,
-        );
-    }, [ editorActive ]);
+    }, [ dimensions, scaleFactor, editorActive ]);
 
     function passTurn() {
         emitSendPanel(localStrokeHistory);
