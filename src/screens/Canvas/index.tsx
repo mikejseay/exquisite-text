@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from
 import Button from "@mui/material/Button";
 import { debounce } from "es-toolkit";
 
-import { Point } from "../../types";
+import { Medium, Point } from "../../types";
 import { emitSendLastPanel, emitSendPanel } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { drawOnCanvas, setCanvasProperties } from "../../utils/canvasUtils";
@@ -34,8 +34,7 @@ export const DRAWING_WIDTH_MIN = PANEL_WIDTH_MIN;
 export const DRAWING_ASPECT_RATIO = DRAWING_WIDTH_MIN / DRAWING_HEIGHT_MIN;
 
 const Canvas: React.FC = () => {
-    const { strokeHistory, editorActive, onLastContribution, setEditorActive } = useSocketInfo();
-    const [ isPassCompleteDisabled, setIsPassCompleteDisabled ] = useState(false);
+    const { strokeHistory, panels, completedDrawings, editorActive, onLastContribution, setEditorActive, medium } = useSocketInfo();    const [ isPassCompleteDisabled, setIsPassCompleteDisabled ] = useState(false);
     const [ points, setPoints ] = useState<Point[]>([]);
     const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
     const [ isMousedown, setIsMousedown ] = useState(false);
@@ -211,6 +210,13 @@ const Canvas: React.FC = () => {
         [ allowDirect, scaleFactor ],
     );
 
+    const debouncedEmitPanel = useCallback(
+        debounce((currentPanel: Point[][]) => {
+            emitSendPanel(currentPanel);
+        }, 200),
+        [],
+    );
+      
     const handleMove = useCallback(
         (e: React.MouseEvent | React.TouchEvent) => {
             if (!isMousedown) return;
@@ -258,6 +264,9 @@ const Canvas: React.FC = () => {
                 }
                 return [ ...prev, newPoint ];
             });
+
+            const currentPanel = [ ...localStrokeHistory, points ];
+            debouncedEmitPanel(currentPanel);
         },
         [ allowDirect, isMousedown, scaleFactor ],
     );
