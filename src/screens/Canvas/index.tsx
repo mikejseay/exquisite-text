@@ -3,10 +3,10 @@ import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from
 import Button from "@mui/material/Button";
 import { debounce } from "es-toolkit";
 
-import { Medium, Point } from "../../types";
+import { Point } from "../../types";
 import { emitSendLastPanel, emitSendPanel } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { drawOnCanvas, setCanvasProperties } from "../../utils/canvasUtils";
+import { drawOnCanvas } from "../../utils/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
 import { ScaleDirection, pixelRatio, scalePoints } from "../../utils/scaleUtils";
 import { aboveCanvasHeight } from "../../constants";
@@ -113,8 +113,6 @@ const Canvas: React.FC = () => {
 
         console.log("Redrawing canvas with dimensions:", dimensions, "and scaleFactor:", scaleFactor);
 
-        setCanvasProperties(context);
-
         context.clearRect(0, 0, canvas.width, canvas.height);
 
         // Redraw
@@ -202,9 +200,6 @@ const Canvas: React.FC = () => {
             const newPoint = { x, y, lineWidth: computedLineWidth };
             setPoints((prev) => [ ...prev, newPoint ]);
 
-            // Set canvas properties before drawing
-            // TODO: setCanvasProperties inside drawOnCanvas
-            setCanvasProperties(context);
             drawOnCanvas([ newPoint ], 0, context);
         },
         [ allowDirect, scaleFactor ],

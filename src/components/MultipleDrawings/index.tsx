@@ -14,7 +14,7 @@ import {
 } from "../../screens/Canvas";
 import { title } from "./styles";
 import { Point } from "../../types";
-import { drawOnCanvas, setCanvasProperties } from "../../utils/canvasUtils";
+import { drawOnCanvas } from "../../utils/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
 import { ScaleDirection, pixelRatio, scalePoints } from "../../utils/scaleUtils";
 import { aboveCanvasHeight } from "../../constants";
@@ -107,8 +107,6 @@ const CompletedDrawing = ({
         if (!context) return;
 
         context.clearRect(0, 0, canvas.width, canvas.height);
-
-        setCanvasProperties(context);
 
         if (shouldAnimate) {
             let panelIndex = 0;

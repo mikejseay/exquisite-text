@@ -23,6 +23,7 @@ export function setCanvasProperties(context: CanvasRenderingContext2D) {
 }
 
 export function drawOnCanvas(newPoints: Point[], yOffset = 0, context: CanvasRenderingContext2D) {
+    setCanvasProperties(context);
     // newPoints is length 1 if being drawn by handleStart
     if (newPoints.length === 1) {
         const point = newPoints[0];
