@@ -4,15 +4,15 @@ export const pixelRatio = window.devicePixelRatio || 1;
 export const hello = 1;
 
 export enum ScaleDirection {
-    MULTIPLY = "MULTIPLY",
-    DIVIDE = "DIVIDE",
+    TO_DISPLAY = "MULTIPLY",
+    TO_UNIVERSAL = "DIVIDE",
 }
 
 export function scalePoints(points: Point[], scaleDirection: ScaleDirection, scaleFactor: number): Point[] {
     let factor = 1;
-    if (scaleDirection === ScaleDirection.MULTIPLY) {
+    if (scaleDirection === ScaleDirection.TO_DISPLAY) {
         factor = scaleFactor;
-    } else if (scaleDirection === ScaleDirection.DIVIDE) {
+    } else if (scaleDirection === ScaleDirection.TO_UNIVERSAL) {
         factor = 1 / scaleFactor;
     } else {
         throw new Error("unrecognized ScaleDirection");

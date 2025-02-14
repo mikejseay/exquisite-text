@@ -124,7 +124,7 @@ const CompletedDrawing = ({
                 const strokeHistory = completedDrawing[panelIndex];
                 const strokeArray = scalePoints(
                     strokeHistory[strokeHistoryIndex],
-                    ScaleDirection.MULTIPLY,
+                    ScaleDirection.TO_DISPLAY,
                     scaleFactor,
                 );
 
@@ -154,7 +154,7 @@ const CompletedDrawing = ({
             completedDrawing.forEach((strokeHistory) => {
                 strokeHistory.forEach((strokeArray) => {
                     drawOnCanvas(
-                        scalePoints(strokeArray, ScaleDirection.MULTIPLY, scaleFactor),
+                        scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor),
                         yOffset,
                         context,
                     );

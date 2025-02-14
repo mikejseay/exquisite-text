@@ -14,6 +14,7 @@ export const socketListeners = ({
     setNDrawings,
     setLines,
     setPanels,
+    setPanelEdits,
     setLineEdits,
     setPoemInput,
     setPoemInputSpectate,
@@ -69,6 +70,14 @@ export const socketListeners = ({
             console.log({ panelsToSet });
             return panelsToSet;
         });
+    };
+
+    const receivePanelEditSpectator = (collaborationIndex: number, content: IPanel["content"]) => {
+        setPanelEdits(prevPanelEdits => [
+            ...prevPanelEdits.slice(0, collaborationIndex),
+            content,
+            ...prevPanelEdits.slice(collaborationIndex + 1),
+        ]);
     };
 
     const receiveLineEditSpectator = (poemIndex: number, value: string) => {
@@ -127,6 +136,7 @@ export const socketListeners = ({
     socket.on("stcGameSettingsEnabled", receiveGameSettingsEnabled);
     socket.on("stcLineSpectator", receiveLineSpectator);
     socket.on("stcPanelSpectator", receivePanelSpectator);
+    socket.on("stcPanelEditSpectator", receivePanelEditSpectator);
     socket.on("stcLineEditSpectator", receiveLineEditSpectator);
     socket.on("stcLineEdit", receiveLineEdit);
     socket.on("stcLineEditorWatch", receiveLineEditorWatch);
@@ -146,6 +156,7 @@ export const socketListeners = ({
         socket.off("stcGameSettingsEnabled", receiveGameSettingsEnabled);
         socket.off("stcLineSpectator", receiveLineSpectator);
         socket.off("stcPanelSpectator", receivePanelSpectator);
+        socket.off("stcPanelEditSpectator", receivePanelEditSpectator);
         socket.off("stcLineEditSpectator", receiveLineEditSpectator);
         socket.off("stcLineEdit", receiveLineEdit);
         socket.off("stcLineEditorWatch", receiveLineEditorWatch);

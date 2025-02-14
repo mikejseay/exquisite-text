@@ -117,7 +117,6 @@ export class Drawing extends Collaboration {
     panels: Set<IPanel>;
 
     constructor(
-
         io: Server<
             ClientToServerEvents,
             ServerToClientEvents,
@@ -151,6 +150,12 @@ export class Drawing extends Collaboration {
         this.io
             .in(`${this.roomID}_Spectators`)
             .emit("stcStrokeHistory", content);
+    }
+
+    sendPanelEditToSpectators(value: IPanel["content"]) {
+        this.io
+            .in(`${this.roomID}_Spectators`)
+            .emit("stcPanelEditSpectator", this.indexInGame, value);
     }
 
     sendAllPanelsTo(socketID: string) {

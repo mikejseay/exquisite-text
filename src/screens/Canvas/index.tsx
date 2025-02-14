@@ -34,7 +34,8 @@ export const DRAWING_WIDTH_MIN = PANEL_WIDTH_MIN;
 export const DRAWING_ASPECT_RATIO = DRAWING_WIDTH_MIN / DRAWING_HEIGHT_MIN;
 
 const Canvas: React.FC = () => {
-    const { strokeHistory, panels, completedDrawings, editorActive, onLastContribution, setEditorActive, medium } = useSocketInfo();    const [ isPassCompleteDisabled, setIsPassCompleteDisabled ] = useState(false);
+    const { strokeHistory, editorActive, onLastContribution, setEditorActive } = useSocketInfo();
+    const [ isPassCompleteDisabled, setIsPassCompleteDisabled ] = useState(false);
     const [ points, setPoints ] = useState<Point[]>([]);
     const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
     const [ isMousedown, setIsMousedown ] = useState(false);
@@ -118,7 +119,7 @@ const Canvas: React.FC = () => {
         // Redraw
         strokeHistory?.forEach((strokeArray) =>
             drawOnCanvas(
-                scalePoints(strokeArray, ScaleDirection.MULTIPLY, scaleFactor),
+                scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor),
                 0,
                 context,
             ),
@@ -141,7 +142,7 @@ const Canvas: React.FC = () => {
 
         localStrokeHistoryRef.current?.forEach((strokeArray, index) => {
             drawOnCanvas(
-                scalePoints(strokeArray, ScaleDirection.MULTIPLY, scaleFactor),
+                scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor),
                 0,
                 context,
             );
@@ -259,16 +260,15 @@ const Canvas: React.FC = () => {
                 }
                 return [ ...prev, newPoint ];
             });
-
-            const currentPanel = [ ...localStrokeHistory, points ];
-            debouncedEmitPanel(currentPanel);
         },
         [ allowDirect, isMousedown, scaleFactor ],
     );
 
     const handleEnd = useCallback(() => {
         setIsMousedown(false);
-        const scaledPoints: Point[] = scalePoints(points, ScaleDirection.DIVIDE, scaleFactor);
+        const scaledPoints: Point[] = scalePoints(points, ScaleDirection.TO_UNIVERSAL, scaleFactor);
+        const currentPanel = [ ...localStrokeHistory, scaledPoints ];
+        debouncedEmitPanel(currentPanel);
         setLocalStrokeHistory((prev) => [ ...prev, scaledPoints ]);
         setPoints([]);
         setLineWidth(0);

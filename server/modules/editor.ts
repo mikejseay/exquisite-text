@@ -462,6 +462,9 @@ export class DrawingEditor extends Editor {
         }
     }
 
+    // TODO: Build out the panel edit functionality, use sendPanelEditToSpectators
+    // the "stcPanelEditSpectator"
+    // TODO: Test multiple drawings and debug anything associated with it
     possibleStartNewTurn() {
         console.log("in possibleStartNewTurn");
         if (this.hasWorkInQueue()) {

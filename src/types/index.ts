@@ -120,6 +120,7 @@ export interface ServerToClientEvents {
     // stcLineEditorWatch: (a: string) => void; // TODO: stcPanelEditorWatch for realtime drawing watching
     stcLineSpectator: (indexInGame: number, content: ILine["content"]) => void;
     stcPanelSpectator: (indexInGame: number, content: IPanel["content"]) => void;
+    stcPanelEditSpectator: (indexInGame: number, content: IPanel["content"]) => void;
     stcLineEditSpectator: (a: number, b: string) => void;
     // stcLineEditSpectator: (a: number, b: string) => void; // TODO: stcLineEditSpectator for realtime drawing watching
     stcStrokeHistory: (a: Point[][]) => void;
@@ -190,6 +191,8 @@ export interface ISocketInfoListeners {
         ((prevVar: Array<Array<string>>) => Array<Array<string>>)) => void;
     setPanels: (value: Array<Array<IPanel["content"]>> |
         ((prevVar: Array<Array<IPanel["content"]>>) => Array<Array<IPanel["content"]>>)) => void;
+    setPanelEdits: (value: Array<IPanel["content"]> |
+        ((prevVar: Array<IPanel["content"]>) => Array<IPanel["content"]>)) => void;
     // React.useState<Array<string>>([ "", "", "", "" ]);
     setLineEdits: (value: Array<string> |
         ((prevVar: Array<string>) => Array<string>)) => void;
@@ -241,6 +244,7 @@ export interface ISocketInfo {
 
     // drawings
     panels: Array<Array<IPanel["content"]>> | null;
+    panelEdits: Array<IPanel["content"]> | null;
     nDrawings: number | null;
     setNDrawings: (value: number | ((prevVar: number) => number)) => void;
     setStrokeHistory: (value: Point[][] | ((prevVar: Point[][]) => Point[][])) => void;
