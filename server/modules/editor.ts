@@ -415,6 +415,7 @@ export class DrawingEditor extends Editor {
     setReceive() {
         super.setReceive();
         this.socket.on("ctsSendPanel", (value: Point[][]) => this.handlePanel(value));
+        this.socket.on("ctsSendPanelEdit", (value: Point[][]) => this.handlePanelEdit(value));
         this.socket.on("ctsSendLastPanel", (value) => this.handleLastPanel(value));
         this.socket.on("ctsRequestLastContributionStatus", () => this.sendLastContributionStatus());
         this.socket.on("ctsAlterGameSettings", (value) =>
@@ -425,6 +426,7 @@ export class DrawingEditor extends Editor {
     unsetReceive() {
         super.unsetReceive();
         this.socket.removeAllListeners("ctsSendPanel");
+        this.socket.removeAllListeners("ctsSendPanelEdit");
         this.socket.removeAllListeners("ctsAlterGameSettings");
     }
 
@@ -462,9 +464,16 @@ export class DrawingEditor extends Editor {
         }
     }
 
-    // TODO: Build out the panel edit functionality, use sendPanelEditToSpectators
-    // the "stcPanelEditSpectator"
-    // TODO: Test multiple drawings and debug anything associated with it
+    handlePanelEdit(panelContent: IPanel["content"]) {
+        this.lastActivity = Date.now(); // they DREW!!!! = active
+
+        const drawing = this.contributionQueue[0] as Drawing;
+        console.log("handlePanelEdit:", drawing);
+        if (!isNil(drawing)) {
+            drawing.sendPanelEditToSpectators(panelContent);
+        }
+    }
+
     possibleStartNewTurn() {
         console.log("in possibleStartNewTurn");
         if (this.hasWorkInQueue()) {

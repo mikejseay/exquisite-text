@@ -4,7 +4,7 @@ import Button from "@mui/material/Button";
 import { debounce } from "es-toolkit";
 
 import { Point } from "../../types";
-import { emitSendLastPanel, emitSendPanel } from "../../context/SocketRequestors";
+import { emitSendLastPanel, emitSendPanel, emitSendPanelEdit } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { drawOnCanvas } from "../../utils/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
@@ -14,6 +14,8 @@ import { aboveCanvasHeight } from "../../constants";
 /* TODO:
     * Function to consolidate drawing of snippet code (don't repeat that code)
     * Spectator functionality
+    * Build out the panel edit functionality, use sendPanelEditToSpectators the "stcPanelEditSpectator"
+    * Test multiple drawings and debug anything associated with it
 */
 
 type ExtendedTouch = Touch & {
@@ -208,11 +210,11 @@ const Canvas: React.FC = () => {
 
     const debouncedEmitPanel = useCallback(
         debounce((currentPanel: Point[][]) => {
-            emitSendPanel(currentPanel);
+            emitSendPanelEdit(currentPanel);
         }, 200),
         [],
     );
-      
+
     const handleMove = useCallback(
         (e: React.MouseEvent | React.TouchEvent) => {
             if (!isMousedown) return;

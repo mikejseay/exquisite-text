@@ -153,6 +153,7 @@ export class Drawing extends Collaboration {
     }
 
     sendPanelEditToSpectators(value: IPanel["content"]) {
+        console.log("sendPanelEditToSpectators...", this.indexInGame, value);
         this.io
             .in(`${this.roomID}_Spectators`)
             .emit("stcPanelEditSpectator", this.indexInGame, value);

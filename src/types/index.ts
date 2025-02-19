@@ -148,6 +148,7 @@ export interface ClientToServerEvents {
     ctsSendLastPanel: (a: Point[][]) => void;
     ctsLeave: () => void;
     ctsSendPanel: (a: Point[][]) => void;
+    ctsSendPanelEdit: (a: Point[][]) => void;
     ctsRequestCanvas: () => void;
 }
 

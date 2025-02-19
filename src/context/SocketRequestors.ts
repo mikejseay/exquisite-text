@@ -98,6 +98,11 @@ export const emitSendLastLine = (value: string | null) => {
     socket.emit("ctsSendLastLine", value);
 };
 
+export const emitSendPanelEdit = (value: Point[][] | null) => {
+    console.log("sendPanelEdit:", value);
+    socket.emit("ctsSendPanelEdit", value);
+};
+
 export const emitSendPanel = (value: Point[][] | null) => {
     console.log("sendCanvas:", value);
     socket.emit("ctsSendPanel", value);

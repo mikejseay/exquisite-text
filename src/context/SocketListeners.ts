@@ -72,7 +72,9 @@ export const socketListeners = ({
         });
     };
 
+    // IS THS LOGIC LEGIT!??@!?@!
     const receivePanelEditSpectator = (collaborationIndex: number, content: IPanel["content"]) => {
+        console.log("receivePanelEditSpectator", collaborationIndex, content);
         setPanelEdits(prevPanelEdits => [
             ...prevPanelEdits.slice(0, collaborationIndex),
             content,
