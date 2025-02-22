@@ -3,8 +3,6 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { Carousel } from "react-responsive-carousel";
 import { debounce } from "es-toolkit";
-
-import { useSocketInfo } from "../../context/SocketInfoProvider";
 import {
     DRAWING_ASPECT_RATIO,
     DRAWING_HEIGHT_MIN,
@@ -27,9 +25,6 @@ export const CompletedDrawing = ({
     completedDrawing: Point[][][];
     shouldAnimate: boolean;
 }): JSX.Element | null => {
-    if (completedDrawing?.length === 0) {
-        return null;
-    }
 
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const animationRef = useRef<number>();
@@ -209,12 +204,10 @@ export const renderDrawings = (
     ));
 };
 
-function MultipleDrawings({ shouldAnimate }: { shouldAnimate: boolean }) {
+function MultipleDrawings(
+    { completedDrawings, shouldAnimate }: { completedDrawings: Point[][][][] | null, shouldAnimate: boolean },
+) {
     const [ reRender, setReRenderIndex ] = React.useState<number>(-1);
-    const { completedDrawings } = useSocketInfo();
-    if (!completedDrawings || completedDrawings.length === 0) {
-        return null;
-    }
 
     return (
         <div className={"multiple-drawings"}>
