@@ -1,10 +1,7 @@
 // src/components/MultipleDrawings/index.tsx
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
-import { Carousel } from "react-responsive-carousel";
 import { debounce } from "es-toolkit";
-
-import { useSocketInfo } from "../../context/SocketInfoProvider";
 import {
     DRAWING_ASPECT_RATIO,
     DRAWING_HEIGHT_MIN,
@@ -208,32 +205,3 @@ export const renderDrawings = (
         </div>
     ));
 };
-
-function MultipleDrawings({ shouldAnimate }: { shouldAnimate: boolean }) {
-    const [ reRender, setReRenderIndex ] = React.useState<number>(-1);
-    const { completedDrawings } = useSocketInfo();
-    if (!completedDrawings || completedDrawings.length === 0) {
-        return null;
-    }
-
-    return (
-        <div className={"multiple-drawings"}>
-            {completedDrawings && completedDrawings.length > 1
-                ? (
-                    <Carousel
-                        onChange={(slideIndex) => {
-                            setReRenderIndex(slideIndex);
-                        }}
-                        showThumbs={false}
-                    >
-                        {renderDrawings(completedDrawings, reRender, shouldAnimate)}
-                    </Carousel>
-                )
-                : (
-                    renderDrawings(completedDrawings, reRender, shouldAnimate)
-                )}
-        </div>
-    );
-}
-
-export default MultipleDrawings;
