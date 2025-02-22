@@ -57,19 +57,30 @@ export const socketListeners = ({
         setSettingsEnabled(enabled);
     };
 
+    // the React state lines is of type Array<Array<ILine["content"]>>
+    // this is because each line is of type ILine["content"]
+    // each collaboration is of type Array<ILine["content"]>
+    // and thus all the lines together for all collaborations is Array<Array<ILine["content"]>>
     const receiveLineSpectator = (collaborationIndex: number, content: ILine["content"]) => {
+        // Here, the spectator receives a single line at a time
         setLines(prevLines => {
+            // The slicing accomplishes only appending to the particular collaboration
             return [ ...prevLines.slice(0, collaborationIndex), [ ...prevLines[collaborationIndex], content ], ...prevLines.slice(collaborationIndex + 1) ];
         },
         );
     };
 
     const receivePanelSpectator = (collaborationIndex: number, content: IPanel["content"]) => {
-        setPanels((prevPanels) => {
-            const panelsToSet = [ ...prevPanels.slice(0, collaborationIndex), [ ...prevPanels[collaborationIndex], content ], ...prevPanels.slice(collaborationIndex + 1) ];
-            console.log({ panelsToSet });
-            return panelsToSet;
-        });
+        // If we are receiving a new panel, that's because the previous edit no longer applies
+        setPanelEdits(prevPanelEdits => [
+            ...prevPanelEdits.slice(0, collaborationIndex),
+            [],
+            ...prevPanelEdits.slice(collaborationIndex + 1),
+        ]);
+        setPanels(prevPanels => {
+            return [ ...prevPanels.slice(0, collaborationIndex), [ ...prevPanels[collaborationIndex], content ], ...prevPanels.slice(collaborationIndex + 1) ];
+        },
+        );
     };
 
     // IS THS LOGIC LEGIT!??@!?@!

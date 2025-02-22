@@ -143,13 +143,13 @@ export class Drawing extends Collaboration {
             addedAt: new Date(),
         };
         this.panels.add(panel);
-    
+
         this.mostRecentEditor = authorID;
         this.panelHint = []; // reset the hint
         // Emit the stroke history (which is the panel content) to all Spectators
         this.io
             .in(`${this.roomID}_Spectators`)
-            .emit("stcStrokeHistory", content);
+            .emit("stcPanelSpectator", this.indexInGame, content);
     }
 
     sendPanelEditToSpectators(value: IPanel["content"]) {
