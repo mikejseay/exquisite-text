@@ -208,9 +208,13 @@ function MultipleDrawings(
     { completedDrawings, shouldAnimate }: { completedDrawings: Point[][][][] | null, shouldAnimate: boolean },
 ) {
     const [ reRender, setReRenderIndex ] = React.useState<number>(-1);
+    // TODO: get dimensions from context and use in below commented code
 
     return (
-        <div className={"multiple-drawings"}>
+        <div className={"multiple-drawings"} style={{
+            // width: dimensions.width + 100,
+            // height: dimensions.height,
+        }}>
             {completedDrawings && completedDrawings.length > 1
                 ? (
                     <Carousel
