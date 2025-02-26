@@ -14,8 +14,9 @@ import { aboveCanvasHeight } from "../../constants";
 /* TODO:
     * Function to consolidate drawing of snippet code (don't repeat that code)
     * Spectator functionality
-    * Build out the panel edit functionality, use sendPanelEditToSpectators the "stcPanelEditSpectator"
     * Test multiple drawings and debug anything associated with it
+    * Canvas different colors (swatches) - including an erase / background color
+    * Undo / redo functionality
 */
 
 type ExtendedTouch = Touch & {

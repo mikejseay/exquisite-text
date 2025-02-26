@@ -11,8 +11,6 @@ import {
 } from "../../src/types";
 import { storeLine } from "../queries";
 
-// TODO: Finish front-end components for Canvas analogous to Poem stuff, starting with Canvas / CanvasSpectator screens
-
 class Collaboration {
     io: Server<
         ClientToServerEvents,
@@ -109,7 +107,6 @@ export class Poem extends Collaboration {
     }
 }
 
-// TODO: Make drawing specific
 export class Drawing extends Collaboration {
     // represents a single drawing
 

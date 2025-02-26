@@ -435,7 +435,6 @@ export class DrawingEditor extends Editor {
         // tmp to maintain testing functionality
         const room = getRoom(this.roomID) as DrawingRoom;
         room.finishedCanvas = panelContent;
-        // TODO: make contributionQueue work for Drawings
         const drawingToPass = this.contributionQueue.shift() as Drawing;
         if (isNil(drawingToPass)) {
             return;

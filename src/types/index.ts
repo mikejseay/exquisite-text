@@ -117,12 +117,10 @@ export interface ServerToClientEvents {
     stcEditorActive: (a: boolean) => void;
     stcLastContribution: (a: boolean) => void;
     stcLineEditorWatch: (a: string) => void;
-    // stcLineEditorWatch: (a: string) => void; // TODO: stcPanelEditorWatch for realtime drawing watching
     stcLineSpectator: (indexInGame: number, content: ILine["content"]) => void;
     stcPanelSpectator: (indexInGame: number, content: IPanel["content"]) => void;
     stcPanelEditSpectator: (indexInGame: number, content: IPanel["content"]) => void;
     stcLineEditSpectator: (a: number, b: string) => void;
-    // stcLineEditSpectator: (a: number, b: string) => void; // TODO: stcLineEditSpectator for realtime drawing watching
     stcStrokeHistory: (a: Point[][]) => void;
     stcCompletedDrawings: (a: Point[][][][]) => void;
     stcMedium: (medium: Medium) => void;

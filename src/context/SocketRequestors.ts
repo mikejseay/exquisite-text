@@ -72,20 +72,6 @@ export const emitLeave = () => {
     socket.emit("ctsLeave");
 };
 
-/* TODO: WE DON'T NEED THIS!??!?!
-export const emitRequestLineEdit = () => {
-    socket.emit("ctsRequestLineEdit");
-};
-
-export const emitRequestEditorActive = () => {
-    socket.emit("ctsRequestEditorActive");
-};
-
-export const emitRequestLastLineStatus = () => {
-    socket.emit("ctsRequestLastContributionStatus");
-};
-*/
-
 export const emitEditLine = (value: string) => {
     socket.emit("ctsEditLine", value);
 };
