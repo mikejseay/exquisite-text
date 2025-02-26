@@ -6,7 +6,8 @@ import MultipleDrawings from "../../components/MultipleDrawings";
 
 const CanvasSpectator: React.FC = () => {
     const { panels, panelEdits, nDrawings  } = useSocketInfo();
-    const [ completedDrawings, setCompletedDrawings ] = useState<Point[][][][]>([]);
+    // Represents all completed panels and panel edits in an ongoing game
+    const [ currentDrawings, setCurrentDrawings ] = useState<Point[][][][]>([]);
 
     useEffect(() => {
         if (!nDrawings) return;
@@ -36,12 +37,12 @@ const CanvasSpectator: React.FC = () => {
 
             combinedPanelsAndPanelEdits.push(currentPanels);
         }
-        setCompletedDrawings(combinedPanelsAndPanelEdits);
+        setCurrentDrawings(combinedPanelsAndPanelEdits);
 
     }, [ panels, panelEdits, nDrawings ]);
 
     return (
-        <MultipleDrawings completedDrawings={completedDrawings} shouldAnimate={false} />
+        <MultipleDrawings completedDrawings={currentDrawings} shouldAnimate={false} />
     );
 };
 
