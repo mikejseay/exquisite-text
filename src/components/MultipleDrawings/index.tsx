@@ -28,6 +28,7 @@ export const CompletedDrawing = ({
 
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const animationRef = useRef<number>();
+    // TODO: this state should be in context (local)
     const [ dimensions, setDimensions ] = useState({ width: DRAWING_WIDTH_MIN, height: DRAWING_HEIGHT_MIN });
     const [ scaleFactor, setScaleFactor ] = useState<number>(1);
 
@@ -42,6 +43,7 @@ export const CompletedDrawing = ({
             const context = canvas.getContext("2d");
             if (!context) return;
 
+            // TODO: bump this logic up to the singular parent component
             // Calculate new dimensions
             const viewportHeight = window.innerHeight - aboveCanvasHeight;
             const viewportWidth = window.innerWidth;

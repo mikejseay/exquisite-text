@@ -14,7 +14,7 @@ import { aboveCanvasHeight } from "../../constants";
 /* TODO:
     * Function to consolidate drawing of snippet code (don't repeat that code)
     * Test multiple drawings and debug anything associated with it
-    *   Put dimensions in React context (local) and use in
+        * Put dimensions in React context (local) and use in MultipleDrawings
     * Remove egregious logging
     * Make it more obvious that it's your turn (highlight border?)
     * Canvas different colors (swatches) - including an erase / background color
