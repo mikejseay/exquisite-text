@@ -174,6 +174,8 @@ export const CompletedDrawing = ({
                     display: "block",
                     pointerEvents: "none",
                     opacity: 1,
+                    marginLeft: "auto",
+                    marginRight: "auto",
                 }}
             >
                 Sorry, your browser is too old for this demo.
@@ -193,10 +195,7 @@ export const renderDrawings = (
         <div
             key={index}
             className={"drawing-container"}
-            style={{
-                marginLeft: "auto",
-                marginRight: "auto",
-            }}
+            style={{}}
         >
             <div style={title} className={"drawing-title"}>
                 <strong>{`exquisite corpse #${index}`}</strong>
@@ -214,11 +213,15 @@ function MultipleDrawings(
 
     return (
         <div className={"multiple-drawings"} style={{
-            // width: dimensions.width + 100,
+            width: "100%",
+            // display: "flex",
+            // justifyContent: "space-between",
             // height: dimensions.height,
         }}>
             {completedDrawings && completedDrawings.length > 1
-                ? (
+                ?
+                // renderDrawings(completedDrawings, reRender, shouldAnimate)
+                (
                     <Carousel
                         onChange={(slideIndex) => {
                             setReRenderIndex(slideIndex);
