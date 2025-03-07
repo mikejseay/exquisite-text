@@ -1,6 +1,7 @@
 // src/screens/Canvas/index.tsx
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Button from "@mui/material/Button";
+import { useTheme } from "@mui/material/styles";
 import { debounce } from "es-toolkit";
 
 import { Point } from "../../types";
@@ -11,12 +12,10 @@ import { useDisableScroll } from "../../hooks/useDisableScroll";
 import { ScaleDirection, pixelRatio, scalePoints } from "../../utils/scaleUtils";
 import { aboveCanvasHeight } from "../../constants";
 
-/* TODO:
+/* // TODO:
     * Function to consolidate drawing of snippet code (don't repeat that code)
-    * Test multiple drawings and debug anything associated with it
-        * Put dimensions in React context (local) and use in MultipleDrawings
     * Remove egregious logging
-    * Make it more obvious that it's your turn (highlight border?)
+    * maybeEditorActive? refactor editorActive state so it doesn't flash "Your friend is drawing..." on passing when playing with one player
     * Canvas different colors (swatches) - including an erase / background color
     * Undo / redo functionality
 */
@@ -39,8 +38,9 @@ export const DRAWING_WIDTH_MIN = PANEL_WIDTH_MIN;
 export const DRAWING_ASPECT_RATIO = DRAWING_WIDTH_MIN / DRAWING_HEIGHT_MIN;
 
 const Canvas: React.FC = () => {
+    const theme = useTheme();
     const { strokeHistory, editorActive, onLastContribution, setEditorActive } = useSocketInfo();
-    const [ isPassCompleteDisabled, setIsPassCompleteDisabled ] = useState(false);
+    const [ isDrawingComplete, setIsDrawingComplete ] = useState(false);
     const [ points, setPoints ] = useState<Point[]>([]);
     const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
     const [ isMousedown, setIsMousedown ] = useState(false);
@@ -165,7 +165,7 @@ const Canvas: React.FC = () => {
     function completeDrawing() {
         emitSendLastPanel(localStrokeHistory);
         setLocalStrokeHistory([]);
-        setIsPassCompleteDisabled(false);
+        setIsDrawingComplete(false);
     }
 
     const handleStart = useCallback(
@@ -295,14 +295,16 @@ const Canvas: React.FC = () => {
             {/*</p>*/}
             {/*<Button onClick={() => setAllowDirect(!allowDirect)}>Toggle Direct</Button>*/}
             <Button
-                disabled={isPassCompleteDisabled}
+                disabled={!editorActive || isDrawingComplete}
                 onClick={onLastContribution
                     ? completeDrawing
                     : passTurn}
             >
-                {onLastContribution
-                    ? "Complete Drawing"
-                    : "Pass"}
+                {!editorActive
+                    ? "Your friend is drawing..."
+                    : onLastContribution
+                        ? "Complete Drawing"
+                        : "Pass"}
             </Button>
             <canvas
                 ref={canvasRef}
@@ -319,6 +321,11 @@ const Canvas: React.FC = () => {
                     opacity: editorActive
                         ? 1
                         : 0.5,
+                    boxShadow: editorActive
+                        ? `0 0 8px 4px ${theme.palette.mode === "dark"
+                            ? "rgba(255,255,255,0.7)"
+                            : "rgba(0,0,0,0.7)"}`
+                        : undefined,
                 }}
                 onMouseDown={handleStart}
                 onTouchStart={handleStart}

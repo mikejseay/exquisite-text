@@ -1,7 +1,6 @@
 import { Point } from "../types";
 
 export const pixelRatio = window.devicePixelRatio || 1;
-export const hello = 1;
 
 export enum ScaleDirection {
     TO_DISPLAY = "MULTIPLY",

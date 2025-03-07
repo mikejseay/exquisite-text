@@ -28,7 +28,6 @@ export const CompletedDrawing = ({
 
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const animationRef = useRef<number>();
-    // TODO: this state should be in context (local)
     const [ dimensions, setDimensions ] = useState({ width: DRAWING_WIDTH_MIN, height: DRAWING_HEIGHT_MIN });
     const [ scaleFactor, setScaleFactor ] = useState<number>(1);
 
