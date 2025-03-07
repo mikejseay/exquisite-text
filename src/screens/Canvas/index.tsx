@@ -15,7 +15,6 @@ import { aboveCanvasHeight } from "../../constants";
 /* // TODO:
     * Function to consolidate drawing of snippet code (don't repeat that code)
     * Remove egregious logging
-    * maybeEditorActive? refactor editorActive state so it doesn't flash "Your friend is drawing..." on passing when playing with one player
     * Canvas different colors (swatches) - including an erase / background color
     * Undo / redo functionality
 */
@@ -39,12 +38,13 @@ export const DRAWING_ASPECT_RATIO = DRAWING_WIDTH_MIN / DRAWING_HEIGHT_MIN;
 
 const Canvas: React.FC = () => {
     const theme = useTheme();
-    const { strokeHistory, editorActive, onLastContribution, setEditorActive } = useSocketInfo();
+    const { strokeHistory, editorActive, onLastContribution } = useSocketInfo();
     const [ isDrawingComplete, setIsDrawingComplete ] = useState(false);
     const [ points, setPoints ] = useState<Point[]>([]);
     const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
     const [ isMousedown, setIsMousedown ] = useState(false);
     const [ allowDirect, setAllowDirect ] = useState(true);
+    const [ passEnabled, setPassEnabled ] = useState(false);
     const [ lineWidth, setLineWidth ] = useState(0);
     const [ drawType, setDrawType ] = useState<"fill" | "stroke" | "noDrawYet">("noDrawYet");
     const [ player, setPlayer ] = useState<number>(0);
@@ -111,6 +111,12 @@ const Canvas: React.FC = () => {
 
     // Redraw the canvas whenever dimensions or scaleFactor change
     useEffect(() => {
+        if (editorActive) {
+            setPassEnabled(true);
+        } else {
+            setPassEnabled(false);
+        }
+
         const canvas = canvasRef.current;
         if (!canvas) return;
 
@@ -153,13 +159,13 @@ const Canvas: React.FC = () => {
             );
             console.log(`Redrew strokeArray #${index}`);
         });
-    }, [ dimensions, scaleFactor, editorActive ]);
+    }, [ dimensions, scaleFactor, editorActive, passEnabled ]);
 
     function passTurn() {
         emitSendPanel(localStrokeHistory);
         setPoints([]);
         setLocalStrokeHistory([]);
-        setEditorActive(false);
+        setPassEnabled(false);
     }
 
     function completeDrawing() {
@@ -295,12 +301,12 @@ const Canvas: React.FC = () => {
             {/*</p>*/}
             {/*<Button onClick={() => setAllowDirect(!allowDirect)}>Toggle Direct</Button>*/}
             <Button
-                disabled={!editorActive || isDrawingComplete}
+                disabled={!passEnabled || isDrawingComplete}
                 onClick={onLastContribution
                     ? completeDrawing
                     : passTurn}
             >
-                {!editorActive
+                {(!editorActive && !passEnabled)
                     ? "Your friend is drawing..."
                     : onLastContribution
                         ? "Complete Drawing"
