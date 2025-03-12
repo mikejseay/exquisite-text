@@ -1,7 +1,7 @@
 import { Point } from "../types";
 import { pixelRatio } from "./scaleUtils";
 
-export const lineColor = "grey";
+export const DEFAULT_COLOR = "#7F7F7F";
 
 export function setCanvasDimensions(
     canvas: HTMLCanvasElement | null,
@@ -16,14 +16,25 @@ export function setCanvasDimensions(
 }
 
 export function setCanvasProperties(context: CanvasRenderingContext2D) {
-    context.strokeStyle = lineColor;
+    // context.strokeStyle = DEFAULT_COLOR;
+    // context.fillStyle = DEFAULT_COLOR;
     context.lineCap = "round";
     context.lineJoin = "round";
-    context.fillStyle = lineColor;
 }
-
-export function drawOnCanvas(newPoints: Point[], yOffset = 0, context: CanvasRenderingContext2D) {
+export function drawOnCanvas(
+    newPoints: Point[],
+    yOffset = 0,
+    context: CanvasRenderingContext2D,
+) {
     setCanvasProperties(context);
+    // Override default color with the stroke's color (if available)
+    if (newPoints.length > 0) {
+        const currentColor = newPoints[0].color;
+        console.log({ currentColor });
+        context.strokeStyle = currentColor;
+        context.fillStyle = currentColor;
+    }
+
     // newPoints is length 1 if being drawn by handleStart
     if (newPoints.length === 1) {
         const point = newPoints[0];
@@ -32,7 +43,7 @@ export function drawOnCanvas(newPoints: Point[], yOffset = 0, context: CanvasRen
         context.arc(
             point.x * pixelRatio,
             (point.y + yOffset) * pixelRatio,
-            point.lineWidth / 2 * pixelRatio,
+            (point.lineWidth / 2) * pixelRatio,
             0,
             Math.PI * 2,
         );

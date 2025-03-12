@@ -7,7 +7,7 @@ import { debounce } from "es-toolkit";
 import { Point } from "../../types";
 import { emitSendLastPanel, emitSendPanel, emitSendPanelEdit } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { drawOnCanvas } from "../../utils/canvasUtils";
+import { DEFAULT_COLOR, drawOnCanvas } from "../../utils/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
 import { ScaleDirection, pixelRatio, scalePoints } from "../../utils/scaleUtils";
 import { aboveCanvasHeight } from "../../constants";
@@ -51,6 +51,7 @@ const Canvas: React.FC = () => {
     const [ coordinates, setCoordinates ] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
     const [ eventPressure, setEventPressure ] = useState(DEFAULT_PRESSURE);
     const [ dimensions, setDimensions ] = useState({ width: PANEL_WIDTH_MIN, height: PANEL_HEIGHT_MIN });
+    const [ strokeColor, setStrokeColor ] = useState<string>(DEFAULT_COLOR);
     const [ scaleFactor, setScaleFactor ] = useState<number>(1);
     const localStrokeHistoryRef = useRef<Point[][]>(localStrokeHistory);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -209,12 +210,12 @@ const Canvas: React.FC = () => {
 
             const computedLineWidth = Math.log(pressure + 1) * DEFAULT_LINE_WIDTH * scaleFactor;
             setLineWidth(computedLineWidth);
-            const newPoint = { x, y, lineWidth: computedLineWidth };
+            const newPoint = { x, y, lineWidth: computedLineWidth, color: strokeColor };
             setPoints((prev) => [ ...prev, newPoint ]);
 
             drawOnCanvas([ newPoint ], 0, context);
         },
-        [ allowDirect, scaleFactor ],
+        [ allowDirect, scaleFactor, strokeColor ],
     );
 
     const debouncedEmitPanel = useCallback(
@@ -261,7 +262,7 @@ const Canvas: React.FC = () => {
 
             const computedLineWidth = Math.log(pressure + 1) * DEFAULT_LINE_WIDTH * scaleFactor;
             setLineWidth(computedLineWidth);
-            const newPoint = { x, y, lineWidth: computedLineWidth };
+            const newPoint = { x, y, lineWidth: computedLineWidth, color: strokeColor };
 
             setPoints((prev) => {
                 const lastPoint = prev[prev.length - 1];
@@ -272,7 +273,7 @@ const Canvas: React.FC = () => {
                 return [ ...prev, newPoint ];
             });
         },
-        [ allowDirect, isMousedown, scaleFactor ],
+        [ allowDirect, isMousedown, scaleFactor, strokeColor ],
     );
 
     const handleEnd = useCallback(() => {
@@ -342,6 +343,16 @@ const Canvas: React.FC = () => {
             >
                 Sorry, your browser is too old for this demo.
             </canvas>
+            <div style={{ marginBottom: "10px" }}>
+                <label htmlFor="color-picker">Stroke Color:</label>
+                <input
+                    type="color"
+                    id="color-picker"
+                    value={strokeColor}
+                    onChange={(e) => setStrokeColor(e.target.value)}
+                    style={{ accentColor: DEFAULT_COLOR }}
+                />
+            </div>
         </div>
     );
 };

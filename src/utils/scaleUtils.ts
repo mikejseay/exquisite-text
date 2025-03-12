@@ -7,7 +7,11 @@ export enum ScaleDirection {
     TO_UNIVERSAL = "DIVIDE",
 }
 
-export function scalePoints(points: Point[], scaleDirection: ScaleDirection, scaleFactor: number): Point[] {
+export function scalePoints(
+    points: Point[],
+    scaleDirection: ScaleDirection,
+    scaleFactor: number,
+): Point[] {
     let factor = 1;
     if (scaleDirection === ScaleDirection.TO_DISPLAY) {
         factor = scaleFactor;
@@ -16,9 +20,10 @@ export function scalePoints(points: Point[], scaleDirection: ScaleDirection, sca
     } else {
         throw new Error("unrecognized ScaleDirection");
     }
-    return points?.map((point) => ({
-        x: point.x * factor,
-        y: point.y * factor,
-        lineWidth: point.lineWidth * factor,
+    return points?.map(({ x, y, lineWidth, color }) => ({
+        color,
+        x: x * factor,
+        y: y * factor,
+        lineWidth: lineWidth * factor,
     }));
 }

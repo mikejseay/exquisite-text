@@ -97,10 +97,19 @@ export interface IPanel extends IContribution {
     hintSize: number;
 }
 
+/*  Levels
+
+    Multiple Drawings - Point[][][][]
+    Drawings          - Point[][][]
+    Panels            - Point[][]
+    Strokes           - Point[]
+
+*/
 export interface Point {
     x: number;
     y: number;
     lineWidth: number;
+    color: string;
 }
 
 export interface ServerToClientEvents {
