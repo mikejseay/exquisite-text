@@ -15,7 +15,8 @@ import { aboveCanvasHeight } from "../../constants";
 /* // TODO:
     * Function to consolidate drawing of snippet code (don't repeat that code)
     * Remove egregious logging
-    * Canvas different colors (swatches) - including an erase / background color
+    * Canvas including an erase / background color
+    * Conduct iPad testing, especially with color picker
     * Undo / redo functionality
 */
 
