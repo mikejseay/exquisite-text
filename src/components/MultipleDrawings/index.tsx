@@ -3,6 +3,8 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { Carousel } from "react-responsive-carousel";
 import { debounce } from "es-toolkit";
+import { useTheme } from "@mui/material/styles";
+
 import {
     DRAWING_ASPECT_RATIO,
     DRAWING_HEIGHT_MIN,
@@ -25,11 +27,12 @@ export const CompletedDrawing = ({
     completedDrawing: Point[][][];
     shouldAnimate: boolean;
 }): JSX.Element | null => {
-
+    const theme = useTheme();
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const animationRef = useRef<number>();
     const [ dimensions, setDimensions ] = useState({ width: DRAWING_WIDTH_MIN, height: DRAWING_HEIGHT_MIN });
     const [ scaleFactor, setScaleFactor ] = useState<number>(1);
+    const eraserResolvedColor = theme.palette.background.default;
 
     useDisableScroll();
 
@@ -125,7 +128,7 @@ export const CompletedDrawing = ({
                 );
 
                 if (strokeArray) {
-                    drawOnCanvas(strokeArray, yOffset, context);
+                    drawOnCanvas(strokeArray, yOffset, context, eraserResolvedColor);
                     strokeHistoryIndex += 1;
                 } else {
                     panelIndex += 1;
@@ -153,6 +156,7 @@ export const CompletedDrawing = ({
                         scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor),
                         yOffset,
                         context,
+                        eraserResolvedColor,
                     );
                 });
                 yOffset += PANEL_HEIGHT_MIN * scaleFactor * (1 - OVERLAP);
