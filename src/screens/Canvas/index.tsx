@@ -4,6 +4,8 @@ import Button from "@mui/material/Button";
 import { useTheme } from "@mui/material/styles";
 import { debounce } from "es-toolkit";
 import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
+import UndoIcon from "@mui/icons-material/Undo";
+import RedoIcon from "@mui/icons-material/Redo";
 
 import { Point } from "../../types";
 import { emitSendLastPanel, emitSendPanel, emitSendPanelEdit } from "../../context/SocketRequestors";
@@ -44,6 +46,7 @@ const Canvas: React.FC = () => {
     const [ isDrawingComplete, setIsDrawingComplete ] = useState(false);
     const [ points, setPoints ] = useState<Point[]>([]);
     const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
+    const [ undidStrokeHistory, setUndidStrokeHistory ] = useState<Point[][]>([]);
     const [ isMousedown, setIsMousedown ] = useState(false);
     const [ allowDirect, setAllowDirect ] = useState(true);
     const [ passEnabled, setPassEnabled ] = useState(false);
@@ -56,6 +59,7 @@ const Canvas: React.FC = () => {
     const [ strokeColor, setStrokeColor ] = useState<string>(DEFAULT_COLOR);
     const [ isEraserActive, setIsEraserActive ] = useState<boolean>(false);
     const [ scaleFactor, setScaleFactor ] = useState<number>(1);
+    const [ triggerRedraw, setTriggerRedraw ] = useState<number>(0);
     const localStrokeHistoryRef = useRef<Point[][]>(localStrokeHistory);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const eraserResolvedColor = theme.palette.background.default;
@@ -150,7 +154,7 @@ const Canvas: React.FC = () => {
             drawOnCanvas(scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor), 0, context, eraserResolvedColor);
             console.log(`Redrew strokeArray #${index}`);
         });
-    }, [ dimensions, scaleFactor, editorActive, passEnabled ]);
+    }, [ dimensions, scaleFactor, editorActive, passEnabled, triggerRedraw ]);
 
     function passTurn() {
         emitSendPanel(localStrokeHistory);
@@ -282,6 +286,20 @@ const Canvas: React.FC = () => {
         console.log("Stroke ended and scaled points added to history");
     }, [ points, scaleFactor ]);
 
+    const handleUndo = () => {
+        setUndidStrokeHistory(localStrokeHistory);
+        const strokeHistoryMinusLastStroke = localStrokeHistory.slice(0, -1);
+        setLocalStrokeHistory(strokeHistoryMinusLastStroke);
+        debouncedEmitPanel(strokeHistoryMinusLastStroke);
+        setTriggerRedraw((prev) => prev += 1);
+    };
+
+    const handleRedo = () => {
+        setLocalStrokeHistory(undidStrokeHistory);
+        debouncedEmitPanel(undidStrokeHistory);
+        setTriggerRedraw((prev) => prev += 1);
+    };
+
     return (
         <div style={{ display: "flex", flexDirection: "column" }}>
             <Button
@@ -349,6 +367,24 @@ const Canvas: React.FC = () => {
                     {isEraserActive
                         ? "Switch to Pen"
                         : "Switch to Eraser"}
+                </Button>
+                <Button
+                    variant={isEraserActive
+                        ? "contained"
+                        : "outlined"}
+                    color={isEraserActive
+                        ? "primary"
+                        : "inherit"}
+                    onClick={() => localStrokeHistory.length >= undidStrokeHistory.length
+                        ? handleUndo()
+                        : handleRedo()}
+                    startIcon={localStrokeHistory.length >= undidStrokeHistory.length
+                        ? <UndoIcon />
+                        : <RedoIcon />}
+                >
+                    {localStrokeHistory.length >= undidStrokeHistory.length
+                        ? "Undo"
+                        : "Redo"}
                 </Button>
             </div>
         </div>
