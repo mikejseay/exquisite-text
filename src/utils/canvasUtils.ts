@@ -1,7 +1,8 @@
+// src/utils/canvasUtils.ts
 import { Point } from "../types";
 import { pixelRatio } from "./scaleUtils";
 
-export const lineColor = "grey";
+export const DEFAULT_COLOR = "#7F7F7F";
 
 export function setCanvasDimensions(
     canvas: HTMLCanvasElement | null,
@@ -16,14 +17,32 @@ export function setCanvasDimensions(
 }
 
 export function setCanvasProperties(context: CanvasRenderingContext2D) {
-    context.strokeStyle = lineColor;
     context.lineCap = "round";
     context.lineJoin = "round";
-    context.fillStyle = lineColor;
 }
 
-export function drawOnCanvas(newPoints: Point[], yOffset = 0, context: CanvasRenderingContext2D) {
-    // newPoints is length 1 if being drawn by handleStart
+export function drawOnCanvas(
+    newPoints: Point[],
+    yOffset = 0,
+    context: CanvasRenderingContext2D,
+    eraserColor?: string,
+) {
+    setCanvasProperties(context);
+  
+    // Determine the stroke color.
+    let currentColor = newPoints[0].color;
+    if (currentColor === "!e") {
+    // Use the passed-in eraserColor if provided; otherwise, fallback
+        currentColor = eraserColor
+            ? eraserColor
+            : (window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "#000"
+                : "#fff");
+    }
+  
+    context.strokeStyle = currentColor;
+    context.fillStyle = currentColor;
+
     if (newPoints.length === 1) {
         const point = newPoints[0];
         context.lineWidth = point.lineWidth;
@@ -31,7 +50,7 @@ export function drawOnCanvas(newPoints: Point[], yOffset = 0, context: CanvasRen
         context.arc(
             point.x * pixelRatio,
             (point.y + yOffset) * pixelRatio,
-            point.lineWidth / 2 * pixelRatio,
+            (point.lineWidth / 2) * pixelRatio,
             0,
             Math.PI * 2,
         );
@@ -45,10 +64,9 @@ export function drawOnCanvas(newPoints: Point[], yOffset = 0, context: CanvasRen
     for (let i = 0; i < newPoints.length - 1; i++) {
         const startPoint = newPoints[i];
         const endPoint = newPoints[i + 1];
-
-        context.moveTo(startPoint?.x * pixelRatio, (startPoint?.y + yOffset) * pixelRatio);
-        context.lineWidth = startPoint?.lineWidth * pixelRatio;
-        context.lineTo(endPoint?.x * pixelRatio, (endPoint?.y + yOffset) * pixelRatio);
+        context.moveTo(startPoint.x * pixelRatio, (startPoint.y + yOffset) * pixelRatio);
+        context.lineWidth = startPoint.lineWidth * pixelRatio;
+        context.lineTo(endPoint.x * pixelRatio, (endPoint.y + yOffset) * pixelRatio);
         context.stroke();
     }
 }

@@ -415,6 +415,7 @@ export class DrawingEditor extends Editor {
     setReceive() {
         super.setReceive();
         this.socket.on("ctsSendPanel", (value: Point[][]) => this.handlePanel(value));
+        this.socket.on("ctsSendPanelEdit", (value: Point[][]) => this.handlePanelEdit(value));
         this.socket.on("ctsSendLastPanel", (value) => this.handleLastPanel(value));
         this.socket.on("ctsRequestLastContributionStatus", () => this.sendLastContributionStatus());
         this.socket.on("ctsAlterGameSettings", (value) =>
@@ -425,6 +426,7 @@ export class DrawingEditor extends Editor {
     unsetReceive() {
         super.unsetReceive();
         this.socket.removeAllListeners("ctsSendPanel");
+        this.socket.removeAllListeners("ctsSendPanelEdit");
         this.socket.removeAllListeners("ctsAlterGameSettings");
     }
 
@@ -433,7 +435,6 @@ export class DrawingEditor extends Editor {
         // tmp to maintain testing functionality
         const room = getRoom(this.roomID) as DrawingRoom;
         room.finishedCanvas = panelContent;
-        // TODO: make contributionQueue work for Drawings
         const drawingToPass = this.contributionQueue.shift() as Drawing;
         if (isNil(drawingToPass)) {
             return;
@@ -459,6 +460,16 @@ export class DrawingEditor extends Editor {
         if (!nextEditor.isCurrentlyEditing) {
             console.log("!nextEditor.isCurrentlyEditing");
             nextEditor.possibleStartNewTurn();
+        }
+    }
+
+    handlePanelEdit(panelContent: IPanel["content"]) {
+        this.lastActivity = Date.now(); // they DREW!!!! = active
+
+        const drawing = this.contributionQueue[0] as Drawing;
+        console.log("handlePanelEdit:", drawing);
+        if (!isNil(drawing)) {
+            drawing.sendPanelEditToSpectators(panelContent);
         }
     }
 

@@ -1,19 +1,23 @@
 // src/screens/Canvas/index.tsx
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Button from "@mui/material/Button";
+import { useTheme } from "@mui/material/styles";
 import { debounce } from "es-toolkit";
+import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
 
 import { Point } from "../../types";
-import { emitSendLastPanel, emitSendPanel } from "../../context/SocketRequestors";
+import { emitSendLastPanel, emitSendPanel, emitSendPanelEdit } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { drawOnCanvas, setCanvasProperties } from "../../utils/canvasUtils";
+import { DEFAULT_COLOR, drawOnCanvas } from "../../utils/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
 import { ScaleDirection, pixelRatio, scalePoints } from "../../utils/scaleUtils";
 import { aboveCanvasHeight } from "../../constants";
 
-/* TODO:
+/* // TODO:
     * Function to consolidate drawing of snippet code (don't repeat that code)
-    * Spectator functionality
+    * Remove egregious logging
+    * Conduct iPad testing, especially with color picker
+    * Undo / redo functionality
 */
 
 type ExtendedTouch = Touch & {
@@ -33,22 +37,28 @@ export const DRAWING_HEIGHT_MIN = 3 * PANEL_HEIGHT_MIN - 2 * OVERLAP * PANEL_HEI
 export const DRAWING_WIDTH_MIN = PANEL_WIDTH_MIN;
 export const DRAWING_ASPECT_RATIO = DRAWING_WIDTH_MIN / DRAWING_HEIGHT_MIN;
 
+
 const Canvas: React.FC = () => {
-    const { strokeHistory, editorActive, onLastContribution, setEditorActive } = useSocketInfo();
-    const [ isPassCompleteDisabled, setIsPassCompleteDisabled ] = useState(false);
+    const theme = useTheme();
+    const { strokeHistory, editorActive, onLastContribution } = useSocketInfo();
+    const [ isDrawingComplete, setIsDrawingComplete ] = useState(false);
     const [ points, setPoints ] = useState<Point[]>([]);
     const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
     const [ isMousedown, setIsMousedown ] = useState(false);
     const [ allowDirect, setAllowDirect ] = useState(true);
+    const [ passEnabled, setPassEnabled ] = useState(false);
     const [ lineWidth, setLineWidth ] = useState(0);
     const [ drawType, setDrawType ] = useState<"fill" | "stroke" | "noDrawYet">("noDrawYet");
     const [ player, setPlayer ] = useState<number>(0);
     const [ coordinates, setCoordinates ] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
     const [ eventPressure, setEventPressure ] = useState(DEFAULT_PRESSURE);
     const [ dimensions, setDimensions ] = useState({ width: PANEL_WIDTH_MIN, height: PANEL_HEIGHT_MIN });
+    const [ strokeColor, setStrokeColor ] = useState<string>(DEFAULT_COLOR);
+    const [ isEraserActive, setIsEraserActive ] = useState<boolean>(false);
     const [ scaleFactor, setScaleFactor ] = useState<number>(1);
     const localStrokeHistoryRef = useRef<Point[][]>(localStrokeHistory);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const eraserResolvedColor = theme.palette.background.default;
 
     useEffect(() => {
         localStrokeHistoryRef.current = localStrokeHistory;
@@ -91,9 +101,8 @@ const Canvas: React.FC = () => {
         const debouncedHandleResize = debounce(() => {
             console.log("Debounced handle resize");
             handleResize();
-        }, 200); // Reduced debounce delay
+        }, 200);
 
-        // Initial resize to set up canvas correctly
         handleResize();
 
         window.addEventListener("resize", debouncedHandleResize);
@@ -106,6 +115,7 @@ const Canvas: React.FC = () => {
 
     // Redraw the canvas whenever dimensions or scaleFactor change
     useEffect(() => {
+        setPassEnabled(!!editorActive);
         const canvas = canvasRef.current;
         if (!canvas) return;
 
@@ -114,17 +124,11 @@ const Canvas: React.FC = () => {
 
         console.log("Redrawing canvas with dimensions:", dimensions, "and scaleFactor:", scaleFactor);
 
-        setCanvasProperties(context);
-
         context.clearRect(0, 0, canvas.width, canvas.height);
 
         // Redraw
         strokeHistory?.forEach((strokeArray) =>
-            drawOnCanvas(
-                scalePoints(strokeArray, ScaleDirection.MULTIPLY, scaleFactor),
-                0,
-                context,
-            ),
+            drawOnCanvas(scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor), 0, context, eraserResolvedColor),
         );
 
         // Clip
@@ -143,26 +147,22 @@ const Canvas: React.FC = () => {
         );
 
         localStrokeHistoryRef.current?.forEach((strokeArray, index) => {
-            drawOnCanvas(
-                scalePoints(strokeArray, ScaleDirection.MULTIPLY, scaleFactor),
-                0,
-                context,
-            );
+            drawOnCanvas(scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor), 0, context, eraserResolvedColor);
             console.log(`Redrew strokeArray #${index}`);
         });
-    }, [ dimensions, scaleFactor, editorActive ]);
+    }, [ dimensions, scaleFactor, editorActive, passEnabled ]);
 
     function passTurn() {
         emitSendPanel(localStrokeHistory);
         setPoints([]);
         setLocalStrokeHistory([]);
-        setEditorActive(false);
+        setPassEnabled(false);
     }
 
     function completeDrawing() {
         emitSendLastPanel(localStrokeHistory);
         setLocalStrokeHistory([]);
-        setIsPassCompleteDisabled(false);
+        setIsDrawingComplete(false);
     }
 
     const handleStart = useCallback(
@@ -180,9 +180,8 @@ const Canvas: React.FC = () => {
 
             if ("touches" in e) {
                 const touch = e.touches[0] as ExtendedTouch;
-                x = (touch.pageX - canvasBounds.left - window.scrollX);
-                y = (touch.pageY - canvasBounds.top - window.scrollY);
-
+                x = touch.pageX - canvasBounds.left - window.scrollX;
+                y = touch.pageY - canvasBounds.top - window.scrollY;
                 if (allowDirect || (touch && touch.touchType !== "direct")) {
                     if (touch.force && touch.force > 0) {
                         pressure = touch.force;
@@ -191,8 +190,8 @@ const Canvas: React.FC = () => {
                 }
             } else {
                 pressure = 1.0;
-                x = (e.pageX - canvasBounds.left - window.scrollX);
-                y = (e.pageY - canvasBounds.top - window.scrollY);
+                x = e.pageX - canvasBounds.left - window.scrollX;
+                y = e.pageY - canvasBounds.top - window.scrollY;
             }
 
             setCoordinates({ x, y });
@@ -200,15 +199,15 @@ const Canvas: React.FC = () => {
 
             const computedLineWidth = Math.log(pressure + 1) * DEFAULT_LINE_WIDTH * scaleFactor;
             setLineWidth(computedLineWidth);
-            const newPoint = { x, y, lineWidth: computedLineWidth };
+            const currentColor = isEraserActive
+                ? "!e"
+                : strokeColor;
+            const newPoint = { x, y, lineWidth: computedLineWidth, color: currentColor };
             setPoints((prev) => [ ...prev, newPoint ]);
 
-            // Set canvas properties before drawing
-            // TODO: setCanvasProperties inside drawOnCanvas
-            setCanvasProperties(context);
-            drawOnCanvas([ newPoint ], 0, context);
+            drawOnCanvas([ newPoint ], 0, context, eraserResolvedColor);
         },
-        [ allowDirect, scaleFactor ],
+        [ allowDirect, scaleFactor, strokeColor, isEraserActive ],
     );
 
     const handleMove = useCallback(
@@ -235,36 +234,48 @@ const Canvas: React.FC = () => {
                         pressure = touch.force;
                         setEventPressure(pressure);
                     }
-                    x = (touch.pageX - canvasBounds.left - window.scrollX);
-                    y = (touch.pageY - canvasBounds.top - window.scrollY);
+                    x = touch.pageX - canvasBounds.left - window.scrollX;
+                    y = touch.pageY - canvasBounds.top - window.scrollY;
                 }
-                y = (touch.pageY - canvasBounds.top);
+                y = touch.pageY - canvasBounds.top;
             } else {
                 pressure = 1.0;
-                x = (e.pageX - canvasBounds.left - window.scrollX);
-                y = (e.pageY - canvasBounds.top - window.scrollY);
+                x = e.pageX - canvasBounds.left - window.scrollX;
+                y = e.pageY - canvasBounds.top - window.scrollY;
             }
             setCoordinates({ x, y });
 
             const computedLineWidth = Math.log(pressure + 1) * DEFAULT_LINE_WIDTH * scaleFactor;
             setLineWidth(computedLineWidth);
-            const newPoint = { x, y, lineWidth: computedLineWidth };
+            const currentColor = isEraserActive
+                ? "!e"
+                : strokeColor;
+            const newPoint = { x, y, lineWidth: computedLineWidth, color: currentColor };
 
             setPoints((prev) => {
                 const lastPoint = prev[prev.length - 1];
                 if (lastPoint) {
-                    drawOnCanvas([ lastPoint, newPoint ], 0, context);
+                    drawOnCanvas([ lastPoint, newPoint ], 0, context, eraserResolvedColor);
                     console.log("Drawn line segment in handleMove:", lastPoint, newPoint);
                 }
                 return [ ...prev, newPoint ];
             });
         },
-        [ allowDirect, isMousedown, scaleFactor ],
+        [ allowDirect, isMousedown, scaleFactor, strokeColor, isEraserActive ],
+    );
+
+    const debouncedEmitPanel = useCallback(
+        debounce((currentPanel: Point[][]) => {
+            emitSendPanelEdit(currentPanel);
+        }, 200),
+        [],
     );
 
     const handleEnd = useCallback(() => {
         setIsMousedown(false);
-        const scaledPoints: Point[] = scalePoints(points, ScaleDirection.DIVIDE, scaleFactor);
+        const scaledPoints: Point[] = scalePoints(points, ScaleDirection.TO_UNIVERSAL, scaleFactor);
+        const currentPanel = [ ...localStrokeHistory, scaledPoints ];
+        debouncedEmitPanel(currentPanel);
         setLocalStrokeHistory((prev) => [ ...prev, scaledPoints ]);
         setPoints([]);
         setLineWidth(0);
@@ -273,27 +284,17 @@ const Canvas: React.FC = () => {
 
     return (
         <div style={{ display: "flex", flexDirection: "column" }}>
-            {/*<p style={{ textAlign: "center" }}>*/}
-            {/*    {"Pressure: " + eventPressure}*/}
-            {/*    <br />*/}
-            {/*    {"Line Width: " + lineWidth}*/}
-            {/*    <br />*/}
-            {/*    {"Draw Type: " + drawType}*/}
-            {/*    <br />*/}
-            {/*    {"Current Player: " + player}*/}
-            {/*    <br />*/}
-            {/*    {"Coordinates: " + JSON.stringify(coordinates)}*/}
-            {/*</p>*/}
-            {/*<Button onClick={() => setAllowDirect(!allowDirect)}>Toggle Direct</Button>*/}
             <Button
-                disabled={isPassCompleteDisabled}
+                disabled={!passEnabled || isDrawingComplete}
                 onClick={onLastContribution
                     ? completeDrawing
                     : passTurn}
             >
-                {onLastContribution
-                    ? "Complete Drawing"
-                    : "Pass"}
+                {(!editorActive && !passEnabled)
+                    ? "Your friend is drawing..."
+                    : onLastContribution
+                        ? "Complete Drawing"
+                        : "Pass"}
             </Button>
             <canvas
                 ref={canvasRef}
@@ -310,6 +311,11 @@ const Canvas: React.FC = () => {
                     opacity: editorActive
                         ? 1
                         : 0.5,
+                    boxShadow: editorActive
+                        ? `0 0 8px 4px ${theme.palette.mode === "dark"
+                            ? "rgba(255,255,255,0.7)"
+                            : "rgba(0,0,0,0.7)"}`
+                        : undefined,
                 }}
                 onMouseDown={handleStart}
                 onTouchStart={handleStart}
@@ -320,8 +326,34 @@ const Canvas: React.FC = () => {
             >
                 Sorry, your browser is too old for this demo.
             </canvas>
+            <div style={{ marginBottom: "10px" }}>
+                <label htmlFor="color-picker">Stroke Color:</label>
+                <input
+                    type="color"
+                    id="color-picker"
+                    value={strokeColor}
+                    onChange={(e) => setStrokeColor(e.target.value)}
+                    style={{ accentColor: DEFAULT_COLOR }}
+                    disabled={isEraserActive}
+                />
+                <Button
+                    variant={isEraserActive
+                        ? "contained"
+                        : "outlined"}
+                    color={isEraserActive
+                        ? "primary"
+                        : "inherit"}
+                    onClick={() => setIsEraserActive(!isEraserActive)}
+                    startIcon={<FormatColorResetIcon />}
+                >
+                    {isEraserActive
+                        ? "Switch to Pen"
+                        : "Switch to Eraser"}
+                </Button>
+            </div>
         </div>
     );
 };
 
 export default Canvas;
+

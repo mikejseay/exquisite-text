@@ -3,8 +3,8 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { Carousel } from "react-responsive-carousel";
 import { debounce } from "es-toolkit";
+import { useTheme } from "@mui/material/styles";
 
-import { useSocketInfo } from "../../context/SocketInfoProvider";
 import {
     DRAWING_ASPECT_RATIO,
     DRAWING_HEIGHT_MIN,
@@ -14,27 +14,25 @@ import {
 } from "../../screens/Canvas";
 import { title } from "./styles";
 import { Point } from "../../types";
-import { drawOnCanvas, setCanvasProperties } from "../../utils/canvasUtils";
+import { drawOnCanvas } from "../../utils/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
 import { ScaleDirection, pixelRatio, scalePoints } from "../../utils/scaleUtils";
 import { aboveCanvasHeight } from "../../constants";
 
 
-const CompletedDrawing = ({
+export const CompletedDrawing = ({
     completedDrawing,
     shouldAnimate,
 }: {
     completedDrawing: Point[][][];
     shouldAnimate: boolean;
 }): JSX.Element | null => {
-    if (completedDrawing?.length === 0) {
-        return null;
-    }
-
+    const theme = useTheme();
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const animationRef = useRef<number>();
     const [ dimensions, setDimensions ] = useState({ width: DRAWING_WIDTH_MIN, height: DRAWING_HEIGHT_MIN });
     const [ scaleFactor, setScaleFactor ] = useState<number>(1);
+    const eraserResolvedColor = theme.palette.background.default;
 
     useDisableScroll();
 
@@ -47,6 +45,7 @@ const CompletedDrawing = ({
             const context = canvas.getContext("2d");
             if (!context) return;
 
+            // TODO: bump this logic up to the singular parent component
             // Calculate new dimensions
             const viewportHeight = window.innerHeight - aboveCanvasHeight;
             const viewportWidth = window.innerWidth;
@@ -108,8 +107,6 @@ const CompletedDrawing = ({
 
         context.clearRect(0, 0, canvas.width, canvas.height);
 
-        setCanvasProperties(context);
-
         if (shouldAnimate) {
             let panelIndex = 0;
             let strokeHistoryIndex = 0;
@@ -126,12 +123,12 @@ const CompletedDrawing = ({
                 const strokeHistory = completedDrawing[panelIndex];
                 const strokeArray = scalePoints(
                     strokeHistory[strokeHistoryIndex],
-                    ScaleDirection.MULTIPLY,
+                    ScaleDirection.TO_DISPLAY,
                     scaleFactor,
                 );
 
                 if (strokeArray) {
-                    drawOnCanvas(strokeArray, yOffset, context);
+                    drawOnCanvas(strokeArray, yOffset, context, eraserResolvedColor);
                     strokeHistoryIndex += 1;
                 } else {
                     panelIndex += 1;
@@ -156,9 +153,10 @@ const CompletedDrawing = ({
             completedDrawing.forEach((strokeHistory) => {
                 strokeHistory.forEach((strokeArray) => {
                     drawOnCanvas(
-                        scalePoints(strokeArray, ScaleDirection.MULTIPLY, scaleFactor),
+                        scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor),
                         yOffset,
                         context,
+                        eraserResolvedColor,
                     );
                 });
                 yOffset += PANEL_HEIGHT_MIN * scaleFactor * (1 - OVERLAP);
@@ -179,6 +177,8 @@ const CompletedDrawing = ({
                     display: "block",
                     pointerEvents: "none",
                     opacity: 1,
+                    marginLeft: "auto",
+                    marginRight: "auto",
                 }}
             >
                 Sorry, your browser is too old for this demo.
@@ -187,19 +187,18 @@ const CompletedDrawing = ({
     );
 };
 
-const renderDrawings = (
+export const renderDrawings = (
     completedDrawings: Point[][][][] | null,
-    reRenderIndex: number,
-    shouldAnimate: boolean,
+    reRenderIndex?: number,
+    shouldAnimate = false,
 ) => {
+    console.log("IN renderDrawings...");
+    console.log({ completedDrawings });
     return completedDrawings?.map((completedDrawing, index) => (
         <div
             key={index}
             className={"drawing-container"}
-            style={{
-                marginLeft: "auto",
-                marginRight: "auto",
-            }}
+            style={{}}
         >
             <div style={title} className={"drawing-title"}>
                 <strong>{`exquisite corpse #${index}`}</strong>
@@ -209,17 +208,23 @@ const renderDrawings = (
     ));
 };
 
-function MultipleDrawings({ shouldAnimate }: { shouldAnimate: boolean }) {
+function MultipleDrawings(
+    { completedDrawings, shouldAnimate }: { completedDrawings: Point[][][][] | null, shouldAnimate: boolean },
+) {
     const [ reRender, setReRenderIndex ] = React.useState<number>(-1);
-    const { completedDrawings } = useSocketInfo();
-    if (!completedDrawings || completedDrawings.length === 0) {
-        return null;
-    }
+    // TODO: get dimensions from context and use in below commented code
 
     return (
-        <div className={"multiple-drawings"}>
+        <div className={"multiple-drawings"} style={{
+            width: "100%",
+            // display: "flex",
+            // justifyContent: "space-between",
+            // height: dimensions.height,
+        }}>
             {completedDrawings && completedDrawings.length > 1
-                ? (
+                ?
+                // renderDrawings(completedDrawings, reRender, shouldAnimate)
+                (
                     <Carousel
                         onChange={(slideIndex) => {
                             setReRenderIndex(slideIndex);

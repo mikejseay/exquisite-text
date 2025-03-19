@@ -72,20 +72,6 @@ export const emitLeave = () => {
     socket.emit("ctsLeave");
 };
 
-/* TODO: WE DON'T NEED THIS!??!?!
-export const emitRequestLineEdit = () => {
-    socket.emit("ctsRequestLineEdit");
-};
-
-export const emitRequestEditorActive = () => {
-    socket.emit("ctsRequestEditorActive");
-};
-
-export const emitRequestLastLineStatus = () => {
-    socket.emit("ctsRequestLastContributionStatus");
-};
-*/
-
 export const emitEditLine = (value: string) => {
     socket.emit("ctsEditLine", value);
 };
@@ -96,6 +82,11 @@ export const emitSendLineParts = (firstPart: string, secondPart: string) => {
 
 export const emitSendLastLine = (value: string | null) => {
     socket.emit("ctsSendLastLine", value);
+};
+
+export const emitSendPanelEdit = (value: Point[][] | null) => {
+    console.log("sendPanelEdit:", value);
+    socket.emit("ctsSendPanelEdit", value);
 };
 
 export const emitSendPanel = (value: Point[][] | null) => {

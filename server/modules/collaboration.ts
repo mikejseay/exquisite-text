@@ -11,8 +11,6 @@ import {
 } from "../../src/types";
 import { storeLine } from "../queries";
 
-// TODO: Finish front-end components for Canvas analogous to Poem stuff, starting with Canvas / CanvasSpectator screens
-
 class Collaboration {
     io: Server<
         ClientToServerEvents,
@@ -109,7 +107,6 @@ export class Poem extends Collaboration {
     }
 }
 
-// TODO: Make drawing specific
 export class Drawing extends Collaboration {
     // represents a single drawing
 
@@ -117,7 +114,6 @@ export class Drawing extends Collaboration {
     panels: Set<IPanel>;
 
     constructor(
-
         io: Server<
             ClientToServerEvents,
             ServerToClientEvents,
@@ -146,10 +142,18 @@ export class Drawing extends Collaboration {
         this.panels.add(panel);
 
         this.mostRecentEditor = authorID;
-        this.panelHint = []; // half of content or something
+        this.panelHint = []; // reset the hint
+        // Emit the stroke history (which is the panel content) to all Spectators
         this.io
             .in(`${this.roomID}_Spectators`)
             .emit("stcPanelSpectator", this.indexInGame, content);
+    }
+
+    sendPanelEditToSpectators(value: IPanel["content"]) {
+        console.log("sendPanelEditToSpectators...", this.indexInGame, value);
+        this.io
+            .in(`${this.roomID}_Spectators`)
+            .emit("stcPanelEditSpectator", this.indexInGame, value);
     }
 
     sendAllPanelsTo(socketID: string) {

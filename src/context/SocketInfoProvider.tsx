@@ -28,6 +28,7 @@ export const SocketInfoContext = createContext<ISocketInfo>({
 
     // drawings
     panels: null,
+    panelEdits: null,
     nDrawings: null,
     setNDrawings: () => null,
     setStrokeHistory: () => null,

@@ -38,9 +38,14 @@ function End({ testingMedium }: { testingMedium?: Medium }) {
         setShouldAnimate(!shouldAnimate);
     };
 
+    const MultipleDrawingsAtEnd = () => {
+        const { completedDrawings } = useSocketInfo();
+        return <MultipleDrawings completedDrawings={completedDrawings} shouldAnimate={shouldAnimate} />;
+    };
+
     const displayedCompletedArt = medium === Medium.POETRY
         ? <MultiplePoems shouldAnimate={shouldAnimate} />
-        : <MultipleDrawings shouldAnimate={shouldAnimate} />;
+        : MultipleDrawingsAtEnd();
 
     return (
         <div style={centered}>

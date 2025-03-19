@@ -14,6 +14,7 @@ export const socketListeners = ({
     setNDrawings,
     setLines,
     setPanels,
+    setPanelEdits,
     setLineEdits,
     setPoemInput,
     setPoemInputSpectate,
@@ -56,19 +57,40 @@ export const socketListeners = ({
         setSettingsEnabled(enabled);
     };
 
+    // the React state lines is of type Array<Array<ILine["content"]>>
+    // this is because each line is of type ILine["content"]
+    // each collaboration is of type Array<ILine["content"]>
+    // and thus all the lines together for all collaborations is Array<Array<ILine["content"]>>
     const receiveLineSpectator = (collaborationIndex: number, content: ILine["content"]) => {
+        // Here, the spectator receives a single line at a time
         setLines(prevLines => {
+            // The slicing accomplishes only appending to the particular collaboration
             return [ ...prevLines.slice(0, collaborationIndex), [ ...prevLines[collaborationIndex], content ], ...prevLines.slice(collaborationIndex + 1) ];
         },
         );
     };
 
     const receivePanelSpectator = (collaborationIndex: number, content: IPanel["content"]) => {
-        setPanels((prevPanels) => {
-            const panelsToSet = [ ...prevPanels.slice(0, collaborationIndex), [ ...prevPanels[collaborationIndex], content ], ...prevPanels.slice(collaborationIndex + 1) ];
-            console.log({ panelsToSet });
-            return panelsToSet;
-        });
+        // If we are receiving a new panel, that's because the previous edit no longer applies
+        setPanelEdits(prevPanelEdits => [
+            ...prevPanelEdits.slice(0, collaborationIndex),
+            [],
+            ...prevPanelEdits.slice(collaborationIndex + 1),
+        ]);
+        setPanels(prevPanels => {
+            return [ ...prevPanels.slice(0, collaborationIndex), [ ...prevPanels[collaborationIndex], content ], ...prevPanels.slice(collaborationIndex + 1) ];
+        },
+        );
+    };
+
+    // IS THS LOGIC LEGIT!??@!?@!
+    const receivePanelEditSpectator = (collaborationIndex: number, content: IPanel["content"]) => {
+        console.log("receivePanelEditSpectator", collaborationIndex, content);
+        setPanelEdits(prevPanelEdits => [
+            ...prevPanelEdits.slice(0, collaborationIndex),
+            content,
+            ...prevPanelEdits.slice(collaborationIndex + 1),
+        ]);
     };
 
     const receiveLineEditSpectator = (poemIndex: number, value: string) => {
@@ -127,6 +149,7 @@ export const socketListeners = ({
     socket.on("stcGameSettingsEnabled", receiveGameSettingsEnabled);
     socket.on("stcLineSpectator", receiveLineSpectator);
     socket.on("stcPanelSpectator", receivePanelSpectator);
+    socket.on("stcPanelEditSpectator", receivePanelEditSpectator);
     socket.on("stcLineEditSpectator", receiveLineEditSpectator);
     socket.on("stcLineEdit", receiveLineEdit);
     socket.on("stcLineEditorWatch", receiveLineEditorWatch);
@@ -146,6 +169,7 @@ export const socketListeners = ({
         socket.off("stcGameSettingsEnabled", receiveGameSettingsEnabled);
         socket.off("stcLineSpectator", receiveLineSpectator);
         socket.off("stcPanelSpectator", receivePanelSpectator);
+        socket.off("stcPanelEditSpectator", receivePanelEditSpectator);
         socket.off("stcLineEditSpectator", receiveLineEditSpectator);
         socket.off("stcLineEdit", receiveLineEdit);
         socket.off("stcLineEditorWatch", receiveLineEditorWatch);

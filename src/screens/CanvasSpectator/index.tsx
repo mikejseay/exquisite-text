@@ -1,38 +1,51 @@
-import React, { useEffect, useRef } from "react";
+// src/screens/CanvasSpectator/index.tsx
+import React, { useEffect, useState } from "react";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { DRAWING_HEIGHT_MIN, DRAWING_WIDTH_MIN } from "../Canvas";
-import { drawOnCanvas, setCanvasDimensions, setCanvasProperties } from "../../utils/canvasUtils";
-import { useDisableScroll } from "../../hooks/useDisableScroll";
+import { Point } from "../../types";
+import MultipleDrawings from "../../components/MultipleDrawings";
 
 const CanvasSpectator: React.FC = () => {
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const { strokeHistory, completedDrawings } = useSocketInfo();
-
-    useDisableScroll();
-
-    // Set initial dimensions of the canvas
-    useEffect(() => {
-        setCanvasDimensions(canvasRef.current, DRAWING_WIDTH_MIN, DRAWING_HEIGHT_MIN);
-    }, []);
+    const { panels, panelEdits, nDrawings  } = useSocketInfo();
+    // Represents all completed panels and panel edits in an ongoing game
+    const [ currentDrawings, setCurrentDrawings ] = useState<Point[][][][]>([]);
 
     useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const context = canvas.getContext("2d");
-        if (!context) return;
-        setCanvasProperties(context);
-        strokeHistory?.forEach((strokeArray) =>
-            drawOnCanvas(strokeArray, 0, context),
-        );
-    }, [ strokeHistory, completedDrawings ]);
+        if (!nDrawings) return;
+        console.log({ panels, panelEdits });
+        // Levels //
+        // Outer: Drawings
+        // Panels
+        // Strokes
+        // Points
+
+        const combinedPanelsAndPanelEdits: Point[][][][] = [];
+
+        for (let drawingIndex = 0; drawingIndex < nDrawings; drawingIndex++) {
+            const currentPanels: Point[][][] = [];
+
+            if (panels && panels[drawingIndex]) {
+            // panels[drawingIndex] is Point[][][]
+            // "Extending" currentPanels by pushing all panels for this drawing
+                currentPanels.push(...panels[drawingIndex]);
+            }
+
+            if (panelEdits && panelEdits[drawingIndex]) {
+            // panelEdits[drawingIndex] is Point[][]
+            // Appending the panel edits for this drawing
+                currentPanels.push(panelEdits[drawingIndex]);
+            }
+
+            combinedPanelsAndPanelEdits.push(currentPanels);
+        }
+        setCurrentDrawings(combinedPanelsAndPanelEdits);
+
+    }, [ panels, panelEdits, nDrawings ]);
 
     return (
-        <div style={{ display: "flex", flexDirection: "column" }}>
-            <canvas ref={canvasRef} style={{ border: "1px solid black" }}>
-                Sorry, your browser is too old for this demo.
-            </canvas>
-        </div>
+        <MultipleDrawings completedDrawings={currentDrawings} shouldAnimate={false} />
     );
 };
+
+
 
 export default CanvasSpectator;

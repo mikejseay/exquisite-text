@@ -9,11 +9,7 @@ import { ClickAwayListener, Fade } from "@mui/material";
 import WarningIcon from "@mui/icons-material/Warning";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 
-import {
-    lineConstraints,
-    lineSepString,
-} from "../../constants";
-import { shortDur } from "../../constants";
+import { lineConstraints, lineSepString, shortDur } from "../../constants";
 import { useStateRef } from "../../helpers";
 import {
     activeInput,
@@ -34,15 +30,9 @@ import {
 } from "./styles";
 import "./LineInput.css";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import {
-    emitEditLine,
-    emitSendLastLine,
-    emitSendLineParts,
-} from "../../context/SocketRequestors";
+import { emitEditLine, emitSendLastLine, emitSendLineParts } from "../../context/SocketRequestors";
 
 const LineInput = () => {
-    // TODO: refactor by giving info before navigating user to Game route
-
     const {
         poemInput,
         poemInputSpectate,
