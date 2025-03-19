@@ -284,19 +284,32 @@ const Canvas: React.FC = () => {
         setPoints([]);
         setLineWidth(0);
         console.log("Stroke ended and scaled points added to history");
+        setUndidStrokeHistory([]);
     }, [ points, scaleFactor ]);
 
     const handleUndo = () => {
-        setUndidStrokeHistory(localStrokeHistory);
+        if (localStrokeHistory.length === 0) return;
+
+        const lastStroke = localStrokeHistory[localStrokeHistory.length - 1];
         const strokeHistoryMinusLastStroke = localStrokeHistory.slice(0, -1);
+
         setLocalStrokeHistory(strokeHistoryMinusLastStroke);
+
+        setUndidStrokeHistory([ ...undidStrokeHistory, lastStroke ]);
+
         debouncedEmitPanel(strokeHistoryMinusLastStroke);
         setTriggerRedraw((prev) => prev += 1);
     };
 
     const handleRedo = () => {
-        setLocalStrokeHistory(undidStrokeHistory);
-        debouncedEmitPanel(undidStrokeHistory);
+        if (undidStrokeHistory.length === 0) return;
+
+        const lastUndoneStroke = undidStrokeHistory[undidStrokeHistory.length - 1];
+        const updatedLocalStrokeHistory = [ ...localStrokeHistory, lastUndoneStroke ];
+
+        setLocalStrokeHistory(updatedLocalStrokeHistory);
+        setUndidStrokeHistory(undidStrokeHistory.slice(0, -1));
+        debouncedEmitPanel(updatedLocalStrokeHistory);
         setTriggerRedraw((prev) => prev += 1);
     };
 
@@ -369,22 +382,30 @@ const Canvas: React.FC = () => {
                         : "Switch to Eraser"}
                 </Button>
                 <Button
+                    disabled={localStrokeHistory.length === 0}
                     variant={isEraserActive
                         ? "contained"
                         : "outlined"}
                     color={isEraserActive
                         ? "primary"
                         : "inherit"}
-                    onClick={() => localStrokeHistory.length >= undidStrokeHistory.length
-                        ? handleUndo()
-                        : handleRedo()}
-                    startIcon={localStrokeHistory.length >= undidStrokeHistory.length
-                        ? <UndoIcon />
-                        : <RedoIcon />}
+                    onClick={() => handleUndo()}
+                    startIcon={<UndoIcon />}
                 >
-                    {localStrokeHistory.length >= undidStrokeHistory.length
-                        ? "Undo"
-                        : "Redo"}
+                    {"Undo"}
+                </Button>
+                <Button
+                    disabled={undidStrokeHistory.length === 0}
+                    variant={isEraserActive
+                        ? "contained"
+                        : "outlined"}
+                    color={isEraserActive
+                        ? "primary"
+                        : "inherit"}
+                    onClick={() => handleRedo()}
+                    startIcon={<RedoIcon />}
+                >
+                    {"Redo"}
                 </Button>
             </div>
         </div>
