@@ -34,7 +34,7 @@ const noMatchRouteElement = <main style={{ textAlign: "center" }}>
 </main>;
 
 function isComponentEnabled(element: JSX.Element): JSX.Element | null {
-    return process.env.IS_LIBRARY_ENABLED === "true"
+    return process.env.REACT_APP_IS_LIBRARY_ENABLED === "true"
         ? element
         : null;
 }

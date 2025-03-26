@@ -1,6 +1,6 @@
 import pino from "pino";
 
-const LOG_LEVEL = process.env.LOG_LEVEL ?? "debug";
+const LOG_LEVEL = process.env.REACT_APP_LOG_LEVEL;
 
 export const logger = pino({
     level: LOG_LEVEL ?? "error",
