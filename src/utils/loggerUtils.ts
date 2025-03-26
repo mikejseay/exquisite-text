@@ -1,0 +1,14 @@
+import pino from "pino";
+
+const LOG_LEVEL = process.env.LOG_LEVEL ?? "debug";
+
+export const logger = pino({
+    level: LOG_LEVEL ?? "error",
+    transport: {
+        target: "pino-pretty",
+        options: {
+            colorize: true,
+            translateTime: "HH:MM:ss Z",
+        },
+    },
+});

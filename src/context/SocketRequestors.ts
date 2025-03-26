@@ -2,9 +2,9 @@ import { socket } from "../components/SocketHandler";
 import { v4 as uuidv4 } from "uuid";
 import { isNil } from "es-toolkit";
 import { LineLength, Medium, Point, Role } from "../types";
+import { logger } from "../utils/loggerUtils";
 
 export const emitRecognizeDevice = () => {
-
     // set this to true if you want to be able to connect to the game
     // multiple times from the same browser
     if (process.env.REACT_APP_DEBUG_SINGLE_BROWSER === "true") {
@@ -42,7 +42,7 @@ export const emitCreateRoomAndHost = (roomID: string, medium: Medium) => {
 };
 
 export const emitJoinAs = (roomID: string, name: string, memberType: Role, isTest = false) => {
-    console.log("emitJoinAs activated as", name, "is trying to join", roomID, "as", memberType);
+    logger.debug("emitJoinAs activated as", name, "is trying to join", roomID, "as", memberType);
     socket.emit("ctsJoinAs", roomID.toUpperCase(), name.toUpperCase(), memberType, isTest);
 };
 
@@ -85,12 +85,12 @@ export const emitSendLastLine = (value: string | null) => {
 };
 
 export const emitSendPanelEdit = (value: Point[][] | null) => {
-    console.log("sendPanelEdit:", value);
+    logger.debug("sendPanelEdit:", value);
     socket.emit("ctsSendPanelEdit", value);
 };
 
 export const emitSendPanel = (value: Point[][] | null) => {
-    console.log("sendCanvas:", value);
+    logger.debug("sendCanvas:", value);
     socket.emit("ctsSendPanel", value);
 };
 

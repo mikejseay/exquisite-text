@@ -5,6 +5,7 @@ import { Carousel } from "react-responsive-carousel";
 import { debounce } from "es-toolkit";
 import { useTheme } from "@mui/material/styles";
 
+import { logger } from "../../utils/loggerUtils";
 import {
     DRAWING_ASPECT_RATIO,
     DRAWING_HEIGHT_MIN,
@@ -55,27 +56,27 @@ export const CompletedDrawing = ({
 
             // Viewport more portrait than drawing
             if (viewportAspectRatio < DRAWING_ASPECT_RATIO) {
-                console.log("viewportAspectRatio < DRAWING_ASPECT_RATIO");
+                logger.debug("viewportAspectRatio < DRAWING_ASPECT_RATIO");
                 newWidth = Math.max(viewportWidth, DRAWING_WIDTH_MIN);
                 newHeight = Math.max(newWidth / DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN);
-                console.log({ viewportWidth, DRAWING_WIDTH_MIN });
-                console.log("Math.max(viewportWidth, DRAWING_WIDTH_MIN)", Math.max(viewportWidth, DRAWING_WIDTH_MIN),
+                logger.debug({ viewportWidth, DRAWING_WIDTH_MIN });
+                logger.debug("Math.max(viewportWidth, DRAWING_WIDTH_MIN)", Math.max(viewportWidth, DRAWING_WIDTH_MIN),
                 );
-                console.log({ newWidth, DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN });
-                console.log("Math.max(newWidth / DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN)", Math.max(newWidth / DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN),
+                logger.debug({ newWidth, DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN });
+                logger.debug("Math.max(newWidth / DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN)", Math.max(newWidth / DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN),
                 );
             // Viewport more landscape than drawing
             } else {
-                console.log("else");
+                logger.debug("else");
                 newHeight = Math.max(viewportHeight, DRAWING_HEIGHT_MIN);
                 newWidth = Math.max(newHeight * DRAWING_ASPECT_RATIO, DRAWING_WIDTH_MIN);
-                console.log({ viewportHeight, DRAWING_HEIGHT_MIN, newHeight, DRAWING_ASPECT_RATIO, DRAWING_WIDTH_MIN });
-                console.log({ newWidth });
+                logger.debug({ viewportHeight, DRAWING_HEIGHT_MIN, newHeight, DRAWING_ASPECT_RATIO, DRAWING_WIDTH_MIN });
+                logger.debug({ newWidth });
             }
 
             const newScaleFactor = newWidth / DRAWING_WIDTH_MIN;
-            console.log({ viewportHeight, viewportWidth, viewportAspectRatio, newWidth, newHeight });
-            console.log("New Scale Factor:", newScaleFactor);
+            logger.debug({ viewportHeight, viewportWidth, viewportAspectRatio, newWidth, newHeight });
+            logger.debug("New Scale Factor:", newScaleFactor);
 
             // Update state for layout purposes
             setDimensions({ width: newWidth, height: newHeight });
@@ -83,7 +84,7 @@ export const CompletedDrawing = ({
         };
 
         const debouncedHandleResize = debounce(() => {
-            console.log("Debounced handle resize");
+            logger.debug("Debounced handle resize");
             handleResize();
         }, 200); // Reduced debounce delay
 
@@ -192,8 +193,8 @@ export const renderDrawings = (
     reRenderIndex?: number,
     shouldAnimate = false,
 ) => {
-    console.log("IN renderDrawings...");
-    console.log({ completedDrawings });
+    logger.debug("IN renderDrawings...");
+    logger.debug({ completedDrawings });
     return completedDrawings?.map((completedDrawing, index) => (
         <div
             key={index}

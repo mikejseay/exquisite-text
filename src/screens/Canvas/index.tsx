@@ -7,6 +7,7 @@ import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
 import UndoIcon from "@mui/icons-material/Undo";
 import RedoIcon from "@mui/icons-material/Redo";
 
+import { logger } from "../../utils/loggerUtils";
 import { Point } from "../../types";
 import { emitSendLastPanel, emitSendPanel, emitSendPanelEdit } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
@@ -16,10 +17,11 @@ import { ScaleDirection, pixelRatio, scalePoints } from "../../utils/scaleUtils"
 import { aboveCanvasHeight } from "../../constants";
 
 /* // TODO:
-    * Function to consolidate drawing of snippet code (don't repeat that code)
     * Remove egregious logging
     * Conduct iPad testing, especially with color picker
-    * Undo / redo functionality
+    * Make UI Pretty and cohesive, polish, make color picker similar look/feel to 
+        eraser/undo/redo buttons
+    * General code quality - not multiple components in MultipleDrawings.tsx
 */
 
 type ExtendedTouch = Touch & {
@@ -95,7 +97,7 @@ const Canvas: React.FC = () => {
             }
 
             const newScaleFactor = newWidth / PANEL_WIDTH_MIN;
-            console.log("New Scale Factor:", newScaleFactor);
+            logger.debug("New Scale Factor:", newScaleFactor);
 
             // Update state for layout purposes
             setDimensions({ width: newWidth, height: newHeight });
@@ -103,7 +105,7 @@ const Canvas: React.FC = () => {
         };
 
         const debouncedHandleResize = debounce(() => {
-            console.log("Debounced handle resize");
+            logger.debug("Debounced handle resize");
             handleResize();
         }, 200);
 
@@ -126,16 +128,15 @@ const Canvas: React.FC = () => {
         const context = canvas.getContext("2d");
         if (!context) return;
 
-        console.log("Redrawing canvas with dimensions:", dimensions, "and scaleFactor:", scaleFactor);
-
+        // Clear canvas
         context.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Redraw
+        // Redraw vectorized points
         strokeHistory?.forEach((strokeArray) =>
             drawOnCanvas(scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor), 0, context, eraserResolvedColor),
         );
 
-        // Clip
+        // Clip and add snippet to canvas
         const imageData = context.getImageData(
             0,
             context.canvas.height * (1 - OVERLAP),
@@ -150,9 +151,10 @@ const Canvas: React.FC = () => {
             context.canvas.height,
         );
 
+        // Redraw current additions from local editor
         localStrokeHistoryRef.current?.forEach((strokeArray, index) => {
             drawOnCanvas(scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor), 0, context, eraserResolvedColor);
-            console.log(`Redrew strokeArray #${index}`);
+            logger.debug(`Redrew strokeArray #${index}`);
         });
     }, [ dimensions, scaleFactor, editorActive, passEnabled, triggerRedraw ]);
 
@@ -260,7 +262,6 @@ const Canvas: React.FC = () => {
                 const lastPoint = prev[prev.length - 1];
                 if (lastPoint) {
                     drawOnCanvas([ lastPoint, newPoint ], 0, context, eraserResolvedColor);
-                    console.log("Drawn line segment in handleMove:", lastPoint, newPoint);
                 }
                 return [ ...prev, newPoint ];
             });
@@ -283,7 +284,6 @@ const Canvas: React.FC = () => {
         setLocalStrokeHistory((prev) => [ ...prev, scaledPoints ]);
         setPoints([]);
         setLineWidth(0);
-        console.log("Stroke ended and scaled points added to history");
         setUndidStrokeHistory([]);
     }, [ points, scaleFactor ]);
 

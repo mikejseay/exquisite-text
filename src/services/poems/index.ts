@@ -1,4 +1,5 @@
 import { IPoem } from "../../types";
+import { logger } from "../../utils/loggerUtils";
 
 const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
 const serverPath: URL["pathname"] | URL["href"] = isDevelopment
@@ -10,7 +11,7 @@ export async function getPoemById(id: IPoem["id"]) {
         const response = await fetch(`${serverPath}/poems/${id}`);
         return await response.json();
     } catch (error) {
-        console.log(`No poem found with id: ${id} (${error})`);
+        logger.debug(`No poem found with id: ${id} (${error})`);
     }
 }
 
@@ -20,6 +21,6 @@ export async function getPoems() {
         const json = await response.json();
         return (json);
     } catch (error) {
-        console.log(`No poems found (${error})`);
+        logger.debug(`No poems found (${error})`);
     }
 }
