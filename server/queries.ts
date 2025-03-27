@@ -10,7 +10,7 @@ import { logger } from "./utilities/loggerUtils";
         await Line.sync(); // make sure the table exists
         logger.debug("Connection has been established successfully.");
     } catch (error) {
-        console.error("Unable to connect to the database:", error);
+        logger.error("Unable to connect to the database:", error);
     }
 })();
 
