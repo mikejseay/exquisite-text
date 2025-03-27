@@ -2,7 +2,7 @@ import { socket } from "../components/SocketHandler";
 import { v4 as uuidv4 } from "uuid";
 import { isNil } from "es-toolkit";
 import { LineLength, Medium, Point, Role } from "../types";
-import { logger } from "../utils/loggerUtils";
+import { logger } from "../utilities/loggerUtils";
 
 export const emitRecognizeDevice = () => {
     // set this to true if you want to be able to connect to the game

@@ -4,7 +4,8 @@ import { Server, Socket } from "socket.io";
 import { deviceIDToRoomID, deviceIDToSocketID, roomIDToRoom, socketIDToDeviceID } from "./globals";
 import { ClientToServerEvents, GameState, InterServerEvents, ServerToClientEvents, SocketData } from "../../src/types";
 import { userInfo as userInfoTestData } from "../../src/data/userInfo";
-import { getRoom } from "../utilities/sockets";
+import { getRoom } from "../utilities/socketUtils";
+import { logger } from "../utilities/loggerUtils";
 
 class Member {
     // represents an Editor or Spectator (which extend this)
@@ -59,7 +60,7 @@ class Member {
 
     leaveRoom() {
         this.connected = false;
-        console.log(this.name, " leaving ", this.roomID);
+        logger.debug(this.name, " leaving ", this.roomID);
         this.io.to(this.socket.id).emit("stcNavigate", "/"); // navigate home (if possible)
         delete deviceIDToRoomID[this.deviceID];
         this.socket.leave(this.roomID);
@@ -86,7 +87,7 @@ class Member {
     }
 
     sendUserTableInfo(shouldTest: boolean) {
-        console.log(this.name, "requestUserTableInfo");
+        logger.debug(this.name, "requestUserTableInfo");
         const room = getRoom(this.roomID);
         if (room) {
             this.io
@@ -98,29 +99,29 @@ class Member {
                         : room.currentUserTableInfo(),
                 );
         } else {
-            console.log("Failed to get room details for user table info");
+            logger.debug("Failed to get room details for user table info");
         }
     }
 
     requestRoomCode() {
-        console.log(this.name, "requestRoomCode");
+        logger.debug(this.name, "requestRoomCode");
         this.io.to(this.socket.id).emit("stcRoomCode", this.roomID);
     }
 
     sendGameSettingsInfo() {
-        console.log(this.name, "requestGameSettingsInfo");
+        logger.debug(this.name, "requestGameSettingsInfo");
         const room = getRoom(this.roomID);
         if (room) {
             this.io
                 .to(this.socket.id)
                 .emit("stcGameSettingsInfo", room.gameSettings);
         } else {
-            console.log("Failed to get room details for game settings");
+            logger.debug("Failed to get room details for game settings");
         }
     }
 
     sendSettingsEnabled() {
-        console.log(this.name, "requestSettingsEnabled");
+        logger.debug(this.name, "requestSettingsEnabled");
         this.io.to(this.socket.id).emit("stcGameSettingsEnabled", false);
     }
 
@@ -129,7 +130,7 @@ class Member {
     // therefore we don't want to boot someone from the game based on this
     // however if they are AFK, etc., we should do those things
 
-        console.log(this.socket.id, "disconnected");
+        logger.debug(this.socket.id, "disconnected");
         this.connected = false;
 
         // If game still in lobby state, remove user from room, since an AFK
@@ -155,7 +156,7 @@ class Member {
     }
 
     disconnecting() {
-        console.log(
+        logger.debug(
             "socket",
             this.socket.id,
             " disconnecting from",

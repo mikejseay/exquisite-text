@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { logger } from "../../utils/loggerUtils";
+import { logger } from "../../utilities/loggerUtils";
 
 function UserTable() {
     const { userInfo } = useSocketInfo();

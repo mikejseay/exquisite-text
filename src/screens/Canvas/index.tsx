@@ -7,13 +7,13 @@ import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
 import UndoIcon from "@mui/icons-material/Undo";
 import RedoIcon from "@mui/icons-material/Redo";
 
-import { logger } from "../../utils/loggerUtils";
+import { logger } from "../../utilities/loggerUtils";
 import { Point } from "../../types";
 import { emitSendLastPanel, emitSendPanel, emitSendPanelEdit } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { DEFAULT_COLOR, drawOnCanvas } from "../../utils/canvasUtils";
+import { DEFAULT_COLOR, drawOnCanvas } from "../../utilities/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
-import { ScaleDirection, pixelRatio, scalePoints } from "../../utils/scaleUtils";
+import { ScaleDirection, pixelRatio, scalePoints } from "../../utilities/scaleUtils";
 import { aboveCanvasHeight } from "../../constants";
 
 /* // TODO:

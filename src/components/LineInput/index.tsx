@@ -9,7 +9,7 @@ import { ClickAwayListener, Fade } from "@mui/material";
 import WarningIcon from "@mui/icons-material/Warning";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 
-import { logger } from "../../utils/loggerUtils";
+import { logger } from "../../utilities/loggerUtils";
 import { lineConstraints, lineSepString, shortDur } from "../../constants";
 import { useStateRef } from "../../helpers";
 import {

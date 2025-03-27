@@ -5,7 +5,7 @@ import { Carousel } from "react-responsive-carousel";
 import { debounce } from "es-toolkit";
 import { useTheme } from "@mui/material/styles";
 
-import { logger } from "../../utils/loggerUtils";
+import { logger } from "../../utilities/loggerUtils";
 import {
     DRAWING_ASPECT_RATIO,
     DRAWING_HEIGHT_MIN,
@@ -15,9 +15,9 @@ import {
 } from "../../screens/Canvas";
 import { title } from "./styles";
 import { Point } from "../../types";
-import { drawOnCanvas } from "../../utils/canvasUtils";
+import { drawOnCanvas } from "../../utilities/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
-import { ScaleDirection, pixelRatio, scalePoints } from "../../utils/scaleUtils";
+import { ScaleDirection, pixelRatio, scalePoints } from "../../utilities/scaleUtils";
 import { aboveCanvasHeight } from "../../constants";
 
 

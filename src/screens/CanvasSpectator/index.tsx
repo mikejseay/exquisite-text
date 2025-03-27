@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { Point } from "../../types";
 import MultipleDrawings from "../../components/MultipleDrawings";
-import { logger } from "../../utils/loggerUtils";
+import { logger } from "../../utilities/loggerUtils";
 
 const CanvasSpectator: React.FC = () => {
     const { panels, panelEdits, nDrawings  } = useSocketInfo();

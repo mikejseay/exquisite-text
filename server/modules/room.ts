@@ -24,6 +24,7 @@ import {
     maxRoomTimeSpentEmpty,
 } from "../../src/constants";
 import { sleep } from "../../src/helpers";
+import { logger } from "../utilities/loggerUtils";
 
 class Room {
     // represents a socket.io room and a game of Exquisite Text
@@ -83,13 +84,13 @@ class Room {
     }
 
     addEditor(deviceUUID: string, editorObj: PoemEditor | DrawingEditor) {
-        console.log("addEditor with deviceUUID", deviceUUID);
+        logger.debug("addEditor with deviceUUID", deviceUUID);
         this.editors.set(deviceUUID, editorObj);
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }
 
     removeEditor(deviceUUID: string) {
-        console.log("removeEditor with deviceUUID", deviceUUID);
+        logger.debug("removeEditor with deviceUUID", deviceUUID);
         this.editors.delete(deviceUUID);
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }
@@ -139,13 +140,13 @@ class Room {
 
     checkActivity() {
         const currentTime = Date.now();
-        console.log(this.roomID, "checking activity at", currentTime);
+        logger.debug(this.roomID, "checking activity at", currentTime);
         if (
             this.editors.size === 0 &&
             this.spectators.size === 0 &&
             currentTime - this.createdAt > maxRoomTimeSpentEmpty
         ) {
-            console.log(this.roomID, "spent too long with no members, destroying");
+            logger.debug(this.roomID, "spent too long with no members, destroying");
             this.selfDestruct();
             return;
         }
@@ -155,7 +156,7 @@ class Room {
                 currentTime - spectator.lastActivity > maxMemberTimeSpentInactive
             ) {
                 spectator.leaveRoom();
-                console.log("booting", spectator.name, "based on inactivity");
+                logger.debug("booting", spectator.name, "based on inactivity");
             }
         }
         for (const editor of this.editors.values()) {
@@ -164,20 +165,20 @@ class Room {
                 currentTime - editor.lastActivity > maxMemberTimeSpentInactive
             ) {
                 editor.leaveRoom();
-                console.log("booting", editor.name, "based on inactivity");
+                logger.debug("booting", editor.name, "based on inactivity");
             }
         }
     }
 
     sendToEnd() {
-        console.log(this.roomID, "sending everyone to the end screen");
+        logger.debug(this.roomID, "sending everyone to the end screen");
         this.io.in(this.roomID).emit("stcNavigate", "/end");
     }
 
     async selfDestruct() {
-        console.log(this.roomID, "will self-destruct in 100 seconds");
+        logger.debug(this.roomID, "will self-destruct in 100 seconds");
         await sleep(100_000);
-        console.log(this.roomID, "self-destructing");
+        logger.debug(this.roomID, "self-destructing");
 
         for (const [ editorID, editor ] of this.editors.entries()) {
             this.cleanUpMember(editorID, editor);
@@ -229,12 +230,12 @@ export class PoemRoom extends Room {
     }
 
     storePoem(poemObj: Poem) {
-        console.log(this.roomID, "storing poem", poemObj.ID);
+        logger.debug(this.roomID, "storing poem", poemObj.ID);
         this.finishedWorks.push(poemObj);
     }
 
     setUpGame() {
-        console.log("setUpGame with this.editors", this.editors);
+        logger.debug("setUpGame with this.editors", this.editors);
         const nContributions = this.gameSettings["nRounds"] * this.editors.size + 2;
 
         // have each editor set their important properties
@@ -283,7 +284,7 @@ export class DrawingRoom extends Room {
     }
 
     setUpGame() {
-        console.log("setUpGame with this.editors", this.editors);
+        logger.debug("setUpGame with this.editors", this.editors);
         const nContributions = 3;
 
         // have each editor set their important properties
@@ -309,7 +310,7 @@ export class DrawingRoom extends Room {
     }
 
     storeDrawing(drawingObj: Drawing) {
-        console.log(this.roomID, "storing drawing", drawingObj.ID);
+        logger.debug(this.roomID, "storing drawing", drawingObj.ID);
         this.finishedWorks.push(drawingObj);
     }
 
@@ -323,7 +324,7 @@ export class DrawingRoom extends Room {
     // this.finishedWorks is an array of Drawing. drawing.panels is Set<IPanel>
     // on IPanel, content is Point[][]
     sendCompletedDrawings() {
-        console.log("sendCompletedDrawings ;))))))))))");
+        logger.debug("sendCompletedDrawings ;))))))))))");
         const iPanels = Array.from(this.finishedWorks as Drawing[]).map((drawing) => Array.from(drawing?.panels));
         const completedDrawings = Array.from(iPanels).map((iPanel) => iPanel.map(panel => panel?.content));
 

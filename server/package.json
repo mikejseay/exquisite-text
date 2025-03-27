@@ -12,6 +12,8 @@
     "nodemon": "^2.0.19",
     "pg": "^8.7.3",
     "pg-hstore": "^2.3.4",
+    "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
     "react-modal": "^3.15.1",

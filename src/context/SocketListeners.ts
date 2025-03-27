@@ -1,7 +1,7 @@
 import { socket } from "../components/SocketHandler";
 import { IGameSettingsInfo, ILine, IPanel, ISocketInfoListeners, IUserTableInfo, Medium, Point } from "../types";
 import { shortDur } from "../constants";
-import { logger } from "../utils/loggerUtils";
+import { logger } from "../utilities/loggerUtils";
 
 
 export const socketListeners = ({
