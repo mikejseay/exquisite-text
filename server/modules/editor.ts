@@ -1,6 +1,7 @@
 import { isNil } from "es-toolkit";
 import { Server, Socket } from "socket.io";
 import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid for lines
+import * as dotenv from "dotenv";
 import {
     ClientToServerEvents,
     GameState,
@@ -14,13 +15,14 @@ import {
 } from "../../src/types";
 import { storePoem } from "../queries";
 import { lineSepString } from "../../src/constants";
-
 import { roomIDToRoom } from "./globals";
 import type { Drawing, Poem } from "./collaboration";
 import Member from "./member";
 import { getEditorSocketID, getRoom, sendCollaborationContributionsInfo } from "../utilities/socketUtils";
 import { DrawingRoom, PoemRoom } from "./room";
 import { logger } from "../utilities/loggerUtils";
+
+dotenv.config({ path: __dirname + "/../.env" });
 
 class Editor extends Member {
     targetEditorID: string;

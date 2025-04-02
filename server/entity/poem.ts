@@ -1,4 +1,9 @@
 import { DataTypes, Sequelize } from "sequelize";
+import * as dotenv from "dotenv";
+
+dotenv.config({ path: __dirname + "/../.env" });
+
+console.log(process.env);
 
 const isProduction = process.env.NODE_ENV === "production";
 const connectionString = `postgres://${process.env.PG_USER}:${process.env.PG_PASSWORD}@${process.env.PG_HOST}:${process.env.PG_PORT}/${process.env.PG_DATABASE}`;

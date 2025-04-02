@@ -2,6 +2,7 @@
 
 import { Server } from "socket.io";
 
+import { logger } from "./utilities/loggerUtils";
 import type {
     ClientToServerEvents,
     InterServerEvents,

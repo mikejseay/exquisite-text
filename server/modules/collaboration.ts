@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import * as dotenv from "dotenv";
 import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid for lines
 import {
     ClientToServerEvents,
@@ -12,6 +13,9 @@ import {
 import { storeLine } from "../queries";
 import { logger } from "../utilities/loggerUtils";
 
+dotenv.config({ path: __dirname + "/../.env" });
+
+console.log(process.env);
 class Collaboration {
     io: Server<
         ClientToServerEvents,
