@@ -17,11 +17,21 @@ import { ScaleDirection, pixelRatio, scalePoints } from "../../utilities/scaleUt
 import { aboveCanvasHeight } from "../../constants";
 
 /* // TODO:
-    * Remove egregious logging
+    * Change buttons at bottom to contained, and tweak MUI theme files colors so inherit color looks good
+        in dark and light mode, center buttons horizontally, add padding between buttons and between buttons
+        and canvas. Also make sure mouseover color picker is consistent cursor type in all areas of button
+    * Pass button at bottom, consistent with exquisite text and with other buttons?
     * Conduct iPad testing, especially with color picker
     * Make UI Pretty and cohesive, polish, make color picker similar look/feel to 
         eraser/undo/redo buttons
     * General code quality - not multiple components in MultipleDrawings.tsx
+    * One player two drawings, it should alternate between drawings
+    * Two players two drawings, one drawing is complete, player gets no visual feedback that
+        they're waiting on the other player
+    * Spectator view currently defaults to carousel, but if enough real estate is available
+        We could consider laying them out as two columns
+    * Spectator and end screen views
+    * Lobby vertically centered, probably too far down the page
 */
 
 type ExtendedTouch = Touch & {
@@ -358,16 +368,27 @@ const Canvas: React.FC = () => {
                 Sorry, your browser is too old for this demo.
             </canvas>
             <div style={{ marginBottom: "10px" }}>
-                <label htmlFor="color-picker">Stroke Color:</label>
-                <input
-                    type="color"
-                    id="color-picker"
-                    value={strokeColor}
-                    onChange={(e) => setStrokeColor(e.target.value)}
-                    style={{ accentColor: DEFAULT_COLOR }}
-                    disabled={isEraserActive}
-                />
                 <Button
+                    disabled={!editorActive || isEraserActive}
+                    variant={isEraserActive
+                        ? "contained"
+                        : "outlined"}
+                    color="inherit"
+                    sx={{ maxHeight: 36.5 }}
+                >
+                    <input
+                        type="color"
+                        id="color-picker"
+                        value={strokeColor}
+                        onChange={(e) => setStrokeColor(e.target.value)}
+                        style={{ accentColor: DEFAULT_COLOR }}
+                        disabled={isEraserActive}
+                    />
+                    <label htmlFor="color-picker">&nbsp;&nbsp;Color</label>
+                </Button>
+                <Button
+                    sx={{ minWidth: 202.15 }}
+                    disabled={!editorActive}
                     variant={isEraserActive
                         ? "contained"
                         : "outlined"}
@@ -382,7 +403,7 @@ const Canvas: React.FC = () => {
                         : "Switch to Eraser"}
                 </Button>
                 <Button
-                    disabled={localStrokeHistory.length === 0}
+                    disabled={!editorActive || localStrokeHistory.length === 0}
                     variant={isEraserActive
                         ? "contained"
                         : "outlined"}
@@ -395,10 +416,12 @@ const Canvas: React.FC = () => {
                     {"Undo"}
                 </Button>
                 <Button
-                    disabled={undidStrokeHistory.length === 0}
+                    disabled={!editorActive || undidStrokeHistory.length === 0}
+                    // variant="contained"
                     variant={isEraserActive
                         ? "contained"
                         : "outlined"}
+
                     color={isEraserActive
                         ? "primary"
                         : "inherit"}
