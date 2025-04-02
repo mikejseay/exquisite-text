@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import * as dotenv from "dotenv";
 import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid for lines
 import {
     ClientToServerEvents,
@@ -10,6 +11,9 @@ import {
     SocketData,
 } from "../../src/types";
 import { storeLine } from "../queries";
+import { logger } from "../utilities/loggerUtils";
+
+dotenv.config({ path: __dirname + "/../.env" });
 
 class Collaboration {
     io: Server<
@@ -150,7 +154,7 @@ export class Drawing extends Collaboration {
     }
 
     sendPanelEditToSpectators(value: IPanel["content"]) {
-        console.log("sendPanelEditToSpectators...", this.indexInGame, value);
+        logger.debug("sendPanelEditToSpectators...", this.indexInGame, value);
         this.io
             .in(`${this.roomID}_Spectators`)
             .emit("stcPanelEditSpectator", this.indexInGame, value);

@@ -8,7 +8,7 @@ import Tutorial from "../Tutorial";
 export function MenuButtons(): JSX.Element {
     const [ isGameScreen, setIsGameScreen ] = React.useState(false);
     const location = useLocation();
-    const library = process.env.IS_LIBRARY_ENABLED === "true"
+    const library = process.env.REACT_APP_IS_LIBRARY_ENABLED === "true"
         ? <LibraryButton />
         : null;
 

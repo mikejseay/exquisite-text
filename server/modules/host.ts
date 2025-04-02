@@ -1,5 +1,5 @@
 import Member from "./member";
-import { sendCompletedArtTestData } from "../utilities/sockets";
+import { sendCompletedArtTestData } from "../utilities/socketUtils";
 import { Medium } from "../../src/types";
 
 class Host extends Member {

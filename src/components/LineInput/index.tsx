@@ -9,6 +9,7 @@ import { ClickAwayListener, Fade } from "@mui/material";
 import WarningIcon from "@mui/icons-material/Warning";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 
+import { logger } from "../../utilities/loggerUtils";
 import { lineConstraints, lineSepString, shortDur } from "../../constants";
 import { useStateRef } from "../../helpers";
 import {
@@ -74,7 +75,7 @@ const LineInput = () => {
     React.useEffect(() => {
         setShouldDisplaySecondLine(false);
         if (editorActive) {
-            console.log("editor is being set to active");
+            logger.debug("editor is being set to active");
             setTextAreaVisible(true);
             setHelpMessage("Complete a line of poetry.");
             setPoemDoneVisible(true);

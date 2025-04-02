@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { Point } from "../../types";
 import MultipleDrawings from "../../components/MultipleDrawings";
+import { logger } from "../../utilities/loggerUtils";
 
 const CanvasSpectator: React.FC = () => {
     const { panels, panelEdits, nDrawings  } = useSocketInfo();
@@ -11,7 +12,7 @@ const CanvasSpectator: React.FC = () => {
 
     useEffect(() => {
         if (!nDrawings) return;
-        console.log({ panels, panelEdits });
+        logger.debug({ panels, panelEdits });
         // Levels //
         // Outer: Drawings
         // Panels

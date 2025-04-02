@@ -1,6 +1,8 @@
 import { socket } from "../components/SocketHandler";
 import { IGameSettingsInfo, ILine, IPanel, ISocketInfoListeners, IUserTableInfo, Medium, Point } from "../types";
 import { shortDur } from "../constants";
+import { logger } from "../utilities/loggerUtils";
+
 
 export const socketListeners = ({
     setUserInfo,
@@ -85,7 +87,7 @@ export const socketListeners = ({
 
     // IS THS LOGIC LEGIT!??@!?@!
     const receivePanelEditSpectator = (collaborationIndex: number, content: IPanel["content"]) => {
-        console.log("receivePanelEditSpectator", collaborationIndex, content);
+        logger.debug("receivePanelEditSpectator", collaborationIndex, content);
         setPanelEdits(prevPanelEdits => [
             ...prevPanelEdits.slice(0, collaborationIndex),
             content,
@@ -114,18 +116,18 @@ export const socketListeners = ({
     };
 
     const receiveEditorActive = (editorActiveFromServer: boolean) => {
-        console.log("receiveEditorActive:", { editorActiveFromServer });
+        logger.debug("receiveEditorActive:", { editorActiveFromServer });
         setEditorActive(editorActiveFromServer);
     };
 
     const receiveNavigate = (targetRoute: string) => {
-        console.log("receiveNavigate activated targeting", targetRoute);
+        logger.debug("receiveNavigate activated targeting", targetRoute);
         navigate(targetRoute);
     };
 
     // receivePanel, as it were ;)
     const receiveStrokeHistory = (strokeHistory: Point[][]) => {
-        console.log("receiveStrokeHistory activated targeting", JSON.stringify(strokeHistory));
+        logger.debug("receiveStrokeHistory activated targeting", JSON.stringify(strokeHistory));
         setStrokeHistory(strokeHistory);
     };
 
@@ -137,7 +139,7 @@ export const socketListeners = ({
     };
 
     const receiveMedium = (medium: Medium) => {
-        console.log("receiveMedium:", medium);
+        logger.debug("receiveMedium:", medium);
         setMedium(medium);
     };
 

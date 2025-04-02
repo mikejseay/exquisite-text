@@ -20,7 +20,8 @@ import {
 import { maxEditors } from "../../src/constants";
 
 import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "./globals";
-import { getRoom, getRouteForGameStateAndRole, standardReconnect } from "../utilities/sockets";
+import { getRoom, getRouteForGameStateAndRole, standardReconnect } from "../utilities/socketUtils";
+import { logger } from "../utilities/loggerUtils";
 
 // The module exports a single function poem that takes the Socket.IO server instance as a parameter.
 function sockets(
@@ -39,7 +40,7 @@ function sockets(
         // This establishes the callbacks that every socket should have access to.
 
         socket.on("ctsRecognizeDevice", (deviceID) => {
-            console.log("new socket", socket.id, "from device", deviceID);
+            logger.debug("new socket", socket.id, "from device", deviceID);
 
             const isDeviceInARoom: boolean = Object.prototype.hasOwnProperty.call(
                 deviceIDToRoomID,
@@ -48,7 +49,7 @@ function sockets(
 
             // if device not already in a room, add it to globals and exit
             if (!isDeviceInARoom) {
-                console.log("device was not in a room");
+                logger.debug("device was not in a room");
                 socketIDToDeviceID[socket.id] = deviceID; // since socket is always uuid, won't overwrite
                 deviceIDToSocketID[deviceID] = socket.id; // will overwrite previous
                 return;
@@ -58,7 +59,7 @@ function sockets(
             const roomID = deviceIDToRoomID[deviceID];
             const room = getRoom(roomID);
             if (!room) {
-                console.log("room", roomID, "not found while trying to recognize", deviceID);
+                logger.debug("room", roomID, "not found while trying to recognize", deviceID);
                 return;
             }
 
@@ -70,7 +71,7 @@ function sockets(
             } else if (spectatorDeviceIDsInRoom.includes(deviceID)) {
                 role = Role.SPECTATOR;
             } else {
-                console.log("role not identified when recognizing", deviceID);
+                logger.debug("role not identified when recognizing", deviceID);
                 return;
             }
 
@@ -81,7 +82,7 @@ function sockets(
                 member = room.spectators.get(deviceID);
             }
             if (!member) {
-                console.log("member not found");
+                logger.debug("member not found");
                 return;
             }
             standardReconnect(io, socket, member);
@@ -99,7 +100,7 @@ function sockets(
         });
 
         socket.on("ctsCreateRoomAndHost", (roomID: string, medium: Medium) => {
-            console.log("createGameHost for ", socket.id, "joining", roomID);
+            logger.debug("createGameHost for ", socket.id, "joining", roomID);
             // notice we don't add the host device to deviceIDToRoomID
             const host = new Host(
                 io,
@@ -125,11 +126,11 @@ function sockets(
             } else {
                 throw new Error("Room not defined.");
             }
-            console.log("room", roomID, "created as medium", medium, " with ", socket.id, "as host");
+            logger.debug("room", roomID, "created as medium", medium, " with ", socket.id, "as host");
         });
 
         socket.on("ctsJoinAs", (roomID: string, name: string, role: Role, isTest = false) => {
-            console.log(
+            logger.debug(
                 "socket",
                 socket.id,
                 "ctsJoinAs",
@@ -140,20 +141,20 @@ function sockets(
                 name,
             );
             if (!roomIDToRoom.has(roomID)) {
-                console.log(roomID, "does not exist");
+                logger.debug(roomID, "does not exist");
                 io.to(socket.id).emit("stcJoinError", "Room does not exist.");
                 return;
             }
             const room = roomIDToRoom.get(roomID);
-            console.log("current state of socketIDToDeviceID is", socketIDToDeviceID);
+            logger.debug("current state of socketIDToDeviceID is", socketIDToDeviceID);
             const deviceID = socketIDToDeviceID[socket.id];
             if (!room) {
-                console.log("room not found");
+                logger.debug("room not found");
                 return;
             }
             if (role === Role.EDITOR) {
                 if (room.gameState !== GameState.LOBBY) {
-                    console.log(roomID, "game already started");
+                    logger.debug(roomID, "game already started");
                     io.to(socket.id).emit(
                         "stcJoinError",
                         "Game already started. Join as spectator?",
@@ -161,7 +162,7 @@ function sockets(
                     return;
                 }
                 if (room.editors.size >= maxEditors) {
-                    console.log("trying to join as editor but it's already full");
+                    logger.debug("trying to join as editor but it's already full");
                     io.to(socket.id).emit(
                         "stcJoinError",
                         "Writer's room full. Join as spectator?",
@@ -169,7 +170,7 @@ function sockets(
                     return;
                 }
                 deviceIDToRoomID[deviceID] = roomID;
-                console.log("about to make editor obj with deviceID", deviceID, "and name", name);
+                logger.debug("about to make editor obj with deviceID", deviceID, "and name", name);
 
                 let editor: PoemEditor | DrawingEditor | null = null;
                 if (room.medium == Medium.POETRY) {
@@ -183,7 +184,7 @@ function sockets(
 
                 io.to(socket.id).emit("stcMedium", room.medium);
 
-                console.log("editor object created with deviceID", editor.deviceID);
+                logger.debug("editor object created with deviceID", editor.deviceID);
                 editor.joinRoom();
                 // If *joining* a game as an editor, the only possibility is the lobby
                 if (!isTest) {
@@ -203,12 +204,12 @@ function sockets(
                     throw new Error("Unknown medium type.");
                 }
 
-                console.log("spectator object created with deviceID", spectator.deviceID);
+                logger.debug("spectator object created with deviceID", spectator.deviceID);
                 spectator.joinRoom();
                 // If joining a game as spectator, we can go to any screen
                 if (!isTest) {
                     const targetRoute = getRouteForGameStateAndRole(room.gameState, Role.SPECTATOR);
-                    console.log("navigating spectator to", targetRoute);
+                    logger.debug("navigating spectator to", targetRoute);
                     io.to(socket.id).emit("stcNavigate", targetRoute);
                 }
                 room.addSpectator(deviceID, spectator);
