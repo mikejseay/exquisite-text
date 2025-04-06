@@ -1,6 +1,7 @@
 // src/screens/Canvas/index.tsx
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Button from "@mui/material/Button";
+import Slider from "@mui/material/Slider";
 import { useTheme } from "@mui/material/styles";
 import { debounce } from "es-toolkit";
 import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
@@ -35,13 +36,12 @@ import { aboveCanvasHeight } from "../../constants";
 */
 
 type ExtendedTouch = Touch & {
-    force?: number;
-    touchType?: string;
+  force?: number;
+  touchType?: string;
 };
 
 const DEFAULT_LINE_WIDTH = 8;
 export const OVERLAP = 0.2;
-
 const DEFAULT_PRESSURE = 0.1;
 
 export const PANEL_HEIGHT_MIN = 300; // retina is double
@@ -50,7 +50,6 @@ export const PANEL_ASPECT_RATIO = PANEL_WIDTH_MIN / PANEL_HEIGHT_MIN;
 export const DRAWING_HEIGHT_MIN = 3 * PANEL_HEIGHT_MIN - 2 * OVERLAP * PANEL_HEIGHT_MIN;
 export const DRAWING_WIDTH_MIN = PANEL_WIDTH_MIN;
 export const DRAWING_ASPECT_RATIO = DRAWING_WIDTH_MIN / DRAWING_HEIGHT_MIN;
-
 
 const Canvas: React.FC = () => {
     const theme = useTheme();
@@ -72,6 +71,9 @@ const Canvas: React.FC = () => {
     const [ isEraserActive, setIsEraserActive ] = useState<boolean>(false);
     const [ scaleFactor, setScaleFactor ] = useState<number>(1);
     const [ triggerRedraw, setTriggerRedraw ] = useState<number>(0);
+    const [ customLineWidth, setCustomLineWidth ] = useState<number>(DEFAULT_LINE_WIDTH);
+    const [ shouldShowLineWidthSlider, setShouldShowLineWidthSlider ] = useState<boolean>(false);
+  
     const localStrokeHistoryRef = useRef<Point[][]>(localStrokeHistory);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const eraserResolvedColor = theme.palette.background.default;
@@ -87,7 +89,6 @@ const Canvas: React.FC = () => {
         const handleResize = () => {
             const canvas = canvasRef.current;
             if (!canvas) return;
-
             const context = canvas.getContext("2d");
             if (!context) return;
 
@@ -120,7 +121,6 @@ const Canvas: React.FC = () => {
         }, 200);
 
         handleResize();
-
         window.addEventListener("resize", debouncedHandleResize);
 
         return () => {
@@ -134,7 +134,6 @@ const Canvas: React.FC = () => {
         setPassEnabled(!!editorActive);
         const canvas = canvasRef.current;
         if (!canvas) return;
-
         const context = canvas.getContext("2d");
         if (!context) return;
 
@@ -193,8 +192,9 @@ const Canvas: React.FC = () => {
             if (!context) return;
 
             const canvasBounds = canvas.getBoundingClientRect();
+            const isTouch = "touches" in e;
 
-            if ("touches" in e) {
+            if (isTouch) {
                 const touch = e.touches[0] as ExtendedTouch;
                 x = touch.pageX - canvasBounds.left - window.scrollX;
                 y = touch.pageY - canvasBounds.top - window.scrollY;
@@ -205,6 +205,7 @@ const Canvas: React.FC = () => {
                     }
                 }
             } else {
+                // For mouse events, override with the custom line width
                 pressure = 1.0;
                 x = e.pageX - canvasBounds.left - window.scrollX;
                 y = e.pageY - canvasBounds.top - window.scrollY;
@@ -213,7 +214,11 @@ const Canvas: React.FC = () => {
             setCoordinates({ x, y });
             setIsMousedown(true);
 
-            const computedLineWidth = Math.log(pressure + 1) * DEFAULT_LINE_WIDTH * scaleFactor;
+            // Calculate line width:
+            // Use pressure for touch events; otherwise use the user-adjusted customLineWidth.
+            const computedLineWidth = isTouch
+                ? Math.log(pressure + 1) * customLineWidth * scaleFactor
+                : customLineWidth * scaleFactor;
             setLineWidth(computedLineWidth);
             const currentColor = isEraserActive
                 ? "!e"
@@ -223,7 +228,7 @@ const Canvas: React.FC = () => {
 
             drawOnCanvas([ newPoint ], 0, context, eraserResolvedColor);
         },
-        [ allowDirect, scaleFactor, strokeColor, isEraserActive ],
+        [ allowDirect, scaleFactor, strokeColor, isEraserActive, customLineWidth ],
     );
 
     const handleMove = useCallback(
@@ -241,10 +246,10 @@ const Canvas: React.FC = () => {
             if (!context) return;
 
             const canvasBounds = canvas.getBoundingClientRect();
+            const isTouch = "touches" in e;
 
-            if ("touches" in e) {
+            if (isTouch) {
                 const touch = e.touches[0] as ExtendedTouch;
-
                 if (allowDirect || (touch && touch.touchType !== "direct")) {
                     if (touch.force && touch.force > 0) {
                         pressure = touch.force;
@@ -261,7 +266,9 @@ const Canvas: React.FC = () => {
             }
             setCoordinates({ x, y });
 
-            const computedLineWidth = Math.log(pressure + 1) * DEFAULT_LINE_WIDTH * scaleFactor;
+            const computedLineWidth = isTouch
+                ? Math.log(pressure + 1) * customLineWidth * scaleFactor
+                : customLineWidth * scaleFactor;
             setLineWidth(computedLineWidth);
             const currentColor = isEraserActive
                 ? "!e"
@@ -276,7 +283,7 @@ const Canvas: React.FC = () => {
                 return [ ...prev, newPoint ];
             });
         },
-        [ allowDirect, isMousedown, scaleFactor, strokeColor, isEraserActive ],
+        [ allowDirect, isMousedown, scaleFactor, strokeColor, isEraserActive, customLineWidth ],
     );
 
     const debouncedEmitPanel = useCallback(
@@ -304,11 +311,9 @@ const Canvas: React.FC = () => {
         const strokeHistoryMinusLastStroke = localStrokeHistory.slice(0, -1);
 
         setLocalStrokeHistory(strokeHistoryMinusLastStroke);
-
         setUndidStrokeHistory([ ...undidStrokeHistory, lastStroke ]);
-
         debouncedEmitPanel(strokeHistoryMinusLastStroke);
-        setTriggerRedraw((prev) => prev += 1);
+        setTriggerRedraw((prev) => (prev += 1));
     };
 
     const handleRedo = () => {
@@ -320,7 +325,7 @@ const Canvas: React.FC = () => {
         setLocalStrokeHistory(updatedLocalStrokeHistory);
         setUndidStrokeHistory(undidStrokeHistory.slice(0, -1));
         debouncedEmitPanel(updatedLocalStrokeHistory);
-        setTriggerRedraw((prev) => prev += 1);
+        setTriggerRedraw((prev) => (prev += 1));
     };
 
     return (
@@ -367,7 +372,7 @@ const Canvas: React.FC = () => {
                 onMouseUp={handleEnd}
                 onTouchEnd={handleEnd}
             >
-                Sorry, your browser is too old for this demo.
+        Sorry, your browser is too old for this demo.
             </canvas>
             <div
                 style={{
@@ -382,7 +387,7 @@ const Canvas: React.FC = () => {
                     disabled={!editorActive || isEraserActive}
                     variant="contained"
                     color="inherit"
-                    sx={{ maxHeight: 36.5 }}
+                    sx={{ maxHeight: "2.3rem" }}
                 >
                     <input
                         type="color"
@@ -397,7 +402,26 @@ const Canvas: React.FC = () => {
                     </label>
                 </Button>
                 <Button
-                    sx={{ minWidth: 202.15 }}
+                    disabled={!editorActive}
+                    variant="contained"
+                    color="inherit"
+                    onClick={() => setShouldShowLineWidthSlider(!shouldShowLineWidthSlider)}
+                    sx={{ minWidth: 146, maxHeight: "2.3rem" }}
+                >
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <div
+                            style={{
+                                width: `${customLineWidth}px`,
+                                height: `${customLineWidth}px`,
+                                borderRadius: "50%",
+                                backgroundColor: theme.palette.text.primary,
+                            }}
+                        />
+                        <span>Line Width</span>
+                    </div>
+                </Button>
+                <Button
+                    sx={{ minWidth: "12.635rem" }}
                     disabled={!editorActive}
                     variant="contained"
                     color={isEraserActive
@@ -419,7 +443,7 @@ const Canvas: React.FC = () => {
                     onClick={handleUndo}
                     startIcon={<UndoIcon />}
                 >
-                    Undo
+          Undo
                 </Button>
                 <Button
                     disabled={!editorActive || undidStrokeHistory.length === 0}
@@ -430,12 +454,23 @@ const Canvas: React.FC = () => {
                     onClick={handleRedo}
                     startIcon={<RedoIcon />}
                 >
-                    Redo
+          Redo
                 </Button>
             </div>
+            {shouldShowLineWidthSlider && (
+                <div style={{ width: "12.5rem", margin: "0.5rem auto" }}>
+                    <Slider
+                        value={customLineWidth}
+                        onChange={(e, value) => setCustomLineWidth(value as number)}
+                        step={1}
+                        min={1}
+                        max={20}
+                        valueLabelDisplay="auto"
+                    />
+                </div>
+            )}
         </div>
     );
 };
 
 export default Canvas;
-
