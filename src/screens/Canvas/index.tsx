@@ -350,6 +350,9 @@ const Canvas: React.FC = () => {
                     width: `${dimensions.width}px`,
                     height: `${dimensions.height}px`,
                     border: "1px solid black",
+                    backgroundColor: theme.palette.mode === "dark"
+                        ? "rgb(0,0,0)"
+                        : undefined,
                     display: "block",
                     pointerEvents: editorActive
                         ? "auto"
@@ -372,8 +375,9 @@ const Canvas: React.FC = () => {
                 onMouseUp={handleEnd}
                 onTouchEnd={handleEnd}
             >
-        Sorry, your browser is too old for this demo.
+  Sorry, your browser is too old for this demo.
             </canvas>
+
             <div
                 style={{
                     display: "flex",
