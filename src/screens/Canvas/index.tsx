@@ -353,9 +353,11 @@ const Canvas: React.FC = () => {
                         ? 1
                         : 0.5,
                     boxShadow: editorActive
-                        ? `0 0 8px 4px ${theme.palette.mode === "dark"
-                            ? "rgba(255,255,255,0.7)"
-                            : "rgba(0,0,0,0.7)"}`
+                        ? `0 0 8px 4px ${
+                            theme.palette.mode === "dark"
+                                ? "rgba(255,255,255,0.7)"
+                                : "rgba(0,0,0,0.7)"
+                        }`
                         : undefined,
                 }}
                 onMouseDown={handleStart}
@@ -367,12 +369,18 @@ const Canvas: React.FC = () => {
             >
                 Sorry, your browser is too old for this demo.
             </canvas>
-            <div style={{ marginBottom: "10px" }}>
+            <div
+                style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    margin: "0.625rem 0",
+                }}
+            >
                 <Button
                     disabled={!editorActive || isEraserActive}
-                    variant={isEraserActive
-                        ? "contained"
-                        : "outlined"}
+                    variant="contained"
                     color="inherit"
                     sx={{ maxHeight: 36.5 }}
                 >
@@ -381,17 +389,17 @@ const Canvas: React.FC = () => {
                         id="color-picker"
                         value={strokeColor}
                         onChange={(e) => setStrokeColor(e.target.value)}
-                        style={{ accentColor: DEFAULT_COLOR }}
+                        style={{ accentColor: DEFAULT_COLOR, cursor: "pointer" }}
                         disabled={isEraserActive}
                     />
-                    <label htmlFor="color-picker">&nbsp;&nbsp;Color</label>
+                    <label htmlFor="color-picker" style={{ cursor: "pointer" }}>
+                        &nbsp;&nbsp;Color
+                    </label>
                 </Button>
                 <Button
                     sx={{ minWidth: 202.15 }}
                     disabled={!editorActive}
-                    variant={isEraserActive
-                        ? "contained"
-                        : "outlined"}
+                    variant="contained"
                     color={isEraserActive
                         ? "primary"
                         : "inherit"}
@@ -404,31 +412,25 @@ const Canvas: React.FC = () => {
                 </Button>
                 <Button
                     disabled={!editorActive || localStrokeHistory.length === 0}
-                    variant={isEraserActive
-                        ? "contained"
-                        : "outlined"}
+                    variant="contained"
                     color={isEraserActive
                         ? "primary"
                         : "inherit"}
-                    onClick={() => handleUndo()}
+                    onClick={handleUndo}
                     startIcon={<UndoIcon />}
                 >
-                    {"Undo"}
+                    Undo
                 </Button>
                 <Button
                     disabled={!editorActive || undidStrokeHistory.length === 0}
-                    // variant="contained"
-                    variant={isEraserActive
-                        ? "contained"
-                        : "outlined"}
-
+                    variant="contained"
                     color={isEraserActive
                         ? "primary"
                         : "inherit"}
-                    onClick={() => handleRedo()}
+                    onClick={handleRedo}
                     startIcon={<RedoIcon />}
                 >
-                    {"Redo"}
+                    Redo
                 </Button>
             </div>
         </div>
