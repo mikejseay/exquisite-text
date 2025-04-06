@@ -18,10 +18,7 @@ import { ScaleDirection, pixelRatio, scalePoints } from "../../utilities/scaleUt
 import { aboveCanvasHeight } from "../../constants";
 
 /* // TODO:
-    * Change buttons at bottom to contained, and tweak MUI theme files colors so inherit color looks good
-        in dark and light mode, center buttons horizontally, add padding between buttons and between buttons
-        and canvas. Also make sure mouseover color picker is consistent cursor type in all areas of button
-    * Pass button at bottom, consistent with exquisite text and with other buttons?
+    * Fix bug where user changes system theme it disconnects them and they have to refresh browser
     * Conduct iPad testing, especially with color picker
     * Make UI Pretty and cohesive, polish, make color picker similar look/feel to 
         eraser/undo/redo buttons
