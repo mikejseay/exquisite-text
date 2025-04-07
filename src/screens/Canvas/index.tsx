@@ -20,9 +20,7 @@ import { aboveCanvasHeight } from "../../constants";
 /* // TODO:
     * Fix bug where user changes system theme it disconnects them and they have to refresh browser
     * Conduct iPad testing, especially with color picker
-    * Make UI Pretty and cohesive, polish, make color picker similar look/feel to 
-        eraser/undo/redo buttons
-    * General code quality - not multiple components in MultipleDrawings.tsx
+    * General code quality
     * One player two drawings, it should alternate between drawings
     * Two players two drawings, one drawing is complete, player gets no visual feedback that
         they're waiting on the other player
@@ -68,7 +66,7 @@ const Canvas: React.FC = () => {
     const [ isEraserActive, setIsEraserActive ] = useState<boolean>(false);
     const [ scaleFactor, setScaleFactor ] = useState<number>(1);
     const [ triggerRedraw, setTriggerRedraw ] = useState<number>(0);
-    const [ customLineWidth, setCustomLineWidth ] = useState<number>(DEFAULT_LINE_WIDTH);
+    const [ baseLineWidth, setBaseLineWidth ] = useState<number>(DEFAULT_LINE_WIDTH);
     const [ shouldShowLineWidthSlider, setShouldShowLineWidthSlider ] = useState<boolean>(false);
   
     const localStrokeHistoryRef = useRef<Point[][]>(localStrokeHistory);
@@ -213,8 +211,8 @@ const Canvas: React.FC = () => {
             // Calculate line width:
             // Use pressure for touch events; otherwise use the user-adjusted customLineWidth.
             const computedLineWidth = isTouch
-                ? Math.log(pressure + 1) * customLineWidth * scaleFactor
-                : customLineWidth * scaleFactor;
+                ? Math.log(pressure + 1) * baseLineWidth * scaleFactor
+                : baseLineWidth * scaleFactor;
             setLineWidth(computedLineWidth);
             const currentColor = isEraserActive
                 ? "!e"
@@ -224,7 +222,7 @@ const Canvas: React.FC = () => {
 
             drawOnCanvas([ newPoint ], 0, context, theme.palette.canvasBackground);
         },
-        [ allowDirect, scaleFactor, strokeColor, isEraserActive, customLineWidth ],
+        [ allowDirect, scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
     );
 
     const handleMove = useCallback(
@@ -263,8 +261,8 @@ const Canvas: React.FC = () => {
             setCoordinates({ x, y });
 
             const computedLineWidth = isTouch
-                ? Math.log(pressure + 1) * customLineWidth * scaleFactor
-                : customLineWidth * scaleFactor;
+                ? Math.log(pressure + 1) * baseLineWidth * scaleFactor
+                : baseLineWidth * scaleFactor;
             setLineWidth(computedLineWidth);
             const currentColor = isEraserActive
                 ? "!e"
@@ -279,7 +277,7 @@ const Canvas: React.FC = () => {
                 return [ ...prev, newPoint ];
             });
         },
-        [ allowDirect, isMousedown, scaleFactor, strokeColor, isEraserActive, customLineWidth ],
+        [ allowDirect, isMousedown, scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
     );
 
     const debouncedEmitPanel = useCallback(
@@ -409,8 +407,8 @@ const Canvas: React.FC = () => {
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                         <div
                             style={{
-                                width: `${customLineWidth}px`,
-                                height: `${customLineWidth}px`,
+                                width: `${baseLineWidth}px`,
+                                height: `${baseLineWidth}px`,
                                 borderRadius: "50%",
                                 backgroundColor: theme.palette.text.primary,
                             }}
@@ -458,8 +456,8 @@ const Canvas: React.FC = () => {
             {shouldShowLineWidthSlider && (
                 <div style={{ width: "12.5rem", margin: "0.5rem auto" }}>
                     <Slider
-                        value={customLineWidth}
-                        onChange={(e, value) => setCustomLineWidth(value as number)}
+                        value={baseLineWidth}
+                        onChange={(e, value) => setBaseLineWidth(value as number)}
                         step={1}
                         min={1}
                         max={20}
