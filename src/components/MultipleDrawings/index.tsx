@@ -33,7 +33,6 @@ export const CompletedDrawing = ({
     const animationRef = useRef<number>();
     const [ dimensions, setDimensions ] = useState({ width: DRAWING_WIDTH_MIN, height: DRAWING_HEIGHT_MIN });
     const [ scaleFactor, setScaleFactor ] = useState<number>(1);
-    const eraserResolvedColor = theme.palette.background.default;
 
     useDisableScroll();
 
@@ -129,7 +128,7 @@ export const CompletedDrawing = ({
                 );
 
                 if (strokeArray) {
-                    drawOnCanvas(strokeArray, yOffset, context, eraserResolvedColor);
+                    drawOnCanvas(strokeArray, yOffset, context, theme.palette.canvasBackground);
                     strokeHistoryIndex += 1;
                 } else {
                     panelIndex += 1;
@@ -157,7 +156,7 @@ export const CompletedDrawing = ({
                         scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor),
                         yOffset,
                         context,
-                        eraserResolvedColor,
+                        theme.palette.canvasBackground,
                     );
                 });
                 yOffset += PANEL_HEIGHT_MIN * scaleFactor * (1 - OVERLAP);

@@ -73,7 +73,6 @@ const Canvas: React.FC = () => {
   
     const localStrokeHistoryRef = useRef<Point[][]>(localStrokeHistory);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const eraserResolvedColor = theme.palette.background.default;
 
     useEffect(() => {
         localStrokeHistoryRef.current = localStrokeHistory;
@@ -139,7 +138,7 @@ const Canvas: React.FC = () => {
 
         // Redraw vectorized points
         strokeHistory?.forEach((strokeArray) =>
-            drawOnCanvas(scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor), 0, context, eraserResolvedColor),
+            drawOnCanvas(scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor), 0, context, theme.palette.canvasBackground),
         );
 
         // Clip and add snippet to canvas
@@ -159,7 +158,7 @@ const Canvas: React.FC = () => {
 
         // Redraw current additions from local editor
         localStrokeHistoryRef.current?.forEach((strokeArray, index) => {
-            drawOnCanvas(scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor), 0, context, eraserResolvedColor);
+            drawOnCanvas(scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor), 0, context, theme.palette.canvasBackground);
             logger.debug(`Redrew strokeArray #${index}`);
         });
     }, [ dimensions, scaleFactor, editorActive, passEnabled, triggerRedraw ]);
@@ -223,7 +222,7 @@ const Canvas: React.FC = () => {
             const newPoint = { x, y, lineWidth: computedLineWidth, color: currentColor };
             setPoints((prev) => [ ...prev, newPoint ]);
 
-            drawOnCanvas([ newPoint ], 0, context, eraserResolvedColor);
+            drawOnCanvas([ newPoint ], 0, context, theme.palette.canvasBackground);
         },
         [ allowDirect, scaleFactor, strokeColor, isEraserActive, customLineWidth ],
     );
@@ -275,7 +274,7 @@ const Canvas: React.FC = () => {
             setPoints((prev) => {
                 const lastPoint = prev[prev.length - 1];
                 if (lastPoint) {
-                    drawOnCanvas([ lastPoint, newPoint ], 0, context, eraserResolvedColor);
+                    drawOnCanvas([ lastPoint, newPoint ], 0, context, theme.palette.canvasBackground);
                 }
                 return [ ...prev, newPoint ];
             });
@@ -347,9 +346,7 @@ const Canvas: React.FC = () => {
                     width: `${dimensions.width}px`,
                     height: `${dimensions.height}px`,
                     border: "1px solid black",
-                    backgroundColor: theme.palette.mode === "dark"
-                        ? "rgb(0,0,0)"
-                        : undefined,
+                    backgroundColor: theme.palette.canvasBackground,
                     display: "block",
                     pointerEvents: editorActive
                         ? "auto"
@@ -372,7 +369,7 @@ const Canvas: React.FC = () => {
                 onMouseUp={handleEnd}
                 onTouchEnd={handleEnd}
             >
-  Sorry, your browser is too old for this demo.
+                Sorry, your browser is too old for this demo.
             </canvas>
 
             <div

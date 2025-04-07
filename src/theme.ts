@@ -1,5 +1,14 @@
 import { Theme, createTheme } from "@mui/material/styles";
 
+declare module "@mui/material/styles" {
+  interface Palette {
+    canvasBackground?: string;
+  }
+  interface PaletteOptions {
+    canvasBackground?: string;
+  }
+}
+
 export const getTheme = (mode: "light" | "dark"): Theme =>
     createTheme({
         palette: {
@@ -10,8 +19,11 @@ export const getTheme = (mode: "light" | "dark"): Theme =>
                         default: "#121212",
                         paper: "#1e1e1e",
                     },
+                    canvasBackground: "rgb(0,0,0)",
                 }
-                : {}),
+                : {
+                    canvasBackground: "#fff",
+                }),
         },
         components: {
             MuiButton: {
@@ -24,7 +36,6 @@ export const getTheme = (mode: "light" | "dark"): Theme =>
                     "&:hover": {
                         backgroundColor: "#616161",
                     },
-                    // Ensure the entire button shows a pointer cursor
                     cursor: "pointer",
                 }
                 : {},
