@@ -373,11 +373,7 @@ const Canvas: React.FC = () => {
                         ? 1
                         : 0.5,
                     boxShadow: editorActive
-                        ? `0 0 8px 4px ${
-                            theme.palette.mode === "dark"
-                                ? "rgba(255,255,255,0.7)"
-                                : "rgba(0,0,0,0.7)"
-                        }`
+                        ? `0 0 8px 4px ${theme.palette.canvasBoxShadow}`
                         : undefined,
                 }}
                 onMouseDown={handleStart}

@@ -177,11 +177,7 @@ export const CompletedDrawing = ({
                     width: `${dimensions.width}px`,
                     height: `${dimensions.height}px`,
                     backgroundColor: theme.palette.canvasBackground,
-                    boxShadow: `0 0 8px 4px ${
-                        theme.palette.mode === "dark"
-                            ? "rgba(255,255,255,0.7)"
-                            : "rgba(0,0,0,0.7)"
-                    }`,
+                    boxShadow: `0 0 8px 4px ${theme.palette.canvasBoxShadow}`,
                     display: "block",
                     pointerEvents: "none",
                     marginLeft: "auto",
