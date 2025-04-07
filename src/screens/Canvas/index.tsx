@@ -136,7 +136,12 @@ const Canvas: React.FC = () => {
 
         // Redraw vectorized points
         strokeHistory?.forEach((strokeArray) =>
-            drawOnCanvas(scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor), 0, context, theme.palette.canvasBackground),
+            drawOnCanvas({
+                newPoints: scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor),
+                yOffset: 0,
+                context,
+                eraserColor: theme.palette.canvasBackground,
+            }),
         );
 
         // Clip and add snippet to canvas
@@ -156,7 +161,12 @@ const Canvas: React.FC = () => {
 
         // Redraw current additions from local editor
         localStrokeHistoryRef.current?.forEach((strokeArray, index) => {
-            drawOnCanvas(scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor), 0, context, theme.palette.canvasBackground);
+            drawOnCanvas({
+                newPoints: scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor),
+                yOffset: 0,
+                context,
+                eraserColor: theme.palette.canvasBackground,
+            }),
             logger.debug(`Redrew strokeArray #${index}`);
         });
     }, [ dimensions, scaleFactor, editorActive, passEnabled, triggerRedraw ]);
@@ -220,7 +230,12 @@ const Canvas: React.FC = () => {
             const newPoint = { x, y, lineWidth: computedLineWidth, color: currentColor };
             setPoints((prev) => [ ...prev, newPoint ]);
 
-            drawOnCanvas([ newPoint ], 0, context, theme.palette.canvasBackground);
+            drawOnCanvas({
+                newPoints: [ newPoint ],
+                yOffset: 0,
+                context,
+                eraserColor: theme.palette.canvasBackground,
+            });
         },
         [ allowDirect, scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
     );
@@ -272,7 +287,12 @@ const Canvas: React.FC = () => {
             setPoints((prev) => {
                 const lastPoint = prev[prev.length - 1];
                 if (lastPoint) {
-                    drawOnCanvas([ lastPoint, newPoint ], 0, context, theme.palette.canvasBackground);
+                    drawOnCanvas({
+                        newPoints: [ lastPoint, newPoint ],
+                        yOffset: 0,
+                        context,
+                        eraserColor: theme.palette.canvasBackground,
+                    });
                 }
                 return [ ...prev, newPoint ];
             });

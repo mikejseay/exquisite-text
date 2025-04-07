@@ -126,7 +126,12 @@ export const CompletedDrawing = ({
                 );
 
                 if (strokeArray) {
-                    drawOnCanvas(strokeArray, yOffset, context, theme.palette.canvasBackground);
+                    drawOnCanvas({
+                        newPoints: strokeArray,
+                        yOffset,
+                        context,
+                        eraserColor: theme.palette.canvasBackground,
+                    });
                     strokeHistoryIndex += 1;
                 } else {
                     panelIndex += 1;
@@ -150,12 +155,12 @@ export const CompletedDrawing = ({
             let yOffset = 0;
             completedDrawing.forEach((strokeHistory) => {
                 strokeHistory.forEach((strokeArray) => {
-                    drawOnCanvas(
-                        scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor),
+                    drawOnCanvas({
+                        newPoints: scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor),
                         yOffset,
                         context,
-                        theme.palette.canvasBackground,
-                    );
+                        eraserColor: theme.palette.canvasBackground,
+                    });
                 });
                 yOffset += PANEL_HEIGHT_MIN * scaleFactor * (1 - OVERLAP);
             });
@@ -171,10 +176,14 @@ export const CompletedDrawing = ({
                 style={{
                     width: `${dimensions.width}px`,
                     height: `${dimensions.height}px`,
-                    border: "1px solid black",
+                    backgroundColor: theme.palette.canvasBackground,
+                    boxShadow: `0 0 8px 4px ${
+                        theme.palette.mode === "dark"
+                            ? "rgba(255,255,255,0.7)"
+                            : "rgba(0,0,0,0.7)"
+                    }`,
                     display: "block",
                     pointerEvents: "none",
-                    opacity: 1,
                     marginLeft: "auto",
                     marginRight: "auto",
                 }}

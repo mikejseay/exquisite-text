@@ -21,12 +21,17 @@ export function setCanvasProperties(context: CanvasRenderingContext2D) {
     context.lineJoin = "round";
 }
 
-export function drawOnCanvas(
-    newPoints: Point[],
+export function drawOnCanvas({
+    newPoints,
     yOffset = 0,
+    context,
+    eraserColor,
+}: {
+    newPoints: Point[],
+    yOffset?: number,
     context: CanvasRenderingContext2D,
     eraserColor?: string,
-) {
+}) {
     setCanvasProperties(context);
   
     // Determine the stroke color.
@@ -39,7 +44,7 @@ export function drawOnCanvas(
                 ? "#000"
                 : "#fff");
     }
-  
+
     context.strokeStyle = currentColor;
     context.fillStyle = currentColor;
 
