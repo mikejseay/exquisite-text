@@ -1,13 +1,9 @@
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import * as React from "react";
 import ReactDOM from "react-dom/client";
-import {
-    BrowserRouter,
-    Route,
-    Routes,
-} from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import "./index.css";
 import App from "./components/App";
@@ -25,13 +21,16 @@ import reportWebVitals from "./reportWebVitals";
 import SocketHandler from "./components/SocketHandler";
 import CanvasSpectator from "./screens/CanvasSpectator";
 import { Medium } from "./types";
+import { getTheme } from "./theme";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement,
 );
-const noMatchRouteElement = <main style={{ textAlign: "center" }}>
-    <p>There&apos;s nothing here!</p>
-</main>;
+const noMatchRouteElement = (
+    <main style={{ textAlign: "center" }}>
+        <p>There&apos;s nothing here!</p>
+    </main>
+);
 
 function isComponentEnabled(element: JSX.Element): JSX.Element | null {
     return process.env.REACT_APP_IS_LIBRARY_ENABLED === "true"
@@ -43,14 +42,9 @@ function Root() {
     const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
 
     const theme = React.useMemo(
-        () =>
-            createTheme({
-                palette: {
-                    mode: prefersDarkMode
-                        ? "dark"
-                        : "light",
-                },
-            }),
+        () => getTheme(prefersDarkMode
+            ? "dark"
+            : "light"),
         [ prefersDarkMode ],
     );
 
@@ -89,9 +83,7 @@ function Root() {
     );
 }
 
-root.render(
-    <Root />,
-);
+root.render(<Root />);
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
