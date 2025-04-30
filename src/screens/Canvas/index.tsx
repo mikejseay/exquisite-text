@@ -18,6 +18,7 @@ import { ScaleDirection, pixelRatio, scalePoints } from "../../utilities/scaleUt
 import { aboveCanvasHeight } from "../../constants";
 
 /* // TODO:
+    * Line Width slider pops above, in-place, or the left instead of below (left would be really nice)
     * Fix bug where user changes system theme it disconnects them and they have to refresh browser
     * Conduct iPad testing, especially with color picker
     * General code quality
@@ -68,7 +69,7 @@ const Canvas: React.FC = () => {
     const [ triggerRedraw, setTriggerRedraw ] = useState<number>(0);
     const [ baseLineWidth, setBaseLineWidth ] = useState<number>(DEFAULT_LINE_WIDTH);
     const [ shouldShowLineWidthSlider, setShouldShowLineWidthSlider ] = useState<boolean>(false);
-  
+
     const localStrokeHistoryRef = useRef<Point[][]>(localStrokeHistory);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -169,7 +170,7 @@ const Canvas: React.FC = () => {
             }),
             logger.debug(`Redrew strokeArray #${index}`);
         });
-    }, [ dimensions, scaleFactor, editorActive, passEnabled, triggerRedraw ]);
+    }, [ dimensions, scaleFactor, editorActive, passEnabled, triggerRedraw, strokeHistory ]);
 
     function passTurn() {
         emitSendPanel(localStrokeHistory);
