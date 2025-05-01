@@ -18,7 +18,6 @@ import { ScaleDirection, pixelRatio, scalePoints } from "../../utilities/scaleUt
 import { aboveCanvasHeight } from "../../constants";
 
 /* // TODO:
-    * Line Width slider pops above, in-place, or the left instead of below (left would be really nice)
     * Fix bug where user changes system theme it disconnects them and they have to refresh browser
     * Conduct iPad testing, especially with color picker
     * General code quality
@@ -396,6 +395,46 @@ const Canvas: React.FC = () => {
                     margin: "0.625rem 0",
                 }}
             >
+                <div style={{ position: "relative", display: "inline-block" }}>
+                    <Button
+                        disabled={!editorActive}
+                        variant="contained"
+                        color="inherit"
+                        onClick={() => setShouldShowLineWidthSlider(!shouldShowLineWidthSlider)}
+                        sx={{ minWidth: 146, maxHeight: "2.3rem" }}
+                    >
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <div
+                                style={{
+                                    width: `${baseLineWidth}px`,
+                                    height: `${baseLineWidth}px`,
+                                    borderRadius: "50%",
+                                    backgroundColor: theme.palette.text.primary,
+                                }}
+                            />
+                            <span>Line Width</span>
+                        </div>
+                    </Button>
+                    {shouldShowLineWidthSlider && (
+                        <div style={{
+                            position: "absolute",
+                            right: "100%",
+                            top: "50%",
+                            transform: "translateY(-40%)",
+                            width: "12.5rem",
+                            marginRight: "0.5rem",
+                        }}>
+                            <Slider
+                                value={baseLineWidth}
+                                onChange={(e, value) => setBaseLineWidth(value as number)}
+                                step={1}
+                                min={1}
+                                max={20}
+                                valueLabelDisplay="auto"
+                            />
+                        </div>
+                    )}
+                </div>
                 <Button
                     disabled={!editorActive || isEraserActive}
                     variant="contained"
@@ -413,25 +452,6 @@ const Canvas: React.FC = () => {
                     <label htmlFor="color-picker" style={{ cursor: "pointer" }}>
                         &nbsp;&nbsp;Color
                     </label>
-                </Button>
-                <Button
-                    disabled={!editorActive}
-                    variant="contained"
-                    color="inherit"
-                    onClick={() => setShouldShowLineWidthSlider(!shouldShowLineWidthSlider)}
-                    sx={{ minWidth: 146, maxHeight: "2.3rem" }}
-                >
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <div
-                            style={{
-                                width: `${baseLineWidth}px`,
-                                height: `${baseLineWidth}px`,
-                                borderRadius: "50%",
-                                backgroundColor: theme.palette.text.primary,
-                            }}
-                        />
-                        <span>Line Width</span>
-                    </div>
                 </Button>
                 <Button
                     sx={{ minWidth: "12.635rem" }}
@@ -456,7 +476,7 @@ const Canvas: React.FC = () => {
                     onClick={handleUndo}
                     startIcon={<UndoIcon />}
                 >
-          Undo
+                Undo
                 </Button>
                 <Button
                     disabled={!editorActive || undidStrokeHistory.length === 0}
@@ -467,21 +487,9 @@ const Canvas: React.FC = () => {
                     onClick={handleRedo}
                     startIcon={<RedoIcon />}
                 >
-          Redo
+                Redo
                 </Button>
             </div>
-            {shouldShowLineWidthSlider && (
-                <div style={{ width: "12.5rem", margin: "0.5rem auto" }}>
-                    <Slider
-                        value={baseLineWidth}
-                        onChange={(e, value) => setBaseLineWidth(value as number)}
-                        step={1}
-                        min={1}
-                        max={20}
-                        valueLabelDisplay="auto"
-                    />
-                </div>
-            )}
         </div>
     );
 };
