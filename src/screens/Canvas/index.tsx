@@ -18,6 +18,7 @@ import { ScaleDirection, pixelRatio, scalePoints } from "../../utilities/scaleUt
 import { aboveCanvasHeight } from "../../constants";
 
 /* // TODO:
+    * "How to play" modal for the drawing version of the game?
     * Fix bug where user changes system theme it disconnects them and they have to refresh browser
     * Conduct iPad testing, especially with color picker
     * General code quality
