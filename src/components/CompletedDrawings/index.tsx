@@ -65,6 +65,7 @@ export const CompletedDrawing = ({
             // Viewport more landscape than drawing
             } else {
                 logger.debug("else");
+                // DRAWING_HEIGHT_MIN = 780
                 newHeight = Math.max(viewportHeight, DRAWING_HEIGHT_MIN);
                 newWidth = Math.max(newHeight * DRAWING_ASPECT_RATIO, DRAWING_WIDTH_MIN);
                 logger.debug({ viewportHeight, DRAWING_HEIGHT_MIN, newHeight, DRAWING_ASPECT_RATIO, DRAWING_WIDTH_MIN });
