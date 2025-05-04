@@ -511,7 +511,6 @@ export class DrawingEditor extends Editor {
     currentlyOnLastContribution() {
         const drawing = this.contributionQueue[0] as Drawing;
         if (drawing) {
-            logger.debug({ drawing });
             logger.debug("drawing.panels:", drawing?.panels);
             const currentLength = drawing?.panels
                 ? drawing?.panels?.size

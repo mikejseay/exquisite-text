@@ -18,16 +18,18 @@ import { ScaleDirection, pixelRatio, scalePoints } from "../../utilities/scaleUt
 import { aboveCanvasHeight } from "../../constants";
 
 /* // TODO:
-    * Line Width slider pops above, in-place, or the left instead of below (left would be really nice)
+    * In highly-portrait viewport situations, the line width slider overflows out of view to the left
+    * On iPad, the default line width of using your finger after using pencil is extremely small,
+        but a single dot is very large
+    * End screen aspect ratio not getting set up correctly for small macbook / iPad screen in landscape
+    * "How to play" modal for the drawing version of the game?
     * Fix bug where user changes system theme it disconnects them and they have to refresh browser
-    * Conduct iPad testing, especially with color picker
     * General code quality
     * One player two drawings, it should alternate between drawings
     * Two players two drawings, one drawing is complete, player gets no visual feedback that
         they're waiting on the other player
     * Spectator view currently defaults to carousel, but if enough real estate is available
         We could consider laying them out as two columns
-    * Spectator and end screen views
     * Lobby vertically centered, probably too far down the page
 */
 
@@ -42,9 +44,12 @@ const DEFAULT_PRESSURE = 0.1;
 
 export const PANEL_HEIGHT_MIN = 300; // retina is double
 export const PANEL_WIDTH_MIN = 667;
+// 2.23
 export const PANEL_ASPECT_RATIO = PANEL_WIDTH_MIN / PANEL_HEIGHT_MIN;
-export const DRAWING_HEIGHT_MIN = 3 * PANEL_HEIGHT_MIN - 2 * OVERLAP * PANEL_HEIGHT_MIN;
+// 780 px
+export const DRAWING_HEIGHT_MIN = (3 - 2 * OVERLAP) * PANEL_HEIGHT_MIN;
 export const DRAWING_WIDTH_MIN = PANEL_WIDTH_MIN;
+// 0.86
 export const DRAWING_ASPECT_RATIO = DRAWING_WIDTH_MIN / DRAWING_HEIGHT_MIN;
 
 const Canvas: React.FC = () => {
@@ -84,7 +89,8 @@ const Canvas: React.FC = () => {
         const handleResize = () => {
             const canvas = canvasRef.current;
             if (!canvas) return;
-            const context = canvas.getContext("2d");
+            // Warning in browser log regarding willReadFrequently went away after adding as true
+            const context = canvas.getContext("2d", { willReadFrequently: true });
             if (!context) return;
 
             // Calculate new dimensions
@@ -129,7 +135,7 @@ const Canvas: React.FC = () => {
         setPassEnabled(!!editorActive);
         const canvas = canvasRef.current;
         if (!canvas) return;
-        const context = canvas.getContext("2d");
+        const context = canvas.getContext("2d", { willReadFrequently: true });
         if (!context) return;
 
         // Clear canvas
@@ -193,7 +199,7 @@ const Canvas: React.FC = () => {
 
             const canvas = canvasRef.current;
             if (!canvas) return;
-            const context = canvas.getContext("2d");
+            const context = canvas.getContext("2d", { willReadFrequently: true });
             if (!context) return;
 
             const canvasBounds = canvas.getBoundingClientRect();
@@ -252,7 +258,7 @@ const Canvas: React.FC = () => {
 
             const canvas = canvasRef.current;
             if (!canvas) return;
-            const context = canvas.getContext("2d");
+            const context = canvas.getContext("2d", { willReadFrequently: true });
             if (!context) return;
 
             const canvasBounds = canvas.getBoundingClientRect();
@@ -344,7 +350,7 @@ const Canvas: React.FC = () => {
     };
 
     return (
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div className={"canvas-plus-controls"} style={{ display: "flex", flexDirection: "column" }}>
             <Button
                 disabled={!passEnabled || isDrawingComplete}
                 onClick={onLastContribution
@@ -388,6 +394,7 @@ const Canvas: React.FC = () => {
             </canvas>
 
             <div
+                className={"canvas-control-container"}
                 style={{
                     display: "flex",
                     justifyContent: "center",
@@ -396,6 +403,46 @@ const Canvas: React.FC = () => {
                     margin: "0.625rem 0",
                 }}
             >
+                <div className={"line-width-control"} style={{ position: "relative", display: "inline-block" }}>
+                    <Button
+                        disabled={!editorActive}
+                        variant="contained"
+                        color="inherit"
+                        onClick={() => setShouldShowLineWidthSlider(!shouldShowLineWidthSlider)}
+                        sx={{ minWidth: 146, maxHeight: "2.3rem" }}
+                    >
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <div
+                                style={{
+                                    width: `${baseLineWidth}px`,
+                                    height: `${baseLineWidth}px`,
+                                    borderRadius: "50%",
+                                    backgroundColor: theme.palette.text.primary,
+                                }}
+                            />
+                            <span>Line Width</span>
+                        </div>
+                    </Button>
+                    {shouldShowLineWidthSlider && (
+                        <div style={{
+                            position: "absolute",
+                            right: "100%",
+                            top: "50%",
+                            transform: "translateY(-40%)",
+                            width: "12.5rem",
+                            marginRight: "0.5rem",
+                        }}>
+                            <Slider
+                                value={baseLineWidth}
+                                onChange={(e, value) => setBaseLineWidth(value as number)}
+                                step={1}
+                                min={1}
+                                max={20}
+                                valueLabelDisplay="auto"
+                            />
+                        </div>
+                    )}
+                </div>
                 <Button
                     disabled={!editorActive || isEraserActive}
                     variant="contained"
@@ -413,25 +460,6 @@ const Canvas: React.FC = () => {
                     <label htmlFor="color-picker" style={{ cursor: "pointer" }}>
                         &nbsp;&nbsp;Color
                     </label>
-                </Button>
-                <Button
-                    disabled={!editorActive}
-                    variant="contained"
-                    color="inherit"
-                    onClick={() => setShouldShowLineWidthSlider(!shouldShowLineWidthSlider)}
-                    sx={{ minWidth: 146, maxHeight: "2.3rem" }}
-                >
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <div
-                            style={{
-                                width: `${baseLineWidth}px`,
-                                height: `${baseLineWidth}px`,
-                                borderRadius: "50%",
-                                backgroundColor: theme.palette.text.primary,
-                            }}
-                        />
-                        <span>Line Width</span>
-                    </div>
                 </Button>
                 <Button
                     sx={{ minWidth: "12.635rem" }}
@@ -456,7 +484,7 @@ const Canvas: React.FC = () => {
                     onClick={handleUndo}
                     startIcon={<UndoIcon />}
                 >
-          Undo
+                Undo
                 </Button>
                 <Button
                     disabled={!editorActive || undidStrokeHistory.length === 0}
@@ -467,21 +495,9 @@ const Canvas: React.FC = () => {
                     onClick={handleRedo}
                     startIcon={<RedoIcon />}
                 >
-          Redo
+                Redo
                 </Button>
             </div>
-            {shouldShowLineWidthSlider && (
-                <div style={{ width: "12.5rem", margin: "0.5rem auto" }}>
-                    <Slider
-                        value={baseLineWidth}
-                        onChange={(e, value) => setBaseLineWidth(value as number)}
-                        step={1}
-                        min={1}
-                        max={20}
-                        valueLabelDisplay="auto"
-                    />
-                </div>
-            )}
         </div>
     );
 };
