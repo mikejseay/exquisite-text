@@ -350,7 +350,7 @@ const Canvas: React.FC = () => {
     };
 
     return (
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div className={"canvas-plus-controls"} style={{ display: "flex", flexDirection: "column" }}>
             <Button
                 disabled={!passEnabled || isDrawingComplete}
                 onClick={onLastContribution
@@ -394,6 +394,7 @@ const Canvas: React.FC = () => {
             </canvas>
 
             <div
+                className={"canvas-control-container"}
                 style={{
                     display: "flex",
                     justifyContent: "center",
@@ -402,7 +403,7 @@ const Canvas: React.FC = () => {
                     margin: "0.625rem 0",
                 }}
             >
-                <div style={{ position: "relative", display: "inline-block" }}>
+                <div className={"line-width-control"} style={{ position: "relative", display: "inline-block" }}>
                     <Button
                         disabled={!editorActive}
                         variant="contained"
