@@ -40,7 +40,7 @@ type ExtendedTouch = Touch & {
 
 const DEFAULT_LINE_WIDTH = 8;
 export const OVERLAP = 0.2;
-const DEFAULT_PRESSURE = 0.1;
+const DEFAULT_PRESSURE = 0.5;
 
 export const PANEL_HEIGHT_MIN = 300; // retina is double
 export const PANEL_WIDTH_MIN = 667;
@@ -187,7 +187,7 @@ const Canvas: React.FC = () => {
 
     const handleStart = useCallback(
         (e: React.MouseEvent | React.TouchEvent) => {
-            let pressure = 0;
+            let pressure = DEFAULT_PRESSURE;
             let x = 0;
             let y = 0;
 
@@ -218,13 +218,11 @@ const Canvas: React.FC = () => {
 
             // Calculate line width:
             // Use pressure for touch events; otherwise use the user-adjusted customLineWidth.
-            const computedLineWidth = isTouch
-                ? Math.log(pressure + 1) * baseLineWidth * scaleFactor
-                : baseLineWidth * scaleFactor;
-            const currentColor = isEraserActive
+            const lineWidth = Math.log(pressure + 1) * baseLineWidth * scaleFactor;
+            const color = isEraserActive
                 ? "!e"
                 : strokeColor;
-            const newPoint = { x, y, lineWidth: computedLineWidth, color: currentColor };
+            const newPoint = { x, y, lineWidth, color };
             setPoints((prev) => [ ...prev, newPoint ]);
 
             drawOnCanvas({
@@ -242,7 +240,7 @@ const Canvas: React.FC = () => {
             if (!isMousedown) return;
             e.preventDefault();
 
-            let pressure = 0;
+            let pressure = DEFAULT_PRESSURE;
             let x = 0;
             let y = 0;
 
@@ -269,13 +267,11 @@ const Canvas: React.FC = () => {
                 y = e.pageY - canvasBounds.top - window.scrollY;
             }
 
-            const computedLineWidth = isTouch
-                ? Math.log(pressure + 1) * baseLineWidth * scaleFactor
-                : baseLineWidth * scaleFactor;
-            const currentColor = isEraserActive
+            const lineWidth = Math.log(pressure + 1) * baseLineWidth * scaleFactor;
+            const color = isEraserActive
                 ? "!e"
                 : strokeColor;
-            const newPoint = { x, y, lineWidth: computedLineWidth, color: currentColor };
+            const newPoint = { x, y, lineWidth, color };
 
             setPoints((prev) => {
                 const lastPoint = prev[prev.length - 1];
@@ -399,7 +395,7 @@ const Canvas: React.FC = () => {
                         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                             <div
                                 style={{
-                                    width: `${baseLineWidth}px`,
+                                    width: `${baseLineWidth}px`, // TODO: scale with scaleFactor * 0.5?
                                     height: `${baseLineWidth}px`,
                                     borderRadius: "50%",
                                     backgroundColor: theme.palette.text.primary,
