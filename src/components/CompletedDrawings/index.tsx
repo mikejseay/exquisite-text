@@ -114,8 +114,8 @@ export const CompletedDrawing = ({
             const totalPanels = completedDrawing.length;
 
             const draw = () => {
-                if (panelIndex >= totalPanels) {
-                    cancelAnimationFrame(animationRef.current!);
+                if (animationRef.current && panelIndex >= totalPanels) {
+                    cancelAnimationFrame(animationRef.current);
                     return;
                 }
 

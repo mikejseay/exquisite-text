@@ -60,13 +60,7 @@ const Canvas: React.FC = () => {
     const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
     const [ undidStrokeHistory, setUndidStrokeHistory ] = useState<Point[][]>([]);
     const [ isMousedown, setIsMousedown ] = useState(false);
-    const [ allowDirect, setAllowDirect ] = useState(true);
     const [ passEnabled, setPassEnabled ] = useState(false);
-    const [ lineWidth, setLineWidth ] = useState(0);
-    const [ drawType, setDrawType ] = useState<"fill" | "stroke" | "noDrawYet">("noDrawYet");
-    const [ player, setPlayer ] = useState<number>(0);
-    const [ coordinates, setCoordinates ] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-    const [ eventPressure, setEventPressure ] = useState(DEFAULT_PRESSURE);
     const [ dimensions, setDimensions ] = useState({ width: PANEL_WIDTH_MIN, height: PANEL_HEIGHT_MIN });
     const [ strokeColor, setStrokeColor ] = useState<string>(DEFAULT_COLOR);
     const [ isEraserActive, setIsEraserActive ] = useState<boolean>(false);
@@ -193,7 +187,7 @@ const Canvas: React.FC = () => {
 
     const handleStart = useCallback(
         (e: React.MouseEvent | React.TouchEvent) => {
-            let pressure = DEFAULT_PRESSURE;
+            let pressure = 0;
             let x = 0;
             let y = 0;
 
@@ -209,20 +203,17 @@ const Canvas: React.FC = () => {
                 const touch = e.touches[0] as ExtendedTouch;
                 x = touch.pageX - canvasBounds.left - window.scrollX;
                 y = touch.pageY - canvasBounds.top - window.scrollY;
-                if (allowDirect || (touch && touch.touchType !== "direct")) {
+                if (touch && touch.touchType !== "direct") {
                     if (touch.force && touch.force > 0) {
                         pressure = touch.force;
-                        setEventPressure(pressure);
                     }
                 }
             } else {
                 // For mouse events, override with the custom line width
-                pressure = 1.0;
                 x = e.pageX - canvasBounds.left - window.scrollX;
                 y = e.pageY - canvasBounds.top - window.scrollY;
             }
 
-            setCoordinates({ x, y });
             setIsMousedown(true);
 
             // Calculate line width:
@@ -230,7 +221,6 @@ const Canvas: React.FC = () => {
             const computedLineWidth = isTouch
                 ? Math.log(pressure + 1) * baseLineWidth * scaleFactor
                 : baseLineWidth * scaleFactor;
-            setLineWidth(computedLineWidth);
             const currentColor = isEraserActive
                 ? "!e"
                 : strokeColor;
@@ -244,7 +234,7 @@ const Canvas: React.FC = () => {
                 eraserColor: theme.palette.canvasBackground,
             });
         },
-        [ allowDirect, scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
+        [ scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
     );
 
     const handleMove = useCallback(
@@ -252,7 +242,7 @@ const Canvas: React.FC = () => {
             if (!isMousedown) return;
             e.preventDefault();
 
-            let pressure = DEFAULT_PRESSURE;
+            let pressure = 0;
             let x = 0;
             let y = 0;
 
@@ -266,26 +256,22 @@ const Canvas: React.FC = () => {
 
             if (isTouch) {
                 const touch = e.touches[0] as ExtendedTouch;
-                if (allowDirect || (touch && touch.touchType !== "direct")) {
+                if (touch && touch.touchType !== "direct") {
                     if (touch.force && touch.force > 0) {
                         pressure = touch.force;
-                        setEventPressure(pressure);
                     }
                     x = touch.pageX - canvasBounds.left - window.scrollX;
                     y = touch.pageY - canvasBounds.top - window.scrollY;
                 }
                 y = touch.pageY - canvasBounds.top;
             } else {
-                pressure = 1.0;
                 x = e.pageX - canvasBounds.left - window.scrollX;
                 y = e.pageY - canvasBounds.top - window.scrollY;
             }
-            setCoordinates({ x, y });
 
             const computedLineWidth = isTouch
                 ? Math.log(pressure + 1) * baseLineWidth * scaleFactor
                 : baseLineWidth * scaleFactor;
-            setLineWidth(computedLineWidth);
             const currentColor = isEraserActive
                 ? "!e"
                 : strokeColor;
@@ -304,7 +290,7 @@ const Canvas: React.FC = () => {
                 return [ ...prev, newPoint ];
             });
         },
-        [ allowDirect, isMousedown, scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
+        [ isMousedown, scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
     );
 
     const debouncedEmitPanel = useCallback(
@@ -321,7 +307,6 @@ const Canvas: React.FC = () => {
         debouncedEmitPanel(currentPanel);
         setLocalStrokeHistory((prev) => [ ...prev, scaledPoints ]);
         setPoints([]);
-        setLineWidth(0);
         setUndidStrokeHistory([]);
     }, [ points, scaleFactor ]);
 
