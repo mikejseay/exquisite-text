@@ -6,14 +6,19 @@ import React, {
     useRef,
     useState,
 } from "react";
-import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import Slider from "@mui/material/Slider";
+import Divider from "@mui/material/Divider";
 import Tooltip from "@mui/material/Tooltip";
 import { useTheme } from "@mui/material/styles";
 import { debounce } from "es-toolkit";
 import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
 import UndoIcon from "@mui/icons-material/Undo";
+// Pass / Complete Drawing Icon options:
+import MoveUpIcon from "@mui/icons-material/MoveUp";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
+import PublishIcon from "@mui/icons-material/Publish";
+import DoneIcon from "@mui/icons-material/Done";
 import RedoIcon from "@mui/icons-material/Redo";
 import PaletteIcon from "@mui/icons-material/Palette";
 
@@ -467,6 +472,15 @@ const Canvas: React.FC = () => {
                         </IconButton>
                     </span>
                 </Tooltip>
+                <Divider
+                    orientation="vertical"
+                    sx={{
+                        height: 28,
+                        alignSelf: "center",
+                        backgroundColor: theme.palette.divider,
+                        mx: theme.spacing(0.5),
+                    }}
+                />
                 <Tooltip title="Undo">
                     <span>
                         <IconButton
@@ -487,16 +501,33 @@ const Canvas: React.FC = () => {
                         </IconButton>
                     </span>
                 </Tooltip>
-                <Button
-                    disabled={!passEnabled}
-                    onClick={onLastContribution
-                        ? completeDrawing
-                        : passTurn}
-                >
-                    {onLastContribution
+                <Divider
+                    orientation="vertical"
+                    sx={{
+                        height: 28,
+                        alignSelf: "center",
+                        backgroundColor: theme.palette.divider,
+                        mx: theme.spacing(0.5),
+                    }}
+                />
+                <Tooltip title={
+                    onLastContribution
                         ? "Complete Drawing"
-                        : "Pass"}
-                </Button>
+                        : "Pass"
+                }>
+                    <span>
+                        <IconButton
+                            disabled={!passEnabled}
+                            onClick={onLastContribution
+                                ? completeDrawing
+                                : passTurn}
+                        >
+                            {onLastContribution
+                                ? <DoneIcon />
+                                : <MoveUpIcon />}
+                        </IconButton>
+                    </span>
+                </Tooltip>
             </div>
             <div
                 className="canvas-container"
