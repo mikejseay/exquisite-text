@@ -1,11 +1,5 @@
 // src/screens/Canvas/index.tsx
-import React, {
-    useCallback,
-    useEffect,
-    useLayoutEffect,
-    useRef,
-    useState,
-} from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import IconButton from "@mui/material/IconButton";
 import Slider from "@mui/material/Slider";
 import Divider from "@mui/material/Divider";
@@ -16,27 +10,18 @@ import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
 import UndoIcon from "@mui/icons-material/Undo";
 // Pass / Complete Drawing Icon options:
 import MoveUpIcon from "@mui/icons-material/MoveUp";
-import UploadFileIcon from "@mui/icons-material/UploadFile";
-import PublishIcon from "@mui/icons-material/Publish";
 import DoneIcon from "@mui/icons-material/Done";
 import RedoIcon from "@mui/icons-material/Redo";
 import PaletteIcon from "@mui/icons-material/Palette";
+import Button from "@mui/material/Button";
 
 import { logger } from "../../utilities/loggerUtils";
 import { Point } from "../../types";
-import {
-    emitSendLastPanel,
-    emitSendPanel,
-    emitSendPanelEdit,
-} from "../../context/SocketRequestors";
+import { emitSendLastPanel, emitSendPanel, emitSendPanelEdit } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { DEFAULT_COLOR, drawOnCanvas } from "../../utilities/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
-import {
-    ScaleDirection,
-    pixelRatio,
-    scalePoints,
-} from "../../utilities/scaleUtils";
+import { ScaleDirection, pixelRatio, scalePoints } from "../../utilities/scaleUtils";
 import { aboveCanvasHeight } from "../../constants";
 
 /* // TODO:
@@ -390,97 +375,6 @@ const Canvas: React.FC = () => {
                     // width: "100%",
                 }}
             >
-                <div
-                    className="line-width-slider"
-                    style={{
-                        width: 172,
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        padding: theme.spacing(1),
-                        border: `1px solid ${theme.palette.divider}`,
-                        borderRadius: "16px",
-                        gap: theme.spacing(1),
-                    }}
-                >
-                    <div 
-                        style={{
-                            height: 20,
-                            width: 20,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                        }}
-                    >
-                        <div
-                            style={{
-                                width: `${baseLineWidth}px`,
-                                height: `${baseLineWidth}px`,
-                                borderRadius: "50%",
-                                backgroundColor: theme.palette.text.primary,
-                            }}
-                        />
-                    </div>
-                    <Slider
-                        value={baseLineWidth}
-                        onChange={(_, v) => setBaseLineWidth(v as number)}
-                        step={1}
-                        min={1}
-                        max={20}
-                        valueLabelDisplay="auto"
-                        disabled={!editorActive}
-                        sx={{
-                            marginRight: -20,
-                            width: 120,
-                            cursor: "ew-resize",
-                            "& .MuiSlider-thumb": { cursor: "ew-resize" },
-                        }}
-                    />
-                </div>
-
-                {/* Other controls */}
-                <Tooltip title="Pick Color">
-                    <span>
-                        <IconButton
-                            component="label"
-                            disabled={!editorActive || isEraserActive}
-                        >
-                            <input
-                                type="color"
-                                hidden
-                                value={strokeColor}
-                                onChange={(e) => setStrokeColor(e.target.value)}
-                            />
-                            <PaletteIcon htmlColor={strokeColor} />
-                        </IconButton>
-                    </span>
-                </Tooltip>
-                <Tooltip
-                    title={isEraserActive
-                        ? "Switch to Pen"
-                        : "Switch to Eraser"}
-                >
-                    <span>
-                        <IconButton
-                            onClick={() => setIsEraserActive((prev) => !prev)}
-                            disabled={!editorActive}
-                            color={isEraserActive
-                                ? "primary"
-                                : "default"}
-                        >
-                            <FormatColorResetIcon />
-                        </IconButton>
-                    </span>
-                </Tooltip>
-                <Divider
-                    orientation="vertical"
-                    sx={{
-                        height: 28,
-                        alignSelf: "center",
-                        backgroundColor: theme.palette.divider,
-                        mx: theme.spacing(0.5),
-                    }}
-                />
                 <Tooltip title="Undo">
                     <span>
                         <IconButton
@@ -510,22 +404,119 @@ const Canvas: React.FC = () => {
                         mx: theme.spacing(0.5),
                     }}
                 />
+                {/* Other controls */}
+                <div
+                    className="line-width-slider"
+                    style={{
+                        width: 172,
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        padding: theme.spacing(1),
+                        border: `1px solid ${theme.palette.divider}`,
+                        borderRadius: "16px",
+                        gap: theme.spacing(1),
+                    }}
+                >
+                    <div
+                        style={{
+                            height: 20,
+                            width: 20,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}
+                    >
+                        <div
+                            style={{
+                                width: `${baseLineWidth}px`,
+                                height: `${baseLineWidth}px`,
+                                borderRadius: "50%",
+                                backgroundColor: strokeColor,
+                            }}
+                        />
+                    </div>
+                    <Slider
+                        value={baseLineWidth}
+                        onChange={(_, v) => setBaseLineWidth(v as number)}
+                        step={1}
+                        min={1}
+                        max={20}
+                        valueLabelDisplay="auto"
+                        disabled={!editorActive}
+                        sx={{
+                            marginRight: -20,
+                            width: 120,
+                            cursor: "ew-resize",
+                            "& .MuiSlider-thumb": { cursor: "ew-resize" },
+                        }}
+                    />
+                </div>
+                {/* TODO: put this palette control icon button inside the line width slider div and make it flex */}
+                <Tooltip title="Pick Color">
+                    <span>
+                        <IconButton
+                            component="label"
+                            disabled={!editorActive || isEraserActive}
+                        >
+                            <input
+                                type="color"
+                                hidden
+                                value={strokeColor}
+                                onChange={(e) => setStrokeColor(e.target.value)}
+                            />
+                            <PaletteIcon />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+                <Tooltip
+                    title={isEraserActive
+                        ? "Switch to Pen"
+                        : "Switch to Eraser"}
+                >
+                    <span>
+                        <IconButton
+                            onClick={() => setIsEraserActive((prev) => !prev)}
+                            disabled={!editorActive}
+                            color={isEraserActive
+                                ? "primary"
+                                : "default"}
+                        >
+                            <FormatColorResetIcon />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+                <Divider
+                    orientation="vertical"
+                    sx={{
+                        height: 28,
+                        alignSelf: "center",
+                        backgroundColor: theme.palette.divider,
+                        mx: theme.spacing(0.5),
+                    }}
+                />
                 <Tooltip title={
                     onLastContribution
                         ? "Complete Drawing"
                         : "Pass"
                 }>
                     <span>
-                        <IconButton
-                            disabled={!passEnabled}
+                        <Button
+                            variant="contained"
+                            tabIndex={-1}
+                            startIcon={onLastContribution
+                                ? <DoneIcon />
+                                : <MoveUpIcon />}
                             onClick={onLastContribution
                                 ? completeDrawing
                                 : passTurn}
                         >
-                            {onLastContribution
-                                ? <DoneIcon />
-                                : <MoveUpIcon />}
-                        </IconButton>
+                            {
+                                onLastContribution
+                                    ? "Done"
+                                    : "Pass"
+                            }
+                        </Button>
                     </span>
                 </Tooltip>
             </div>
