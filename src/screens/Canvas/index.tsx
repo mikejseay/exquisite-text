@@ -407,7 +407,7 @@ const Canvas: React.FC = () => {
                     }}
                 />
                 {/* Other controls */}
-                <Box
+                {/* <Box
                     sx={{
                         height: MAX_LINE_WIDTH_VIA_SLIDER,
                         width: MAX_LINE_WIDTH_VIA_SLIDER,
@@ -441,7 +441,7 @@ const Canvas: React.FC = () => {
                             zIndex: 1,
                         }}
                     />
-                </Box>
+                </Box> */}
                 <Tooltip title="Pick Line Width">
                     <Slider
                         value={baseLineWidth}
@@ -452,9 +452,28 @@ const Canvas: React.FC = () => {
                         valueLabelDisplay="auto"
                         disabled={!editorActive}
                         sx={{
+                            marginRight: theme.spacing(1),
                             width: 120,
                             cursor: "ew-resize",
-                            "& .MuiSlider-thumb": { cursor: "ew-resize" },
+                            color: strokeColor,
+                            "& .MuiSlider-rail": {
+                                opacity: 0.3,
+                                bgcolor: strokeColor,
+                                boxShadow: "0 0 4px 4px rgba(0, 0, 0, 0.7)",
+                            },
+                            "& .MuiSlider-thumb": {
+                                width: `${baseLineWidth}px`,
+                                height: `${baseLineWidth}px`,
+                                bgcolor: strokeColor,
+                                border: "2px solid white",
+                                "&:hover, &.Mui-focusVisible": {
+                                    boxShadow: "0 0 4px 2px rgba(0, 0, 0, 0.7)",
+                                },
+                                "&:active": {
+                                    boxShadow: "0 0 4px 2px rgba(0, 0, 0, 0.7)",
+                                },
+                                cursor: "ew-resize",
+                            },
                         }}
                     />
                 </Tooltip>
