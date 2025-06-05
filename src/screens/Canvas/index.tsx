@@ -1,5 +1,6 @@
 // src/screens/Canvas/index.tsx
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import Slider from "@mui/material/Slider";
 import Divider from "@mui/material/Divider";
@@ -406,28 +407,41 @@ const Canvas: React.FC = () => {
                     }}
                 />
                 {/* Other controls */}
-                <div
-                    className="line-size-color-indicator"
-                    style={{
+                <Box
+                    sx={{
                         height: MAX_LINE_WIDTH_VIA_SLIDER,
                         width: MAX_LINE_WIDTH_VIA_SLIDER,
+                        position: "relative",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        border: `1px solid ${theme.palette.divider}`,
                         borderRadius: "50%",
-                        gap: theme.spacing(1),
+                        "&::before": {
+                            content: "\"\"",
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            borderRadius: "50%",
+                            bgcolor: strokeColor,
+                            filter: "invert(100%) grayscale(100%) brightness(80%)", 
+                            zIndex: 0,
+                        },
                     }}
                 >
-                    <div
-                        style={{
+                    <Box
+                        sx={{
                             width: `${baseLineWidth}px`,
                             height: `${baseLineWidth}px`,
                             borderRadius: "50%",
-                            backgroundColor: strokeColor,
+                            bgcolor: strokeColor,
+                            flexShrink: 0,
+                            position: "relative",
+                            zIndex: 1,
                         }}
                     />
-                </div>
+                </Box>
                 <Tooltip title="Pick Line Width">
                     <Slider
                         value={baseLineWidth}
