@@ -51,6 +51,7 @@ type ExtendedTouch = Touch & {
 const DEFAULT_LINE_WIDTH = 8;
 export const OVERLAP = 0.2;
 const DEFAULT_PRESSURE = 0.5;
+const MAX_LINE_WIDTH_VIA_SLIDER = 20;
 
 export const PANEL_HEIGHT_MIN = 300; // retina is double
 export const PANEL_WIDTH_MIN = 667;
@@ -406,53 +407,43 @@ const Canvas: React.FC = () => {
                 />
                 {/* Other controls */}
                 <div
-                    className="line-width-slider"
+                    className="line-size-color-indicator"
                     style={{
-                        width: 172,
+                        height: MAX_LINE_WIDTH_VIA_SLIDER,
+                        width: MAX_LINE_WIDTH_VIA_SLIDER,
                         display: "flex",
-                        flexDirection: "row",
                         alignItems: "center",
-                        padding: theme.spacing(1),
+                        justifyContent: "center",
                         border: `1px solid ${theme.palette.divider}`,
-                        borderRadius: "16px",
+                        borderRadius: "50%",
                         gap: theme.spacing(1),
                     }}
                 >
                     <div
                         style={{
-                            height: 20,
-                            width: 20,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
+                            width: `${baseLineWidth}px`,
+                            height: `${baseLineWidth}px`,
+                            borderRadius: "50%",
+                            backgroundColor: strokeColor,
                         }}
-                    >
-                        <div
-                            style={{
-                                width: `${baseLineWidth}px`,
-                                height: `${baseLineWidth}px`,
-                                borderRadius: "50%",
-                                backgroundColor: strokeColor,
-                            }}
-                        />
-                    </div>
+                    />
+                </div>
+                <Tooltip title="Pick Line Width">
                     <Slider
                         value={baseLineWidth}
                         onChange={(_, v) => setBaseLineWidth(v as number)}
                         step={1}
                         min={1}
-                        max={20}
+                        max={MAX_LINE_WIDTH_VIA_SLIDER}
                         valueLabelDisplay="auto"
                         disabled={!editorActive}
                         sx={{
-                            marginRight: -20,
                             width: 120,
                             cursor: "ew-resize",
                             "& .MuiSlider-thumb": { cursor: "ew-resize" },
                         }}
                     />
-                </div>
-                {/* TODO: put this palette control icon button inside the line width slider div and make it flex */}
+                </Tooltip>
                 <Tooltip title="Pick Color">
                     <span>
                         <IconButton
