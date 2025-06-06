@@ -1,6 +1,5 @@
 // src/screens/Canvas/index.tsx
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import Slider from "@mui/material/Slider";
 import Divider from "@mui/material/Divider";
@@ -159,7 +158,7 @@ const Canvas: React.FC = () => {
                 ),
                 yOffset: 0,
                 context,
-                eraserColor: theme.palette.canvasBackground,
+                eraserColor: theme.palette.canvas.background,
             }),
         );
 
@@ -188,7 +187,7 @@ const Canvas: React.FC = () => {
                 ),
                 yOffset: 0,
                 context,
-                eraserColor: theme.palette.canvasBackground,
+                eraserColor: theme.palette.canvas.background,
             }),
             logger.debug(`Redrew strokeArray #${index}`);
         });
@@ -257,7 +256,7 @@ const Canvas: React.FC = () => {
                 newPoints: [ newPoint ],
                 yOffset: 0,
                 context,
-                eraserColor: theme.palette.canvasBackground,
+                eraserColor: theme.palette.canvas.background,
             });
         },
         [ scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
@@ -308,7 +307,7 @@ const Canvas: React.FC = () => {
                         newPoints: [ lastPoint, newPoint ],
                         yOffset: 0,
                         context,
-                        eraserColor: theme.palette.canvasBackground,
+                        eraserColor: theme.palette.canvas.background,
                     });
                 }
                 return [ ...prev, newPoint ];
@@ -465,7 +464,7 @@ const Canvas: React.FC = () => {
                                 width: `${baseLineWidth}px`,
                                 height: `${baseLineWidth}px`,
                                 bgcolor: strokeColor,
-                                border: `2px ${theme.palette.sliderControlBorder}`,
+                                border: "2px solid white",
                                 "&:hover, &.Mui-focusVisible": {
                                     boxShadow: "0 0 4px 2px rgba(0, 0, 0, 0.7)",
                                 },
@@ -561,7 +560,7 @@ const Canvas: React.FC = () => {
                         width: `${dimensions.width}px`,
                         height: `${dimensions.height}px`,
                         border: "1px solid black",
-                        backgroundColor: theme.palette.canvasBackground,
+                        backgroundColor: theme.palette.canvas.background,
                         display: "block",
                         pointerEvents: editorActive
                             ? "auto"
@@ -570,7 +569,7 @@ const Canvas: React.FC = () => {
                             ? 1
                             : 0.5,
                         boxShadow: editorActive
-                            ? `0 0 8px 4px ${theme.palette.canvasBoxShadow}`
+                            ? `0 0 8px 4px ${theme.palette.canvas.boxShadow}`
                             : undefined,
                     }}
                     onMouseDown={handleStart}

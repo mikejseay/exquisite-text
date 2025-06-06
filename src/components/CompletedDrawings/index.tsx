@@ -131,7 +131,7 @@ export const CompletedDrawing = ({
                         newPoints: strokeArray,
                         yOffset,
                         context,
-                        eraserColor: theme.palette.canvasBackground,
+                        eraserColor: theme.palette.canvas.background,
                     });
                     strokeHistoryIndex += 1;
                 } else {
@@ -160,7 +160,7 @@ export const CompletedDrawing = ({
                         newPoints: scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor),
                         yOffset,
                         context,
-                        eraserColor: theme.palette.canvasBackground,
+                        eraserColor: theme.palette.canvas.background,
                     });
                 });
                 yOffset += PANEL_HEIGHT_MIN * scaleFactor * (1 - OVERLAP);
@@ -177,8 +177,8 @@ export const CompletedDrawing = ({
                 style={{
                     width: `${dimensions.width}px`,
                     height: `${dimensions.height}px`,
-                    backgroundColor: theme.palette.canvasBackground,
-                    boxShadow: `0 0 8px 4px ${theme.palette.canvasBoxShadow}`,
+                    backgroundColor: theme.palette.canvas.background,
+                    boxShadow: `0 0 8px 4px ${theme.palette.canvas.boxShadow}`,
                     display: "block",
                     pointerEvents: "none",
                     marginLeft: "auto",
