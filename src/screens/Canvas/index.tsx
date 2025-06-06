@@ -82,7 +82,7 @@ const Canvas: React.FC = () => {
     const [ triggerRedraw, setTriggerRedraw ] = useState<number>(0);
     const [ baseLineWidth, setBaseLineWidth ] =
     useState<number>(DEFAULT_LINE_WIDTH);
-
+    console.log(theme.palette.text);
     const localStrokeHistoryRef = useRef<Point[][]>(localStrokeHistory);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -465,7 +465,7 @@ const Canvas: React.FC = () => {
                                 width: `${baseLineWidth}px`,
                                 height: `${baseLineWidth}px`,
                                 bgcolor: strokeColor,
-                                border: "2px solid white",
+                                border: `2px ${theme.palette.sliderControlBorder}`,
                                 "&:hover, &.Mui-focusVisible": {
                                     boxShadow: "0 0 4px 2px rgba(0, 0, 0, 0.7)",
                                 },
