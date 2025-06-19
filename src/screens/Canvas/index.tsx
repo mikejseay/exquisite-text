@@ -1,12 +1,19 @@
 // src/screens/Canvas/index.tsx
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
 import Slider from "@mui/material/Slider";
+import Divider from "@mui/material/Divider";
+import Tooltip from "@mui/material/Tooltip";
 import { useTheme } from "@mui/material/styles";
 import { debounce } from "es-toolkit";
 import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
 import UndoIcon from "@mui/icons-material/Undo";
+// Pass / Complete Drawing Icon options:
+import MoveUpIcon from "@mui/icons-material/MoveUp";
+import DoneIcon from "@mui/icons-material/Done";
 import RedoIcon from "@mui/icons-material/Redo";
+import PaletteIcon from "@mui/icons-material/Palette";
+import Button from "@mui/material/Button";
 
 import { logger } from "../../utilities/loggerUtils";
 import { Point } from "../../types";
@@ -18,6 +25,9 @@ import { ScaleDirection, pixelRatio, scalePoints } from "../../utilities/scaleUt
 import { aboveCanvasHeight } from "../../constants";
 
 /* // TODO:
+    * Now that we're using buttons for canvas controls
+        Make clicking the button show the descriptor tooltip
+        because ipad/iphone has no mouseover
     * In highly-portrait viewport situations, the line width slider overflows out of view to the left
     * On iPad, the default line width of using your finger after using pencil is extremely small,
         but a single dot is very large
@@ -40,7 +50,8 @@ type ExtendedTouch = Touch & {
 
 const DEFAULT_LINE_WIDTH = 8;
 export const OVERLAP = 0.2;
-const DEFAULT_PRESSURE = 0.1;
+const DEFAULT_PRESSURE = 0.5;
+const MAX_LINE_WIDTH_VIA_SLIDER = 20;
 
 export const PANEL_HEIGHT_MIN = 300; // retina is double
 export const PANEL_WIDTH_MIN = 667;
@@ -55,26 +66,22 @@ export const DRAWING_ASPECT_RATIO = DRAWING_WIDTH_MIN / DRAWING_HEIGHT_MIN;
 const Canvas: React.FC = () => {
     const theme = useTheme();
     const { strokeHistory, editorActive, onLastContribution } = useSocketInfo();
-    const [ isDrawingComplete, setIsDrawingComplete ] = useState(false);
     const [ points, setPoints ] = useState<Point[]>([]);
     const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
     const [ undidStrokeHistory, setUndidStrokeHistory ] = useState<Point[][]>([]);
     const [ isMousedown, setIsMousedown ] = useState(false);
-    const [ allowDirect, setAllowDirect ] = useState(true);
     const [ passEnabled, setPassEnabled ] = useState(false);
-    const [ lineWidth, setLineWidth ] = useState(0);
-    const [ drawType, setDrawType ] = useState<"fill" | "stroke" | "noDrawYet">("noDrawYet");
-    const [ player, setPlayer ] = useState<number>(0);
-    const [ coordinates, setCoordinates ] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-    const [ eventPressure, setEventPressure ] = useState(DEFAULT_PRESSURE);
-    const [ dimensions, setDimensions ] = useState({ width: PANEL_WIDTH_MIN, height: PANEL_HEIGHT_MIN });
+    const [ dimensions, setDimensions ] = useState({
+        width: PANEL_WIDTH_MIN,
+        height: PANEL_HEIGHT_MIN,
+    });
     const [ strokeColor, setStrokeColor ] = useState<string>(DEFAULT_COLOR);
     const [ isEraserActive, setIsEraserActive ] = useState<boolean>(false);
     const [ scaleFactor, setScaleFactor ] = useState<number>(1);
     const [ triggerRedraw, setTriggerRedraw ] = useState<number>(0);
-    const [ baseLineWidth, setBaseLineWidth ] = useState<number>(DEFAULT_LINE_WIDTH);
-    const [ shouldShowLineWidthSlider, setShouldShowLineWidthSlider ] = useState<boolean>(false);
-
+    const [ baseLineWidth, setBaseLineWidth ] =
+    useState<number>(DEFAULT_LINE_WIDTH);
+    console.log(theme.palette.text);
     const localStrokeHistoryRef = useRef<Point[][]>(localStrokeHistory);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -144,10 +151,14 @@ const Canvas: React.FC = () => {
         // Redraw vectorized points
         strokeHistory?.forEach((strokeArray) =>
             drawOnCanvas({
-                newPoints: scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor),
+                newPoints: scalePoints(
+                    strokeArray,
+                    ScaleDirection.TO_DISPLAY,
+                    scaleFactor,
+                ),
                 yOffset: 0,
                 context,
-                eraserColor: theme.palette.canvasBackground,
+                eraserColor: theme.palette.canvas.background,
             }),
         );
 
@@ -169,14 +180,25 @@ const Canvas: React.FC = () => {
         // Redraw current additions from local editor
         localStrokeHistoryRef.current?.forEach((strokeArray, index) => {
             drawOnCanvas({
-                newPoints: scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor),
+                newPoints: scalePoints(
+                    strokeArray,
+                    ScaleDirection.TO_DISPLAY,
+                    scaleFactor,
+                ),
                 yOffset: 0,
                 context,
-                eraserColor: theme.palette.canvasBackground,
+                eraserColor: theme.palette.canvas.background,
             }),
             logger.debug(`Redrew strokeArray #${index}`);
         });
-    }, [ dimensions, scaleFactor, editorActive, passEnabled, triggerRedraw, strokeHistory ]);
+    }, [
+        dimensions,
+        scaleFactor,
+        editorActive,
+        passEnabled,
+        triggerRedraw,
+        strokeHistory,
+    ]);
 
     function passTurn() {
         emitSendPanel(localStrokeHistory);
@@ -188,7 +210,6 @@ const Canvas: React.FC = () => {
     function completeDrawing() {
         emitSendLastPanel(localStrokeHistory);
         setLocalStrokeHistory([]);
-        setIsDrawingComplete(false);
     }
 
     const handleStart = useCallback(
@@ -209,42 +230,36 @@ const Canvas: React.FC = () => {
                 const touch = e.touches[0] as ExtendedTouch;
                 x = touch.pageX - canvasBounds.left - window.scrollX;
                 y = touch.pageY - canvasBounds.top - window.scrollY;
-                if (allowDirect || (touch && touch.touchType !== "direct")) {
+                if (touch && touch.touchType !== "direct") {
                     if (touch.force && touch.force > 0) {
                         pressure = touch.force;
-                        setEventPressure(pressure);
                     }
                 }
             } else {
                 // For mouse events, override with the custom line width
-                pressure = 1.0;
                 x = e.pageX - canvasBounds.left - window.scrollX;
                 y = e.pageY - canvasBounds.top - window.scrollY;
             }
 
-            setCoordinates({ x, y });
             setIsMousedown(true);
 
             // Calculate line width:
             // Use pressure for touch events; otherwise use the user-adjusted customLineWidth.
-            const computedLineWidth = isTouch
-                ? Math.log(pressure + 1) * baseLineWidth * scaleFactor
-                : baseLineWidth * scaleFactor;
-            setLineWidth(computedLineWidth);
-            const currentColor = isEraserActive
+            const lineWidth = Math.log(pressure + 1) * baseLineWidth * scaleFactor;
+            const color = isEraserActive
                 ? "!e"
                 : strokeColor;
-            const newPoint = { x, y, lineWidth: computedLineWidth, color: currentColor };
+            const newPoint = { x, y, lineWidth, color };
             setPoints((prev) => [ ...prev, newPoint ]);
 
             drawOnCanvas({
                 newPoints: [ newPoint ],
                 yOffset: 0,
                 context,
-                eraserColor: theme.palette.canvasBackground,
+                eraserColor: theme.palette.canvas.background,
             });
         },
-        [ allowDirect, scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
+        [ scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
     );
 
     const handleMove = useCallback(
@@ -266,30 +281,24 @@ const Canvas: React.FC = () => {
 
             if (isTouch) {
                 const touch = e.touches[0] as ExtendedTouch;
-                if (allowDirect || (touch && touch.touchType !== "direct")) {
+                if (touch && touch.touchType !== "direct") {
                     if (touch.force && touch.force > 0) {
                         pressure = touch.force;
-                        setEventPressure(pressure);
                     }
                     x = touch.pageX - canvasBounds.left - window.scrollX;
                     y = touch.pageY - canvasBounds.top - window.scrollY;
                 }
                 y = touch.pageY - canvasBounds.top;
             } else {
-                pressure = 1.0;
                 x = e.pageX - canvasBounds.left - window.scrollX;
                 y = e.pageY - canvasBounds.top - window.scrollY;
             }
-            setCoordinates({ x, y });
 
-            const computedLineWidth = isTouch
-                ? Math.log(pressure + 1) * baseLineWidth * scaleFactor
-                : baseLineWidth * scaleFactor;
-            setLineWidth(computedLineWidth);
-            const currentColor = isEraserActive
+            const lineWidth = Math.log(pressure + 1) * baseLineWidth * scaleFactor;
+            const color = isEraserActive
                 ? "!e"
                 : strokeColor;
-            const newPoint = { x, y, lineWidth: computedLineWidth, color: currentColor };
+            const newPoint = { x, y, lineWidth, color };
 
             setPoints((prev) => {
                 const lastPoint = prev[prev.length - 1];
@@ -298,13 +307,13 @@ const Canvas: React.FC = () => {
                         newPoints: [ lastPoint, newPoint ],
                         yOffset: 0,
                         context,
-                        eraserColor: theme.palette.canvasBackground,
+                        eraserColor: theme.palette.canvas.background,
                     });
                 }
                 return [ ...prev, newPoint ];
             });
         },
-        [ allowDirect, isMousedown, scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
+        [ isMousedown, scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
     );
 
     const debouncedEmitPanel = useCallback(
@@ -316,12 +325,15 @@ const Canvas: React.FC = () => {
 
     const handleEnd = useCallback(() => {
         setIsMousedown(false);
-        const scaledPoints: Point[] = scalePoints(points, ScaleDirection.TO_UNIVERSAL, scaleFactor);
+        const scaledPoints: Point[] = scalePoints(
+            points,
+            ScaleDirection.TO_UNIVERSAL,
+            scaleFactor,
+        );
         const currentPanel = [ ...localStrokeHistory, scaledPoints ];
         debouncedEmitPanel(currentPanel);
         setLocalStrokeHistory((prev) => [ ...prev, scaledPoints ]);
         setPoints([]);
-        setLineWidth(0);
         setUndidStrokeHistory([]);
     }, [ points, scaleFactor ]);
 
@@ -350,155 +362,192 @@ const Canvas: React.FC = () => {
     };
 
     return (
-        <div className={"canvas-plus-controls"} style={{ display: "flex", flexDirection: "column" }}>
-            <Button
-                disabled={!passEnabled || isDrawingComplete}
-                onClick={onLastContribution
-                    ? completeDrawing
-                    : passTurn}
-            >
-                {(!editorActive && !passEnabled)
-                    ? "Your friend is drawing..."
-                    : onLastContribution
-                        ? "Complete Drawing"
-                        : "Pass"}
-            </Button>
-            <canvas
-                ref={canvasRef}
-                width={dimensions.width * pixelRatio}
-                height={dimensions.height * pixelRatio}
-                style={{
-                    width: `${dimensions.width}px`,
-                    height: `${dimensions.height}px`,
-                    border: "1px solid black",
-                    backgroundColor: theme.palette.canvasBackground,
-                    display: "block",
-                    pointerEvents: editorActive
-                        ? "auto"
-                        : "none",
-                    opacity: editorActive
-                        ? 1
-                        : 0.5,
-                    boxShadow: editorActive
-                        ? `0 0 8px 4px ${theme.palette.canvasBoxShadow}`
-                        : undefined,
-                }}
-                onMouseDown={handleStart}
-                onTouchStart={handleStart}
-                onMouseMove={handleMove}
-                onTouchMove={handleMove}
-                onMouseUp={handleEnd}
-                onTouchEnd={handleEnd}
-            >
-                Sorry, your browser is too old for this demo.
-            </canvas>
-
+        <>
             <div
-                className={"canvas-control-container"}
+                className="canvas-toolbar"
                 style={{
                     display: "flex",
-                    justifyContent: "center",
+                    flexDirection: "row",
                     alignItems: "center",
-                    gap: "0.5rem",
-                    margin: "0.625rem 0",
+                    gap: theme.spacing(1),
+                    marginBottom: theme.spacing(1),
+                    // Optionally center elements in this bar
+                    // justifyContent: "flex-start",
+                    // width: "100%",
                 }}
             >
-                <div className={"line-width-control"} style={{ position: "relative", display: "inline-block" }}>
-                    <Button
+                <Tooltip title="Undo">
+                    <span>
+                        <IconButton
+                            onClick={handleUndo}
+                            disabled={!editorActive || localStrokeHistory.length === 0}
+                        >
+                            <UndoIcon />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+                <Tooltip title="Redo">
+                    <span>
+                        <IconButton
+                            onClick={handleRedo}
+                            disabled={!editorActive || undidStrokeHistory.length === 0}
+                        >
+                            <RedoIcon />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+                <Divider
+                    orientation="vertical"
+                    sx={{
+                        height: 28,
+                        alignSelf: "center",
+                        backgroundColor: theme.palette.divider,
+                        marginLeft: theme.spacing(0.5),
+                        marginRight: theme.spacing(1.5),
+                    }}
+                />
+                {/* Other controls */}
+                <Tooltip title="Pick Line Width">
+                    <Slider
+                        value={baseLineWidth}
+                        onChange={(_, v) => setBaseLineWidth(v as number)}
+                        step={1}
+                        min={1}
+                        max={MAX_LINE_WIDTH_VIA_SLIDER}
+                        valueLabelDisplay="auto"
                         disabled={!editorActive}
-                        variant="contained"
-                        color="inherit"
-                        onClick={() => setShouldShowLineWidthSlider(!shouldShowLineWidthSlider)}
-                        sx={{ minWidth: 146, maxHeight: "2.3rem" }}
-                    >
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            <div
-                                style={{
-                                    width: `${baseLineWidth}px`,
-                                    height: `${baseLineWidth}px`,
-                                    borderRadius: "50%",
-                                    backgroundColor: theme.palette.text.primary,
-                                }}
-                            />
-                            <span>Line Width</span>
-                        </div>
-                    </Button>
-                    {shouldShowLineWidthSlider && (
-                        <div style={{
-                            position: "absolute",
-                            right: "100%",
-                            top: "50%",
-                            transform: "translateY(-40%)",
-                            width: "12.5rem",
-                            marginRight: "0.5rem",
-                        }}>
-                            <Slider
-                                value={baseLineWidth}
-                                onChange={(e, value) => setBaseLineWidth(value as number)}
-                                step={1}
-                                min={1}
-                                max={20}
-                                valueLabelDisplay="auto"
-                            />
-                        </div>
-                    )}
-                </div>
-                <Button
-                    disabled={!editorActive || isEraserActive}
-                    variant="contained"
-                    color="inherit"
-                    sx={{ maxHeight: "2.3rem" }}
-                >
-                    <input
-                        type="color"
-                        id="color-picker"
-                        value={strokeColor}
-                        onChange={(e) => setStrokeColor(e.target.value)}
-                        style={{ accentColor: DEFAULT_COLOR, cursor: "pointer" }}
-                        disabled={isEraserActive}
+                        sx={{
+                            marginRight: theme.spacing(2.75),
+                            width: 120,
+                            cursor: "ew-resize",
+                            color: strokeColor,
+                            "& .MuiSlider-rail": {
+                                opacity: 0.3,
+                                bgcolor: strokeColor,
+                                boxShadow: "0 0 4px 4px rgba(0, 0, 0, 0.7)",
+                            },
+                            "& .MuiSlider-thumb": {
+                                width: `${baseLineWidth}px`,
+                                height: `${baseLineWidth}px`,
+                                bgcolor: strokeColor,
+                                border: "2px solid white",
+                                "&:hover, &.Mui-focusVisible": {
+                                    boxShadow: "0 0 4px 2px rgba(0, 0, 0, 0.7)",
+                                },
+                                "&:active": {
+                                    boxShadow: "0 0 4px 2px rgba(0, 0, 0, 0.7)",
+                                },
+                                cursor: "ew-resize",
+                            },
+                        }}
                     />
-                    <label htmlFor="color-picker" style={{ cursor: "pointer" }}>
-                        &nbsp;&nbsp;Color
-                    </label>
-                </Button>
-                <Button
-                    sx={{ minWidth: "12.635rem" }}
-                    disabled={!editorActive}
-                    variant="contained"
-                    color={isEraserActive
-                        ? "primary"
-                        : "inherit"}
-                    onClick={() => setIsEraserActive(!isEraserActive)}
-                    startIcon={<FormatColorResetIcon />}
-                >
-                    {isEraserActive
+                </Tooltip>
+                <Tooltip title="Pick Color">
+                    <span>
+                        <IconButton
+                            component="label"
+                            disabled={!editorActive || isEraserActive}
+                        >
+                            <input
+                                type="color"
+                                hidden
+                                value={strokeColor}
+                                onChange={(e) => setStrokeColor(e.target.value)}
+                            />
+                            <PaletteIcon />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+                <Tooltip
+                    title={isEraserActive
                         ? "Switch to Pen"
                         : "Switch to Eraser"}
-                </Button>
-                <Button
-                    disabled={!editorActive || localStrokeHistory.length === 0}
-                    variant="contained"
-                    color={isEraserActive
-                        ? "primary"
-                        : "inherit"}
-                    onClick={handleUndo}
-                    startIcon={<UndoIcon />}
                 >
-                Undo
-                </Button>
-                <Button
-                    disabled={!editorActive || undidStrokeHistory.length === 0}
-                    variant="contained"
-                    color={isEraserActive
-                        ? "primary"
-                        : "inherit"}
-                    onClick={handleRedo}
-                    startIcon={<RedoIcon />}
-                >
-                Redo
-                </Button>
+                    <span>
+                        <IconButton
+                            onClick={() => setIsEraserActive((prev) => !prev)}
+                            disabled={!editorActive}
+                            color={isEraserActive
+                                ? "primary"
+                                : "default"}
+                        >
+                            <FormatColorResetIcon />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+                <Divider
+                    orientation="vertical"
+                    sx={{
+                        height: 28,
+                        alignSelf: "center",
+                        backgroundColor: theme.palette.divider,
+                        marginLeft: theme.spacing(0.5),
+                        marginRight: theme.spacing(2),
+                    }}
+                />
+                <Tooltip title={
+                    onLastContribution
+                        ? "Complete Drawing"
+                        : "Pass"
+                }>
+                    <span>
+                        <Button
+                            variant="contained"
+                            tabIndex={-1}
+                            startIcon={onLastContribution
+                                ? <DoneIcon />
+                                : <MoveUpIcon />}
+                            onClick={onLastContribution
+                                ? completeDrawing
+                                : passTurn}
+                        >
+                            {
+                                onLastContribution
+                                    ? "Done"
+                                    : "Pass"
+                            }
+                        </Button>
+                    </span>
+                </Tooltip>
             </div>
-        </div>
+            <div
+                className="canvas-container"
+                style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    paddingLeft: theme.spacing(2),
+                    overflow: "visible",
+                }}
+            >
+                <canvas
+                    ref={canvasRef}
+                    width={dimensions.width * pixelRatio}
+                    height={dimensions.height * pixelRatio}
+                    style={{
+                        width: `${dimensions.width}px`,
+                        height: `${dimensions.height}px`,
+                        border: "1px solid black",
+                        backgroundColor: theme.palette.canvas.background,
+                        display: "block",
+                        pointerEvents: editorActive
+                            ? "auto"
+                            : "none",
+                        opacity: editorActive
+                            ? 1
+                            : 0.5,
+                        boxShadow: editorActive
+                            ? `0 0 8px 4px ${theme.palette.canvas.boxShadow}`
+                            : undefined,
+                    }}
+                    onMouseDown={handleStart}
+                    onTouchStart={handleStart}
+                    onMouseMove={handleMove}
+                    onTouchMove={handleMove}
+                    onMouseUp={handleEnd}
+                    onTouchEnd={handleEnd}
+                />
+            </div>
+        </>
     );
 };
 

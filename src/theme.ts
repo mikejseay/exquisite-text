@@ -2,12 +2,16 @@ import { Theme, createTheme } from "@mui/material/styles";
 
 declare module "@mui/material/styles" {
   interface Palette {
-    canvasBackground?: string;
-    canvasBoxShadow?: string;
+    canvas: {
+        background?: string;
+        boxShadow?: string;
+    };
 }
 interface PaletteOptions {
-    canvasBackground?: string;
-    canvasBoxShadow?: string;
+    canvas: {
+        background?: string;
+        boxShadow?: string;
+    };
   }
 }
 
@@ -21,12 +25,16 @@ export const getTheme = (mode: "light" | "dark"): Theme =>
                         default: "#121212",
                         paper: "#1e1e1e",
                     },
-                    canvasBackground: "rgb(0,0,0)",
-                    canvasBoxShadow: "rgba(0,0,0,0.7)",
+                    canvas: {
+                        background: "rgb(0,0,0)",
+                        boxShadow: "rgba(0,0,0,0.7)",
+                    },
                 }
                 : {
-                    canvasBackground: "#fff",
-                    canvasBoxShadow: "rgba(255,255,255,0.7)",
+                    canvas: {
+                        background: "#fff",
+                        boxShadow: "rgba(255,255,255,0.7)",
+                    },
                 }),
         },
         components: {
