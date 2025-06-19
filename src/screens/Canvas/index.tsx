@@ -402,45 +402,11 @@ const Canvas: React.FC = () => {
                         height: 28,
                         alignSelf: "center",
                         backgroundColor: theme.palette.divider,
-                        mx: theme.spacing(0.5),
+                        marginLeft: theme.spacing(0.5),
+                        marginRight: theme.spacing(1.5),
                     }}
                 />
                 {/* Other controls */}
-                {/* <Box
-                    sx={{
-                        height: MAX_LINE_WIDTH_VIA_SLIDER,
-                        width: MAX_LINE_WIDTH_VIA_SLIDER,
-                        position: "relative",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        borderRadius: "50%",
-                        "&::before": {
-                            content: "\"\"",
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            width: "100%",
-                            height: "100%",
-                            borderRadius: "50%",
-                            bgcolor: strokeColor,
-                            filter: "invert(100%) grayscale(100%) brightness(80%)", 
-                            zIndex: 0,
-                        },
-                    }}
-                >
-                    <Box
-                        sx={{
-                            width: `${baseLineWidth}px`,
-                            height: `${baseLineWidth}px`,
-                            borderRadius: "50%",
-                            bgcolor: strokeColor,
-                            flexShrink: 0,
-                            position: "relative",
-                            zIndex: 1,
-                        }}
-                    />
-                </Box> */}
                 <Tooltip title="Pick Line Width">
                     <Slider
                         value={baseLineWidth}
@@ -451,7 +417,7 @@ const Canvas: React.FC = () => {
                         valueLabelDisplay="auto"
                         disabled={!editorActive}
                         sx={{
-                            marginRight: theme.spacing(1),
+                            marginRight: theme.spacing(2.75),
                             width: 120,
                             cursor: "ew-resize",
                             color: strokeColor,
@@ -515,7 +481,8 @@ const Canvas: React.FC = () => {
                         height: 28,
                         alignSelf: "center",
                         backgroundColor: theme.palette.divider,
-                        mx: theme.spacing(0.5),
+                        marginLeft: theme.spacing(0.5),
+                        marginRight: theme.spacing(2),
                     }}
                 />
                 <Tooltip title={
