@@ -66,12 +66,6 @@ export interface IPoem extends ICollaboration {
     content: string;
 }
 
-export interface IDrawing extends ICollaboration {
-    // NOTE: Work out best format for back-end storage
-    // content: [Point[][], Point[][], Point[][]];
-    content: Point[][],
-}
-
 // TODO: Type guards
 // function isPoem(obj: any): obj is Poem {
 //     return "lines" in obj;
@@ -265,24 +259,4 @@ export interface ISocketInfo {
     completedDrawings: Point[][][][] | null;
     medium: Medium | null;
     setMedium: (medium: Medium | ((prevVar: Medium) => Medium)) => void;
-}
-
-
-export enum ContributionType {
-    POEM,
-    DRAWING,
-}
-
-type TestTypeProps =
-    | {
-    contributionType: ContributionType.POEM,
-    content: string,
-}
-    | {
-    contributionType: ContributionType.DRAWING,
-    content: Point[][],
-}
-
-function testTypes({ contributionType, content }: TestTypeProps) {
-    return [ contributionType, content ];
 }

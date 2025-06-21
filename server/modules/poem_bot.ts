@@ -6,7 +6,7 @@ import * as dotenv from "dotenv";
 import { botDeviceIDToMessageHistory } from "./globals";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { analyzeSystemPrompt, analyzeUserPrompt, completeSystemPrompt, completeUserPrompt } from "../llm_utils/prompts";
-import { IPoemSettingsInfo } from "../../src/types";
+import { IGameSettingsInfo } from "../../src/types";
 import { lineConstraints } from "../../src/constants";
 import { canBeFixedByShifting, isAcceptableShape, processPoetryLines } from "../llm_utils/llm_funcs";
 
@@ -51,7 +51,7 @@ export async function analyzeBeginning(poemStart: string) {
 export async function guaranteeHalfLineCompletion(
     botDeviceID: string,
     halfLine: string,
-    gameSettings: IPoemSettingsInfo,
+    gameSettings: IGameSettingsInfo,
     forceIncomplete: boolean, // whether to force the AI to leave second line incomplete
     poemAnalysis: string, // an analysis of the poem to provide
 ) {
