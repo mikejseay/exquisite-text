@@ -1,16 +1,17 @@
 import * as React from "react";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
+import { logger } from "../../utilities/loggerUtils";
 
 function UserTable() {
     const { userInfo } = useSocketInfo();
-    console.log("userInfo", userInfo);
+    logger.debug("userInfo", userInfo);
     if (!userInfo) {
         return null;
     }
     const { editors, editorColors, spectators } = userInfo;
-    console.log("editors", editors);
-    console.log("editorColors", editorColors);
-    console.log("spectators", spectators);
+    logger.debug("editors", editors);
+    logger.debug("editorColors", editorColors);
+    logger.debug("spectators", spectators);
     if (!editors) {
         return null;
     }
@@ -19,7 +20,7 @@ function UserTable() {
     }
 
     // const { editors, editorColors, spectators } = userInfo;
-    // console.log({ userInfo });
+    // logger.debug({ userInfo });
 
     return (
         <div className={"userTable"} style={{ textAlign: "center" }}>

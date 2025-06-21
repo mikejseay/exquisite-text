@@ -1,15 +1,16 @@
 import { Poem, pgSequelConn } from "./entity/poem";
 import { Line } from "./entity/line";
 import { ILine, IPoem } from "../src/types";
+import { logger } from "./utilities/loggerUtils";
 
 (async () => {
     try {
         await pgSequelConn.authenticate();
         await Poem.sync(); // make sure the table exists
         await Line.sync(); // make sure the table exists
-        console.log("Connection has been established successfully.");
+        logger.debug("Connection has been established successfully.");
     } catch (error) {
-        console.error("Unable to connect to the database:", error);
+        logger.error(`Unable to connect to the database: ${error}`);
     }
 })();
 
@@ -42,13 +43,13 @@ async function storePoem({ title, content }: IPoem) {
     try {
         await Poem.create({ content, title });
     } catch ({ stack }) {
-        console.log(stack);
+        logger.debug(stack);
     }
 }
 
 async function storeLine({
     ID,
-    lineIndex,
+    contributionIndex,
     content,
     authorDevice,
     passerDevice,
@@ -58,7 +59,7 @@ async function storeLine({
     try {
         await Line.create({
             ID,
-            lineIndex,
+            contributionIndex,
             content,
             authorDevice,
             passerDevice,
@@ -66,7 +67,7 @@ async function storeLine({
             addedAt,
         });
     } catch ({ stack }) {
-        console.log(stack);
+        logger.debug(stack);
     }
 }
 

@@ -1,66 +1,52 @@
-import React, { useEffect, useRef, useState } from "react";
+// src/screens/CanvasSpectator/index.tsx
+import React, { useEffect, useState } from "react";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { drawOnCanvas, panelHeightRatioOfWindow  } from "../Canvas";
-import { emitJoinAs, emitRecognizeDevice, emitRequestCanvas } from "../../context/SocketRequestors";
-import { Role } from "../../types";
-
+import { Point } from "../../types";
+import MultipleDrawings from "../../components/MultipleDrawings";
+import { logger } from "../../utilities/loggerUtils";
 
 const CanvasSpectator: React.FC = () => {
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const [ hasJoinedRoom, setHasJoinedRoom ] = useState<boolean>(false);
-    const { strokeHistory } = useSocketInfo();
-
-    if (!hasJoinedRoom) {
-        emitRecognizeDevice();
-        emitJoinAs("ROOM", "MIKEY", Role.SPECTATOR, true);
-        emitRequestCanvas();
-        setHasJoinedRoom(true);
-    }
-
-    // TODO: Inside this useEffect, we want to receive the canvas vector (strokeHistory)
-    // We want to draw it,
-    // Then we want to clip it without ever showing the user the whole thing
-    useEffect(() => {
-        console.log("strokeHistory in CanvasSpectator:", strokeHistory);
-        strokeHistory?.forEach(strokeArray => drawOnCanvas(strokeArray, canvasRef));
-    }, [ strokeHistory ]);
-
-    // This useEffect defines the panel height
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        const devicePixelRatio = window.devicePixelRatio ?? 1;
-
-        if (!canvas) return;
-        canvas.style.width = `${window.innerWidth}px`;
-        canvas.style.height = `${window.innerHeight * panelHeightRatioOfWindow}px`;
-        canvas.width = window.innerWidth * devicePixelRatio;
-        canvas.height = window.innerHeight * devicePixelRatio * panelHeightRatioOfWindow;
-    }, []);
+    const { panels, panelEdits, nDrawings  } = useSocketInfo();
+    // Represents all completed panels and panel edits in an ongoing game
+    const [ currentDrawings, setCurrentDrawings ] = useState<Point[][][][]>([]);
 
     useEffect(() => {
-        const disableScroll = (e: TouchEvent) => e.preventDefault();
-        document.body.addEventListener("touchmove", disableScroll, { passive: false });
+        if (!nDrawings) return;
+        logger.debug({ panels, panelEdits });
+        // Levels //
+        // Outer: Drawings
+        // Panels
+        // Strokes
+        // Points
 
-        return () => {
-            document.body.removeEventListener("touchmove", disableScroll);
-        };
-    }, []);
+        const combinedPanelsAndPanelEdits: Point[][][][] = [];
+
+        for (let drawingIndex = 0; drawingIndex < nDrawings; drawingIndex++) {
+            const currentPanels: Point[][][] = [];
+
+            if (panels && panels[drawingIndex]) {
+            // panels[drawingIndex] is Point[][][]
+            // "Extending" currentPanels by pushing all panels for this drawing
+                currentPanels.push(...panels[drawingIndex]);
+            }
+
+            if (panelEdits && panelEdits[drawingIndex]) {
+            // panelEdits[drawingIndex] is Point[][]
+            // Appending the panel edits for this drawing
+                currentPanels.push(panelEdits[drawingIndex]);
+            }
+
+            combinedPanelsAndPanelEdits.push(currentPanels);
+        }
+        setCurrentDrawings(combinedPanelsAndPanelEdits);
+
+    }, [ panels, panelEdits, nDrawings ]);
 
     return (
-        <div style={{ display: "flex", flexDirection: "column" }}>
-            <canvas
-                ref={canvasRef}
-                onMouseDown={()=> {return;}}
-                onTouchStart={()=> {return;}}
-                onMouseMove={()=> {return;}}
-                onTouchMove={()=> {return;}}
-                onMouseUp={()=> {return;}}
-                onTouchEnd={()=> {return;}}
-            >
-                Sorry, your browser is too old for this demo.
-            </canvas>
-        </div>
+        <MultipleDrawings completedDrawings={currentDrawings} shouldAnimate={false} />
     );
 };
+
+
 
 export default CanvasSpectator;

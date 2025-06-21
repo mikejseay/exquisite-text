@@ -6,13 +6,17 @@ import {
     ClientToServerEvents,
     GameState,
     InterServerEvents,
+    Medium,
     Role,
     ServerToClientEvents,
     SocketData,
 } from "../../src/types";
 import { DrawingSpectator, PoemSpectator } from "../modules/spectator";
 import { poemsLines as poemsLinesTestData } from "../../src/data/multiplePoems";
+import { multipleDrawingsTestData } from "../../src/data/multipleDrawings";
 import Host from "../modules/host";
+import { Drawing, Poem } from "../modules/collaboration";
+import { logger } from "./loggerUtils";
 
 
 export function getRouteForGameStateAndRole(gameState: GameState, role: Role): string {
@@ -32,12 +36,12 @@ export function getRouteForGameStateAndRole(gameState: GameState, role: Role): s
 
 export function getRoom(roomID: string | undefined): PoemRoom | DrawingRoom | undefined {
     if (!roomIDToRoom || !roomID) {
-        console.error("roomIDToRoom map or roomID is undefined");
+        logger.error("roomIDToRoom map or roomID is undefined");
         return undefined;
     }
     const room = roomIDToRoom.get(roomID);
     if (!room) {
-        console.error("No room found for ID:", roomID);
+        logger.error("No room found for ID:", roomID);
         return undefined;
     }
     return room;
@@ -45,17 +49,17 @@ export function getRoom(roomID: string | undefined): PoemRoom | DrawingRoom | un
 
 export function getEditorSocketID(roomID: string | undefined, editorID: string | undefined): string | undefined {
     if (!roomIDToRoom || !roomID || !editorID) {
-        console.error("roomIDToRoom map or roomID or editorID is undefined");
+        logger.error("roomIDToRoom map or roomID or editorID is undefined");
         return undefined;
     }
     const room: PoemRoom | DrawingRoom | undefined = roomIDToRoom.get(roomID);
     if (!room || !room.editors) {
-        console.error("Editors not found in the room or room not found for ID:", roomID);
+        logger.error("Editors not found in the room or room not found for ID:", roomID);
         return undefined;
     }
     const editor: PoemEditor | DrawingEditor | undefined = room.editors.get(editorID);
     if (!editor || !editor.socket) {
-        console.error("PoemEditor or editor's socket not found for ID:", editorID);
+        logger.error("PoemEditor or editor's socket not found for ID:", editorID);
         return undefined;
     }
     return editor.socket.id;
@@ -72,48 +76,63 @@ export function standardReconnect(
 ) {
     if (member && member.socket) {
         // send socket (tab) that's currently connected to the disconnected view
-        console.log("disconnecting previous socket for deviceID", member.deviceID);
+        logger.debug("disconnecting previous socket for deviceID", member.deviceID);
         io.to(member.socket.id).emit("stcNavigate", "/disconnected");
         member.socket.disconnect(); // force disconnect on original socket
-        console.log("connecting new socket for deviceID", member.deviceID);
+        logger.debug("connecting new socket for deviceID", member.deviceID);
         member.socket = socket; // connect the new socket to same Member
         member.joinRoom(); // re-join the correct rooms
-        console.log("about to reinstate context for", member.deviceID);
+        logger.debug("about to reinstate context for", member.deviceID);
         member.reinstateContext();
     }
 }
 
 // only used to test the end screen, but we allow it to be parasitic for now
-export function sendPoemsLinesInfo(poemMember: Host | PoemEditor | PoemSpectator, shouldTest: boolean) {
-    const room = roomIDToRoom.get(poemMember.roomID);
-
-    if (shouldTest) {
-        console.log("sending test poemsLines data in a way that is unusual");
+export function sendCompletedArtTestData(member: Host | PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator, testingMedium: Medium) {
+    if (testingMedium === Medium.POETRY) {
+        logger.debug("sending test poemsLines data in a way that is unusual");
         // poemsLinesTestData is an array of arrays of lines
         for (const linesArray of poemsLinesTestData) {
-            poemMember.io
-                .to(poemMember.socket.id)
+            member.io
+                .to(member.socket.id)
                 .emit(
                     "stcPoemLines",
                     linesArray,
                 );
         }
         return;
-    }
-
-    if (!room) {
-        console.log("room not found");
+    } else if (testingMedium === Medium.DRAWING) {
+        logger.debug("sending test drawing data in a way that is unusual");
+        member.io.to(member.socket.id).emit("stcCompletedDrawings", multipleDrawingsTestData);
         return;
     }
-    console.log(poemMember.name, "request poems from room which has", room.finishedWorks.length);
-    for (const poemObj of room.finishedWorks) {
+}
+
+export function sendCollaborationContributionsInfo(member: Host | PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator) {
+    const room = roomIDToRoom.get(member.roomID);
+
+    if (!room) {
+        logger.debug("room not found");
+        return;
+    }
+    logger.debug(member.name, "request collaborations from room which has", room.finishedWorks.length);
+    for (const collaborationObj of room.finishedWorks) {
         // TODO: Explore this, this could improve server-side efficiency:
         // poemMember.io.in(poemMember.roomID).emit("stcPoemLines", Array.from(poemObj.lines));
-        poemMember.io
-            .to(poemMember.socket.id)
-            .emit(
-                "stcPoemLines",
-                Array.from(poemObj.lines),
-            );
+        if ("lines" in collaborationObj) {
+            member.io
+                .to(member.socket.id)
+                .emit(
+                    "stcPoemLines",
+                    Array.from((collaborationObj as Poem).lines),
+                );
+        } else {
+            member.io
+                .to(member.socket.id)
+                .emit(
+                    "stcDrawingPanels",
+                    Array.from((collaborationObj as Drawing).panels),
+                );
+        }
     }
 }

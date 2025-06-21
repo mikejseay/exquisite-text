@@ -2,27 +2,41 @@ import { createContext, useContext } from "react";
 import { ISocketInfo } from "../types";
 
 export const SocketInfoContext = createContext<ISocketInfo>({
-    userInfo: null,
-    poemsLines: null,
+    // agnostic
+    editorActive: null,
     joinErrorMessage: null,
     roomCode: null,
     setRoomCode: () => null,
     settingsEnabled: null,
-    lineLength: null,
-    nRounds: null,
-    nPoems: null,
-    setLineLength: () => null,
-    setNRounds: () => null,
-    setNPoems: () => null,
-    lines: null,
+    userInfo: null,
+    setEditorActive: () => null,
+
+    // poems
     lineEdits: null,
+    lineLength: null,
+    lines: null,
+    nPoems: null,
+    nRounds: null,
+    onLastContribution: null,
     poemInput: null,
     poemInputSpectate: null,
-    onLastLine: null,
-    editorActive: null,
+    poemsLines: null,
+    setLineLength: () => null,
+    setNPoems: () => null,
+    setNRounds: () => null,
     setPoemInput: () => null,
-    strokeHistory: null,
+
+    // drawings
+    panels: null,
+    panelEdits: null,
+    nDrawings: null,
+    setNDrawings: () => null,
     setStrokeHistory: () => null,
+    strokeHistory: null,
+    setCompletedDrawings: () => null,
+    completedDrawings: null,
+    medium: null,
+    setMedium: () => null,
 });
 
 export const useSocketInfo = (): ISocketInfo => {

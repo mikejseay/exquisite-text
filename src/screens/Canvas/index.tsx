@@ -1,282 +1,553 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+// src/screens/Canvas/index.tsx
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import IconButton from "@mui/material/IconButton";
+import Slider from "@mui/material/Slider";
+import Divider from "@mui/material/Divider";
+import Tooltip from "@mui/material/Tooltip";
+import { useTheme } from "@mui/material/styles";
+import { debounce } from "es-toolkit";
+import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
+import UndoIcon from "@mui/icons-material/Undo";
+// Pass / Complete Drawing Icon options:
+import MoveUpIcon from "@mui/icons-material/MoveUp";
+import DoneIcon from "@mui/icons-material/Done";
+import RedoIcon from "@mui/icons-material/Redo";
+import PaletteIcon from "@mui/icons-material/Palette";
 import Button from "@mui/material/Button";
-import { Medium, Point, Role } from "../../types";
-import { emitCreateRoomAndHost, emitJoinAs, emitRecognizeDevice, emitSendCanvas } from "../../context/SocketRequestors";
 
-type ExtendedTouch = Touch & {
-    force?: number;
-    touchType?: string;
-};
+import { logger } from "../../utilities/loggerUtils";
+import { Point } from "../../types";
+import { emitSendLastPanel, emitSendPanel, emitSendPanelEdit } from "../../context/SocketRequestors";
+import { useSocketInfo } from "../../context/SocketInfoProvider";
+import { DEFAULT_COLOR, drawOnCanvas } from "../../utilities/canvasUtils";
+import { useDisableScroll } from "../../hooks/useDisableScroll";
+import { ScaleDirection, pixelRatio, scalePoints } from "../../utilities/scaleUtils";
+import { aboveCanvasHeight } from "../../constants";
 
-export const panelHeightRatioOfWindow = 0.3;
-const defaultLineWidth = 30;
-const fullCanvasHeightRatioOfWindow = 0.8;
-const overlap = 0.2;
-const defaultPressure = 0.1;
-const lineColor = "grey";
-
-/* TODO:
-    [ ] Ensure that spectator receives entire drawing instead of just single frame
-    [ ] Modularize all server socket functions to work with both poems and canvases
-    [ ] For the watcher, the cursor is not in right spot until writer starts writing:
-        As a part of reinstateContext, find the editor you're supposed to be spectating,
-        Find the poem they're editing, get the current line edit, and send it via "stcLineEditorWatch"
-
+/* // TODO:
+    * Now that we're using buttons for canvas controls
+        Make clicking the button show the descriptor tooltip
+        because ipad/iphone has no mouseover
+    * In highly-portrait viewport situations, the line width slider overflows out of view to the left
+    * On iPad, the default line width of using your finger after using pencil is extremely small,
+        but a single dot is very large
+    * End screen aspect ratio not getting set up correctly for small macbook / iPad screen in landscape
+    * "How to play" modal for the drawing version of the game?
+    * Fix bug where user changes system theme it disconnects them and they have to refresh browser
+    * General code quality
+    * One player two drawings, it should alternate between drawings
+    * Two players two drawings, one drawing is complete, player gets no visual feedback that
+        they're waiting on the other player
+    * Spectator view currently defaults to carousel, but if enough real estate is available
+        We could consider laying them out as two columns
+    * Lobby vertically centered, probably too far down the page
 */
 
-export function drawOnCanvas (newPoints: Point[], canvasRef: React.MutableRefObject<HTMLCanvasElement | null>) {
-    if (!canvasRef) {
-        console.warn("No canvasRef in CanvasSpectator");
-        return;
-    }
-    const canvas = canvasRef.current;
-    const context = canvas?.getContext("2d");
-    if (!context) {
-        console.warn("No context in CanvasSpectator");
-        return;
-    }
+type ExtendedTouch = Touch & {
+  force?: number;
+  touchType?: string;
+};
 
-    context.strokeStyle = lineColor;
-    context.lineCap = "round";
-    context.lineJoin = "round";
+const DEFAULT_LINE_WIDTH = 8;
+export const OVERLAP = 0.2;
+const DEFAULT_PRESSURE = 0.5;
+const MAX_LINE_WIDTH_VIA_SLIDER = 20;
 
-    // newPoints is length 1 if being drawn by handleStart
-    if (newPoints.length === 1) {
-        const point = newPoints[0];
-        context.fillStyle = lineColor;
-        context.lineWidth = point.lineWidth;
-        context.beginPath();
-        context.arc(point.x, point.y, point.lineWidth / 2, 0, Math.PI * 2);
-        context.closePath();
-        context.fill();
-        return;
-    }
-
-    context.beginPath();
-
-    // newPoints is length 2 if being drawn by handleMove
-    for (let i = 0; i < newPoints.length - 1; i++) {
-        const startPoint = newPoints[i];
-        const endPoint = newPoints[i + 1];
-
-        context.moveTo(startPoint.x, startPoint.y);
-        context.lineWidth = startPoint.lineWidth;
-        context.lineTo(endPoint.x, endPoint.y);
-        context.stroke();
-    }
-}
+export const PANEL_HEIGHT_MIN = 300; // retina is double
+export const PANEL_WIDTH_MIN = 667;
+// 2.23
+export const PANEL_ASPECT_RATIO = PANEL_WIDTH_MIN / PANEL_HEIGHT_MIN;
+// 780 px
+export const DRAWING_HEIGHT_MIN = (3 - 2 * OVERLAP) * PANEL_HEIGHT_MIN;
+export const DRAWING_WIDTH_MIN = PANEL_WIDTH_MIN;
+// 0.86
+export const DRAWING_ASPECT_RATIO = DRAWING_WIDTH_MIN / DRAWING_HEIGHT_MIN;
 
 const Canvas: React.FC = () => {
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const theme = useTheme();
+    const { strokeHistory, editorActive, onLastContribution } = useSocketInfo();
     const [ points, setPoints ] = useState<Point[]>([]);
     const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
-    const [ playerCanvases, setPlayerCanvases ] = useState<ImageData[]>([]);
+    const [ undidStrokeHistory, setUndidStrokeHistory ] = useState<Point[][]>([]);
     const [ isMousedown, setIsMousedown ] = useState(false);
-    const [ allowDirect, setAllowDirect ] = useState(true);
-    const [ lineWidth, setLineWidth ] = useState(0);
-    const [ eventPressure, setEventPressure ] = useState(defaultPressure);
-    const [ drawType, setDrawType ] = useState<"fill" | "stroke" | "noDrawYet">("noDrawYet");
-    const [ player, setPlayer ] = useState<number>(0);
-    const [ coordinates, setCoordinates ] = useState<{ x: number, y: number}>({ x: 0, y: 0 });
-    const [ hasJoinedRoom, setHasJoinedRoom ] = useState<boolean>(false);
+    const [ passEnabled, setPassEnabled ] = useState(false);
+    const [ dimensions, setDimensions ] = useState({
+        width: PANEL_WIDTH_MIN,
+        height: PANEL_HEIGHT_MIN,
+    });
+    const [ strokeColor, setStrokeColor ] = useState<string>(DEFAULT_COLOR);
+    const [ isEraserActive, setIsEraserActive ] = useState<boolean>(false);
+    const [ scaleFactor, setScaleFactor ] = useState<number>(1);
+    const [ triggerRedraw, setTriggerRedraw ] = useState<number>(0);
+    const [ baseLineWidth, setBaseLineWidth ] =
+    useState<number>(DEFAULT_LINE_WIDTH);
+    console.log(theme.palette.text);
+    const localStrokeHistoryRef = useRef<Point[][]>(localStrokeHistory);
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-    if (!hasJoinedRoom) {
-        emitCreateRoomAndHost("ROOM", Medium.DRAWING);
-        emitRecognizeDevice();
-        emitJoinAs("ROOM", "PETER", Role.EDITOR, true);
-        setHasJoinedRoom(true);
-    }
+    useEffect(() => {
+        localStrokeHistoryRef.current = localStrokeHistory;
+    }, [ localStrokeHistory ]);
 
-    const switchPlayer = () => {
-        const canvas = canvasRef.current;
-        const context = canvas?.getContext("2d");
-        if (canvas && context) {
-            // Extract the whole canvas
-            const playerCanvas = context.getImageData(0, 0, canvas.width, canvas.height);
+    useDisableScroll();
 
-            // Add it to a list of canvases per player
-            const newPlayerCanvases = [ ...playerCanvases, playerCanvas ];
-            setPlayerCanvases(newPlayerCanvases);
+    // Handle resizing of the window
+    useLayoutEffect(() => {
+        const handleResize = () => {
+            const canvas = canvasRef.current;
+            if (!canvas) return;
+            // Warning in browser log regarding willReadFrequently went away after adding as true
+            const context = canvas.getContext("2d", { willReadFrequently: true });
+            if (!context) return;
 
-            // Shift canvas contents upward by 0.8 times the canvas height (old method)
-            const imageData = context.getImageData(0, context.canvas.height * (1 - overlap), context.canvas.width, context.canvas.height);
-            context.putImageData(imageData, 0, 0);
-            context.clearRect(context.canvas.width, context.canvas.height * overlap, 0, context.canvas.height);
+            // Calculate new dimensions
+            const viewportHeight = window.innerHeight - aboveCanvasHeight;
+            const viewportWidth = window.innerWidth;
+            const viewportAspectRatio = viewportWidth / viewportHeight;
+            let newWidth: number;
+            let newHeight: number;
 
-            // Shift canvas contents upward by 0.8 times the canvas height (new method)
-            // context.globalCompositeOperation = "copy";
-            // context.drawImage(context.canvas, 0, -context.canvas.height * (1 - overlap));
-            // context.globalCompositeOperation = "source-over";
-
-            // Completion: If the third panel is being submitted, clear the canvas, then construct a new one
-            // using the "full available height", then paste the image data from each individual player's canvas
-            // into the three vertical panels, shifting downwards by 0.8 times the canvas height each time.
-            if (player === 2) {
-                context.clearRect(0, 0, canvas.width, canvas.height);
-                let yOffset = 0;
-
-
-                canvas.style.height = `${window.innerHeight * fullCanvasHeightRatioOfWindow}px`;
-                canvas.height = window.innerHeight * devicePixelRatio * fullCanvasHeightRatioOfWindow;
-
-                newPlayerCanvases.forEach((pc) => {
-                    context.putImageData(pc, 0, yOffset);
-                    yOffset += Math.floor(pc.height * (1 - overlap));
-                });
+            if (viewportAspectRatio < PANEL_ASPECT_RATIO) {
+                newWidth = Math.max(viewportWidth, PANEL_WIDTH_MIN);
+                newHeight = Math.max(newWidth / PANEL_ASPECT_RATIO, PANEL_HEIGHT_MIN);
             } else {
-                setPlayer(player + 1);
-                setPoints([]);
-                setLocalStrokeHistory([]);
+                newHeight = Math.max(viewportHeight, PANEL_HEIGHT_MIN);
+                newWidth = Math.max(newHeight * PANEL_ASPECT_RATIO, PANEL_WIDTH_MIN);
             }
-        }
-    };
 
-    const submitCanvas = () => {
-        console.log("submitCanvas:", localStrokeHistory);
-        console.log({ localStrokeHistory });
-        emitSendCanvas(localStrokeHistory);
-    };
+            const newScaleFactor = newWidth / PANEL_WIDTH_MIN;
+            logger.debug("New Scale Factor:", newScaleFactor);
 
-    const handleStart = useCallback((e: React.MouseEvent<Element, MouseEvent> | React.TouchEvent<Element>) => {
-        let pressure = defaultPressure;
-        let x = 0;
-        let y = 0;
+            // Update state for layout purposes
+            setDimensions({ width: newWidth, height: newHeight });
+            setScaleFactor(newScaleFactor);
+        };
 
-        const canvas = canvasRef.current;
-        if (!canvas) return;
+        const debouncedHandleResize = debounce(() => {
+            logger.debug("Debounced handle resize");
+            handleResize();
+        }, 200);
 
-        const canvasBounds = canvas.getBoundingClientRect();
-
-        if ("touches" in e) {
-            const touch = e.touches[0] as ExtendedTouch;
-            x = ((touch.pageX - canvasBounds.left - window.scrollX) * window.devicePixelRatio);
-            y = ((touch.pageY - canvasBounds.top - window.scrollY) * window.devicePixelRatio);
-
-            if (allowDirect || (touch && touch.touchType !== "direct")) {
-                if (touch.force && touch.force > 0) {
-                    pressure = touch.force;
-                    setEventPressure(pressure);
-                }
-            }
-        } else {
-            pressure = 1.0;
-            x = (e.pageX - canvasBounds.left - window.scrollX) * window.devicePixelRatio;
-            y = (e.pageY - canvasBounds.top - window.scrollY) * window.devicePixelRatio;
-        }
-
-        setCoordinates({ x, y });
-        setIsMousedown(true);
-
-        setLineWidth(Math.log(pressure + 1) * defaultLineWidth);
-        const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * defaultLineWidth };
-        setPoints((prev) => [ ...prev, newPoint ]);
-        drawOnCanvas([ newPoint ], canvasRef);
-    }, [ allowDirect, drawOnCanvas, player ]);
-
-    const handleMove = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-        if (!isMousedown) {
-            return;
-        }
-        e.preventDefault();
-
-        let pressure = defaultPressure;
-        let x = 0;
-        let y = 0;
-
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        const canvasBounds = canvas.getBoundingClientRect();
-
-        if ("touches" in e) {
-            const touch = e.touches[0] as ExtendedTouch;
-
-            if (allowDirect || (touch && touch.touchType !== "direct")) {
-                if (touch.force && touch.force > 0) {
-                    pressure = touch.force;
-                    setEventPressure(pressure);
-                }
-                x = ((touch.pageX - canvasBounds.left - window.scrollX) * window.devicePixelRatio);
-                y = ((touch.pageY - canvasBounds.top - window.scrollY) * window.devicePixelRatio);
-            }
-            y = ((touch.pageY - canvasBounds.top) * window.devicePixelRatio);
-
-        } else {
-            pressure = 1.0;
-            x = (e.pageX - canvasBounds.left - window.scrollX) * window.devicePixelRatio;
-            y = (e.pageY - canvasBounds.top - window.scrollY) * window.devicePixelRatio;
-        }
-        setCoordinates({ x, y });
-
-        setLineWidth(Math.log(pressure + 1) * defaultLineWidth);
-        const newPoint = { x, y, lineWidth: Math.log(pressure + 1) * defaultLineWidth };
-        setPoints((prev) => {
-            drawOnCanvas([ prev[prev.length - 1], newPoint ], canvasRef);
-            return [ ...prev, newPoint ];
-        });
-    }, [ allowDirect, drawOnCanvas, isMousedown, player ]);
-
-    const handleEnd = useCallback(() => {
-        setIsMousedown(false);
-        setLocalStrokeHistory((prev) => [ ...prev, points ]);
-        setPoints([]);
-        setLineWidth(0);
-    }, [ points ]);
-
-
-    // This useEffect defines the panel height
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        const devicePixelRatio = window.devicePixelRatio ?? 1;
-
-        if (!canvas) return;
-        canvas.style.width = `${window.innerWidth}px`;
-        canvas.style.height = `${window.innerHeight * panelHeightRatioOfWindow}px`;
-        canvas.width = window.innerWidth * devicePixelRatio;
-        canvas.height = window.innerHeight * devicePixelRatio * panelHeightRatioOfWindow;
-    }, []);
-
-    useEffect(() => {
-        const disableScroll = (e: TouchEvent) => e.preventDefault();
-        document.body.addEventListener("touchmove", disableScroll, { passive: false });
+        handleResize();
+        window.addEventListener("resize", debouncedHandleResize);
 
         return () => {
-            document.body.removeEventListener("touchmove", disableScroll);
+            debouncedHandleResize.cancel();
+            window.removeEventListener("resize", debouncedHandleResize);
         };
     }, []);
 
+    // Redraw the canvas whenever dimensions or scaleFactor change
+    useEffect(() => {
+        setPassEnabled(!!editorActive);
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const context = canvas.getContext("2d", { willReadFrequently: true });
+        if (!context) return;
+
+        // Clear canvas
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Redraw vectorized points
+        strokeHistory?.forEach((strokeArray) =>
+            drawOnCanvas({
+                newPoints: scalePoints(
+                    strokeArray,
+                    ScaleDirection.TO_DISPLAY,
+                    scaleFactor,
+                ),
+                yOffset: 0,
+                context,
+                eraserColor: theme.palette.canvas.background,
+            }),
+        );
+
+        // Clip and add snippet to canvas
+        const imageData = context.getImageData(
+            0,
+            context.canvas.height * (1 - OVERLAP),
+            context.canvas.width,
+            context.canvas.height,
+        );
+        context.putImageData(imageData, 0, 0);
+        context.clearRect(
+            context.canvas.width,
+            context.canvas.height * OVERLAP,
+            0,
+            context.canvas.height,
+        );
+
+        // Redraw current additions from local editor
+        localStrokeHistoryRef.current?.forEach((strokeArray, index) => {
+            drawOnCanvas({
+                newPoints: scalePoints(
+                    strokeArray,
+                    ScaleDirection.TO_DISPLAY,
+                    scaleFactor,
+                ),
+                yOffset: 0,
+                context,
+                eraserColor: theme.palette.canvas.background,
+            }),
+            logger.debug(`Redrew strokeArray #${index}`);
+        });
+    }, [
+        dimensions,
+        scaleFactor,
+        editorActive,
+        passEnabled,
+        triggerRedraw,
+        strokeHistory,
+    ]);
+
+    function passTurn() {
+        emitSendPanel(localStrokeHistory);
+        setPoints([]);
+        setLocalStrokeHistory([]);
+        setPassEnabled(false);
+    }
+
+    function completeDrawing() {
+        emitSendLastPanel(localStrokeHistory);
+        setLocalStrokeHistory([]);
+    }
+
+    const handleStart = useCallback(
+        (e: React.MouseEvent | React.TouchEvent) => {
+            let pressure = DEFAULT_PRESSURE;
+            let x = 0;
+            let y = 0;
+
+            const canvas = canvasRef.current;
+            if (!canvas) return;
+            const context = canvas.getContext("2d", { willReadFrequently: true });
+            if (!context) return;
+
+            const canvasBounds = canvas.getBoundingClientRect();
+            const isTouch = "touches" in e;
+
+            if (isTouch) {
+                const touch = e.touches[0] as ExtendedTouch;
+                x = touch.pageX - canvasBounds.left - window.scrollX;
+                y = touch.pageY - canvasBounds.top - window.scrollY;
+                if (touch && touch.touchType !== "direct") {
+                    if (touch.force && touch.force > 0) {
+                        pressure = touch.force;
+                    }
+                }
+            } else {
+                // For mouse events, override with the custom line width
+                x = e.pageX - canvasBounds.left - window.scrollX;
+                y = e.pageY - canvasBounds.top - window.scrollY;
+            }
+
+            setIsMousedown(true);
+
+            // Calculate line width:
+            // Use pressure for touch events; otherwise use the user-adjusted customLineWidth.
+            const lineWidth = Math.log(pressure + 1) * baseLineWidth * scaleFactor;
+            const color = isEraserActive
+                ? "!e"
+                : strokeColor;
+            const newPoint = { x, y, lineWidth, color };
+            setPoints((prev) => [ ...prev, newPoint ]);
+
+            drawOnCanvas({
+                newPoints: [ newPoint ],
+                yOffset: 0,
+                context,
+                eraserColor: theme.palette.canvas.background,
+            });
+        },
+        [ scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
+    );
+
+    const handleMove = useCallback(
+        (e: React.MouseEvent | React.TouchEvent) => {
+            if (!isMousedown) return;
+            e.preventDefault();
+
+            let pressure = DEFAULT_PRESSURE;
+            let x = 0;
+            let y = 0;
+
+            const canvas = canvasRef.current;
+            if (!canvas) return;
+            const context = canvas.getContext("2d", { willReadFrequently: true });
+            if (!context) return;
+
+            const canvasBounds = canvas.getBoundingClientRect();
+            const isTouch = "touches" in e;
+
+            if (isTouch) {
+                const touch = e.touches[0] as ExtendedTouch;
+                if (touch && touch.touchType !== "direct") {
+                    if (touch.force && touch.force > 0) {
+                        pressure = touch.force;
+                    }
+                    x = touch.pageX - canvasBounds.left - window.scrollX;
+                    y = touch.pageY - canvasBounds.top - window.scrollY;
+                }
+                y = touch.pageY - canvasBounds.top;
+            } else {
+                x = e.pageX - canvasBounds.left - window.scrollX;
+                y = e.pageY - canvasBounds.top - window.scrollY;
+            }
+
+            const lineWidth = Math.log(pressure + 1) * baseLineWidth * scaleFactor;
+            const color = isEraserActive
+                ? "!e"
+                : strokeColor;
+            const newPoint = { x, y, lineWidth, color };
+
+            setPoints((prev) => {
+                const lastPoint = prev[prev.length - 1];
+                if (lastPoint) {
+                    drawOnCanvas({
+                        newPoints: [ lastPoint, newPoint ],
+                        yOffset: 0,
+                        context,
+                        eraserColor: theme.palette.canvas.background,
+                    });
+                }
+                return [ ...prev, newPoint ];
+            });
+        },
+        [ isMousedown, scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
+    );
+
+    const debouncedEmitPanel = useCallback(
+        debounce((currentPanel: Point[][]) => {
+            emitSendPanelEdit(currentPanel);
+        }, 200),
+        [],
+    );
+
+    const handleEnd = useCallback(() => {
+        setIsMousedown(false);
+        const scaledPoints: Point[] = scalePoints(
+            points,
+            ScaleDirection.TO_UNIVERSAL,
+            scaleFactor,
+        );
+        const currentPanel = [ ...localStrokeHistory, scaledPoints ];
+        debouncedEmitPanel(currentPanel);
+        setLocalStrokeHistory((prev) => [ ...prev, scaledPoints ]);
+        setPoints([]);
+        setUndidStrokeHistory([]);
+    }, [ points, scaleFactor ]);
+
+    const handleUndo = () => {
+        if (localStrokeHistory.length === 0) return;
+
+        const lastStroke = localStrokeHistory[localStrokeHistory.length - 1];
+        const strokeHistoryMinusLastStroke = localStrokeHistory.slice(0, -1);
+
+        setLocalStrokeHistory(strokeHistoryMinusLastStroke);
+        setUndidStrokeHistory([ ...undidStrokeHistory, lastStroke ]);
+        debouncedEmitPanel(strokeHistoryMinusLastStroke);
+        setTriggerRedraw((prev) => (prev += 1));
+    };
+
+    const handleRedo = () => {
+        if (undidStrokeHistory.length === 0) return;
+
+        const lastUndoneStroke = undidStrokeHistory[undidStrokeHistory.length - 1];
+        const updatedLocalStrokeHistory = [ ...localStrokeHistory, lastUndoneStroke ];
+
+        setLocalStrokeHistory(updatedLocalStrokeHistory);
+        setUndidStrokeHistory(undidStrokeHistory.slice(0, -1));
+        debouncedEmitPanel(updatedLocalStrokeHistory);
+        setTriggerRedraw((prev) => (prev += 1));
+    };
+
     return (
-        <div style={{ display: "flex", flexDirection: "column" }}>
-            <p style={{ textAlign: "center" }}>
-                {"Pressure: " + eventPressure}
-                <br />
-                {"Line Width: " + lineWidth}
-                <br />
-                {"Draw Type: " + drawType}
-                <br />
-                {"Current Player: " + player}
-                <br />
-                {"Coordinates: " + JSON.stringify(coordinates)}
-            </p>
-            <Button onClick={() => setAllowDirect(!allowDirect)}>Toggle Direct</Button>
-            <Button onClick={switchPlayer}>
-                {player < 2
-                    ? "Pass"
-                    : "Finish"}
-            </Button>
-            <Button onClick={submitCanvas}>Submit Canvas</Button>
-            <canvas
-                ref={canvasRef}
-                onMouseDown={handleStart}
-                onTouchStart={handleStart}
-                onMouseMove={handleMove}
-                onTouchMove={handleMove}
-                onMouseUp={handleEnd}
-                onTouchEnd={handleEnd}
+        <>
+            <div
+                className="canvas-toolbar"
+                style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: theme.spacing(1),
+                    marginBottom: theme.spacing(1),
+                    // Optionally center elements in this bar
+                    // justifyContent: "flex-start",
+                    // width: "100%",
+                }}
             >
-                Sorry, your browser is too old for this demo.
-            </canvas>
-        </div>
+                <Tooltip title="Undo">
+                    <span>
+                        <IconButton
+                            onClick={handleUndo}
+                            disabled={!editorActive || localStrokeHistory.length === 0}
+                        >
+                            <UndoIcon />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+                <Tooltip title="Redo">
+                    <span>
+                        <IconButton
+                            onClick={handleRedo}
+                            disabled={!editorActive || undidStrokeHistory.length === 0}
+                        >
+                            <RedoIcon />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+                <Divider
+                    orientation="vertical"
+                    sx={{
+                        height: 28,
+                        alignSelf: "center",
+                        backgroundColor: theme.palette.divider,
+                        marginLeft: theme.spacing(0.5),
+                        marginRight: theme.spacing(1.5),
+                    }}
+                />
+                {/* Other controls */}
+                <Tooltip title="Pick Line Width">
+                    <Slider
+                        value={baseLineWidth}
+                        onChange={(_, v) => setBaseLineWidth(v as number)}
+                        step={1}
+                        min={1}
+                        max={MAX_LINE_WIDTH_VIA_SLIDER}
+                        valueLabelDisplay="auto"
+                        disabled={!editorActive}
+                        sx={{
+                            marginRight: theme.spacing(2.75),
+                            width: 120,
+                            cursor: "ew-resize",
+                            color: strokeColor,
+                            "& .MuiSlider-rail": {
+                                opacity: 0.3,
+                                bgcolor: strokeColor,
+                                boxShadow: "0 0 4px 4px rgba(0, 0, 0, 0.7)",
+                            },
+                            "& .MuiSlider-thumb": {
+                                width: `${baseLineWidth}px`,
+                                height: `${baseLineWidth}px`,
+                                bgcolor: strokeColor,
+                                border: "2px solid white",
+                                "&:hover, &.Mui-focusVisible": {
+                                    boxShadow: "0 0 4px 2px rgba(0, 0, 0, 0.7)",
+                                },
+                                "&:active": {
+                                    boxShadow: "0 0 4px 2px rgba(0, 0, 0, 0.7)",
+                                },
+                                cursor: "ew-resize",
+                            },
+                        }}
+                    />
+                </Tooltip>
+                <Tooltip title="Pick Color">
+                    <span>
+                        <IconButton
+                            component="label"
+                            disabled={!editorActive || isEraserActive}
+                        >
+                            <input
+                                type="color"
+                                hidden
+                                value={strokeColor}
+                                onChange={(e) => setStrokeColor(e.target.value)}
+                            />
+                            <PaletteIcon />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+                <Tooltip
+                    title={isEraserActive
+                        ? "Switch to Pen"
+                        : "Switch to Eraser"}
+                >
+                    <span>
+                        <IconButton
+                            onClick={() => setIsEraserActive((prev) => !prev)}
+                            disabled={!editorActive}
+                            color={isEraserActive
+                                ? "primary"
+                                : "default"}
+                        >
+                            <FormatColorResetIcon />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+                <Divider
+                    orientation="vertical"
+                    sx={{
+                        height: 28,
+                        alignSelf: "center",
+                        backgroundColor: theme.palette.divider,
+                        marginLeft: theme.spacing(0.5),
+                        marginRight: theme.spacing(2),
+                    }}
+                />
+                <Tooltip title={
+                    onLastContribution
+                        ? "Complete Drawing"
+                        : "Pass"
+                }>
+                    <span>
+                        <Button
+                            variant="contained"
+                            tabIndex={-1}
+                            startIcon={onLastContribution
+                                ? <DoneIcon />
+                                : <MoveUpIcon />}
+                            onClick={onLastContribution
+                                ? completeDrawing
+                                : passTurn}
+                        >
+                            {
+                                onLastContribution
+                                    ? "Done"
+                                    : "Pass"
+                            }
+                        </Button>
+                    </span>
+                </Tooltip>
+            </div>
+            <div
+                className="canvas-container"
+                style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    paddingLeft: theme.spacing(2),
+                    overflow: "visible",
+                }}
+            >
+                <canvas
+                    ref={canvasRef}
+                    width={dimensions.width * pixelRatio}
+                    height={dimensions.height * pixelRatio}
+                    style={{
+                        width: `${dimensions.width}px`,
+                        height: `${dimensions.height}px`,
+                        border: "1px solid black",
+                        backgroundColor: theme.palette.canvas.background,
+                        display: "block",
+                        pointerEvents: editorActive
+                            ? "auto"
+                            : "none",
+                        opacity: editorActive
+                            ? 1
+                            : 0.5,
+                        boxShadow: editorActive
+                            ? `0 0 8px 4px ${theme.palette.canvas.boxShadow}`
+                            : undefined,
+                    }}
+                    onMouseDown={handleStart}
+                    onTouchStart={handleStart}
+                    onMouseMove={handleMove}
+                    onTouchMove={handleMove}
+                    onMouseUp={handleEnd}
+                    onTouchEnd={handleEnd}
+                />
+            </div>
+        </>
     );
 };
 

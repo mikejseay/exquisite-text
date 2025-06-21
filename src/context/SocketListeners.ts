@@ -1,6 +1,8 @@
 import { socket } from "../components/SocketHandler";
-import { ILine, IPoemSettingsInfo, ISocketInfoListeners, IUserTableInfo, Point } from "../types";
+import { IGameSettingsInfo, ILine, IPanel, ISocketInfoListeners, IUserTableInfo, Medium, Point } from "../types";
 import { shortDur } from "../constants";
+import { logger } from "../utilities/loggerUtils";
+
 
 export const socketListeners = ({
     setUserInfo,
@@ -11,14 +13,19 @@ export const socketListeners = ({
     setLineLength,
     setNRounds,
     setNPoems,
+    setNDrawings,
     setLines,
+    setPanels,
+    setPanelEdits,
     setLineEdits,
     setPoemInput,
     setPoemInputSpectate,
-    setOnLastLine,
+    setOnLastContribution,
     setEditorActive,
     navigate,
     setStrokeHistory,
+    setCompletedDrawings,
+    setMedium,
 }: ISocketInfoListeners) => {
     // receivePoemsLinesListener
     const receivePoemsLines = (myPoemLines: ILine[]) => {
@@ -41,21 +48,51 @@ export const socketListeners = ({
         setRoomCode(info);
     };
 
-    const receiveGameSettingsInfo = (info: IPoemSettingsInfo) => {
+    const receiveGameSettingsInfo = (info: IGameSettingsInfo) => {
         setLineLength(info["lineLength"]);
         setNRounds(info["nRounds"]);
         setNPoems(info["nPoems"]);
+        setNDrawings(info["nDrawings"]);
     };
 
     const receiveGameSettingsEnabled = (enabled: boolean) => {
         setSettingsEnabled(enabled);
     };
 
-    const receiveLineSpectator = (poemIndex: number, line: string) => {
+    // the React state lines is of type Array<Array<ILine["content"]>>
+    // this is because each line is of type ILine["content"]
+    // each collaboration is of type Array<ILine["content"]>
+    // and thus all the lines together for all collaborations is Array<Array<ILine["content"]>>
+    const receiveLineSpectator = (collaborationIndex: number, content: ILine["content"]) => {
+        // Here, the spectator receives a single line at a time
         setLines(prevLines => {
-            return [ ...prevLines.slice(0, poemIndex), [ ...prevLines[poemIndex], line ], ...prevLines.slice(poemIndex + 1) ];
+            // The slicing accomplishes only appending to the particular collaboration
+            return [ ...prevLines.slice(0, collaborationIndex), [ ...prevLines[collaborationIndex], content ], ...prevLines.slice(collaborationIndex + 1) ];
         },
         );
+    };
+
+    const receivePanelSpectator = (collaborationIndex: number, content: IPanel["content"]) => {
+        // If we are receiving a new panel, that's because the previous edit no longer applies
+        setPanelEdits(prevPanelEdits => [
+            ...prevPanelEdits.slice(0, collaborationIndex),
+            [],
+            ...prevPanelEdits.slice(collaborationIndex + 1),
+        ]);
+        setPanels(prevPanels => {
+            return [ ...prevPanels.slice(0, collaborationIndex), [ ...prevPanels[collaborationIndex], content ], ...prevPanels.slice(collaborationIndex + 1) ];
+        },
+        );
+    };
+
+    // IS THS LOGIC LEGIT!??@!?@!
+    const receivePanelEditSpectator = (collaborationIndex: number, content: IPanel["content"]) => {
+        logger.debug("receivePanelEditSpectator", collaborationIndex, content);
+        setPanelEdits(prevPanelEdits => [
+            ...prevPanelEdits.slice(0, collaborationIndex),
+            content,
+            ...prevPanelEdits.slice(collaborationIndex + 1),
+        ]);
     };
 
     const receiveLineEditSpectator = (poemIndex: number, value: string) => {
@@ -74,22 +111,36 @@ export const socketListeners = ({
         setPoemInputSpectate(lineEditorWatchVal);
     };
 
-    const receiveLastLine = (lastLine: boolean) => {
-        setOnLastLine(lastLine);
+    const receiveLastContribution = (lastLine: boolean) => {
+        setOnLastContribution(lastLine);
     };
 
     const receiveEditorActive = (editorActiveFromServer: boolean) => {
+        logger.debug("receiveEditorActive:", { editorActiveFromServer });
         setEditorActive(editorActiveFromServer);
     };
 
     const receiveNavigate = (targetRoute: string) => {
-        console.log("receiveNavigate activated targeting", targetRoute);
+        logger.debug("receiveNavigate activated targeting", targetRoute);
         navigate(targetRoute);
     };
 
+    // receivePanel, as it were ;)
     const receiveStrokeHistory = (strokeHistory: Point[][]) => {
-        console.log("receiveStrokeHistory activated targeting", JSON.stringify(strokeHistory));
+        logger.debug("receiveStrokeHistory activated targeting", JSON.stringify(strokeHistory));
         setStrokeHistory(strokeHistory);
+    };
+
+    // Outermost array contains drawings Point[][][]
+    // Drawings contain panels Point[][]
+    // Panels contain vectorized stroke histories Point[]
+    const receiveCompletedDrawings = (completedDrawings: Point[][][][]) => {
+        setCompletedDrawings(completedDrawings);
+    };
+
+    const receiveMedium = (medium: Medium) => {
+        logger.debug("receiveMedium:", medium);
+        setMedium(medium);
     };
 
     socket.on("stcPoemLines", receivePoemsLines);
@@ -99,13 +150,17 @@ export const socketListeners = ({
     socket.on("stcGameSettingsInfo", receiveGameSettingsInfo);
     socket.on("stcGameSettingsEnabled", receiveGameSettingsEnabled);
     socket.on("stcLineSpectator", receiveLineSpectator);
+    socket.on("stcPanelSpectator", receivePanelSpectator);
+    socket.on("stcPanelEditSpectator", receivePanelEditSpectator);
     socket.on("stcLineEditSpectator", receiveLineEditSpectator);
     socket.on("stcLineEdit", receiveLineEdit);
     socket.on("stcLineEditorWatch", receiveLineEditorWatch);
-    socket.on("stcLastLine", receiveLastLine);
+    socket.on("stcLastContribution", receiveLastContribution);
     socket.on("stcEditorActive", receiveEditorActive);
     socket.on("stcNavigate", receiveNavigate);
     socket.on("stcStrokeHistory", receiveStrokeHistory);
+    socket.on("stcCompletedDrawings", receiveCompletedDrawings);
+    socket.on("stcMedium", receiveMedium);
 
     return () => {
         socket.off("stcPoemLines", receivePoemsLines);
@@ -115,12 +170,16 @@ export const socketListeners = ({
         socket.off("stcGameSettingsInfo", receiveGameSettingsInfo);
         socket.off("stcGameSettingsEnabled", receiveGameSettingsEnabled);
         socket.off("stcLineSpectator", receiveLineSpectator);
+        socket.off("stcPanelSpectator", receivePanelSpectator);
+        socket.off("stcPanelEditSpectator", receivePanelEditSpectator);
         socket.off("stcLineEditSpectator", receiveLineEditSpectator);
         socket.off("stcLineEdit", receiveLineEdit);
         socket.off("stcLineEditorWatch", receiveLineEditorWatch);
-        socket.off("stcLastLine", receiveLastLine);
+        socket.off("stcLastContribution", receiveLastContribution);
         socket.off("stcEditorActive", receiveEditorActive);
         socket.off("stcNavigate", receiveNavigate);
         socket.off("stcStrokeHistory", receiveStrokeHistory);
+        socket.off("stcCompletedDrawings", receiveCompletedDrawings);
+        socket.off("stcMedium", receiveMedium);
     };
 };

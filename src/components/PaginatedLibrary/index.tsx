@@ -12,7 +12,7 @@ import {
     IPoem,
     IPoems,
 } from "../../types";
-import isNil from "lodash/isNil";
+import { isNil } from "es-toolkit";
 import { nPoemsPerPage } from "../../constants";
 
 export default function PaginatedLibrary({ noResults }: { noResults: string}): JSX.Element {

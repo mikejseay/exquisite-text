@@ -1,10 +1,10 @@
 import { socket } from "../components/SocketHandler";
 import { v4 as uuidv4 } from "uuid";
-import isNil from "lodash/isNil";
+import { isNil } from "es-toolkit";
 import { LineLength, Medium, Point, Role } from "../types";
+import { logger } from "../utilities/loggerUtils";
 
 export const emitRecognizeDevice = () => {
-
     // set this to true if you want to be able to connect to the game
     // multiple times from the same browser
     if (process.env.REACT_APP_DEBUG_SINGLE_BROWSER === "true") {
@@ -27,8 +27,14 @@ export const emitRequestUserTableInfo = (shouldTest = false) => {
     socket.emit("ctsRequestUserTableInfo", shouldTest);
 };
 
-export const emitRequestPoemsLines = (shouldTest = false) => {
-    socket.emit("ctsRequestPoemsLines", shouldTest);
+// Testing
+export const emitRequestPoemsLines = () => {
+    socket.emit("ctsRequestPoemsLines");
+};
+
+// Testing
+export const emitRequestDrawings = () => {
+    socket.emit("ctsRequestDrawings");
 };
 
 export const emitCreateRoomAndHost = (roomID: string, medium: Medium) => {
@@ -36,16 +42,18 @@ export const emitCreateRoomAndHost = (roomID: string, medium: Medium) => {
 };
 
 export const emitJoinAs = (roomID: string, name: string, memberType: Role, isTest = false) => {
-    console.log("emitJoinAs activated as", name, "is trying to join", roomID, "as", memberType);
+    logger.debug("emitJoinAs activated as", name, "is trying to join", roomID, "as", memberType);
     socket.emit("ctsJoinAs", roomID.toUpperCase(), name.toUpperCase(), memberType, isTest);
 };
 
-export const emitAlterGameSettings = (newLineLength: LineLength, nPoems: number, nRounds: number) => {
-    socket.emit("ctsAlterGameSettings", {
-        lineLength: newLineLength,
-        nPoems,
-        nRounds,
-    });
+interface IGameSettings {
+    lineLength?: LineLength;
+    nPoems?: number;
+    nRounds?: number;
+    nDrawings?: number;
+}
+export const emitAlterGameSettings = (gameSettings: IGameSettings) => {
+    socket.emit("ctsAlterGameSettings", gameSettings);
 };
 
 export const emitStartGame = () => {
@@ -68,20 +76,6 @@ export const emitLeave = () => {
     socket.emit("ctsLeave");
 };
 
-/* TODO: WE DON'T NEED THIS!??!?!
-export const emitRequestLineEdit = () => {
-    socket.emit("ctsRequestLineEdit");
-};
-
-export const emitRequestEditorActive = () => {
-    socket.emit("ctsRequestEditorActive");
-};
-
-export const emitRequestLastLineStatus = () => {
-    socket.emit("ctsRequestLastLineStatus");
-};
-*/
-
 export const emitEditLine = (value: string) => {
     socket.emit("ctsEditLine", value);
 };
@@ -94,12 +88,16 @@ export const emitSendLastLine = (value: string | null) => {
     socket.emit("ctsSendLastLine", value);
 };
 
-export const emitSendCanvas = (value: Point[][] | null) => {
-    console.log("sendCanvas:", value);
-    socket.emit("ctsSendCanvas", value);
+export const emitSendPanelEdit = (value: Point[][] | null) => {
+    logger.debug("sendPanelEdit:", value);
+    socket.emit("ctsSendPanelEdit", value);
 };
 
-export const emitRequestCanvas = () => {
-    console.log("emitRequestCanvas activated");
-    socket.emit("ctsRequestCanvas");
+export const emitSendPanel = (value: Point[][] | null) => {
+    logger.debug("sendCanvas:", value);
+    socket.emit("ctsSendPanel", value);
+};
+
+export const emitSendLastPanel = (value: Point[][] | null) => {
+    socket.emit("ctsSendLastPanel", value);
 };

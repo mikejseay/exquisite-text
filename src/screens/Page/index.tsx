@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useParams } from "react-router-dom";
-import isNil from "lodash/isNil";
+import { isNil } from "es-toolkit";
 
 import { Poem } from "../../components/Poem";
 import { getPoemById } from "../../services/poems";

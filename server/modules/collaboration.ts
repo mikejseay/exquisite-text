@@ -1,12 +1,22 @@
 import { Server } from "socket.io";
+import * as dotenv from "dotenv";
 import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid for lines
-import { ClientToServerEvents, ILine, InterServerEvents, ServerToClientEvents, SocketData } from "../../src/types";
+import {
+    ClientToServerEvents,
+    ILine,
+    IPanel,
+    InterServerEvents,
+    Point,
+    ServerToClientEvents,
+    SocketData,
+} from "../../src/types";
 import { storeLine } from "../queries";
-import { getRoom } from "../utilities/sockets";
+import { getRoom } from "../utilities/socketUtils";
 import { analyzeBeginning } from "./poem_bot";
 import type { PoemRoom } from "./room";
+import { logger } from "../utilities/loggerUtils";
 
-// TODO: Finish front-end components for Canvas analogous to Poem stuff, starting with Canvas / CanvasSpectator screens
+dotenv.config({ path: __dirname + "/../.env" });
 
 class Collaboration {
     io: Server<
@@ -72,7 +82,7 @@ export class Poem extends Collaboration {
     async submitLine(authorID: string, firstPart: string, secondPart: string) {
         const myLine = {
             ID: this.ID,
-            lineIndex: this.lines.size,
+            contributionIndex: this.lines.size,
             content: firstPart,
             authorDevice: authorID,
             passerDevice: this.mostRecentEditor, // previous editor, starts at ""
@@ -119,5 +129,64 @@ export class Poem extends Collaboration {
 
     sendLine(line: string, socketID: string) {
         this.io.to(socketID).emit("stcLineSpectator", this.indexInGame, line);
+    }
+}
+
+export class Drawing extends Collaboration {
+    // represents a single drawing
+
+    panelHint: Point[][];
+    panels: Set<IPanel>;
+
+    constructor(
+        io: Server<
+            ClientToServerEvents,
+            ServerToClientEvents,
+            InterServerEvents,
+            SocketData
+        >,
+        roomID: string,
+        nContributions: number,
+        indexInGame: number,
+    ) {
+        super(io, roomID, nContributions, indexInGame);
+        this.panelHint = [];
+        this.panels = new Set<IPanel>;
+    }
+
+    submitPanel(authorID: string, content: Point[][]) {
+        const panel = {
+            ID: this.ID,
+            contributionIndex: this.panels.size,
+            content: content,
+            authorDevice: authorID,
+            passerDevice: this.mostRecentEditor, // previous editor, starts at ""
+            hintSize: this.panelHint.length, // previous line length, starts at 0
+            addedAt: new Date(),
+        };
+        this.panels.add(panel);
+
+        this.mostRecentEditor = authorID;
+        this.panelHint = []; // reset the hint
+        // Emit the stroke history (which is the panel content) to all Spectators
+        this.io
+            .in(`${this.roomID}_Spectators`)
+            .emit("stcPanelSpectator", this.indexInGame, content);
+    }
+
+    sendPanelEditToSpectators(value: IPanel["content"]) {
+        logger.debug("sendPanelEditToSpectators...", this.indexInGame, value);
+        this.io
+            .in(`${this.roomID}_Spectators`)
+            .emit("stcPanelEditSpectator", this.indexInGame, value);
+    }
+
+    sendAllPanelsTo(socketID: string) {
+    // this is used to bring a new spectator up to date
+        this.panels.forEach((panel) => this.sendPanel(panel.content, socketID));
+    }
+
+    sendPanel(panel: IPanel["content"], socketID: string) {
+        this.io.to(socketID).emit("stcPanelSpectator", this.indexInGame, panel);
     }
 }

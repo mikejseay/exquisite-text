@@ -19,8 +19,8 @@ export enum Role {
 }
 
 export enum LineLength {
-    short = "short",
-    long = "long",
+    SHORT = "short",
+    LONG = "long",
 }
 
 export interface ILineConstraints {
@@ -45,64 +45,102 @@ export interface IUserTableInfo {
     editorColors: Array<string>;
 }
 
-export interface IPoemSettingsInfo {
+export interface IGameSettingsInfo {
     lineLength: LineLength;
     nRounds: number;
     nPoems: number;
+    nDrawings: number;
 }
 
 export interface IPoems {
     [id: string]: IPoem;
 }
 
-export interface IPoem {
+interface ICollaboration {
     id: Key;
-    content: string;
     createdAt: Date;
     title: string;
 }
 
-export interface ILine {
-    ID: string;
-    lineIndex: number;
+export interface IPoem extends ICollaboration {
     content: string;
+}
+
+export interface IDrawing extends ICollaboration {
+    // NOTE: Work out best format for back-end storage
+    // content: [Point[][], Point[][], Point[][]];
+    content: Point[][],
+}
+
+// TODO: Type guards
+// function isPoem(obj: any): obj is Poem {
+//     return "lines" in obj;
+// }
+
+// function isDrawing(obj: any): obj is Drawing {
+//     return "panels" in obj;
+// }
+
+interface IContribution {
+    ID: string;
+    contributionIndex: number;
     authorDevice: string;
     passerDevice: string;
-    editLength: number;
     addedAt: Date;
 }
 
+export interface ILine extends IContribution {
+    content: string;
+    editLength: number;
+}
+
+export interface IPanel extends IContribution {
+    content: Point[][];
+    hintSize: number;
+}
+
+/*  Levels
+
+    Multiple Drawings - Point[][][][]
+    Drawings          - Point[][][]
+    Panels            - Point[][]
+    Strokes           - Point[]
+
+*/
 export interface Point {
     x: number;
     y: number;
     lineWidth: number;
-  }
-
-interface CanvasHistory {
-    user: string;
-    strokeHistory: Point[][]
+    color: string;
 }
 
 export interface ServerToClientEvents {
     stcLineEdit: (a: string) => void;
+    stcDrawingPanel: (a: IPanel) => void;
     stcPoemLines: (a: ILine[]) => void;
+    stcDrawingPanels: (a: IPanel[]) => void;
     stcRoomCode: (a: string) => void;
     stcJoinError: (a: string) => void;
     stcUserTableInfo: (a: IUserTableInfo) => void;
-    stcGameSettingsInfo: (a: IPoemSettingsInfo) => void;
+    stcGameSettingsInfo: (a: IGameSettingsInfo) => void;
     stcGameSettingsEnabled: (a: boolean) => void;
     stcNavigate: (a: string) => void;
     stcEditorActive: (a: boolean) => void;
-    stcLastLine: (a: boolean) => void;
+    stcLastContribution: (a: boolean) => void;
     stcLineEditorWatch: (a: string) => void;
-    stcLineSpectator: (a: number, b: string) => void;
+    stcLineSpectator: (indexInGame: number, content: ILine["content"]) => void;
+    stcPanelSpectator: (indexInGame: number, content: IPanel["content"]) => void;
+    stcPanelEditSpectator: (indexInGame: number, content: IPanel["content"]) => void;
     stcLineEditSpectator: (a: number, b: string) => void;
     stcStrokeHistory: (a: Point[][]) => void;
+    stcCompletedDrawings: (a: Point[][][][]) => void;
+    stcMedium: (medium: Medium) => void;
 }
 
 export interface ClientToServerEvents {
     ctsRequestUserTableInfo: (a: boolean) => void;
-    ctsRequestPoemsLines: (a: boolean) => void;
+    ctsRequestPoemsLines: () => void;
+    ctsRequestDrawings: () => void;
     ctsRequestLineEdit: () => void;
     ctsEditLine: (a: string) => void;
     ctsRecognizeDevice: (a: string) => void;
@@ -110,16 +148,18 @@ export interface ClientToServerEvents {
     ctsJoinAs: (roomID: string, name: string, role: Role, isTest: boolean) => void;
     ctsJoinAsBot: (roomID: string, name: string, botDeviceID: string) => void;
     ctsRequestGameSettingsInfo: () => void;
-    ctsRequestLastLineStatus: () => void;
-    ctsAlterGameSettings: (a: IPoemSettingsInfo) => void;
+    ctsRequestLastContributionStatus: () => void;
+    ctsAlterGameSettings: (a: IGameSettingsInfo) => void;
     ctsRequestSettingsEnabled: () => void;
     ctsStartGame: () => void;
     ctsAddPoemBot: () => void;
     ctsRequestEditorActive: () => void;
     ctsSendLineParts: (a: string, b: string) => void;
     ctsSendLastLine: (a: string) => void;
+    ctsSendLastPanel: (a: Point[][]) => void;
     ctsLeave: () => void;
-    ctsSendCanvas: (a: Point[][]) => void;
+    ctsSendPanel: (a: Point[][]) => void;
+    ctsSendPanelEdit: (a: Point[][]) => void;
     ctsRequestCanvas: () => void;
 }
 
@@ -156,9 +196,15 @@ export interface ISocketInfoListeners {
     // React.useState<number>(defaultGameSettings.nPoems);
     setNPoems: (value: number |
         ((prevVar: number) => number)) => void;
+    setNDrawings: (value: number |
+        ((prevVar: number) => number)) => void;
     // React.useState<Array<Array<string>>>([ [], [], [], [] ]);
-    setLines: (value: Array<Array<string>> |
+    setLines: (value: Array<Array<ILine["content"]>> |
         ((prevVar: Array<Array<string>>) => Array<Array<string>>)) => void;
+    setPanels: (value: Array<Array<IPanel["content"]>> |
+        ((prevVar: Array<Array<IPanel["content"]>>) => Array<Array<IPanel["content"]>>)) => void;
+    setPanelEdits: (value: Array<IPanel["content"]> |
+        ((prevVar: Array<IPanel["content"]>) => Array<IPanel["content"]>)) => void;
     // React.useState<Array<string>>([ "", "", "", "" ]);
     setLineEdits: (value: Array<string> |
         ((prevVar: Array<string>) => Array<string>)) => void;
@@ -169,7 +215,7 @@ export interface ISocketInfoListeners {
     setPoemInputSpectate: (value: string |
         ((prevVar: string) => string)) => void;
     // React.useState<boolean>(false);
-    setOnLastLine: (value: boolean |
+    setOnLastContribution: (value: boolean |
         ((prevVar: boolean) => boolean)) => void;
     // React.useState<boolean>(false);
     setEditorActive: (value: boolean |
@@ -177,37 +223,50 @@ export interface ISocketInfoListeners {
         navigate: NavigateFunction;
     setStrokeHistory: (value: Point[][] |
         ((prevVar: Point[][]) => Point[][])) => void;
+    setCompletedDrawings: (value: Point[][][][] |
+        ((prevVar: Point[][][][]) => Point[][][][])) => void;
+    setMedium: (medium: Medium |
+        ((prevVar: Medium) => Medium)) => void;
 }
 
 export interface ISocketInfo {
-    userInfo: IUserTableInfo | null;
-    poemsLines: Array<ILine[]> | null;
+    // agnostic
+    editorActive: boolean | null;
     joinErrorMessage: string | null;
     roomCode: string | null;
-    setRoomCode: (value: string |
-        ((prevVar: string) => string)) => void;
+    setRoomCode: (value: string | ((prevVar: string) => string)) => void;
     settingsEnabled: boolean | null;
-    lineLength: LineLength | null;
-    nRounds: number | null;
-    nPoems: number | null;
-    setLineLength: (value: LineLength |
-        ((prevVar: LineLength) => LineLength)) => void;
-    setNRounds: (value: number |
-        ((prevVar: number) => number)) => void;
-    setNPoems: (value: number |
-        ((prevVar: number) => number)) => void;
-    lines: Array<Array<string>> | null;
+    userInfo: IUserTableInfo | null;
+    setEditorActive: (value: boolean | ((prevVar: boolean) => boolean)) => void;
+
+    // poems
     lineEdits: Array<string> | null;
+    lineLength: LineLength | null;
+    lines: Array<Array<ILine["content"]>> | null;
+    nPoems: number | null;
+    nRounds: number | null;
+    onLastContribution: boolean | null;
     poemInput: string | null;
     poemInputSpectate: string | null;
-    onLastLine: boolean | null;
-    editorActive: boolean | null;
-    setPoemInput: (value: string |
-        ((prevVar: string) => string)) => void;
+    poemsLines: Array<ILine[]> | null;
+    setLineLength: (value: LineLength | ((prevVar: LineLength) => LineLength)) => void;
+    setNPoems: (value: number | ((prevVar: number) => number)) => void;
+    setNRounds: (value: number | ((prevVar: number) => number)) => void;
+    setPoemInput: (value: string | ((prevVar: string) => string)) => void;
+
+    // drawings
+    panels: Array<Array<IPanel["content"]>> | null;
+    panelEdits: Array<IPanel["content"]> | null;
+    nDrawings: number | null;
+    setNDrawings: (value: number | ((prevVar: number) => number)) => void;
+    setStrokeHistory: (value: Point[][] | ((prevVar: Point[][]) => Point[][])) => void;
     strokeHistory: Point[][] | null;
-    setStrokeHistory: (value: Point[][] |
-        ((prevVar: Point[][]) => Point[][])) => void;
+    setCompletedDrawings: (value: Point[][][][] | ((prevVar: Point[][][][]) => Point[][][][])) => void;
+    completedDrawings: Point[][][][] | null;
+    medium: Medium | null;
+    setMedium: (medium: Medium | ((prevVar: Medium) => Medium)) => void;
 }
+
 
 export enum ContributionType {
     POEM,

@@ -15,6 +15,14 @@
 /node_modules
 /.pnp
 .pnp.js
+.pnp.*
+/server/.yarn/*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
 
 #app
 /app/node_modules

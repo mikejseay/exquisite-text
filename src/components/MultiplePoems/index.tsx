@@ -1,18 +1,12 @@
 import * as React from "react";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import { Carousel } from "react-responsive-carousel";
+import { isNil } from "es-toolkit";
 
-import {
-    poemTitle,
-} from "./styles";
-
-import {
-    ILine,
-} from "../../types";
+import { poemTitle } from "./styles";
+import { ILine } from "../../types";
 import PoemLinesAnimated from "../PoemLinesAnimated";
-import isNil from "lodash/isNil";
 import { lineSepString } from "../../constants";
-
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 
 function getTextWidth(text: string, font: string) {
@@ -102,7 +96,6 @@ function MultiplePoems({ shouldAnimate }: { shouldAnimate: boolean }) {
                     {renderPoems(reRender)}
                 </Carousel>
                 : renderPoems(reRender)}
-
         </div>
     );
 }
