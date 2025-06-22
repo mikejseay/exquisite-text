@@ -40,7 +40,7 @@ const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "develop
 const serverPath: URL["pathname"] | URL["href"] = isDevelopment
     ? "http://localhost:3000"
     : "/";
-console.log({ serverPath }, "in room.ts");
+logger.debug({ serverPath }, "in room.ts");
 
 class Room {
     // represents a socket.io room and a game of Exquisite Text
@@ -285,7 +285,7 @@ export class PoemRoom extends Room {
         // the approach we take here is to spoof a client socket from here on the server
         // we use a special top-level socket message to get them to join as a bot
 
-        console.log("room trying to add PoemBot with server path", serverPath);
+        logger.debug("room trying to add PoemBot with server path", serverPath);
         const botDeviceID = uuidv4();
         const botSocket = ioClient(serverPath);
         botDeviceIDToBotSocket.set(botDeviceID, botSocket);

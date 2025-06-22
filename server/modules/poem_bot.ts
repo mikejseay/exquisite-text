@@ -9,6 +9,7 @@ import { analyzeSystemPrompt, analyzeUserPrompt, completeSystemPrompt, completeU
 import { IGameSettingsInfo } from "../../src/types";
 import { lineConstraints } from "../../src/constants";
 import { canBeFixedByShifting, isAcceptableShape, processPoetryLines } from "../llm_utils/llm_funcs";
+import { logger } from "../utilities/loggerUtils";
 
 dotenv.config({ path: __dirname + "/../.env" });
 
@@ -39,11 +40,11 @@ const completePoetryChain = new RunnableWithMessageHistory({
 });
 
 export async function analyzeBeginning(poemStart: string) {
-    console.log("analyzing poemStart", poemStart);
+    logger.debug("analyzing poemStart", poemStart);
 
     // this is a one-off analysis that will be attached to the poem itself
     const analysis = await analyzePoetryChain.invoke({ poem_start: poemStart });
-    console.log(analysis);
+    logger.debug(analysis);
 
     return analysis;
 }
@@ -73,7 +74,7 @@ export async function guaranteeHalfLineCompletion(
         const nWordsSecond = (forceIncomplete
             ? (nWordsSecondInit * 2)
             : nWordsSecondInit);
-        console.log({
+        logger.debug({
             botDeviceID: botDeviceID,
             halfLine: halfLine,
             gameSettings: gameSettings,
@@ -89,10 +90,10 @@ export async function guaranteeHalfLineCompletion(
             poemAnalysis,
         );
         nTries += 1;
-        console.log("original completion:\n", completion);
+        logger.debug("original completion:\n", completion);
         const parts = completion.split("\n");
         if (parts.length < 2) {
-            console.log("completion had fewer than 2 lines, retrying.");
+            logger.debug("completion had fewer than 2 lines, retrying.");
         } else {
             validInput = true;
             // if we wanted to force an incomplete second line, clip it to the original requested # of words
@@ -103,7 +104,7 @@ export async function guaranteeHalfLineCompletion(
             } else {
                 partsFinal = parts;
                 validInput = false;
-                console.log("completion was neither an acceptable shape nor could be fixed by shifting, retrying");
+                logger.debug("completion was neither an acceptable shape nor could be fixed by shifting, retrying");
             }
             if (forceIncomplete) {
                 partsFinal[1] = partsFinal[1].split(" ").slice(0, nWordsSecondInit).join(" ");
@@ -113,7 +114,7 @@ export async function guaranteeHalfLineCompletion(
     if (!partsFinal) {
         throw new Error("undefined partsFinal.");
     }
-    console.log(partsFinal);
+    logger.debug(partsFinal);
     return partsFinal;
 }
 

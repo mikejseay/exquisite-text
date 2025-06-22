@@ -208,7 +208,7 @@ export class PoemEditor extends Editor {
     }
 
     alterGameSettings(gameSettings: IGameSettingsInfo) {
-        console.log("ctsAlterGameSettings");
+        logger.debug("ctsAlterGameSettings");
         const room = getRoom(this.roomID) as PoemRoom;
         if (room) {
             room.gameSettings = gameSettings;
@@ -218,7 +218,7 @@ export class PoemEditor extends Editor {
 
     broadcastStartGame() {
         // global in nature, so it will mainly deal with the room
-        console.log("ctsStartGame");
+        logger.debug("ctsStartGame");
         const room = getRoom(this.roomID) as PoemRoom;
         if (room) {
             room.setUpGame();
@@ -226,7 +226,7 @@ export class PoemEditor extends Editor {
     }
 
     requestAddPoemBotToRoom() {
-        console.log("ctsAddPoemBot");
+        logger.debug("ctsAddPoemBot");
         const room = getRoom(this.roomID) as PoemRoom;
         if (room) {
             room.addPoemBot();
@@ -466,7 +466,7 @@ export class PoemBot extends PoemEditor {
             }
             const halfLine = poem.halfLine;
             const forceIncomplete = halfLine.includes(".");
-            console.log("possibleStartNewTurn invoking guaranteeHalfLineCompletion");
+            logger.debug("possibleStartNewTurn invoking guaranteeHalfLineCompletion");
             const parts = await guaranteeHalfLineCompletion(
                 this.deviceID,
                 halfLine,

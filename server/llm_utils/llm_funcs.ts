@@ -1,3 +1,5 @@
+import { logger } from "../utilities/loggerUtils";
+
 export function delay(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );
 }
@@ -86,7 +88,7 @@ function main() {
 
     if (canBeFixedByShifting(lineOne, lineTwo, idealCharsOnLineOne, idealCharsOnLineTwo)) {
         const [ lineOneModified, lineTwoModified ] = processPoetryLines(lineOne, lineTwo);
-        console.log("Line One Modified:", lineOneModified);
-        console.log("Line Two Modified:", lineTwoModified);
+        logger.debug("Line One Modified:", lineOneModified);
+        logger.debug("Line Two Modified:", lineTwoModified);
     }
 }

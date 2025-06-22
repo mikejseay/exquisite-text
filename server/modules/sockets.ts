@@ -145,7 +145,7 @@ function sockets(
                 return;
             }
             const room = getRoom(roomID);
-            console.log("current state of socketIDToDeviceID is", socketIDToDeviceID);
+            logger.debug("current state of socketIDToDeviceID is", socketIDToDeviceID);
             const deviceID = socketIDToDeviceID[socket.id];
             if (!room) {
                 logger.debug("room not found");
@@ -216,10 +216,10 @@ function sockets(
         });
 
         socket.on("ctsJoinAsBot", (roomID: string, name: string, botDeviceID: string) => {
-            console.log("new socket", socket.id, "from bot with device", botDeviceID);
+            logger.debug("new socket", socket.id, "from bot with device", botDeviceID);
             socketIDToDeviceID[socket.id] = botDeviceID;
             deviceIDToSocketID[botDeviceID] = socket.id;
-            console.log(
+            logger.debug(
                 "socket",
                 socket.id,
                 "ctsJoinAsBot (as editor) to room",
@@ -228,16 +228,16 @@ function sockets(
                 name,
             );
             const room = getRoom(roomID);
-            console.log("current state of socketIDToDeviceID is", socketIDToDeviceID);
+            logger.debug("current state of socketIDToDeviceID is", socketIDToDeviceID);
             if (!room) {
-                console.log("room not found");
+                logger.debug("room not found");
                 return;
             }
             deviceIDToRoomID[botDeviceID] = roomID;
-            console.log("about to make bot editor obj with botDeviceID", botDeviceID, "and name", name);
+            logger.debug("about to make bot editor obj with botDeviceID", botDeviceID, "and name", name);
 
             const bot = new PoemBot(io, socket, roomID, botDeviceID, name);
-            console.log("bot object (for poems) created with botDeviceID", bot.deviceID);
+            logger.debug("bot object (for poems) created with botDeviceID", bot.deviceID);
             bot.joinRoom();
             room.addEditor(botDeviceID, bot);
         });

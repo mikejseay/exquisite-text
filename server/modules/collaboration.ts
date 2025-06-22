@@ -109,8 +109,8 @@ export class Poem extends Collaboration {
             return;
         }
         if (room.hasPoemBot()) {
-            console.log("poem", this.ID, "just got its first line in a room with a PoemBot");
-            console.log("analyzing the poem to help the PoemBot");
+            logger.debug("poem", this.ID, "just got its first line in a room with a PoemBot");
+            logger.debug("analyzing the poem to help the PoemBot");
             const poemStart = firstPart + "\n" + secondPart;
             this.analysis = await analyzeBeginning(poemStart);
         }
