@@ -307,11 +307,7 @@ export class PoemEditor extends Editor {
             this.lastActivity = Date.now(); // give them some time to type
             this.io.to(this.socket.id).emit("stcLineEdit", (this.contributionQueue[0] as Poem).halfLine);
             const poem = this.contributionQueue[0] as Poem;
-            logger.debug(
-                "we think the poem has",
-                poem.lines.size,
-                "submissions so far",
-            );
+            logger.debug(`we think the poem has ${poem.lines.size} submissions so far`);
 
             if (poem.lines.size === poem.nContributions - 2) {
                 this.io.to(this.socket.id).emit("stcLastContribution", true);
@@ -331,12 +327,7 @@ export class PoemEditor extends Editor {
         const poem = this.contributionQueue[0] as Poem;
         if (poem) {
             const currentLength = poem.lines.size;
-            logger.debug(
-                "we think the poem has ",
-                currentLength,
-                "of",
-                poem.nContributions - 2,
-            );
+            logger.debug(`we think the poem has ${currentLength} of ${poem.nContributions - 2} contributions`);
             return currentLength >= poem.nContributions - 2;
         } else {
             return false;
