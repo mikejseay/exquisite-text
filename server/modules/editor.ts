@@ -126,12 +126,14 @@ class Editor extends Member {
         super.setReceive();
         this.socket.on("ctsRequestEditorActive", () => this.sendActivity());
         this.socket.on("ctsStartGame", () => this.broadcastStartGame());
+        this.socket.on("ctsAlterGameSettings", (value) => this.alterGameSettings(value));
     }
 
     unsetReceive() {
         super.unsetReceive();
         this.socket.removeAllListeners("ctsRequestEditorActive");
         this.socket.removeAllListeners("ctsStartGame");
+        this.socket.removeAllListeners("ctsAlterGameSettings");
     }
 
     sendActivity() {
@@ -188,10 +190,6 @@ export class PoemEditor extends Editor {
         );
         this.socket.on("ctsSendLastLine", (value) => this.handleLastLine(value)); // whenever a new line has been submitted into the poem.
         this.socket.on("ctsRequestLastContributionStatus", () => this.sendLastContributionStatus());
-        this.socket.on("ctsAlterGameSettings", (value) =>
-            this.alterGameSettings(value),
-        );
-        this.socket.on("ctsStartGame", () => this.broadcastStartGame());
         this.socket.on("ctsAddPoemBot", () => this.requestAddPoemBotToRoom());
     }
 
@@ -202,18 +200,7 @@ export class PoemEditor extends Editor {
         this.socket.removeAllListeners("ctsSendLineParts");
         this.socket.removeAllListeners("ctsSendLastLine");
         this.socket.removeAllListeners("ctsRequestLastContributionStatus");
-        this.socket.removeAllListeners("ctsAlterGameSettings");
-        this.socket.removeAllListeners("ctsStartGame");
         this.socket.removeAllListeners("ctsAddPoemBot");
-    }
-
-    alterGameSettings(gameSettings: IGameSettingsInfo) {
-        logger.debug("ctsAlterGameSettings");
-        const room = getRoom(this.roomID) as PoemRoom;
-        if (room) {
-            room.gameSettings = gameSettings;
-            this.socket.to(this.roomID).emit("stcGameSettingsInfo", gameSettings);
-        }
     }
 
     broadcastStartGame() {
@@ -476,17 +463,13 @@ export class DrawingEditor extends Editor {
         this.socket.on("ctsSendPanel", (value: Point[][]) => this.handlePanel(value));
         this.socket.on("ctsSendPanelEdit", (value: Point[][]) => this.handlePanelEdit(value));
         this.socket.on("ctsSendLastPanel", (value) => this.handleLastPanel(value));
-        this.socket.on("ctsRequestLastContributionStatus", () => this.sendLastContributionStatus());
-        this.socket.on("ctsAlterGameSettings", (value) =>
-            this.alterGameSettings(value),
-        );
     }
 
     unsetReceive() {
         super.unsetReceive();
         this.socket.removeAllListeners("ctsSendPanel");
         this.socket.removeAllListeners("ctsSendPanelEdit");
-        this.socket.removeAllListeners("ctsAlterGameSettings");
+        this.socket.removeAllListeners("ctsSendLastPanel");
     }
 
     handlePanel(panelContent: IPanel["content"]) {
