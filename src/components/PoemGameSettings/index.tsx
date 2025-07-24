@@ -39,6 +39,7 @@ function PoemGameSettings() {
 
     // extract editors data from userInfo to determine whether room is full
     const { editors } = userInfo;
+    const shouldAllowBotUsage = editors?.includes(process.env.REACT_APP_AUTHORIZED_BOT_USER_NAME ?? "");
 
     // these will only ever take place for the VIP editor
     const handleLineLength = (event: React.MouseEvent<HTMLElement>, newLineLength: LineLength) => {
@@ -70,6 +71,7 @@ function PoemGameSettings() {
     };
 
     const handlePressAddBotButton = () => {
+        if (!shouldAllowBotUsage) return;
         emitAddPoemBot();
     };
 
@@ -122,14 +124,13 @@ function PoemGameSettings() {
                         <ToggleButton value={4}>4</ToggleButton>
                     </ToggleButtonGroup>
                 </div>
-
-                <Button
+                {shouldAllowBotUsage && (<Button
                     disabled={!settingsEnabled || editors.length >= 4}
                     onClick={handlePressAddBotButton}
                     variant="contained"
                 >
-                    Add Bot
-                </Button>
+                        Add Bot
+                </Button>)}
 
                 <Button
                     disabled={!settingsEnabled}

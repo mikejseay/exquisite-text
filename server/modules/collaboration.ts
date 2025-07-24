@@ -108,12 +108,18 @@ export class Poem extends Collaboration {
         if (!room) {
             return;
         }
-        if (room.hasPoemBot()) {
-            logger.debug("poem", this.ID, "just got its first line in a room with a PoemBot");
-            logger.debug("analyzing the poem to help the PoemBot");
-            const poemStart = firstPart + "\n" + secondPart;
-            this.analysis = await analyzeBeginning(poemStart);
+        if (!room.hasPoemBot()) {
+            return;
         }
+        if (!Object.values(room.editors).map((editor) => editor.name).includes(process.env.AUTHORIZED_BOT_USER_NAME)) {
+            logger.warn(`Unauthorized attempt to use Poem Bot in possibleStartNewTurn, roomID=${room.roomID}`);
+            return;
+        }
+        logger.debug("poem", this.ID, "just got its first line in a room with a PoemBot");
+        logger.debug("analyzing the poem to help the PoemBot");
+        const poemStart = firstPart + "\n" + secondPart;
+        this.analysis = await analyzeBeginning(poemStart);
+        // TODO: sleep here?
     }
 
     sendLineEditToSpectators(value: string) {

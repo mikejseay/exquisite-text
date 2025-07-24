@@ -214,6 +214,10 @@ export class PoemEditor extends Editor {
 
     requestAddPoemBotToRoom() {
         logger.debug("ctsAddPoemBot");
+        if (this.name !== process.env.AUTHORIZED_BOT_USER_NAME) {
+            logger.warn(`Unauthorized attempt to add poem bot to the room from user ${this.name}`);
+            return;
+        }
         const room = getRoom(this.roomID) as PoemRoom;
         if (room) {
             room.addPoemBot();
@@ -266,6 +270,8 @@ export class PoemEditor extends Editor {
             return;
         }
 
+        // TODO: does this fix the race condition?
+        // await poemToPass.submitLine(this.deviceID, firstPart, secondPart);
         poemToPass.submitLine(this.deviceID, firstPart, secondPart);
         poemToPass.sendLineEditToSpectators(secondPart);
         if (!room) {
@@ -439,12 +445,17 @@ export class PoemBot extends PoemEditor {
             const poem = this.contributionQueue[0] as Poem;
 
             // if the poem has exactly one line, wait 6 seconds to analyze the beginning
+            // TODO: this is a dirty hack and should be fixed properly
             if (poem.lines.size === 1) {
                 await delay(6000);
             }
             const halfLine = poem.halfLine;
             const forceIncomplete = halfLine.includes(".");
             logger.debug("possibleStartNewTurn invoking guaranteeHalfLineCompletion");
+            if (!Object.values(room.editors).map((editor) => editor.name).includes(process.env.AUTHORIZED_BOT_USER_NAME)) {
+                logger.warn(`Unauthorized attempt to use Poem Bot in possibleStartNewTurn, roomID=${room.roomID}`);
+                return;
+            }
             const parts = await guaranteeHalfLineCompletion(
                 this.deviceID,
                 halfLine,

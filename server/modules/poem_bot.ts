@@ -43,6 +43,7 @@ export async function analyzeBeginning(poemStart: string) {
     logger.debug("analyzing poemStart", poemStart);
 
     // this is a one-off analysis that will be attached to the poem itself
+
     const analysis = await analyzePoetryChain.invoke({ poem_start: poemStart });
     logger.debug(analysis);
 
