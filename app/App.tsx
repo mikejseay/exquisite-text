@@ -35,7 +35,7 @@ export default function App() {
         if (Platform.OS === "android") {
             BackHandler.addEventListener("hardwareBackPress", onAndroidBackPress);
             return (): void => {
-                BackHandler.removeEventListener("hardwareBackPress", onAndroidBackPress);
+                BackHandler.exitApp();
             };
         }
     }, []);

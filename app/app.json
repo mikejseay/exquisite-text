@@ -1,43 +1,38 @@
 {
   "expo": {
-    "name": "exquisite",
-    "slug": "exquisite",
+    "name": "app",
+    "slug": "app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "updates": {
-      "fallbackToCacheTimeout": 0
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.exquisite",
-      "buildNumber": "0.0.4",
-      "userInterfaceStyle": "automatic"
+      "bundleIdentifier": "com.exquisite.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
+        "backgroundColor": "#ffffff"
       },
-      "package": "com.exquisite",
-      "userInterfaceStyle": "automatic",
-      "versionCode": 4
+      "edgeToEdgeEnabled": true,
+      "package": "com.exquisite.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "3faa3b37-98fe-42e7-8ce9-b4105d745638"
+        "projectId": "8e8fc962-a7fb-4a47-9ce4-223ac0105341"
       }
     }
   }
