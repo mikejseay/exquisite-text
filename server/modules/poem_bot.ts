@@ -47,6 +47,11 @@ export async function analyzeBeginning(poemStart: string) {
     return analysis;
 }
 
+/* TODO
+- work on this more, make sure the LLM can't make too large of a contribution
+    and that it can't override your contribution
+- look more into "rate limiting" for LLMs. what's the correct approach?
+ */
 export async function guaranteeHalfLineCompletion(
     botDeviceID: string,
     halfLine: string,
