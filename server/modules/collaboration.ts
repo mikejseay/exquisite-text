@@ -111,8 +111,12 @@ export class Poem extends Collaboration {
         if (!room.hasPoemBot()) {
             return;
         }
-        if (!Object.values(room.editors).map((editor) => editor.name).includes(process.env.AUTHORIZED_BOT_USER_NAME)) {
+        if (!Array.from(room.editors.values()).map((editor) => editor.name).includes(process.env.AUTHORIZED_BOT_USER_NAME)) {
             logger.warn(`Unauthorized attempt to use Poem Bot in possibleStartNewTurn, roomID=${room.roomID}`);
+            logger.warn(`Authorized name is ${process.env.AUTHORIZED_BOT_USER_NAME}`);
+            for (const value of room.editors.values()) {
+                logger.warn(`Room editor value is ${value}`);
+            }
             return;
         }
         logger.debug("poem", this.ID, "just got its first line in a room with a PoemBot");

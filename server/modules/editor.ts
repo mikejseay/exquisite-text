@@ -452,8 +452,12 @@ export class PoemBot extends PoemEditor {
             const halfLine = poem.halfLine;
             const forceIncomplete = halfLine.includes(".");
             logger.debug("possibleStartNewTurn invoking guaranteeHalfLineCompletion");
-            if (!Object.values(room.editors).map((editor) => editor.name).includes(process.env.AUTHORIZED_BOT_USER_NAME)) {
+            if (!Array.from(room.editors.values()).map((editor) => editor.name).includes(process.env.AUTHORIZED_BOT_USER_NAME)) {
                 logger.warn(`Unauthorized attempt to use Poem Bot in possibleStartNewTurn, roomID=${room.roomID}`);
+                logger.warn(`Authorized name is ${process.env.AUTHORIZED_BOT_USER_NAME}`);
+                for (const value of room.editors.values()) {
+                    logger.warn(`Room editor value is ${value}`);
+                }
                 return;
             }
             const parts = await guaranteeHalfLineCompletion(
