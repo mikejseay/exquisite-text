@@ -1,8 +1,17 @@
 import { Server, Socket } from "socket.io";
+import { io as ioClient } from "socket.io-client";
 
-import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "./globals";
+import {
+    botDeviceIDToBotSocket,
+    deviceIDToRoomID,
+    deviceIDToSocketID,
+    roomIDToHost,
+    roomIDToRoom,
+    socketIDToDeviceID,
+} from "./globals";
 import { DrawingSpectator, PoemSpectator } from "./spectator";
-import { DrawingEditor, PoemEditor } from "./editor";
+import type { DrawingEditor, PoemEditor } from "./editor";
+import { PoemBot } from "./editor";
 import Member from "./member";
 import { Drawing, Poem } from "./collaboration";
 import {
@@ -24,7 +33,14 @@ import {
     maxRoomTimeSpentEmpty,
 } from "../../src/constants";
 import { sleep } from "../../src/helpers";
+import { v4 as uuidv4 } from "uuid";
 import { logger } from "../utilities/loggerUtils";
+
+const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
+const serverPath: URL["pathname"] | URL["href"] = isDevelopment
+    ? "http://localhost:3000"
+    : "/";
+logger.debug({ serverPath }, "in room.ts");
 
 class Room {
     // represents a socket.io room and a game of Exquisite Text
@@ -265,6 +281,26 @@ export class PoemRoom extends Room {
         this.navigateMembersToGame();
     }
 
+    addPoemBot() {
+        // the approach we take here is to spoof a client socket from here on the server
+        // we use a special top-level socket message to get them to join as a bot
+
+        logger.debug("room trying to add PoemBot with server path", serverPath);
+        const botDeviceID = uuidv4();
+        const botSocket = ioClient(serverPath);
+        botDeviceIDToBotSocket.set(botDeviceID, botSocket);
+        botSocket.emit("ctsJoinAsBot", this.roomID, "BOT", botDeviceID);
+
+    }
+
+    hasPoemBot() {
+        for (const value of this.editors.values()) {
+            if (value instanceof PoemBot) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 export class DrawingRoom extends Room {

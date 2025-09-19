@@ -20,6 +20,8 @@ export const lineConstraints: ILineConstraintDict = {
         maxCharsOnLineTwo: 36,
         idealCharsOnLineOne: 60,
         idealCharsOnLineTwo: 30,
+        idealWordsOnLineOne: 12,
+        idealWordsOnLineTwo: 6,
     },
     short: {
         minCharsOnLineOne: 20,
@@ -28,6 +30,8 @@ export const lineConstraints: ILineConstraintDict = {
         maxCharsOnLineTwo: 24,
         idealCharsOnLineOne: 40,
         idealCharsOnLineTwo: 20,
+        idealWordsOnLineOne: 8,
+        idealWordsOnLineTwo: 4,
     },
 };
 

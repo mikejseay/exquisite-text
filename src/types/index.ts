@@ -30,6 +30,8 @@ export interface ILineConstraints {
     maxCharsOnLineTwo: number;
     idealCharsOnLineOne: number;
     idealCharsOnLineTwo: number;
+    idealWordsOnLineOne: number;
+    idealWordsOnLineTwo: number;
 }
 
 export type ILineConstraintDict = {
@@ -62,12 +64,6 @@ interface ICollaboration {
 
 export interface IPoem extends ICollaboration {
     content: string;
-}
-
-export interface IDrawing extends ICollaboration {
-    // NOTE: Work out best format for back-end storage
-    // content: [Point[][], Point[][], Point[][]];
-    content: Point[][],
 }
 
 // TODO: Type guards
@@ -144,11 +140,13 @@ export interface ClientToServerEvents {
     ctsRecognizeDevice: (a: string) => void;
     ctsCreateRoomAndHost: (a: string, b: Medium) => void;
     ctsJoinAs: (roomID: string, name: string, role: Role, isTest: boolean) => void;
+    ctsJoinAsBot: (roomID: string, name: string, botDeviceID: string) => void;
     ctsRequestGameSettingsInfo: () => void;
     ctsRequestLastContributionStatus: () => void;
     ctsAlterGameSettings: (a: IGameSettingsInfo) => void;
     ctsRequestSettingsEnabled: () => void;
     ctsStartGame: () => void;
+    ctsAddPoemBot: () => void;
     ctsRequestEditorActive: () => void;
     ctsSendLineParts: (a: string, b: string) => void;
     ctsSendLastLine: (a: string) => void;
@@ -261,24 +259,4 @@ export interface ISocketInfo {
     completedDrawings: Point[][][][] | null;
     medium: Medium | null;
     setMedium: (medium: Medium | ((prevVar: Medium) => Medium)) => void;
-}
-
-
-export enum ContributionType {
-    POEM,
-    DRAWING,
-}
-
-type TestTypeProps =
-    | {
-    contributionType: ContributionType.POEM,
-    content: string,
-}
-    | {
-    contributionType: ContributionType.DRAWING,
-    content: Point[][],
-}
-
-function testTypes({ contributionType, content }: TestTypeProps) {
-    return [ contributionType, content ];
 }

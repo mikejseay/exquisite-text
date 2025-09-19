@@ -3,9 +3,8 @@
 // as far as I can tell, this will be the equivalent of the exquisite functionality, etc.
 
 import { Server } from "socket.io";
-
 import Host from "./host";
-import { DrawingEditor, PoemEditor } from "./editor";
+import { DrawingEditor, PoemBot, PoemEditor } from "./editor";
 import { DrawingSpectator, PoemSpectator } from "./spectator";
 import { DrawingRoom, PoemRoom } from "./room";
 import {
@@ -34,8 +33,8 @@ function sockets(
 ) {
     // connection is a reserved name for a socket event when someone connects
     io.on("connection", (socket) => {
-    // When a client requests a connection, the callback will create a new Connection instance
-    // and pass the Socket.IO server instance and the new socket to the constructor.
+        // When a client requests a connection, the callback will create a new Connection instance
+        // and pass the Socket.IO server instance and the new socket to the constructor.
 
         // This establishes the callbacks that every socket should have access to.
 
@@ -145,7 +144,7 @@ function sockets(
                 io.to(socket.id).emit("stcJoinError", "Room does not exist.");
                 return;
             }
-            const room = roomIDToRoom.get(roomID);
+            const room = getRoom(roomID);
             logger.debug("current state of socketIDToDeviceID is", socketIDToDeviceID);
             const deviceID = socketIDToDeviceID[socket.id];
             if (!room) {
@@ -175,7 +174,7 @@ function sockets(
                 let editor: PoemEditor | DrawingEditor | null = null;
                 if (room.medium == Medium.POETRY) {
                     editor = new PoemEditor(io, socket, roomID, deviceID, name);
-                    
+
                 } else if (room.medium == Medium.DRAWING) {
                     editor = new DrawingEditor(io, socket, roomID, deviceID, name);
                 } else {
@@ -214,6 +213,33 @@ function sockets(
                 }
                 room.addSpectator(deviceID, spectator);
             }
+        });
+
+        socket.on("ctsJoinAsBot", (roomID: string, name: string, botDeviceID: string) => {
+            logger.debug("new socket", socket.id, "from bot with device", botDeviceID);
+            socketIDToDeviceID[socket.id] = botDeviceID;
+            deviceIDToSocketID[botDeviceID] = socket.id;
+            logger.debug(
+                "socket",
+                socket.id,
+                "ctsJoinAsBot (as editor) to room",
+                roomID,
+                "with name",
+                name,
+            );
+            const room = getRoom(roomID);
+            logger.debug("current state of socketIDToDeviceID is", socketIDToDeviceID);
+            if (!room) {
+                logger.debug("room not found");
+                return;
+            }
+            deviceIDToRoomID[botDeviceID] = roomID;
+            logger.debug("about to make bot editor obj with botDeviceID", botDeviceID, "and name", name);
+
+            const bot = new PoemBot(io, socket, roomID, botDeviceID, name);
+            logger.debug("bot object (for poems) created with botDeviceID", bot.deviceID);
+            bot.joinRoom();
+            room.addEditor(botDeviceID, bot);
         });
     });
 }

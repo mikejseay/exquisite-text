@@ -1,7 +1,6 @@
 import { isNil } from "es-toolkit";
 import { Server, Socket } from "socket.io";
 import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid for lines
-import * as dotenv from "dotenv";
 import {
     ClientToServerEvents,
     GameState,
@@ -20,12 +19,13 @@ import type { Drawing, Poem } from "./collaboration";
 import Member from "./member";
 import { getEditorSocketID, getRoom, sendCollaborationContributionsInfo } from "../utilities/socketUtils";
 import { DrawingRoom, PoemRoom } from "./room";
+import { guaranteeHalfLineCompletion } from "./poem_bot";
+import { delay, isBotUsageAuthorized } from "../llm_utils/llm_funcs";
 import { logger } from "../utilities/loggerUtils";
 
-dotenv.config({ path: __dirname + "/../.env" });
 
 class Editor extends Member {
-    targetEditorID: string;
+    targetEditorID: string; // device ID
     turnPosition: number;
     contributionQueue: Array<Poem | Drawing>;
     isCurrentlyEditing: boolean;
@@ -41,7 +41,7 @@ class Editor extends Member {
         name: string,
     ) {
         super(io, hostSocket, roomID, deviceID, name);
-        this.targetEditorID = "";
+        this.targetEditorID = ""; // device ID
         this.turnPosition = 0;
         this.contributionQueue = [];
         this.isCurrentlyEditing = false;
@@ -124,12 +124,14 @@ class Editor extends Member {
         super.setReceive();
         this.socket.on("ctsRequestEditorActive", () => this.sendActivity());
         this.socket.on("ctsStartGame", () => this.broadcastStartGame());
+        this.socket.on("ctsAlterGameSettings", (value) => this.alterGameSettings(value));
     }
 
     unsetReceive() {
         super.unsetReceive();
         this.socket.removeAllListeners("ctsRequestEditorActive");
         this.socket.removeAllListeners("ctsStartGame");
+        this.socket.removeAllListeners("ctsAlterGameSettings");
     }
 
     sendActivity() {
@@ -186,9 +188,7 @@ export class PoemEditor extends Editor {
         );
         this.socket.on("ctsSendLastLine", (value) => this.handleLastLine(value)); // whenever a new line has been submitted into the poem.
         this.socket.on("ctsRequestLastContributionStatus", () => this.sendLastContributionStatus());
-        this.socket.on("ctsAlterGameSettings", (value) =>
-            this.alterGameSettings(value),
-        );
+        this.socket.on("ctsAddPoemBot", () => this.requestAddPoemBotToRoom());
     }
 
     unsetReceive() {
@@ -198,7 +198,28 @@ export class PoemEditor extends Editor {
         this.socket.removeAllListeners("ctsSendLineParts");
         this.socket.removeAllListeners("ctsSendLastLine");
         this.socket.removeAllListeners("ctsRequestLastContributionStatus");
-        this.socket.removeAllListeners("ctsAlterGameSettings");
+        this.socket.removeAllListeners("ctsAddPoemBot");
+    }
+
+    broadcastStartGame() {
+        // global in nature, so it will mainly deal with the room
+        logger.debug("ctsStartGame");
+        const room = getRoom(this.roomID) as PoemRoom;
+        if (room) {
+            room.setUpGame();
+        }
+    }
+
+    requestAddPoemBotToRoom() {
+        logger.debug("ctsAddPoemBot");
+        if (this.name !== process.env.AUTHORIZED_BOT_USER_NAME) {
+            logger.warn(`Unauthorized attempt to add poem bot to the room from user ${this.name}`);
+            return;
+        }
+        const room = getRoom(this.roomID) as PoemRoom;
+        if (room) {
+            room.addPoemBot();
+        }
     }
 
     sendLineEdit() {
@@ -247,6 +268,8 @@ export class PoemEditor extends Editor {
             return;
         }
 
+        // TODO: does this fix the race condition?
+        // await poemToPass.submitLine(this.deviceID, firstPart, secondPart);
         poemToPass.submitLine(this.deviceID, firstPart, secondPart);
         poemToPass.sendLineEditToSpectators(secondPart);
         if (!room) {
@@ -275,11 +298,7 @@ export class PoemEditor extends Editor {
             this.lastActivity = Date.now(); // give them some time to type
             this.io.to(this.socket.id).emit("stcLineEdit", (this.contributionQueue[0] as Poem).halfLine);
             const poem = this.contributionQueue[0] as Poem;
-            logger.debug(
-                "we think the poem has",
-                poem.lines.size,
-                "submissions so far",
-            );
+            logger.debug(`we think the poem has ${poem.lines.size} submissions so far`);
 
             if (poem.lines.size === poem.nContributions - 2) {
                 this.io.to(this.socket.id).emit("stcLastContribution", true);
@@ -299,12 +318,7 @@ export class PoemEditor extends Editor {
         const poem = this.contributionQueue[0] as Poem;
         if (poem) {
             const currentLength = poem.lines.size;
-            logger.debug(
-                "we think the poem has ",
-                currentLength,
-                "of",
-                poem.nContributions - 2,
-            );
+            logger.debug(`we think the poem has ${currentLength} of ${poem.nContributions - 2} contributions`);
             return currentLength >= poem.nContributions - 2;
         } else {
             return false;
@@ -414,23 +428,56 @@ export class PoemEditor extends Editor {
     }
 }
 
+export class PoemBot extends PoemEditor {
+    // override parent properties & methods as needed
+
+    async possibleStartNewTurn() {
+        if (this.hasWorkInQueue()) {
+            // pre-determine the optimal line lengths
+            const room = getRoom(this.roomID) as PoemRoom;
+            if (!room) {
+                return;
+            }
+
+            // do AI logic to take half Line and produce a new 1.5 lines
+            const poem = this.contributionQueue[0] as Poem;
+
+            // if the poem has exactly one line, wait 6 seconds to analyze the beginning
+            // TODO: this is a dirty hack and should be fixed properly
+            if (poem.lines.size === 1) {
+                await delay(6000);
+            }
+            const halfLine = poem.halfLine;
+            const forceIncomplete = halfLine.includes(".");
+            logger.debug("possibleStartNewTurn invoking guaranteeHalfLineCompletion");
+            if (!isBotUsageAuthorized(room)) {
+                return;
+            }
+            const parts = await guaranteeHalfLineCompletion(
+                this.deviceID,
+                halfLine,
+                room.gameSettings,
+                forceIncomplete,
+                poem.analysis,
+            );
+            this.handleLineParts(parts[0], parts[1]);
+        }
+    }
+}
+
 export class DrawingEditor extends Editor {
     setReceive() {
         super.setReceive();
         this.socket.on("ctsSendPanel", (value: Point[][]) => this.handlePanel(value));
         this.socket.on("ctsSendPanelEdit", (value: Point[][]) => this.handlePanelEdit(value));
         this.socket.on("ctsSendLastPanel", (value) => this.handleLastPanel(value));
-        this.socket.on("ctsRequestLastContributionStatus", () => this.sendLastContributionStatus());
-        this.socket.on("ctsAlterGameSettings", (value) =>
-            this.alterGameSettings(value),
-        );
     }
 
     unsetReceive() {
         super.unsetReceive();
         this.socket.removeAllListeners("ctsSendPanel");
         this.socket.removeAllListeners("ctsSendPanelEdit");
-        this.socket.removeAllListeners("ctsAlterGameSettings");
+        this.socket.removeAllListeners("ctsSendLastPanel");
     }
 
     handlePanel(panelContent: IPanel["content"]) {

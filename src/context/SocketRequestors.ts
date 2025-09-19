@@ -60,6 +60,10 @@ export const emitStartGame = () => {
     socket.emit("ctsStartGame");
 };
 
+export const emitAddPoemBot = () => {
+    socket.emit("ctsAddPoemBot");
+};
+
 export const emitRequestSettingsEnabled = () => {
     socket.emit("ctsRequestSettingsEnabled");   // initial populate
 };

@@ -1,5 +1,8 @@
 {
   "name": "exquisite-client-js",
+  "workspaces": [
+    "server"
+  ],
   "version": "0.1.0",
   "private": true,
   "dependencies": {

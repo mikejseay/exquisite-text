@@ -81,7 +81,7 @@ const Canvas: React.FC = () => {
     const [ triggerRedraw, setTriggerRedraw ] = useState<number>(0);
     const [ baseLineWidth, setBaseLineWidth ] =
     useState<number>(DEFAULT_LINE_WIDTH);
-    console.log(theme.palette.text);
+    logger.debug(theme.palette.text);
     const localStrokeHistoryRef = useRef<Point[][]>(localStrokeHistory);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
