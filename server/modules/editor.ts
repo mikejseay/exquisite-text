@@ -21,7 +21,7 @@ import Member from "./member";
 import { getEditorSocketID, getRoom, sendCollaborationContributionsInfo } from "../utilities/socketUtils";
 import { DrawingRoom, PoemRoom } from "./room";
 import { guaranteeHalfLineCompletion } from "./poem_bot";
-import { delay } from "../llm_utils/llm_funcs";
+import { delay, isBotUsageAuthorized } from "../llm_utils/llm_funcs";
 import { logger } from "../utilities/loggerUtils";
 
 dotenv.config({ path: __dirname + "/../.env" });
@@ -436,7 +436,7 @@ export class PoemBot extends PoemEditor {
     async possibleStartNewTurn() {
         if (this.hasWorkInQueue()) {
             // pre-determine the optimal line lengths
-            const room = getRoom(this.roomID);
+            const room = getRoom(this.roomID) as PoemRoom;
             if (!room) {
                 return;
             }
@@ -452,12 +452,7 @@ export class PoemBot extends PoemEditor {
             const halfLine = poem.halfLine;
             const forceIncomplete = halfLine.includes(".");
             logger.debug("possibleStartNewTurn invoking guaranteeHalfLineCompletion");
-            if (!Array.from(room.editors.values()).map((editor) => editor.name).includes(process.env.AUTHORIZED_BOT_USER_NAME)) {
-                logger.warn(`Unauthorized attempt to use Poem Bot in possibleStartNewTurn, roomID=${room.roomID}`);
-                logger.warn(`Authorized name is ${process.env.AUTHORIZED_BOT_USER_NAME}`);
-                for (const value of room.editors.values()) {
-                    logger.warn(`Room editor value is ${value}`);
-                }
+            if (!isBotUsageAuthorized(room)) {
                 return;
             }
             const parts = await guaranteeHalfLineCompletion(

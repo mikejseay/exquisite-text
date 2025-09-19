@@ -15,6 +15,7 @@ import { getRoom } from "../utilities/socketUtils";
 import { analyzeBeginning } from "./poem_bot";
 import type { PoemRoom } from "./room";
 import { logger } from "../utilities/loggerUtils";
+import { isBotUsageAuthorized } from "../llm_utils/llm_funcs";
 
 dotenv.config({ path: __dirname + "/../.env" });
 
@@ -111,12 +112,7 @@ export class Poem extends Collaboration {
         if (!room.hasPoemBot()) {
             return;
         }
-        if (!Array.from(room.editors.values()).map((editor) => editor.name).includes(process.env.AUTHORIZED_BOT_USER_NAME)) {
-            logger.warn(`Unauthorized attempt to use Poem Bot in possibleStartNewTurn, roomID=${room.roomID}`);
-            logger.warn(`Authorized name is ${process.env.AUTHORIZED_BOT_USER_NAME}`);
-            for (const value of room.editors.values()) {
-                logger.warn(`Room editor value is ${value}`);
-            }
+        if (!isBotUsageAuthorized(room)) {
             return;
         }
         logger.debug("poem", this.ID, "just got its first line in a room with a PoemBot");
@@ -133,7 +129,7 @@ export class Poem extends Collaboration {
     }
 
     sendAllLinesTo(socketID: string) {
-    // this is used to bring a new spectator up to date
+        // this is used to bring a new spectator up to date
         this.lines.forEach((line) => this.sendLine(line.content, socketID));
     }
 
@@ -192,7 +188,7 @@ export class Drawing extends Collaboration {
     }
 
     sendAllPanelsTo(socketID: string) {
-    // this is used to bring a new spectator up to date
+        // this is used to bring a new spectator up to date
         this.panels.forEach((panel) => this.sendPanel(panel.content, socketID));
     }
 

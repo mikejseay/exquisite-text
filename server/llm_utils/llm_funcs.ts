@@ -1,4 +1,5 @@
 import { logger } from "../utilities/loggerUtils";
+import { PoemRoom } from "../modules/room";
 
 export function delay(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );
@@ -77,6 +78,18 @@ export function processPoetryLines(
     }
 
     return [ lineOne, lineTwo ];
+}
+
+export function isBotUsageAuthorized(room: PoemRoom): boolean {
+    if (!process.env.AUTHORIZED_BOT_USER_NAME) {
+        logger.warn("Env var AUTHORIZED_BOT_USER_NAME not defined, cannot authorize Poem Bot.");
+        return false;
+    }
+    if (!Array.from(room.editors.values()).map((editor) => editor.name).includes(process.env.AUTHORIZED_BOT_USER_NAME)) {
+        logger.warn(`Unauthorized attempt to use Poem Bot in possibleStartNewTurn, roomID=${room.roomID}`);
+        return false;
+    }
+    return true;
 }
 
 function main() {
