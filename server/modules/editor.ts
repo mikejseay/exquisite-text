@@ -1,7 +1,6 @@
 import { isNil } from "es-toolkit";
 import { Server, Socket } from "socket.io";
 import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid for lines
-import * as dotenv from "dotenv";
 import {
     ClientToServerEvents,
     GameState,
@@ -24,7 +23,6 @@ import { guaranteeHalfLineCompletion } from "./poem_bot";
 import { delay, isBotUsageAuthorized } from "../llm_utils/llm_funcs";
 import { logger } from "../utilities/loggerUtils";
 
-dotenv.config({ path: __dirname + "/../.env" });
 
 class Editor extends Member {
     targetEditorID: string; // device ID

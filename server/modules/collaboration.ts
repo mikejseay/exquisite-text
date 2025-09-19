@@ -1,5 +1,4 @@
 import { Server } from "socket.io";
-import * as dotenv from "dotenv";
 import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid for lines
 import {
     ClientToServerEvents,
@@ -16,8 +15,6 @@ import { analyzeBeginning } from "./poem_bot";
 import type { PoemRoom } from "./room";
 import { logger } from "../utilities/loggerUtils";
 import { isBotUsageAuthorized } from "../llm_utils/llm_funcs";
-
-dotenv.config({ path: __dirname + "/../.env" });
 
 class Collaboration {
     io: Server<

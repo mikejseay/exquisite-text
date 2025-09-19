@@ -2,7 +2,6 @@ import { ChatOpenAI } from "@langchain/openai";
 import { InMemoryChatMessageHistory } from "@langchain/core/chat_history";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { RunnableWithMessageHistory } from "@langchain/core/runnables";
-import * as dotenv from "dotenv";
 import { botDeviceIDToMessageHistory } from "./globals";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { analyzeSystemPrompt, analyzeUserPrompt, completeSystemPrompt, completeUserPrompt } from "../llm_utils/prompts";
@@ -10,8 +9,6 @@ import { IGameSettingsInfo } from "../../src/types";
 import { lineConstraints } from "../../src/constants";
 import { canBeFixedByShifting, isAcceptableShape, processPoetryLines } from "../llm_utils/llm_funcs";
 import { logger } from "../utilities/loggerUtils";
-
-dotenv.config({ path: __dirname + "/../.env" });
 
 const analyzePoetryPrompt = ChatPromptTemplate.fromMessages([
     [ "system", analyzeSystemPrompt ],

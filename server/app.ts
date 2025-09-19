@@ -9,9 +9,6 @@ import path from "path"; // for joining paths
 import cookieParser from "cookie-parser"; // for parsing cookies
 import logger from "morgan"; // for logging
 import poemsRouter from "./routes/poems"; // an express object that routes poems to the page /poems
-import * as dotenv from "dotenv";
-
-dotenv.config({ path: __dirname + "/.env" });
 
 const app = express(); // instantiate the app object
 app.use(cors()); // adds CORS support
