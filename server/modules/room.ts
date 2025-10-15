@@ -37,10 +37,10 @@ import { v4 as uuidv4 } from "uuid";
 import { logger } from "../utilities/loggerUtils";
 
 const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
-const serverPath: URL["pathname"] | URL["href"] = isDevelopment
+const serverPath: string = isDevelopment
     ? "http://localhost:3000"
-    : "/";
-logger.debug({ serverPath }, "in room.ts");
+    : (process.env.HEROKU_URL ?? "/");
+logger.debug(`serverPath is ${serverPath} in room.ts`);
 
 class Room {
     // represents a socket.io room and a game of Exquisite Text
