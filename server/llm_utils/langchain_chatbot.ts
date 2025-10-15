@@ -1,10 +1,9 @@
 import { ChatOpenAI } from "@langchain/openai";
+import type { BaseMessage } from "@langchain/core/messages";
 import { AIMessage, HumanMessage } from "@langchain/core/messages";
 import { InMemoryChatMessageHistory } from "@langchain/core/chat_history";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { RunnableWithMessageHistory } from "@langchain/core/runnables";
-import type { BaseMessage } from "@langchain/core/messages";
-import { RunnablePassthrough, RunnableSequence } from "@langchain/core/runnables";
+import { RunnablePassthrough, RunnableSequence, RunnableWithMessageHistory } from "@langchain/core/runnables";
 import { logger } from "../utilities/loggerUtils";
 
 async function mainOne() {
@@ -84,24 +83,24 @@ async function mainThree() {
 
     // invoke new chain with input object and config as args
     const response = await withMessageHistory.invoke({ input: "Hi! I'm Bob" }, config);
-    logger.debug("response", response.content);
+    logger.debug(`response ${response.content}`);
     // Hi, Bob! How can I assist you today?
 
     // use the chain again, and it automatically keeps track of history
     const followupResponse = await withMessageHistory.invoke({ input: "What's my name?" }, config);
-    logger.debug("followupResponse", followupResponse.content);
+    logger.debug(`followupResponse ${followupResponse.content}`);
     // Your name is Bob. How can I help you, Bob?
 
     // let's make a new session by making a new config
     // if you make a new session, you get a new history
     const configTwo = { configurable: { sessionId: "abc3" } };
     const newSessionResponse = await withMessageHistory.invoke({ input: "What's my name?" }, configTwo);
-    logger.debug("newSessionResponse", newSessionResponse.content);
+    logger.debug(`newSessionResponse ${newSessionResponse.content}`);
     // I'm sorry, but you haven't shared your name with me yet. Can you please tell me your name?
 
     // upon re-using the first config, we can see that it retains a separate history
     const sameSessionResponse = await withMessageHistory.invoke({ input: "What's my name, again?" }, config);
-    logger.debug("sameSessionResponse", sameSessionResponse.content);
+    logger.debug(`sameSessionResponse ${sameSessionResponse.content}`);
     // Your name is Bob. How can I assist you today, Bob?
 }
 
@@ -174,12 +173,12 @@ async function mainFour() {
 
     // the first question refers to chat history 12 messages back, so the bot can't remember
     const responseOne = await chain.invoke({ chat_history: messages, input: "what's my name?" });
-    logger.debug("responseOne", responseOne.content);
+    logger.debug(`responseOne ${responseOne.content}`);
     // You haven't shared your name with me yet. What is your name?
 
     // the second question refers to chat history 10 messages back, so the bot can remember
     const responseTwo = await chain.invoke({ chat_history: messages, input: "what's my fav ice cream" });
-    logger.debug("responseTwo", responseTwo.content);
+    logger.debug(`responseTwo ${responseTwo.content}`);
     // Your favorite ice cream is vanilla.
 
     // now we can put this chain back into our runnable that keeps track of message history normally
@@ -204,13 +203,13 @@ async function mainFour() {
     // initialize a new session
     const config = { configurable: { sessionId: "abc4" } };
     const responseThree = await withMessageHistory.invoke({ input: "what's my name?" }, config);
-    logger.debug("responseThree", responseThree.content);
+    logger.debug(`responseThree ${responseThree.content}`);
     // You haven’t told me your name yet. What is your name?
 
     // now, since we just added another pair of messages into the history (for a total of 14)
     // the message with the info about the favorite ice cream falls out of short-term memory
     const responseFour = await withMessageHistory.invoke({ input: "whats my favorite ice cream?" }, config);
-    logger.debug("responseFour", responseFour.content);
+    logger.debug(`responseFour ${responseFour.content}`);
     // You haven't mentioned your favorite ice cream yet. What's your favorite flavor?
 }
 

@@ -63,13 +63,13 @@ export class DrawingSpectator extends Spectator {
 
     sendCanvas() {
         const room = getRoom(this.roomID) as DrawingRoom;
-        logger.debug("sendCanvas activated by room", this.roomID);
+        logger.debug(`sendCanvas activated by room ${this.roomID}`);
         if (!room) {
             logger.debug("room not found");
             return;
         }
         const canvas = room.finishedCanvas;
-        logger.debug("sendCanvas activated sending", canvas);
+        logger.debug(`sendCanvas activated sending ${canvas}`);
         // for (const editor of room.editors.values()) {
         // }
         this.io

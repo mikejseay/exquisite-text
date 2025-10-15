@@ -156,12 +156,7 @@ class Member {
     }
 
     disconnecting() {
-        logger.debug(
-            "socket",
-            this.socket.id,
-            " disconnecting from",
-            this.socket.rooms,
-        );
+        logger.debug(`socket ${this.socket.id} disconnecting from ${this.socket.rooms}`);
     }
 
     reinstateContext() {

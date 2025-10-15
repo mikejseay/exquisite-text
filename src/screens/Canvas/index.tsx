@@ -116,7 +116,7 @@ const Canvas: React.FC = () => {
             }
 
             const newScaleFactor = newWidth / PANEL_WIDTH_MIN;
-            logger.debug("New Scale Factor:", newScaleFactor);
+            logger.debug(`New Scale Factor: ${newScaleFactor}`);
 
             // Update state for layout purposes
             setDimensions({ width: newWidth, height: newHeight });

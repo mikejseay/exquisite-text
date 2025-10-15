@@ -100,13 +100,13 @@ class Room {
     }
 
     addEditor(deviceUUID: string, editorObj: PoemEditor | DrawingEditor) {
-        logger.debug("addEditor with deviceUUID", deviceUUID);
+        logger.debug(`addEditor with deviceUUID ${deviceUUID}`);
         this.editors.set(deviceUUID, editorObj);
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }
 
     removeEditor(deviceUUID: string) {
-        logger.debug("removeEditor with deviceUUID", deviceUUID);
+        logger.debug(`removeEditor with deviceUUID ${deviceUUID}`);
         this.editors.delete(deviceUUID);
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }
@@ -172,7 +172,7 @@ class Room {
                 currentTime - spectator.lastActivity > maxMemberTimeSpentInactive
             ) {
                 spectator.leaveRoom();
-                logger.debug("booting", spectator.name, "based on inactivity");
+                logger.debug(`booting ${spectator.name} based on inactivity`);
             }
         }
         for (const editor of this.editors.values()) {
@@ -181,7 +181,7 @@ class Room {
                 currentTime - editor.lastActivity > maxMemberTimeSpentInactive
             ) {
                 editor.leaveRoom();
-                logger.debug("booting", editor.name, "based on inactivity");
+                logger.debug(`booting ${editor.name} based on inactivity`);
             }
         }
     }
@@ -251,7 +251,7 @@ export class PoemRoom extends Room {
     }
 
     setUpGame() {
-        logger.debug("setUpGame with this.editors", this.editors);
+        logger.debug(`setUpGame with this.editors ${this.editors}`);
         const nContributions = this.gameSettings["nRounds"] * this.editors.size + 2;
 
         // have each editor set their important properties
@@ -285,7 +285,7 @@ export class PoemRoom extends Room {
         // the approach we take here is to spoof a client socket from here on the server
         // we use a special top-level socket message to get them to join as a bot
 
-        logger.debug("room trying to add PoemBot with server path", serverPath);
+        logger.debug(`room trying to add PoemBot with server path ${serverPath}`);
         const botDeviceID = uuidv4();
         const botSocket = ioClient(serverPath);
         botDeviceIDToBotSocket.set(botDeviceID, botSocket);
@@ -320,7 +320,7 @@ export class DrawingRoom extends Room {
     }
 
     setUpGame() {
-        logger.debug("setUpGame with this.editors", this.editors);
+        logger.debug(`setUpGame with this.editors ${this.editors}`);
         const nContributions = 3;
 
         // have each editor set their important properties

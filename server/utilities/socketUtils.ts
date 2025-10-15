@@ -76,13 +76,13 @@ export function standardReconnect(
 ) {
     if (member && member.socket) {
         // send socket (tab) that's currently connected to the disconnected view
-        logger.debug("disconnecting previous socket for deviceID", member.deviceID);
+        logger.debug(`disconnecting previous socket for deviceID ${member.deviceID}`);
         io.to(member.socket.id).emit("stcNavigate", "/disconnected");
         member.socket.disconnect(); // force disconnect on original socket
-        logger.debug("connecting new socket for deviceID", member.deviceID);
+        logger.debug(`connecting new socket for deviceID ${member.deviceID}`);
         member.socket = socket; // connect the new socket to same Member
         member.joinRoom(); // re-join the correct rooms
-        logger.debug("about to reinstate context for", member.deviceID);
+        logger.debug(`about to reinstate context for ${member.deviceID}`);
         member.reinstateContext();
     }
 }

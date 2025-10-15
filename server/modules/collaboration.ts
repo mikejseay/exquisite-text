@@ -112,7 +112,7 @@ export class Poem extends Collaboration {
         if (!isBotUsageAuthorized(room)) {
             return;
         }
-        logger.debug("poem", this.ID, "just got its first line in a room with a PoemBot");
+        logger.debug(`poem ${this.ID} just got its first line in a room with a PoemBot`);
         logger.debug("analyzing the poem to help the PoemBot");
         const poemStart = firstPart + "\n" + secondPart;
         this.analysis = await analyzeBeginning(poemStart);
@@ -178,7 +178,7 @@ export class Drawing extends Collaboration {
     }
 
     sendPanelEditToSpectators(value: IPanel["content"]) {
-        logger.debug("sendPanelEditToSpectators...", this.indexInGame, value);
+        logger.debug(`sendPanelEditToSpectators... ${this.indexInGame} ${value}`);
         this.io
             .in(`${this.roomID}_Spectators`)
             .emit("stcPanelEditSpectator", this.indexInGame, value);

@@ -39,7 +39,7 @@ function sockets(
         // This establishes the callbacks that every socket should have access to.
 
         socket.on("ctsRecognizeDevice", (deviceID) => {
-            logger.debug("new socket", socket.id, "from device", deviceID);
+            logger.debug(`new socket ${socket.id} from device ${deviceID}`);
 
             const isDeviceInARoom: boolean = Object.prototype.hasOwnProperty.call(
                 deviceIDToRoomID,
@@ -58,7 +58,7 @@ function sockets(
             const roomID = deviceIDToRoomID[deviceID];
             const room = getRoom(roomID);
             if (!room) {
-                logger.debug("room", roomID, "not found while trying to recognize", deviceID);
+                logger.debug(`room ${roomID} not found while trying to recognize ${deviceID}`);
                 return;
             }
 
@@ -70,7 +70,7 @@ function sockets(
             } else if (spectatorDeviceIDsInRoom.includes(deviceID)) {
                 role = Role.SPECTATOR;
             } else {
-                logger.debug("role not identified when recognizing", deviceID);
+                logger.debug(`role not identified when recognizing ${deviceID}`);
                 return;
             }
 
@@ -99,7 +99,7 @@ function sockets(
         });
 
         socket.on("ctsCreateRoomAndHost", (roomID: string, medium: Medium) => {
-            logger.debug("createGameHost for ", socket.id, "joining", roomID);
+            logger.debug(`createGameHost for ${socket.id} joining ${roomID}`);
             // notice we don't add the host device to deviceIDToRoomID
             const host = new Host(
                 io,
@@ -125,27 +125,18 @@ function sockets(
             } else {
                 throw new Error("Room not defined.");
             }
-            logger.debug("room", roomID, "created as medium", medium, " with ", socket.id, "as host");
+            logger.debug(`room ${roomID} created as medium ${medium} with ${socket.id} as host`);
         });
 
         socket.on("ctsJoinAs", (roomID: string, name: string, role: Role, isTest = false) => {
-            logger.debug(
-                "socket",
-                socket.id,
-                "ctsJoinAs",
-                role,
-                "to room",
-                roomID,
-                "with name",
-                name,
-            );
+            logger.debug(`socket ${socket.id} ctsJoinAs ${role} to room ${roomID} with name ${name}`);
             if (!roomIDToRoom.has(roomID)) {
                 logger.debug(roomID, "does not exist");
                 io.to(socket.id).emit("stcJoinError", "Room does not exist.");
                 return;
             }
             const room = getRoom(roomID);
-            logger.debug("current state of socketIDToDeviceID is", socketIDToDeviceID);
+            logger.debug(`current state of socketIDToDeviceID is ${socketIDToDeviceID}`);
             const deviceID = socketIDToDeviceID[socket.id];
             if (!room) {
                 logger.debug("room not found");
@@ -169,7 +160,7 @@ function sockets(
                     return;
                 }
                 deviceIDToRoomID[deviceID] = roomID;
-                logger.debug("about to make editor obj with deviceID", deviceID, "and name", name);
+                logger.debug(`about to make editor obj with deviceID ${deviceID} and name ${name}`);
 
                 let editor: PoemEditor | DrawingEditor | null = null;
                 if (room.medium == Medium.POETRY) {
@@ -183,7 +174,7 @@ function sockets(
 
                 io.to(socket.id).emit("stcMedium", room.medium);
 
-                logger.debug("editor object created with deviceID", editor.deviceID);
+                logger.debug(`editor object created with deviceID ${editor.deviceID}`);
                 editor.joinRoom();
                 // If *joining* a game as an editor, the only possibility is the lobby
                 if (!isTest) {
@@ -203,12 +194,12 @@ function sockets(
                     throw new Error("Unknown medium type.");
                 }
 
-                logger.debug("spectator object created with deviceID", spectator.deviceID);
+                logger.debug(`spectator object created with deviceID ${spectator.deviceID}`);
                 spectator.joinRoom();
                 // If joining a game as spectator, we can go to any screen
                 if (!isTest) {
                     const targetRoute = getRouteForGameStateAndRole(room.gameState, Role.SPECTATOR);
-                    logger.debug("navigating spectator to", targetRoute);
+                    logger.debug(`navigating spectator to ${targetRoute}`);
                     io.to(socket.id).emit("stcNavigate", targetRoute);
                 }
                 room.addSpectator(deviceID, spectator);
@@ -216,28 +207,21 @@ function sockets(
         });
 
         socket.on("ctsJoinAsBot", (roomID: string, name: string, botDeviceID: string) => {
-            logger.debug("new socket", socket.id, "from bot with device", botDeviceID);
+            logger.debug(`new socket ${socket.id} from bot with device ${botDeviceID}`);
             socketIDToDeviceID[socket.id] = botDeviceID;
             deviceIDToSocketID[botDeviceID] = socket.id;
-            logger.debug(
-                "socket",
-                socket.id,
-                "ctsJoinAsBot (as editor) to room",
-                roomID,
-                "with name",
-                name,
-            );
+            logger.debug(`socket ${socket.id} ctsJoinAsBot (as editor) to room ${roomID} with name ${name}`);
             const room = getRoom(roomID);
-            logger.debug("current state of socketIDToDeviceID is", socketIDToDeviceID);
+            logger.debug(`current state of socketIDToDeviceID is ${socketIDToDeviceID}`);
             if (!room) {
                 logger.debug("room not found");
                 return;
             }
             deviceIDToRoomID[botDeviceID] = roomID;
-            logger.debug("about to make bot editor obj with botDeviceID", botDeviceID, "and name", name);
+            logger.debug(`about to make bot editor obj with botDeviceID ${botDeviceID} and name ${name}`);
 
             const bot = new PoemBot(io, socket, roomID, botDeviceID, name);
-            logger.debug("bot object (for poems) created with botDeviceID", bot.deviceID);
+            logger.debug(`bot object (for poems) created with botDeviceID ${bot.deviceID}`);
             bot.joinRoom();
             room.addEditor(botDeviceID, bot);
         });
