@@ -19,7 +19,7 @@ const completePoetryPrompt = ChatPromptTemplate.fromMessages([
     [ "placeholder", "{chat_history}" ],
     [ "human", completeUserPrompt ],
 ]);
-const modelHighTemp: ChatOpenAI = new ChatOpenAI({ model: "gpt-4o" , temperature: 1.3 });
+const modelHighTemp: ChatOpenAI = new ChatOpenAI({ model: "gpt-4o" , temperature: 1.2 });
 const parser = new StringOutputParser();
 
 const analyzePoetryChain = analyzePoetryPrompt.pipe(modelHighTemp).pipe(parser);
