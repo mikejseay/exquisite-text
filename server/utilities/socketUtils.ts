@@ -41,7 +41,7 @@ export function getRoom(roomID: string | undefined): PoemRoom | DrawingRoom | un
     }
     const room = roomIDToRoom.get(roomID);
     if (!room) {
-        logger.error("No room found for ID:", roomID);
+        logger.error(`No room found for ID: ${roomID}`);
         return undefined;
     }
     return room;
@@ -59,7 +59,7 @@ export function getEditorSocketID(roomID: string | undefined, editorID: string |
     }
     const editor: PoemEditor | DrawingEditor | undefined = room.editors.get(editorID);
     if (!editor || !editor.socket) {
-        logger.error("PoemEditor or editor's socket not found for ID:", editorID);
+        logger.error(`PoemEditor or editor's socket not found for ID: ${editorID}`);
         return undefined;
     }
     return editor.socket.id;
@@ -115,7 +115,7 @@ export function sendCollaborationContributionsInfo(member: Host | PoemEditor | P
         logger.debug("room not found");
         return;
     }
-    logger.debug(member.name, "request collaborations from room which has", room.finishedWorks.length);
+    logger.debug(`${member.name} request collaborations from room which has ${room.finishedWorks.length}`);
     for (const collaborationObj of room.finishedWorks) {
         // TODO: Explore this, this could improve server-side efficiency:
         // poemMember.io.in(poemMember.roomID).emit("stcPoemLines", Array.from(poemObj.lines));

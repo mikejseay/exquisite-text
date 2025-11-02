@@ -156,13 +156,13 @@ class Room {
 
     checkActivity() {
         const currentTime = Date.now();
-        logger.debug(this.roomID, "checking activity at", currentTime);
+        logger.debug(`${this.roomID} checking activity at ${currentTime}`);
         if (
             this.editors.size === 0 &&
             this.spectators.size === 0 &&
             currentTime - this.createdAt > maxRoomTimeSpentEmpty
         ) {
-            logger.debug(this.roomID, "spent too long with no members, destroying");
+            logger.debug(`${this.roomID} spent too long with no members, destroying`);
             this.selfDestruct();
             return;
         }
@@ -187,14 +187,14 @@ class Room {
     }
 
     sendToEnd() {
-        logger.debug(this.roomID, "sending everyone to the end screen");
+        logger.debug(`${this.roomID} sending everyone to the end screen`);
         this.io.in(this.roomID).emit("stcNavigate", "/end");
     }
 
     async selfDestruct() {
-        logger.debug(this.roomID, "will self-destruct in 100 seconds");
+        logger.debug(`${this.roomID} will self-destruct in 100 seconds`);
         await sleep(100_000);
-        logger.debug(this.roomID, "self-destructing");
+        logger.debug(`${this.roomID} self-destructing`);
 
         for (const [ editorID, editor ] of this.editors.entries()) {
             this.cleanUpMember(editorID, editor);
@@ -246,7 +246,7 @@ export class PoemRoom extends Room {
     }
 
     storePoem(poemObj: Poem) {
-        logger.debug(this.roomID, "storing poem", poemObj.ID);
+        logger.debug(`${this.roomID} storing poem ${poemObj.ID}`);
         this.finishedWorks.push(poemObj);
     }
 
@@ -346,7 +346,7 @@ export class DrawingRoom extends Room {
     }
 
     storeDrawing(drawingObj: Drawing) {
-        logger.debug(this.roomID, "storing drawing", drawingObj.ID);
+        logger.debug(`${this.roomID} storing drawing ${drawingObj.ID}`);
         this.finishedWorks.push(drawingObj);
     }
 

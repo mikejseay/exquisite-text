@@ -60,7 +60,7 @@ class Member {
 
     leaveRoom() {
         this.connected = false;
-        logger.debug(this.name, " leaving ", this.roomID);
+        logger.debug(`${this.name} leaving ${this.roomID}`);
         this.io.to(this.socket.id).emit("stcNavigate", "/"); // navigate home (if possible)
         delete deviceIDToRoomID[this.deviceID];
         this.socket.leave(this.roomID);
@@ -87,7 +87,7 @@ class Member {
     }
 
     sendUserTableInfo(shouldTest: boolean) {
-        logger.debug(this.name, "requestUserTableInfo");
+        logger.debug(`${this.name} requestUserTableInfo`);
         const room = getRoom(this.roomID);
         if (room) {
             this.io
@@ -104,12 +104,12 @@ class Member {
     }
 
     requestRoomCode() {
-        logger.debug(this.name, "requestRoomCode");
+        logger.debug(`${this.name} requestRoomCode`);
         this.io.to(this.socket.id).emit("stcRoomCode", this.roomID);
     }
 
     sendGameSettingsInfo() {
-        logger.debug(this.name, "requestGameSettingsInfo");
+        logger.debug(`${this.name} requestGameSettingsInfo`);
         const room = getRoom(this.roomID);
         if (room) {
             this.io
@@ -121,7 +121,7 @@ class Member {
     }
 
     sendSettingsEnabled() {
-        logger.debug(this.name, "requestSettingsEnabled");
+        logger.debug(`${this.name} requestSettingsEnabled`);
         this.io.to(this.socket.id).emit("stcGameSettingsEnabled", false);
     }
 
@@ -130,7 +130,7 @@ class Member {
     // therefore we don't want to boot someone from the game based on this
     // however if they are AFK, etc., we should do those things
 
-        logger.debug(this.socket.id, "disconnected");
+        logger.debug(`${this.socket.id} disconnected`);
         this.connected = false;
 
         // If game still in lobby state, remove user from room, since an AFK

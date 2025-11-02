@@ -131,7 +131,7 @@ function sockets(
         socket.on("ctsJoinAs", (roomID: string, name: string, role: Role, isTest = false) => {
             logger.debug(`socket ${socket.id} ctsJoinAs ${role} to room ${roomID} with name ${name}`);
             if (!roomIDToRoom.has(roomID)) {
-                logger.debug(roomID, "does not exist");
+                logger.debug(`${roomID} does not exist`);
                 io.to(socket.id).emit("stcJoinError", "Room does not exist.");
                 return;
             }
@@ -144,7 +144,7 @@ function sockets(
             }
             if (role === Role.EDITOR) {
                 if (room.gameState !== GameState.LOBBY) {
-                    logger.debug(roomID, "game already started");
+                    logger.debug(`${roomID} game already started`);
                     io.to(socket.id).emit(
                         "stcJoinError",
                         "Game already started. Join as spectator?",

@@ -65,13 +65,13 @@ class Editor extends Member {
         this.targetEditorID = editorDeviceIDs[safeNextIndex];
         logger.debug(`this.targetEditorID ${this.targetEditorID}`);
         // this.targetEditorSocketID = room.editors.get(this.targetEditorID).socket.id;
-        logger.debug(
-            this.deviceID,
-            "in position",
-            this.turnPosition,
-            "targets",
-            this.targetEditorID,
-        );
+        logger.debug(`
+            ${this.deviceID}
+            in position
+            ${this.turnPosition}
+            targets
+            ${this.targetEditorID}
+        `);
     }
 
     joinRoom() {
@@ -133,7 +133,7 @@ class Editor extends Member {
     }
 
     sendActivity() {
-        logger.debug(this.name, "requestEditorActivity");
+        logger.debug(`${this.name} requestEditorActivity`);
         this.io.to(this.socket.id).emit("stcEditorActive", this.hasWorkInQueue());
     }
 
@@ -142,7 +142,7 @@ class Editor extends Member {
     }
 
     sendSettingsEnabled() {
-        logger.debug(this.name, "requestSettingsEnabled");
+        logger.debug(`${this.name} requestSettingsEnabled`);
         this.io.to(this.socket.id).emit("stcGameSettingsEnabled", Boolean(this.isVIP()));
     }
 
