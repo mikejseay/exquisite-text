@@ -4,14 +4,14 @@ import { logger } from "../../utilities/loggerUtils";
 
 function UserTable() {
     const { userInfo } = useSocketInfo();
-    logger.debug("userInfo", userInfo);
+    logger.debug(`userInfo ${userInfo}`);
     if (!userInfo) {
         return null;
     }
     const { editors, editorColors, spectators } = userInfo;
-    logger.debug("editors", editors);
-    logger.debug("editorColors", editorColors);
-    logger.debug("spectators", spectators);
+    logger.debug(`editors ${editors}`);
+    logger.debug(`editorColors ${editorColors}`);
+    logger.debug(`spectators ${spectators}`);
     if (!editors) {
         return null;
     }

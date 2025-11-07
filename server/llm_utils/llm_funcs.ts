@@ -101,7 +101,7 @@ function main() {
 
     if (canBeFixedByShifting(lineOne, lineTwo, idealCharsOnLineOne, idealCharsOnLineTwo)) {
         const [ lineOneModified, lineTwoModified ] = processPoetryLines(lineOne, lineTwo);
-        logger.debug("Line One Modified:", lineOneModified);
-        logger.debug("Line Two Modified:", lineTwoModified);
+        logger.debug(`Line One Modified: ${lineOneModified}`);
+        logger.debug(`Line Two Modified: ${lineTwoModified}`);
     }
 }

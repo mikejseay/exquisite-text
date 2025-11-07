@@ -48,30 +48,30 @@ class Editor extends Member {
     }
 
     prepareForGame() {
-        logger.debug("prepareForGame in room", this.roomID);
+        logger.debug(`prepareForGame in room ${this.roomID}`);
         const room = roomIDToRoom.get(this.roomID);
         if (!room) {
             logger.debug("room not found");
             return;
         }
         const editorDeviceIDs = Array.from(room.editors.keys());
-        logger.debug("editorDeviceIDs", editorDeviceIDs);
+        logger.debug(`editorDeviceIDs ${editorDeviceIDs}`);
         const nEditors = editorDeviceIDs.length;
-        logger.debug("nEditors", nEditors);
+        logger.debug(`nEditors ${nEditors}`);
         this.turnPosition = editorDeviceIDs.indexOf(this.deviceID);
-        logger.debug("this.turnPosition", this.turnPosition);
+        logger.debug(`this.turnPosition ${this.turnPosition}`);
         const safeNextIndex = (this.turnPosition + 1) % nEditors;
-        logger.debug("safeNextIndex", safeNextIndex);
+        logger.debug(`safeNextIndex ${safeNextIndex}`);
         this.targetEditorID = editorDeviceIDs[safeNextIndex];
-        logger.debug("this.targetEditorID", this.targetEditorID);
+        logger.debug(`this.targetEditorID ${this.targetEditorID}`);
         // this.targetEditorSocketID = room.editors.get(this.targetEditorID).socket.id;
-        logger.debug(
-            this.deviceID,
-            "in position",
-            this.turnPosition,
-            "targets",
-            this.targetEditorID,
-        );
+        logger.debug(`
+            ${this.deviceID}
+            in position
+            ${this.turnPosition}
+            targets
+            ${this.targetEditorID}
+        `);
     }
 
     joinRoom() {
@@ -104,9 +104,7 @@ class Editor extends Member {
                 // trigger the room to reorganize the editors
                 room.reorganizeEditors();
             } else {
-                logger.debug(
-                    "there are no editors left after the game started, no way to continue.",
-                );
+                logger.debug("there are no editors left after the game started, no way to continue.");
                 room.selfDestruct();
             }
         } else if (room.gameState === GameState.LOBBY) {
@@ -135,7 +133,7 @@ class Editor extends Member {
     }
 
     sendActivity() {
-        logger.debug(this.name, "requestEditorActivity");
+        logger.debug(`${this.name} requestEditorActivity`);
         this.io.to(this.socket.id).emit("stcEditorActive", this.hasWorkInQueue());
     }
 
@@ -144,7 +142,7 @@ class Editor extends Member {
     }
 
     sendSettingsEnabled() {
-        logger.debug(this.name, "requestSettingsEnabled");
+        logger.debug(`${this.name} requestSettingsEnabled`);
         this.io.to(this.socket.id).emit("stcGameSettingsEnabled", Boolean(this.isVIP()));
     }
 
@@ -331,7 +329,7 @@ export class PoemEditor extends Editor {
     }
 
     handleLastLine(lastPart: string) {
-        logger.debug("handleLastLine in ", this.name);
+        logger.debug(`handleLastLine in  ${this.name}`);
         // Since the poem is finished, remove it from the queue
         const poemToPass = this.contributionQueue.shift() as Poem;
         if (isNil(poemToPass)) {
@@ -365,18 +363,16 @@ export class PoemEditor extends Editor {
         // if all editors' poem queues are empty
         // remove each of the editor/spectator deviceIDs from deviceIDToRoomId
         if (room.nUnfinishedWorks === 0) {
-            logger.debug(
-                "no poems left to finish; forget everyone's device, delete room and poem globals",
-            );
+            logger.debug("no poems left to finish; forget everyone's device, delete room and poem globals");
             room.gameState = GameState.END;
             room.sendToEnd();  // send everyone to the end screen
             room.selfDestruct();  // self-destruct after some time
 
-            // logger.debug("deviceIDToRoomID", deviceIDToRoomID);
-            // logger.debug("roomIDToHost", roomIDToHost);
-            // logger.debug("roomIDToRoom", roomIDToRoom);
-            // logger.debug("room.editors", room.editors);
-            // logger.debug("room.spectators", room.spectators);
+            // logger.debug(`deviceIDToRoomID ${deviceIDToRoomID}`);
+            // logger.debug(`roomIDToHost ${roomIDToHost}`);
+            // logger.debug(`roomIDToRoom ${roomIDToRoom}`);
+            // logger.debug(`room.editors ${room.editors}`);
+            // logger.debug(`room.spectators ${room.spectators}`);
         }
     }
 
@@ -481,7 +477,7 @@ export class DrawingEditor extends Editor {
     }
 
     handlePanel(panelContent: IPanel["content"]) {
-        logger.debug("handlePanel activated with panelContent", panelContent);
+        logger.debug(`handlePanel activated with panelContent ${panelContent}`);
         // tmp to maintain testing functionality
         const room = getRoom(this.roomID) as DrawingRoom;
         room.finishedCanvas = panelContent;
@@ -517,7 +513,7 @@ export class DrawingEditor extends Editor {
         this.lastActivity = Date.now(); // they DREW!!!! = active
 
         const drawing = this.contributionQueue[0] as Drawing;
-        logger.debug("handlePanelEdit:", drawing);
+        logger.debug(`handlePanelEdit: ${drawing}`);
         if (!isNil(drawing)) {
             drawing.sendPanelEditToSpectators(panelContent);
         }
@@ -536,11 +532,7 @@ export class DrawingEditor extends Editor {
             if (!latestPanel) throw new Error("All your pylons I mean panels are belong to us :(");
 
             this.io.to(this.socket.id).emit("stcStrokeHistory", latestPanel["content"]);
-            logger.debug(
-                "we think the drawing has",
-                drawing.panels.size,
-                "submissions so far",
-            );
+            logger.debug(`we think the drawing has ${drawing.panels.size} submissions so far`);
 
             if (drawing.panels.size === drawing.nContributions - 1) {
                 this.io.to(this.socket.id).emit("stcLastContribution", true);
@@ -558,17 +550,11 @@ export class DrawingEditor extends Editor {
     currentlyOnLastContribution() {
         const drawing = this.contributionQueue[0] as Drawing;
         if (drawing) {
-            logger.debug("drawing.panels:", drawing?.panels);
+            logger.debug(`drawing.panels: ${drawing?.panels}`);
             const currentLength = drawing?.panels
                 ? drawing?.panels?.size
                 : 0;
-            logger.debug(
-                "we think the drawing has ",
-                currentLength,
-                "of",
-                drawing.nContributions,
-                "(this should always be 3)",
-            );
+            logger.debug(`we think the drawing has ${currentLength} of ${drawing.nContributions} (this should always be 3)`);
             return currentLength >= drawing.nContributions - 1;
         } else {
             return false;
@@ -581,7 +567,7 @@ export class DrawingEditor extends Editor {
     }
 
     handleLastPanel(lastPart: IPanel["content"]) {
-        logger.debug("handleLastPanel in ", this.name);
+        logger.debug(`handleLastPanel in  ${this.name}`);
         const drawingToPass = this.contributionQueue.shift() as Drawing;
         if (isNil(drawingToPass)) {
             logger.debug("No drawing to pass");
@@ -612,19 +598,17 @@ export class DrawingEditor extends Editor {
         // remove each of the editor/spectator deviceIDs from deviceIDToRoomId
         if (room.nUnfinishedWorks === 0) {
             // broadcast completed drawings to everyone
-            logger.debug(
-                "no drawings left to finish; forget everyone's device, delete room and drawing globals",
-            );
+            logger.debug("no drawings left to finish; forget everyone's device, delete room and drawing globals");
             room.sendCompletedDrawings();
             room.gameState = GameState.END;
             room.sendToEnd();  // send everyone to the end screen
             room.selfDestruct();  // self-destruct after some time
 
-            // logger.debug("deviceIDToRoomID", deviceIDToRoomID);
-            // logger.debug("roomIDToHost", roomIDToHost);
-            // logger.debug("roomIDToRoom", roomIDToRoom);
-            // logger.debug("room.editors", room.editors);
-            // logger.debug("room.spectators", room.spectators);
+            // logger.debug(`deviceIDToRoomID ${deviceIDToRoomID}`);
+            // logger.debug(`roomIDToHost ${roomIDToHost}`);
+            // logger.debug(`roomIDToRoom ${roomIDToRoom}`);
+            // logger.debug(`room.editors ${room.editors}`);
+            // logger.debug(`room.spectators ${room.spectators}`);
         }
     }
 

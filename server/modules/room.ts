@@ -37,10 +37,10 @@ import { v4 as uuidv4 } from "uuid";
 import { logger } from "../utilities/loggerUtils";
 
 const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
-const serverPath: URL["pathname"] | URL["href"] = isDevelopment
+const serverPath: string = isDevelopment
     ? "http://localhost:3000"
-    : "/";
-logger.debug({ serverPath }, "in room.ts");
+    : (process.env.HEROKU_URL ?? "/");
+logger.debug(`serverPath is ${serverPath} in room.ts`);
 
 class Room {
     // represents a socket.io room and a game of Exquisite Text
@@ -100,13 +100,13 @@ class Room {
     }
 
     addEditor(deviceUUID: string, editorObj: PoemEditor | DrawingEditor) {
-        logger.debug("addEditor with deviceUUID", deviceUUID);
+        logger.debug(`addEditor with deviceUUID ${deviceUUID}`);
         this.editors.set(deviceUUID, editorObj);
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }
 
     removeEditor(deviceUUID: string) {
-        logger.debug("removeEditor with deviceUUID", deviceUUID);
+        logger.debug(`removeEditor with deviceUUID ${deviceUUID}`);
         this.editors.delete(deviceUUID);
         this.sendCurrentUserTableInfo(); // give the room updated user info
     }
@@ -156,13 +156,13 @@ class Room {
 
     checkActivity() {
         const currentTime = Date.now();
-        logger.debug(this.roomID, "checking activity at", currentTime);
+        logger.debug(`${this.roomID} checking activity at ${currentTime}`);
         if (
             this.editors.size === 0 &&
             this.spectators.size === 0 &&
             currentTime - this.createdAt > maxRoomTimeSpentEmpty
         ) {
-            logger.debug(this.roomID, "spent too long with no members, destroying");
+            logger.debug(`${this.roomID} spent too long with no members, destroying`);
             this.selfDestruct();
             return;
         }
@@ -172,7 +172,7 @@ class Room {
                 currentTime - spectator.lastActivity > maxMemberTimeSpentInactive
             ) {
                 spectator.leaveRoom();
-                logger.debug("booting", spectator.name, "based on inactivity");
+                logger.debug(`booting ${spectator.name} based on inactivity`);
             }
         }
         for (const editor of this.editors.values()) {
@@ -181,20 +181,20 @@ class Room {
                 currentTime - editor.lastActivity > maxMemberTimeSpentInactive
             ) {
                 editor.leaveRoom();
-                logger.debug("booting", editor.name, "based on inactivity");
+                logger.debug(`booting ${editor.name} based on inactivity`);
             }
         }
     }
 
     sendToEnd() {
-        logger.debug(this.roomID, "sending everyone to the end screen");
+        logger.debug(`${this.roomID} sending everyone to the end screen`);
         this.io.in(this.roomID).emit("stcNavigate", "/end");
     }
 
     async selfDestruct() {
-        logger.debug(this.roomID, "will self-destruct in 100 seconds");
+        logger.debug(`${this.roomID} will self-destruct in 100 seconds`);
         await sleep(100_000);
-        logger.debug(this.roomID, "self-destructing");
+        logger.debug(`${this.roomID} self-destructing`);
 
         for (const [ editorID, editor ] of this.editors.entries()) {
             this.cleanUpMember(editorID, editor);
@@ -246,12 +246,12 @@ export class PoemRoom extends Room {
     }
 
     storePoem(poemObj: Poem) {
-        logger.debug(this.roomID, "storing poem", poemObj.ID);
+        logger.debug(`${this.roomID} storing poem ${poemObj.ID}`);
         this.finishedWorks.push(poemObj);
     }
 
     setUpGame() {
-        logger.debug("setUpGame with this.editors", this.editors);
+        logger.debug(`setUpGame with this.editors ${this.editors}`);
         const nContributions = this.gameSettings["nRounds"] * this.editors.size + 2;
 
         // have each editor set their important properties
@@ -285,7 +285,7 @@ export class PoemRoom extends Room {
         // the approach we take here is to spoof a client socket from here on the server
         // we use a special top-level socket message to get them to join as a bot
 
-        logger.debug("room trying to add PoemBot with server path", serverPath);
+        logger.debug(`room trying to add PoemBot with server path ${serverPath}`);
         const botDeviceID = uuidv4();
         const botSocket = ioClient(serverPath);
         botDeviceIDToBotSocket.set(botDeviceID, botSocket);
@@ -320,7 +320,7 @@ export class DrawingRoom extends Room {
     }
 
     setUpGame() {
-        logger.debug("setUpGame with this.editors", this.editors);
+        logger.debug(`setUpGame with this.editors ${this.editors}`);
         const nContributions = 3;
 
         // have each editor set their important properties
@@ -346,7 +346,7 @@ export class DrawingRoom extends Room {
     }
 
     storeDrawing(drawingObj: Drawing) {
-        logger.debug(this.roomID, "storing drawing", drawingObj.ID);
+        logger.debug(`${this.roomID} storing drawing ${drawingObj.ID}`);
         this.finishedWorks.push(drawingObj);
     }
 

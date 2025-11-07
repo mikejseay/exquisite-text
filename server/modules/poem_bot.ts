@@ -19,7 +19,7 @@ const completePoetryPrompt = ChatPromptTemplate.fromMessages([
     [ "placeholder", "{chat_history}" ],
     [ "human", completeUserPrompt ],
 ]);
-const modelHighTemp: ChatOpenAI = new ChatOpenAI({ model: "gpt-4o" , temperature: 1.3 });
+const modelHighTemp: ChatOpenAI = new ChatOpenAI({ model: "gpt-4o" , temperature: 1.2 });
 const parser = new StringOutputParser();
 
 const analyzePoetryChain = analyzePoetryPrompt.pipe(modelHighTemp).pipe(parser);
@@ -37,7 +37,7 @@ const completePoetryChain = new RunnableWithMessageHistory({
 });
 
 export async function analyzeBeginning(poemStart: string) {
-    logger.debug("analyzing poemStart", poemStart);
+    logger.debug(`analyzing poemStart ${poemStart}`);
 
     // this is a one-off analysis that will be attached to the poem itself
 
@@ -93,7 +93,7 @@ export async function guaranteeHalfLineCompletion(
             poemAnalysis,
         );
         nTries += 1;
-        logger.debug("original completion:\n", completion);
+        logger.debug(`original completion:\n ${completion}`);
         const parts = completion.split("\n");
         if (parts.length < 2) {
             logger.debug("completion had fewer than 2 lines, retrying.");

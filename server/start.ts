@@ -109,11 +109,11 @@ function onError(error: { syscall: string; code: string }) {
     // handle specific listen errors with friendly messages
     switch (error.code) {
     case "EACCES":
-        logger.error(bind + " requires elevated privileges");
+        logger.error(`${bind} requires elevated privileges`);
         process.exit(1);
         break;
     case "EADDRINUSE":
-        logger.error(bind + " is already in use");
+        logger.error(`${bind} is already in use`);
         process.exit(1);
         break;
     default:
@@ -130,9 +130,9 @@ function onListening() {
     if (!isNil(address)) {
         const bind =
       typeof address === "string"
-          ? "pipe " + address
-          : "port " + address.port;
-        debug("Listening on " + bind);
+          ? `pipe ${address}`
+          : `port ${address.port}`;
+        debug(`Listening on ${bind}`);
     }
 }
 

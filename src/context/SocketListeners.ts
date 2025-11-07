@@ -87,7 +87,7 @@ export const socketListeners = ({
 
     // IS THS LOGIC LEGIT!??@!?@!
     const receivePanelEditSpectator = (collaborationIndex: number, content: IPanel["content"]) => {
-        logger.debug("receivePanelEditSpectator", collaborationIndex, content);
+        logger.debug(`receivePanelEditSpectator ${collaborationIndex} ${content}`);
         setPanelEdits(prevPanelEdits => [
             ...prevPanelEdits.slice(0, collaborationIndex),
             content,
@@ -116,18 +116,18 @@ export const socketListeners = ({
     };
 
     const receiveEditorActive = (editorActiveFromServer: boolean) => {
-        logger.debug("receiveEditorActive:", { editorActiveFromServer });
+        logger.debug(`receiveEditorActive: ${editorActiveFromServer}`);
         setEditorActive(editorActiveFromServer);
     };
 
     const receiveNavigate = (targetRoute: string) => {
-        logger.debug("receiveNavigate activated targeting", targetRoute);
+        logger.debug(`receiveNavigate activated targeting ${targetRoute}`);
         navigate(targetRoute);
     };
 
     // receivePanel, as it were ;)
     const receiveStrokeHistory = (strokeHistory: Point[][]) => {
-        logger.debug("receiveStrokeHistory activated targeting", JSON.stringify(strokeHistory));
+        logger.debug(`receiveStrokeHistory activated targeting ${JSON.stringify(strokeHistory)}`);
         setStrokeHistory(strokeHistory);
     };
 
@@ -139,7 +139,7 @@ export const socketListeners = ({
     };
 
     const receiveMedium = (medium: Medium) => {
-        logger.debug("receiveMedium:", medium);
+        logger.debug(`receiveMedium: ${medium}`);
         setMedium(medium);
     };
 

@@ -42,7 +42,7 @@ export const emitCreateRoomAndHost = (roomID: string, medium: Medium) => {
 };
 
 export const emitJoinAs = (roomID: string, name: string, memberType: Role, isTest = false) => {
-    logger.debug("emitJoinAs activated as", name, "is trying to join", roomID, "as", memberType);
+    logger.debug(`emitJoinAs activated as ${name} is trying to join ${roomID} as ${memberType}`);
     socket.emit("ctsJoinAs", roomID.toUpperCase(), name.toUpperCase(), memberType, isTest);
 };
 
@@ -89,12 +89,12 @@ export const emitSendLastLine = (value: string | null) => {
 };
 
 export const emitSendPanelEdit = (value: Point[][] | null) => {
-    logger.debug("sendPanelEdit:", value);
+    logger.debug(`sendPanelEdit: ${value}`);
     socket.emit("ctsSendPanelEdit", value);
 };
 
 export const emitSendPanel = (value: Point[][] | null) => {
-    logger.debug("sendCanvas:", value);
+    logger.debug(`sendCanvas: ${value}`);
     socket.emit("ctsSendPanel", value);
 };
 

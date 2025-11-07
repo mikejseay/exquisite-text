@@ -57,11 +57,9 @@ export const CompletedDrawing = ({
                 newWidth = Math.max(viewportWidth, DRAWING_WIDTH_MIN);
                 newHeight = Math.max(newWidth / DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN);
                 logger.debug({ viewportWidth, DRAWING_WIDTH_MIN });
-                logger.debug("Math.max(viewportWidth, DRAWING_WIDTH_MIN)", Math.max(viewportWidth, DRAWING_WIDTH_MIN),
-                );
+                logger.debug(`Math.max(viewportWidth, DRAWING_WIDTH_MIN) ${Math.max(viewportWidth, DRAWING_WIDTH_MIN)}`);
                 logger.debug({ newWidth, DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN });
-                logger.debug("Math.max(newWidth / DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN)", Math.max(newWidth / DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN),
-                );
+                logger.debug(`Math.max(newWidth / DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN) ${Math.max(newWidth / DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN)}`);
             // Viewport more landscape than drawing
             } else {
                 logger.debug("else");
@@ -74,7 +72,7 @@ export const CompletedDrawing = ({
 
             const newScaleFactor = newWidth / DRAWING_WIDTH_MIN;
             logger.debug({ viewportHeight, viewportWidth, viewportAspectRatio, newWidth, newHeight });
-            logger.debug("New Scale Factor:", newScaleFactor);
+            logger.debug(`New Scale Factor: ${newScaleFactor}`);
 
             // Update state for layout purposes
             setDimensions({ width: newWidth, height: newHeight });
