@@ -20,6 +20,7 @@ import Canvas from "./screens/Canvas";
 import reportWebVitals from "./reportWebVitals";
 import SocketHandler from "./components/SocketHandler";
 import CanvasSpectator from "./screens/CanvasSpectator";
+import TestSketch from "./screens/TestSketch"
 import { Medium } from "./types";
 import { getTheme } from "./theme";
 
@@ -59,6 +60,7 @@ function Root() {
                             <Route path="/" element={<Join />} />
                             {/* <Route path="host" element={<Host />} /> */}
                             <Route path="lobby" element={<Lobby />} />
+                            <Route path="testsketch" element={<TestSketch />} />
                             <Route path="game" element={<Game />} />
                             <Route path="spectate" element={<Spectate />} />
                             <Route path="end" element={<End />} />
