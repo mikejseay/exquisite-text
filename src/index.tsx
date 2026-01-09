@@ -20,7 +20,7 @@ import Canvas from "./screens/Canvas";
 import reportWebVitals from "./reportWebVitals";
 import SocketHandler from "./components/SocketHandler";
 import CanvasSpectator from "./screens/CanvasSpectator";
-import TestSketch from "./screens/TestSketch"
+import TestSketch from "./screens/TestSketch";
 import { Medium } from "./types";
 import { getTheme } from "./theme";
 

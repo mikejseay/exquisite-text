@@ -22,7 +22,7 @@
  * endings automatically.
  */
 
-import * as ms from '../src/index';
+import * as ms from '@magenta/sketch';
 
 const sketch = function(p) {
   // Available SketchRNN models.

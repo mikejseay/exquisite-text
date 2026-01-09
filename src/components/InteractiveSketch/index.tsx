@@ -11,7 +11,7 @@
  */
 
 import * as React from "react";
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Button from "@mui/material/Button";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
@@ -21,25 +21,16 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
 import { SketchRNN } from "@magenta/sketch";
 
+import { AVAILABLE_MODELS, AvailableModel, InteractiveSketchProps, Stroke } from "./types";
+import { drawStrokes, setRandomModelColor, useSketchState } from "./useSketchState";
 import {
-    InteractiveSketchProps,
-    AVAILABLE_MODELS,
-    AvailableModel,
-    Stroke,
-} from "./types";
-import {
-    useSketchState,
-    drawStrokes,
-    setRandomModelColor,
-} from "./useSketchState";
-import {
-    sketchContainer,
-    controlsContainer,
+    buttonSx,
     canvasContainer,
     canvasWrapper,
+    controlsContainer,
     loadingOverlay,
-    buttonSx,
     selectSx,
+    sketchContainer,
     sliderSx,
 } from "./styles";
 
@@ -66,14 +57,14 @@ export const InteractiveSketch: React.FC<InteractiveSketchProps> = ({
     const lastFrameTimeRef = useRef<number>(0);
 
     // State
-    const [selectedModel, setSelectedModel] = useState<AvailableModel>(
+    const [ selectedModel, setSelectedModel ] = useState<AvailableModel>(
         AVAILABLE_MODELS.includes(initialModel as AvailableModel)
             ? (initialModel as AvailableModel)
-            : "cat"
+            : "cat",
     );
-    const [temperature, setTemperature] = useState<number>(initialTemperature);
-    const [modelLoaded, setModelLoaded] = useState<boolean>(false);
-    const [canvasSize, setCanvasSize] = useState<{ width: number; height: number }>({
+    const [ temperature, setTemperature ] = useState<number>(initialTemperature);
+    const [ modelLoaded, setModelLoaded ] = useState<boolean>(false);
+    const [ canvasSize, setCanvasSize ] = useState<{ width: number; height: number }>({
         width: width || 800,
         height: height || 400,
     });
@@ -100,7 +91,7 @@ export const InteractiveSketch: React.FC<InteractiveSketchProps> = ({
      */
     const isInBounds = useCallback((x: number, y: number): boolean => {
         return x >= 0 && y >= 0 && x <= canvasSize.width && y <= canvasSize.height;
-    }, [canvasSize]);
+    }, [ canvasSize ]);
 
     /**
      * Clear the canvas and reset to white background
@@ -114,7 +105,7 @@ export const InteractiveSketch: React.FC<InteractiveSketchProps> = ({
             ctx.lineCap = "round";
             ctx.lineJoin = "round";
         }
-    }, [getContext, canvasSize]);
+    }, [ getContext, canvasSize ]);
 
     /**
      * Encode strokes and initialize RNN state
@@ -142,10 +133,10 @@ export const InteractiveSketch: React.FC<InteractiveSketchProps> = ({
         const s = sequence[sequence.length - 1];
         state.dx = s[0];
         state.dy = s[1];
-        state.previousPen = [s[2], s[3], s[4]];
+        state.previousPen = [ s[2], s[3], s[4] ];
 
         state.modelIsActive = true;
-    }, [stateRef]);
+    }, [ stateRef ]);
 
     /**
      * Initialize RNN state from strokes and redraw
@@ -163,7 +154,7 @@ export const InteractiveSketch: React.FC<InteractiveSketchProps> = ({
             drawStrokes(ctx, strokes, state.startX, state.startY);
             setRandomModelColor(ctx);
         }
-    }, [getContext, stateRef, encodeStrokes, clearCanvas]);
+    }, [ getContext, stateRef, encodeStrokes, clearCanvas ]);
 
     /**
      * Full restart - clear canvas and reset all state
@@ -172,7 +163,7 @@ export const InteractiveSketch: React.FC<InteractiveSketchProps> = ({
         clearCanvas();
         resetState(canvasSize.width, canvasSize.height);
         onClear?.();
-    }, [clearCanvas, resetState, canvasSize, onClear]);
+    }, [ clearCanvas, resetState, canvasSize, onClear ]);
 
     /**
      * Load a SketchRNN model
@@ -187,7 +178,7 @@ export const InteractiveSketch: React.FC<InteractiveSketchProps> = ({
 
         // Create and load new model
         const model = new SketchRNN(
-            `${BASE_URL}${modelName}.gen.json`
+            `${BASE_URL}${modelName}.gen.json`,
         );
         modelRef.current = model;
 
@@ -208,7 +199,7 @@ export const InteractiveSketch: React.FC<InteractiveSketchProps> = ({
         } catch (error) {
             console.error(`Failed to load model "${modelName}":`, error);
         }
-    }, [pixelFactor, stateRef, initRNNStateFromStrokes, onModelLoaded]);
+    }, [ pixelFactor, stateRef, initRNNStateFromStrokes, onModelLoaded ]);
 
     /**
      * Handle model selection change
@@ -217,7 +208,7 @@ export const InteractiveSketch: React.FC<InteractiveSketchProps> = ({
         const newModel = event.target.value as AvailableModel;
         setSelectedModel(newModel);
         initModel(newModel);
-    }, [initModel]);
+    }, [ initModel ]);
 
     /**
      * Handle temperature slider change
@@ -234,13 +225,13 @@ export const InteractiveSketch: React.FC<InteractiveSketchProps> = ({
         const randomModel = AVAILABLE_MODELS[randomIndex];
         setSelectedModel(randomModel);
         initModel(randomModel);
-    }, [initModel]);
+    }, [ initModel ]);
 
     /**
      * Get mouse/touch position relative to canvas
      */
     const getCanvasPosition = useCallback((
-        event: React.MouseEvent | React.TouchEvent | MouseEvent | TouchEvent
+        event: React.MouseEvent | React.TouchEvent | MouseEvent | TouchEvent,
     ): { x: number; y: number } => {
         const canvas = canvasRef.current;
         if (!canvas) return { x: 0, y: 0 };
@@ -270,7 +261,7 @@ export const InteractiveSketch: React.FC<InteractiveSketchProps> = ({
         event.preventDefault();
         const { x, y } = getCanvasPosition(event);
         handleMouseDown(x, y, isInBounds(x, y), getContext());
-    }, [getCanvasPosition, handleMouseDown, isInBounds, getContext]);
+    }, [ getCanvasPosition, handleMouseDown, isInBounds, getContext ]);
 
     const onPointerUp = useCallback((event: React.MouseEvent | React.TouchEvent) => {
         event.preventDefault();
@@ -280,15 +271,15 @@ export const InteractiveSketch: React.FC<InteractiveSketchProps> = ({
             y,
             isInBounds(x, y),
             modelRef.current,
-            initRNNStateFromStrokes
+            initRNNStateFromStrokes,
         );
-    }, [getCanvasPosition, handleMouseUp, isInBounds, initRNNStateFromStrokes]);
+    }, [ getCanvasPosition, handleMouseUp, isInBounds, initRNNStateFromStrokes ]);
 
     const onPointerMove = useCallback((event: React.MouseEvent | React.TouchEvent) => {
         event.preventDefault();
         const { x, y } = getCanvasPosition(event);
         handleMouseDrag(x, y, isInBounds(x, y), getContext());
-    }, [getCanvasPosition, handleMouseDrag, isInBounds, getContext]);
+    }, [ getCanvasPosition, handleMouseDrag, isInBounds, getContext ]);
 
     /**
      * Animation loop for model drawing
@@ -304,13 +295,13 @@ export const InteractiveSketch: React.FC<InteractiveSketchProps> = ({
                     modelRef.current,
                     temperature,
                     getContext(),
-                    initRNNStateFromStrokes
+                    initRNNStateFromStrokes,
                 );
             }
         }
 
         animationFrameRef.current = requestAnimationFrame(animate);
-    }, [modelLoaded, temperature, getContext, updateFromModel, initRNNStateFromStrokes]);
+    }, [ modelLoaded, temperature, getContext, updateFromModel, initRNNStateFromStrokes ]);
 
     /**
      * Initialize canvas size based on container
@@ -329,7 +320,7 @@ export const InteractiveSketch: React.FC<InteractiveSketchProps> = ({
         updateCanvasSize();
         window.addEventListener("resize", updateCanvasSize);
         return () => window.removeEventListener("resize", updateCanvasSize);
-    }, [width, height]);
+    }, [ width, height ]);
 
     /**
      * Initialize canvas and model on mount
@@ -338,8 +329,7 @@ export const InteractiveSketch: React.FC<InteractiveSketchProps> = ({
         clearCanvas();
         resetState(canvasSize.width, canvasSize.height);
         initModel(selectedModel);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canvasSize]);
+    }, [ canvasSize ]);
 
     /**
      * Start animation loop
@@ -351,7 +341,7 @@ export const InteractiveSketch: React.FC<InteractiveSketchProps> = ({
                 cancelAnimationFrame(animationFrameRef.current);
             }
         };
-    }, [animate]);
+    }, [ animate ]);
 
     /**
      * Cleanup on unmount
@@ -371,7 +361,7 @@ export const InteractiveSketch: React.FC<InteractiveSketchProps> = ({
             </Typography>
             <Typography variant="body2" color="textSecondary" paragraph>
                 This demo attempts to finish the drawing given whatever strokes you draw
-                on the screen. You can also select other classes, like "cat", "ant", "bus", etc.
+                on the screen. You can also select other classes, like &quot;cat&quot;, &quot;ant&quot;, &quot;bus&quot;, etc.
             </Typography>
 
             <Box style={controlsContainer}>

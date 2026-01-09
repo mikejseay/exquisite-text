@@ -1,5 +1,5 @@
-import { useRef, useCallback } from "react";
-import { SketchRNN, ModelState, RawLine, Stroke } from "@magenta/sketch";
+import { useCallback, useRef } from "react";
+import { ModelState, RawLine, SketchRNN, Stroke } from "@magenta/sketch";
 import { PEN, PenState } from "./types";
 
 // Epsilon value to ignore tiny pen movements
@@ -64,8 +64,8 @@ export function useSketchState(): UseSketchStateReturn {
         dy: 0,
         userPen: 1,
         previousUserPen: 0,
-        pen: [0, 0, 0],
-        previousPen: [1, 0, 0],
+        pen: [ 0, 0, 0 ],
+        previousPen: [ 1, 0, 0 ],
         modelState: null,
         modelIsActive: false,
         userHasEverDrawn: false,
@@ -82,8 +82,8 @@ export function useSketchState(): UseSketchStateReturn {
         state.dy = 0;
         state.userPen = 1;
         state.previousUserPen = 0;
-        state.pen = [0, 0, 0];
-        state.previousPen = [0, 1, 0];
+        state.pen = [ 0, 0, 0 ];
+        state.previousPen = [ 0, 1, 0 ];
         state.modelState = null;
         state.modelIsActive = false;
         state.userHasEverDrawn = false;
@@ -96,7 +96,7 @@ export function useSketchState(): UseSketchStateReturn {
         mouseX: number,
         mouseY: number,
         isInBounds: boolean,
-        ctx: CanvasRenderingContext2D | null
+        ctx: CanvasRenderingContext2D | null,
     ) => {
         if (!isInBounds) return;
 
@@ -124,7 +124,7 @@ export function useSketchState(): UseSketchStateReturn {
         mouseY: number,
         isInBounds: boolean,
         model: SketchRNN | null,
-        initRNNStateFromStrokes: (strokes: Stroke[]) => void
+        initRNNStateFromStrokes: (strokes: Stroke[]) => void,
     ) => {
         if (!isInBounds || !model) return;
 
@@ -149,7 +149,7 @@ export function useSketchState(): UseSketchStateReturn {
             }
 
             // Encode this line as a stroke, and feed it to the model.
-            const stroke = model.lineToStroke(currentRawLineSimplified, [lastX, lastY]);
+            const stroke = model.lineToStroke(currentRawLineSimplified, [ lastX, lastY ]);
             state.allRawLines.push(currentRawLineSimplified);
             state.strokes = state.strokes.concat(stroke);
 
@@ -164,7 +164,7 @@ export function useSketchState(): UseSketchStateReturn {
         mouseX: number,
         mouseY: number,
         isInBounds: boolean,
-        ctx: CanvasRenderingContext2D | null
+        ctx: CanvasRenderingContext2D | null,
     ) => {
         const state = stateRef.current;
 
@@ -189,7 +189,7 @@ export function useSketchState(): UseSketchStateReturn {
 
             state.x += state.dx;
             state.y += state.dy;
-            state.currentRawLine.push([state.x, state.y]);
+            state.currentRawLine.push([ state.x, state.y ]);
         }
         state.previousUserPen = state.userPen;
     }, []);
@@ -198,7 +198,7 @@ export function useSketchState(): UseSketchStateReturn {
         model: SketchRNN,
         temperature: number,
         ctx: CanvasRenderingContext2D | null,
-        initRNNStateFromStrokes: (strokes: Stroke[]) => void
+        initRNNStateFromStrokes: (strokes: Stroke[]) => void,
     ) => {
         const state = stateRef.current;
 
@@ -207,14 +207,14 @@ export function useSketchState(): UseSketchStateReturn {
         // New state
         state.pen = state.previousPen;
         state.modelState = model.update(
-            [state.dx, state.dy, ...state.pen],
-            state.modelState
+            [ state.dx, state.dy, ...state.pen ],
+            state.modelState,
         );
         const pdf = model.getPDF(state.modelState, temperature);
         const sample = model.sample(pdf);
         state.dx = sample[0];
         state.dy = sample[1];
-        state.pen = [sample[2], sample[3], sample[4]];
+        state.pen = [ sample[2], sample[3], sample[4] ];
 
         // If we finished the previous drawing, start a new one
         if (state.pen[PEN.END] === 1) {
@@ -251,18 +251,18 @@ export function drawStrokes(
     ctx: CanvasRenderingContext2D,
     strokes: Stroke[],
     startX: number,
-    startY: number
+    startY: number,
 ): void {
     ctx.strokeStyle = "rgb(255, 0, 0)";
 
     let x = startX;
     let y = startY;
-    let pen: PenState = [0, 0, 0];
-    let previousPen: PenState = [1, 0, 0];
+    let pen: PenState = [ 0, 0, 0 ];
+    let previousPen: PenState = [ 1, 0, 0 ];
 
     for (let i = 0; i < strokes.length; i++) {
-        const [dx, dy, p0, p1, p2] = strokes[i];
-        pen = [p0, p1, p2];
+        const [ dx, dy, p0, p1, p2 ] = strokes[i];
+        pen = [ p0, p1, p2 ];
 
         if (previousPen[PEN.END] === 1) {
             // End of drawing
