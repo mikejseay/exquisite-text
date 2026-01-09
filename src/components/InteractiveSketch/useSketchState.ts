@@ -19,6 +19,7 @@ export interface SketchState {
     modelState: ModelState | null;
     modelIsActive: boolean;
     userHasEverDrawn: boolean;
+    mouseIsDown: boolean;
     allRawLines: RawLine[];
     currentRawLine: RawLine;
     strokes: Stroke[];
@@ -69,6 +70,7 @@ export function useSketchState(): UseSketchStateReturn {
         modelState: null,
         modelIsActive: false,
         userHasEverDrawn: false,
+        mouseIsDown: false,
         allRawLines: [],
         currentRawLine: [],
         strokes: [],
@@ -87,6 +89,7 @@ export function useSketchState(): UseSketchStateReturn {
         state.modelState = null;
         state.modelIsActive = false;
         state.userHasEverDrawn = false;
+        state.mouseIsDown = false;
         state.allRawLines = [];
         state.currentRawLine = [];
         state.strokes = [];
@@ -112,6 +115,7 @@ export function useSketchState(): UseSketchStateReturn {
 
         state.modelIsActive = false;
         state.previousUserPen = state.userPen;
+        state.mouseIsDown = true;
 
         // Set stroke color to red for user drawing
         if (ctx) {
@@ -126,9 +130,11 @@ export function useSketchState(): UseSketchStateReturn {
         model: SketchRNN | null,
         initRNNStateFromStrokes: (strokes: Stroke[]) => void,
     ) => {
+        const state = stateRef.current;
+        state.mouseIsDown = false;
+
         if (!isInBounds || !model) return;
 
-        const state = stateRef.current;
         state.userPen = 0; // Up!
 
         const currentRawLineSimplified = model.simplifyLine(state.currentRawLine);
@@ -168,7 +174,8 @@ export function useSketchState(): UseSketchStateReturn {
     ) => {
         const state = stateRef.current;
 
-        if (state.modelIsActive || !isInBounds || !ctx) return;
+        // Only draw when mouse button is held down (like p5.js mouseDragged)
+        if (!state.mouseIsDown || state.modelIsActive || !isInBounds || !ctx) return;
 
         const dx0 = mouseX - state.x; // Candidate for dx
         const dy0 = mouseY - state.y; // Candidate for dy
