@@ -2,7 +2,7 @@
   "expo": {
     "name": "exquisite",
     "slug": "exquisite",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -14,13 +14,11 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.exquisite",
-      "buildNumber": "0.0.5",
+      "buildNumber": "6",
       "userInterfaceStyle": "automatic",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -33,7 +31,7 @@
       },
       "package": "com.exquisite",
       "userInterfaceStyle": "automatic",
-      "versionCode": 4
+      "versionCode": 6
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -44,8 +42,6 @@
         "projectId": "3faa3b37-98fe-42e7-8ce9-b4105d745638"
       }
     },
-    "plugins": [
-      "expo-router"
-    ]
+    "plugins": ["expo-router"]
   }
 }
