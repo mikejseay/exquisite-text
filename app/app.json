@@ -21,7 +21,10 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.exquisite",
       "buildNumber": "0.0.4",
-      "userInterfaceStyle": "automatic"
+      "userInterfaceStyle": "automatic",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
