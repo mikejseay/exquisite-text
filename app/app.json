@@ -2,7 +2,7 @@
   "expo": {
     "name": "exquisite",
     "slug": "exquisite",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -11,18 +11,15 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "updates": {
-      "fallbackToCacheTimeout": 0
-    },
+    "updates": { "fallbackToCacheTimeout": 0 },
     "assetBundlePatterns": ["**/*"],
     "ios": {
+      "newArchEnabled": false,
       "supportsTablet": true,
       "bundleIdentifier": "com.exquisite",
-      "buildNumber": "100",
+      "buildNumber": "101",
       "userInterfaceStyle": "automatic",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
+      "infoPlist": { "ITSAppUsesNonExemptEncryption": false }
     },
     "android": {
       "adaptiveIcon": {
@@ -31,17 +28,10 @@
       },
       "package": "com.exquisite",
       "userInterfaceStyle": "automatic",
-      "versionCode": 100
+      "versionCode": 101
     },
-    "web": {
-      "favicon": "./assets/favicon.png",
-      "bundler": "metro"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "3faa3b37-98fe-42e7-8ce9-b4105d745638"
-      }
-    },
+    "web": { "favicon": "./assets/favicon.png", "bundler": "metro" },
+    "extra": { "eas": { "projectId": "3faa3b37-98fe-42e7-8ce9-b4105d745638" } },
     "plugins": ["expo-router"]
   }
 }
