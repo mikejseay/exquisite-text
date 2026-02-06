@@ -114,6 +114,8 @@ export default function Index() {
                 allowsBackForwardNavigationGestures
                 decelerationRate={"normal"}
                 javaScriptCanOpenWindowsAutomatically={false}
+                bounces={false}
+                allowsLinkPreview={false}
                 key={webViewKey}
                 mediaPlaybackRequiresUserAction={false}
                 onContentProcessDidTerminate={reloadWebView}

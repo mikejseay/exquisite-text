@@ -227,18 +227,17 @@ const Canvas: React.FC = () => {
             const isTouch = "touches" in e;
 
             if (isTouch) {
+                e.preventDefault();
                 const touch = e.touches[0] as ExtendedTouch;
-                x = touch.pageX - canvasBounds.left - window.scrollX;
-                y = touch.pageY - canvasBounds.top - window.scrollY;
-                if (touch && touch.touchType !== "direct") {
-                    if (touch.force && touch.force > 0) {
-                        pressure = touch.force;
-                    }
+                x = touch.clientX - canvasBounds.left;
+                y = touch.clientY - canvasBounds.top;
+
+                if (touch && touch.touchType !== "direct" && touch.force && touch.force > 0) {
+                    pressure = touch.force;
                 }
             } else {
-                // For mouse events, override with the custom line width
-                x = e.pageX - canvasBounds.left - window.scrollX;
-                y = e.pageY - canvasBounds.top - window.scrollY;
+                x = e.clientX - canvasBounds.left;
+                y = e.clientY - canvasBounds.top;
             }
 
             setIsMousedown(true);
@@ -265,7 +264,6 @@ const Canvas: React.FC = () => {
     const handleMove = useCallback(
         (e: React.MouseEvent | React.TouchEvent) => {
             if (!isMousedown) return;
-            e.preventDefault();
 
             let pressure = DEFAULT_PRESSURE;
             let x = 0;
@@ -280,18 +278,18 @@ const Canvas: React.FC = () => {
             const isTouch = "touches" in e;
 
             if (isTouch) {
+                e.preventDefault();
                 const touch = e.touches[0] as ExtendedTouch;
-                if (touch && touch.touchType !== "direct") {
-                    if (touch.force && touch.force > 0) {
-                        pressure = touch.force;
-                    }
-                    x = touch.pageX - canvasBounds.left - window.scrollX;
-                    y = touch.pageY - canvasBounds.top - window.scrollY;
+
+                x = touch.clientX - canvasBounds.left;
+                y = touch.clientY - canvasBounds.top;
+
+                if (touch && touch.touchType !== "direct" && touch.force && touch.force > 0) {
+                    pressure = touch.force;
                 }
-                y = touch.pageY - canvasBounds.top;
             } else {
-                x = e.pageX - canvasBounds.left - window.scrollX;
-                y = e.pageY - canvasBounds.top - window.scrollY;
+                x = e.clientX - canvasBounds.left;
+                y = e.clientY - canvasBounds.top;
             }
 
             const lineWidth = Math.log(pressure + 1) * baseLineWidth * scaleFactor;
