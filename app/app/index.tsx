@@ -3,14 +3,44 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { BackHandler, Platform, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
+import type {
+    ShouldStartLoadRequest,
+    WebViewNavigation,
+} from "react-native-webview/lib/WebViewTypes";
 
 import CustomStatusBar from "./components/CustomStatusBar";
 
 void SplashScreen.preventAutoHideAsync();
 
+const allowedHosts = new Set([ "exquisitetext.com", "www.exquisitetext.com" ]);
+const allowedOrigin = "https://www.exquisitetext.com";
+
+const getIsAllowedUrl = (url: string): boolean => {
+    if (!url) {
+        return false;
+    }
+
+    if (url === "about:blank") {
+        return true;
+    }
+
+    try {
+        const parsedUrl = new URL(url);
+        if (parsedUrl.protocol !== "https:") {
+            return false;
+        }
+
+        return allowedHosts.has(parsedUrl.host);
+    } catch {
+        return false;
+    }
+};
+
 export default function Index() {
-    const uri = "https://www.exquisitetext.com";
+    const initialUrl = `${allowedOrigin}/`;
     const [ webViewKey, setWebViewKey ] = useState(0);
+    const [ sourceUri, setSourceUri ] = useState(initialUrl);
+
     const webViewRef = useRef<WebView>(null);
 
     const hideSplashScreen = async () => await SplashScreen.hideAsync();
@@ -41,13 +71,33 @@ export default function Index() {
         };
     }, [ onAndroidBackPress ]);
 
+    const forceBackToAllowedSite = (): void => {
+        webViewRef.current?.stopLoading();
+        setSourceUri(initialUrl);
+        setWebViewKey((currentKey) => currentKey + 1);
+    };
+
+    const onShouldStartLoadWithRequest = (
+        request: ShouldStartLoadRequest,
+    ): boolean => {
+        const requestedUrl = request.url ?? "";
+        return getIsAllowedUrl(requestedUrl);
+    };
+
+    const onNavigationStateChange = (navigation: WebViewNavigation): void => {
+        const currentUrl = navigation.url ?? "";
+        if (!getIsAllowedUrl(currentUrl)) {
+            forceBackToAllowedSite();
+        }
+    };
+
     if (Platform.OS === "web") {
         return (
             <SafeAreaProvider>
                 <CustomStatusBar />
                 <View style={styles.webContainer}>
                     <iframe
-                        src={uri}
+                        src={initialUrl}
                         style={styles.webIframe as React.CSSProperties}
                         title={"Exquisite Text"}
                         allow={"fullscreen"}
@@ -63,16 +113,18 @@ export default function Index() {
             <WebView
                 allowsBackForwardNavigationGestures
                 decelerationRate={"normal"}
-                javaScriptCanOpenWindowsAutomatically
+                javaScriptCanOpenWindowsAutomatically={false}
                 key={webViewKey}
                 mediaPlaybackRequiresUserAction={false}
                 onContentProcessDidTerminate={reloadWebView}
                 onLoadEnd={hideSplashScreen}
+                onNavigationStateChange={onNavigationStateChange}
                 onRenderProcessGone={reloadWebView}
+                onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
                 ref={webViewRef}
                 sharedCookiesEnabled={false}
                 source={{
-                    uri,
+                    uri: sourceUri,
                 }}
                 startInLoadingState
                 style={styles.container}
