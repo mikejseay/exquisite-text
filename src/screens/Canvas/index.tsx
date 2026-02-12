@@ -43,9 +43,11 @@ import { aboveCanvasHeight } from "../../constants";
     * Lobby vertically centered, probably too far down the page
 */
 
-type ExtendedTouch = Touch & {
-  force?: number;
-  touchType?: string;
+type PointerLikeEvent = {
+    clientX: number;
+    clientY: number;
+    pressure?: number;
+    pointerType?: string;
 };
 
 const DEFAULT_LINE_WIDTH = 8;
@@ -212,110 +214,6 @@ const Canvas: React.FC = () => {
         setLocalStrokeHistory([]);
     }
 
-    const handleStart = useCallback(
-        (e: React.MouseEvent | React.TouchEvent) => {
-            let pressure = DEFAULT_PRESSURE;
-            let x = 0;
-            let y = 0;
-
-            const canvas = canvasRef.current;
-            if (!canvas) return;
-            const context = canvas.getContext("2d", { willReadFrequently: true });
-            if (!context) return;
-
-            const canvasBounds = canvas.getBoundingClientRect();
-            const isTouch = "touches" in e;
-
-            if (isTouch) {
-                const touch = e.touches[0] as ExtendedTouch;
-                x = touch.pageX - canvasBounds.left - window.scrollX;
-                y = touch.pageY - canvasBounds.top - window.scrollY;
-                if (touch && touch.touchType !== "direct") {
-                    if (touch.force && touch.force > 0) {
-                        pressure = touch.force;
-                    }
-                }
-            } else {
-                // For mouse events, override with the custom line width
-                x = e.pageX - canvasBounds.left - window.scrollX;
-                y = e.pageY - canvasBounds.top - window.scrollY;
-            }
-
-            setIsMousedown(true);
-
-            // Calculate line width:
-            // Use pressure for touch events; otherwise use the user-adjusted customLineWidth.
-            const lineWidth = Math.log(pressure + 1) * baseLineWidth * scaleFactor;
-            const color = isEraserActive
-                ? "!e"
-                : strokeColor;
-            const newPoint = { x, y, lineWidth, color };
-            setPoints((prev) => [ ...prev, newPoint ]);
-
-            drawOnCanvas({
-                newPoints: [ newPoint ],
-                yOffset: 0,
-                context,
-                eraserColor: theme.palette.canvas.background,
-            });
-        },
-        [ scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
-    );
-
-    const handleMove = useCallback(
-        (e: React.MouseEvent | React.TouchEvent) => {
-            if (!isMousedown) return;
-            e.preventDefault();
-
-            let pressure = DEFAULT_PRESSURE;
-            let x = 0;
-            let y = 0;
-
-            const canvas = canvasRef.current;
-            if (!canvas) return;
-            const context = canvas.getContext("2d", { willReadFrequently: true });
-            if (!context) return;
-
-            const canvasBounds = canvas.getBoundingClientRect();
-            const isTouch = "touches" in e;
-
-            if (isTouch) {
-                const touch = e.touches[0] as ExtendedTouch;
-                if (touch && touch.touchType !== "direct") {
-                    if (touch.force && touch.force > 0) {
-                        pressure = touch.force;
-                    }
-                    x = touch.pageX - canvasBounds.left - window.scrollX;
-                    y = touch.pageY - canvasBounds.top - window.scrollY;
-                }
-                y = touch.pageY - canvasBounds.top;
-            } else {
-                x = e.pageX - canvasBounds.left - window.scrollX;
-                y = e.pageY - canvasBounds.top - window.scrollY;
-            }
-
-            const lineWidth = Math.log(pressure + 1) * baseLineWidth * scaleFactor;
-            const color = isEraserActive
-                ? "!e"
-                : strokeColor;
-            const newPoint = { x, y, lineWidth, color };
-
-            setPoints((prev) => {
-                const lastPoint = prev[prev.length - 1];
-                if (lastPoint) {
-                    drawOnCanvas({
-                        newPoints: [ lastPoint, newPoint ],
-                        yOffset: 0,
-                        context,
-                        eraserColor: theme.palette.canvas.background,
-                    });
-                }
-                return [ ...prev, newPoint ];
-            });
-        },
-        [ isMousedown, scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
-    );
-
     const debouncedEmitPanel = useCallback(
         debounce((currentPanel: Point[][]) => {
             emitSendPanelEdit(currentPanel);
@@ -336,6 +234,118 @@ const Canvas: React.FC = () => {
         setPoints([]);
         setUndidStrokeHistory([]);
     }, [ points, scaleFactor ]);
+
+    const getPointViaPointerEvent = (
+        event: PointerLikeEvent,
+        canvas: HTMLCanvasElement,
+        baseLineWidth: number,
+        scaleFactor: number,
+        isEraserActive: boolean,
+        strokeColor: string,
+    ) => {
+        const canvasBounds = canvas.getBoundingClientRect();
+        const x = event.clientX - canvasBounds.left;
+        const y = event.clientY - canvasBounds.top;
+
+        const rawPressure = typeof event.pressure === "number"
+            ? event.pressure
+            : DEFAULT_PRESSURE;
+
+        const pressure = rawPressure > 0
+            ? rawPressure
+            : DEFAULT_PRESSURE;
+
+        const lineWidth = Math.log(pressure + 1) * baseLineWidth * scaleFactor;
+        const color = isEraserActive
+            ? "!e"
+            : strokeColor;
+
+        return { x, y, lineWidth, color };
+    };
+
+    const handlePointerStart = useCallback(
+        (e: React.PointerEvent<HTMLCanvasElement>) => {
+            const canvas = canvasRef.current;
+            if (!canvas) return;
+
+            const context = canvas.getContext("2d", { willReadFrequently: true });
+            if (!context) return;
+
+            canvas.setPointerCapture(e.pointerId);
+
+            setIsMousedown(true);
+
+            const newPoint = getPointViaPointerEvent(
+                e,
+                canvas,
+                baseLineWidth,
+                scaleFactor,
+                isEraserActive,
+                strokeColor,
+            );
+
+            setPoints((prev) => [ ...prev, newPoint ]);
+
+            drawOnCanvas({
+                newPoints: [ newPoint ],
+                yOffset: 0,
+                context,
+                eraserColor: theme.palette.canvas.background,
+            });
+        },
+        [ scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
+    );
+
+    const handlePointerMove = useCallback(
+        (e: React.PointerEvent<HTMLCanvasElement>) => {
+            if (!isMousedown) return;
+
+            const canvas = canvasRef.current;
+            if (!canvas) return;
+
+            const context = canvas.getContext("2d", { willReadFrequently: true });
+            if (!context) return;
+
+            const newPoint = getPointViaPointerEvent(
+                e,
+                canvas,
+                baseLineWidth,
+                scaleFactor,
+                isEraserActive,
+                strokeColor,
+            );
+
+            setPoints((prev) => {
+                const lastPoint = prev[prev.length - 1];
+                if (lastPoint) {
+                    drawOnCanvas({
+                        newPoints: [ lastPoint, newPoint ],
+                        yOffset: 0,
+                        context,
+                        eraserColor: theme.palette.canvas.background,
+                    });
+                }
+                return [ ...prev, newPoint ];
+            });
+        },
+        [ isMousedown, scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
+    );
+
+    const handlePointerEnd = useCallback(
+        (e: React.PointerEvent<HTMLCanvasElement>) => {
+            const canvas = canvasRef.current;
+            if (canvas) {
+                try {
+                    canvas.releasePointerCapture(e.pointerId);
+                } catch {
+                // ignore if not captured
+                }
+            }
+
+            handleEnd();
+        },
+        [ handleEnd ],
+    );
 
     const handleUndo = () => {
         if (localStrokeHistory.length === 0) return;
@@ -538,13 +548,12 @@ const Canvas: React.FC = () => {
                         boxShadow: editorActive
                             ? `0 0 8px 4px ${theme.palette.canvas.boxShadow}`
                             : undefined,
+                        touchAction: "none",
                     }}
-                    onMouseDown={handleStart}
-                    onTouchStart={handleStart}
-                    onMouseMove={handleMove}
-                    onTouchMove={handleMove}
-                    onMouseUp={handleEnd}
-                    onTouchEnd={handleEnd}
+                    onPointerDown={handlePointerStart}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerEnd}
+                    onPointerCancel={handlePointerEnd}
                 />
             </div>
         </>
