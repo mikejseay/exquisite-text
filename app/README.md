@@ -37,7 +37,7 @@ npx expo start
 
 ---
 
-### Install EAS CLI (recommended globally)
+### Install Expo Application Services (EAS) CLI
 
 ```bash
 npm install -g eas-cli
@@ -49,7 +49,7 @@ Verify installation:
 eas --version
 ```
 
-Login:
+Login with Expo account credentials:
 
 ```bash
 eas login
@@ -59,19 +59,26 @@ eas login
 
 ## Local Development
 
+Make `app` your current directory and install the node dependencies:
+
+```bash
+cd app
+yarn
+```
+
 Start the development server:
 
 ```bash
 npx expo start
 ```
 
-Run on iOS simulator:
+Run on iOS simulator (only available on Mac OSX):
 
 ```bash
 npx expo run:ios
 ```
 
-Run on Android emulator:
+Run on Android emulator (requires Android SDK configuration):
 
 ```bash
 npx expo run:android
