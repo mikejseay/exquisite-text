@@ -112,7 +112,7 @@ export default function Index() {
             <CustomStatusBar />
             <WebView
                 allowsBackForwardNavigationGestures
-                decelerationRate={"normal"}
+                decelerationRate={0.998}
                 javaScriptCanOpenWindowsAutomatically={false}
                 bounces={false}
                 allowsLinkPreview={false}
