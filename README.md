@@ -36,17 +36,41 @@ corepack enable
 
 ### Local Development
 
-Clone this repository and make it your current directory. First, make local copies of the example .env files in both the root and server directories like so:
+Ensure `nvm` is installed. See their official installation notes for your system, but probably:
 
 ```sh
-cp .env.example .env
-cd server
-cp .env.example .env
-cd ..
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+```
+
+Install a version of Node. The current recomended version is 24:
+
+```sh
+nvm install 24
 nvm use
 ```
 
-Install [Node](https://nodejs.org/en/) and [PostgreSQL](https://www.postgresql.org/download/) according to their instructions for your operating system. If you're using a Linux-like OS and have Homebrew, you can install PostgreSQL with `brew install postgresql`, with Linux: `sudo apt install postgresql`. Then start its service with Linux: `sudo systemctl start postgresqlservice` | macOS: `brew services start postgresql`.
+Install corepack, a requirement for `yarn`:
+
+```sh
+npm install -g corepack
+```
+
+Clone this repository and make it your current directory. Install node modules for both the frontend and backend, while making local copies of the example .env files:
+
+```sh
+yarn
+cp .env.example .env
+cd server
+yarn
+cp .env.example .env
+cd ..
+```
+
+In the server terminal, run `yarn start`, then in the root terminal run `yarn start`. This should automatically open a new browser tab at [`http://localhost:8080/`](http://localhost:8080/). Note that by default, you will not be able to join a game from multiple tabs in the same browser on the same device unless you prevent localStorage from being reused (e.g. incognito tab, Firefox multi-accounts). This can be overridden by changing the root .env variable `REACT_APP_DEBUG_SINGLE_BROWSER` to `true`, but it will prevent you from properly debugging device recognition behavior.
+
+### PostgreSQL database functionality
+
+Install [PostgreSQL](https://www.postgresql.org/download/) according to their instructions for your operating system. If you're using a Linux-like OS and have Homebrew, you can install PostgreSQL with `brew install postgresql`, with Linux: `sudo apt install postgresql`. Then start its service with Linux: `sudo systemctl start postgresqlservice` | macOS: `brew services start postgresql`.
 
 NOTE: There are _two_ separate .env files. PostgreSQL credentials are located in the .env in the server folder - make sure you're editing the credentials in the appropriate server .env file.
 
@@ -58,13 +82,8 @@ CREATE DATABASE exquisite;
 \q
 ```
 
-Install Yarn with `npm install --global yarn` and then run `yarn` to install the frontend node modules.
+#### Poke around the Database
 
-Open up a new terminal and go to the server directory with `cd ./server`. Run `yarn` again, this time to install the server's node modules.
-
-In the server terminal, run `yarn start`, then in the root terminal run `yarn start`. This should automatically open a new browser tab at [`http://localhost:8080/`](http://localhost:8080/). Note that by default, you will not be able to join a game from multiple tabs in the same browser on the same device unless you prevent localStorage from being reused (e.g. incognito tab, Firefox multi-accounts). This can be overridden by changing the root .env variable `REACT_APP_DEBUG_SINGLE_BROWSER` to `true`, but it will prevent you from properly debugging device recognition behavior.
-
-### Poke around the Database
 ```sql
 \c exquisite;
 \d
