@@ -4,7 +4,7 @@ import { SxProps } from "@mui/system";
 
 export const tutorialButton: React.CSSProperties = {
     position: "absolute",
-    left: FABSpace - 5,
+    right: FABSpace - 5,
     top: FABSpace - 5,
 };
 

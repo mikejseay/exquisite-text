@@ -1,25 +1,31 @@
 import * as React from "react";
-import { SxProps } from "@mui/system";
 import { FABDiameter, FABSpace } from "../../constants";
 
-export const hostConfirmBox: SxProps = {
-    position: "absolute",
-    top: FABDiameter + 2 * FABSpace,
-    left: FABDiameter + 2 * FABSpace - 5,  // because the FAB center is slightly off
-    zIndex: 3,
-    border: "1px solid",
-    p: 1,
-    bgcolor: "background.paper",
-    width: 170,
-    marginRight: 0,
-    marginLeft: "auto",
+export const hostButtonLabel: React.CSSProperties = {
+    fontSize: "9px",
+    lineHeight: "1.2",
+    marginTop: "4px",
+    textAlign: "center",
+    color: "inherit",
     fontFamily: "sans-serif",
+    fontWeight: 600,
+    whiteSpace: "pre-line",
 };
 
-export const hostFAB: SxProps = {
+export const hostButtonWrapper: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+};
+
+export const hostButtonsContainer: React.CSSProperties = {
     position: "absolute",
-    left: FABDiameter + 2 * FABSpace - 5,
+    left: FABSpace,
     top: FABSpace,
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+    alignItems: "center",
 };
 
 export const roomCodeStyles: React.CSSProperties = {
