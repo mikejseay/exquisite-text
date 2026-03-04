@@ -1,6 +1,7 @@
 import Paper from "@mui/material/Paper";
 import * as React from "react";
 import { Outlet } from "react-router-dom";
+import { LandscapeBanner } from "../LandscapeBanner";
 import { MenuButtons } from "../MenuButtons";
 import {
     app,
@@ -19,6 +20,7 @@ export default function App() {
                     <MenuButtons />
                     <h1 style={appTitle}>Exquisite Text</h1>
                 </header>
+                <LandscapeBanner />
                 <Outlet />
             </Paper>
         </div>

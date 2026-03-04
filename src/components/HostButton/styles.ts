@@ -25,6 +25,7 @@ export const hostButtonsContainer: React.CSSProperties = {
     flexDirection: "column",
     gap: "6px",
     alignItems: "flex-start",
+    zIndex: 11,
 };
 
 export const roomCodeStyles: React.CSSProperties = {

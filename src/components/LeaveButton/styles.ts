@@ -16,7 +16,8 @@ export const leaveConfirmBox: SxProps = {
 };
 
 export const leaveFAB: SxProps = {
-    position: "absolute",
-    right: FABSpace + 5,
+    position: "fixed",
+    right: FABSpace,
     top: FABSpace,
+    zIndex: 11,
 };
