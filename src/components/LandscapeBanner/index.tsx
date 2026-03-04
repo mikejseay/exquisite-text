@@ -11,8 +11,6 @@ export function LandscapeBanner() {
     const [ visible, setVisible ] = React.useState(false);
     const location = useLocation();
 
-    if (END_ROUTES.includes(location.pathname)) return null;
-
     React.useEffect(() => {
         if (localStorage.getItem(DISMISSED_KEY)) return;
 
@@ -25,7 +23,7 @@ export function LandscapeBanner() {
         return () => mql.removeEventListener("change", onChange);
     }, []);
 
-    if (!visible) return null;
+    if (!visible || END_ROUTES.includes(location.pathname)) return null;
 
     const handleDismiss = () => {
         localStorage.setItem(DISMISSED_KEY, "true");
