@@ -17,7 +17,7 @@ export default function App() {
             <Paper elevation={0} style={app} className={"app-container"}>
                 <header style={appHeader}>
                     <MenuButtons />
-                    <div style={appTitle}>Exquisite Text</div>
+                    <h1 style={appTitle}>Exquisite Text</h1>
                 </header>
                 <Outlet />
             </Paper>
