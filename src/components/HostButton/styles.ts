@@ -4,8 +4,6 @@ import { FABDiameter, FABSpace } from "../../constants";
 export const hostButtonLabel: React.CSSProperties = {
     fontSize: "9px",
     lineHeight: "1.2",
-    marginTop: "4px",
-    textAlign: "center",
     color: "inherit",
     fontFamily: "sans-serif",
     fontWeight: 600,
@@ -14,8 +12,9 @@ export const hostButtonLabel: React.CSSProperties = {
 
 export const hostButtonWrapper: React.CSSProperties = {
     display: "flex",
-    flexDirection: "column",
+    flexDirection: "row",
     alignItems: "center",
+    gap: "6px",
 };
 
 export const hostButtonsContainer: React.CSSProperties = {
@@ -25,7 +24,7 @@ export const hostButtonsContainer: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
     gap: "6px",
-    alignItems: "center",
+    alignItems: "flex-start",
 };
 
 export const roomCodeStyles: React.CSSProperties = {
