@@ -16,6 +16,7 @@ jobs:
         with:
           node-version: 22
       - run: corepack enable && yarn install
+      - run: yarn typecheck
       - run: yarn test
 
   server-tests:
@@ -31,6 +32,7 @@ jobs:
           node-version: 22
       - run: corepack enable && yarn install
         working-directory: .
+      - run: yarn typecheck
       - run: yarn test
 
   app-tests:
@@ -45,4 +47,5 @@ jobs:
         with:
           node-version: 22
       - run: corepack enable && yarn install
+      - run: yarn typecheck
       - run: yarn test

@@ -47,7 +47,8 @@
   "scripts": {
     "startwatch": "nodemon --watch './**/*.ts' --exec ts-node start.ts",
     "start": "ts-node start.ts",
-    "test": "OPENAI_API_KEY=test-dummy node --import tsx --test --test-force-exit './__tests__/**/*.test.ts'"
+    "test": "OPENAI_API_KEY=test-dummy node --import tsx --test --test-force-exit './__tests__/**/*.test.ts'",
+    "typecheck": "tsc --noEmit"
   },
   "packageManager": "yarn@4.4.0"
 }
