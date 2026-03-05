@@ -53,12 +53,7 @@ export class PoemSpectator extends Spectator {
 export class DrawingSpectator extends Spectator {
     setReceive() {
         super.setReceive();
-        this.socket.on("ctsRequestCanvas", () => this.sendCanvas());
-    }
-
-    unsetReceive() {
-        super.unsetReceive();
-        this.socket.removeAllListeners("ctsRequestCanvas");
+        this.listen("ctsRequestCanvas", () => this.sendCanvas());
     }
 
     sendCanvas() {
@@ -70,10 +65,6 @@ export class DrawingSpectator extends Spectator {
         }
         const canvas = room.finishedCanvas;
         logger.debug(`sendCanvas activated sending ${canvas}`);
-        // for (const editor of room.editors.values()) {
-        // }
-        this.io
-            .to(this.socket.id)
-            .emit("stcStrokeHistory", canvas);
+        this.emitToSelf("stcStrokeHistory", canvas);
     }
 }

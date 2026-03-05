@@ -2,35 +2,24 @@
 // and using that content, we maintain the user list and current history of the poem.
 // as far as I can tell, this will be the equivalent of the exquisite functionality, etc.
 
-import { Server } from "socket.io";
 import Host from "./host";
 import { DrawingEditor, PoemBot, PoemEditor } from "./editor";
 import { DrawingSpectator, PoemSpectator } from "./spectator";
 import { DrawingRoom, PoemRoom } from "./room";
 import {
-    ClientToServerEvents,
     GameState,
-    InterServerEvents,
     Medium,
     Role,
-    ServerToClientEvents,
-    SocketData,
 } from "../../src/types";
 import { maxEditors } from "../../src/constants";
 
 import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "./globals";
 import { getRoom, getRouteForGameStateAndRole, standardReconnect } from "../utilities/socketUtils";
 import { logger } from "../utilities/loggerUtils";
+import type { TypedServer } from "../types";
 
 // The module exports a single function poem that takes the Socket.IO server instance as a parameter.
-function sockets(
-    io: Server<
-    ClientToServerEvents,
-    ServerToClientEvents,
-    InterServerEvents,
-    SocketData
-  >,
-) {
+function sockets(io: TypedServer) {
     // connection is a reserved name for a socket event when someone connects
     io.on("connection", (socket) => {
         // When a client requests a connection, the callback will create a new Connection instance

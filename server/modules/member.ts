@@ -1,11 +1,11 @@
 import { isNil } from "es-toolkit";
-import { Server, Socket } from "socket.io";
 
 import { deviceIDToRoomID, deviceIDToSocketID, roomIDToRoom, socketIDToDeviceID } from "./globals";
-import { ClientToServerEvents, GameState, InterServerEvents, ServerToClientEvents, SocketData } from "../../src/types";
+import { GameState, ServerToClientEvents } from "../../src/types";
 import { userInfo as userInfoTestData } from "../../src/data/userInfo";
 import { getRoom } from "../utilities/socketUtils";
 import { logger } from "../utilities/loggerUtils";
+import type { TypedServer, TypedSocket } from "../types";
 
 class Member {
     // represents an Editor or Spectator (which extend this)
@@ -13,32 +13,18 @@ class Member {
     // (if the same device tries to be a member of the same room twice,
     // the old socket gets disconnected and removed and the new socket replaces it)
 
-    io: Server<
-        ClientToServerEvents,
-        ServerToClientEvents,
-        InterServerEvents,
-        SocketData
-    >;
-    socket: Socket<
-        ClientToServerEvents,
-        ServerToClientEvents,
-        InterServerEvents,
-        SocketData
-    >;
+    io: TypedServer;
+    socket: TypedSocket;
     roomID: string;
     deviceID: string;
     name: string;
     lastActivity: number;
     connected: boolean;
+    private _registeredEvents: string[] = [];
 
     constructor(
-        io: Server<
-            ClientToServerEvents,
-            ServerToClientEvents,
-            InterServerEvents,
-            SocketData
-        >,
-        socket: Socket,
+        io: TypedServer,
+        socket: TypedSocket,
         roomID: string,
         deviceID: string,
         name: string,
@@ -52,6 +38,22 @@ class Member {
         this.connected = true;
     }
 
+    // Registers a socket event listener and tracks it for automatic cleanup in unsetReceive().
+    // Subclasses use this in setReceive() instead of this.socket.on() directly,
+    // eliminating the need to maintain a parallel unsetReceive() with the same event names.
+    protected listen(event: string, handler: (...args: any[]) => void): void {
+        this.socket.on(event as any, handler);
+        this._registeredEvents.push(event);
+    }
+
+    // Emits a typed server-to-client event to this member's socket.
+    protected emitToSelf<E extends keyof ServerToClientEvents>(
+        event: E,
+        ...args: Parameters<ServerToClientEvents[E]>
+    ): void {
+        this.io.to(this.socket.id).emit(event, ...args);
+    }
+
     joinRoom() {
         this.connected = true;
         this.socket.join(this.roomID);
@@ -61,43 +63,42 @@ class Member {
     leaveRoom() {
         this.connected = false;
         logger.debug(`${this.name} leaving ${this.roomID}`);
-        this.io.to(this.socket.id).emit("stcNavigate", "/"); // navigate home (if possible)
+        this.emitToSelf("stcNavigate", "/"); // navigate home (if possible)
         delete deviceIDToRoomID[this.deviceID];
         this.socket.leave(this.roomID);
         this.unsetReceive(); // remove listeners
     }
 
     setReceive() {
-        this.socket.on("ctsRequestUserTableInfo", (shouldTest) => this.sendUserTableInfo(shouldTest));
-        this.socket.on("ctsRequestGameSettingsInfo", () => this.sendGameSettingsInfo());
-        this.socket.on("ctsRequestSettingsEnabled", () => this.sendSettingsEnabled());
-        this.socket.on("ctsLeave", () => this.leaveRoom());
+        this._registeredEvents = [];
+        this.listen("ctsRequestUserTableInfo", (shouldTest) => this.sendUserTableInfo(shouldTest));
+        this.listen("ctsRequestGameSettingsInfo", () => this.sendGameSettingsInfo());
+        this.listen("ctsRequestSettingsEnabled", () => this.sendSettingsEnabled());
+        this.listen("ctsLeave", () => this.leaveRoom());
         // These are all reserved events
-        this.socket.on("disconnect", () => this.disconnect());
-        this.socket.on("disconnecting", () => this.disconnecting());
+        this.listen("disconnect", () => this.disconnect());
+        this.listen("disconnecting", () => this.disconnecting());
     }
 
+    // Removes all event listeners registered via listen().
+    // Subclasses do NOT need to override this — listen() tracks all events automatically.
     unsetReceive() {
-        this.socket.removeAllListeners("ctsRequestUserTableInfo");
-        this.socket.removeAllListeners("ctsRequestGameSettingsInfo");
-        this.socket.removeAllListeners("ctsRequestSettingsEnabled");
-        this.socket.removeAllListeners("ctsLeave");
-        this.socket.removeAllListeners("disconnect");
-        this.socket.removeAllListeners("disconnecting");
+        for (const event of this._registeredEvents) {
+            this.socket.removeAllListeners(event as any);
+        }
+        this._registeredEvents = [];
     }
 
     sendUserTableInfo(shouldTest: boolean) {
         logger.debug(`${this.name} requestUserTableInfo`);
         const room = getRoom(this.roomID);
         if (room) {
-            this.io
-                .to(this.socket.id)
-                .emit(
-                    "stcUserTableInfo",
-                    shouldTest
-                        ? userInfoTestData
-                        : room.currentUserTableInfo(),
-                );
+            this.emitToSelf(
+                "stcUserTableInfo",
+                shouldTest
+                    ? userInfoTestData
+                    : room.currentUserTableInfo(),
+            );
         } else {
             logger.debug("Failed to get room details for user table info");
         }
@@ -105,16 +106,14 @@ class Member {
 
     requestRoomCode() {
         logger.debug(`${this.name} requestRoomCode`);
-        this.io.to(this.socket.id).emit("stcRoomCode", this.roomID);
+        this.emitToSelf("stcRoomCode", this.roomID);
     }
 
     sendGameSettingsInfo() {
         logger.debug(`${this.name} requestGameSettingsInfo`);
         const room = getRoom(this.roomID);
         if (room) {
-            this.io
-                .to(this.socket.id)
-                .emit("stcGameSettingsInfo", room.gameSettings);
+            this.emitToSelf("stcGameSettingsInfo", room.gameSettings);
         } else {
             logger.debug("Failed to get room details for game settings");
         }
@@ -122,7 +121,7 @@ class Member {
 
     sendSettingsEnabled() {
         logger.debug(`${this.name} requestSettingsEnabled`);
-        this.io.to(this.socket.id).emit("stcGameSettingsEnabled", false);
+        this.emitToSelf("stcGameSettingsEnabled", false);
     }
 
     disconnect() {

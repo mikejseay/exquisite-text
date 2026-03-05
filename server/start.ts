@@ -6,7 +6,7 @@ dotenv.config({ path: __dirname + "/.env" });
 
 import { Server } from "socket.io";
 import { logger } from "./utilities/loggerUtils";
-import type { ClientToServerEvents, InterServerEvents, ServerToClientEvents, SocketData } from "../src/types";
+import type { TypedServer } from "./types";
 
 // import the http library
 import { createServer } from "http";
@@ -43,12 +43,7 @@ app.set("port", port);
 const httpServer = createServer(app);
 // const server = https.createServer(credentials, app);
 
-const io = new Server<
-  ClientToServerEvents,
-  ServerToClientEvents,
-  InterServerEvents,
-  SocketData
->(httpServer, {
+const io: TypedServer = new Server(httpServer, {
     cors: {
         methods: [ "GET", "POST" ],
         origin: "*",

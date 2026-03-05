@@ -1,14 +1,10 @@
-import { Server } from "socket.io";
 import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid for lines
 import {
-    ClientToServerEvents,
     ILine,
     IPanel,
-    InterServerEvents,
     Point,
-    ServerToClientEvents,
-    SocketData,
 } from "../../src/types";
+import type { TypedServer } from "../types";
 import { storeLine } from "../queries";
 import { getRoom } from "../utilities/socketUtils";
 import { analyzeBeginning } from "./poem_bot";
@@ -17,12 +13,7 @@ import { logger } from "../utilities/loggerUtils";
 import { isBotUsageAuthorized } from "../llm_utils/llm_funcs";
 
 class Collaboration {
-    io: Server<
-        ClientToServerEvents,
-        ServerToClientEvents,
-        InterServerEvents,
-        SocketData
-    >;
+    io: TypedServer;
     roomID: string;
     nContributions: number; // number of contributions to the artwork
     indexInGame: number; // index amongst the game's multiple Collaborations
@@ -30,12 +21,7 @@ class Collaboration {
     mostRecentEditor: string; // deviceID (uuid)
 
     constructor(
-        io: Server<
-            ClientToServerEvents,
-            ServerToClientEvents,
-            InterServerEvents,
-            SocketData
-        >,
+        io: TypedServer,
         roomID: string,
         nContributions: number,
         indexInGame: number,
@@ -61,12 +47,7 @@ export class Poem extends Collaboration {
 
     constructor(
 
-        io: Server<
-            ClientToServerEvents,
-            ServerToClientEvents,
-            InterServerEvents,
-            SocketData
-        >,
+        io: TypedServer,
         roomID: string,
         nContributions: number,
         indexInGame: number,
@@ -142,12 +123,7 @@ export class Drawing extends Collaboration {
     panels: Set<IPanel>;
 
     constructor(
-        io: Server<
-            ClientToServerEvents,
-            ServerToClientEvents,
-            InterServerEvents,
-            SocketData
-        >,
+        io: TypedServer,
         roomID: string,
         nContributions: number,
         indexInGame: number,

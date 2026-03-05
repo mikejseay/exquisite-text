@@ -1,15 +1,10 @@
 import { roomIDToRoom } from "../modules/globals";
 import { DrawingEditor, PoemEditor } from "../modules/editor";
 import { DrawingRoom, PoemRoom } from "../modules/room";
-import { Server, Socket } from "socket.io";
 import {
-    ClientToServerEvents,
     GameState,
-    InterServerEvents,
     Medium,
     Role,
-    ServerToClientEvents,
-    SocketData,
 } from "../../src/types";
 import { DrawingSpectator, PoemSpectator } from "../modules/spectator";
 import { poemsLines as poemsLinesTestData } from "../../src/data/multiplePoems";
@@ -17,6 +12,7 @@ import { multipleDrawingsTestData } from "../../src/data/multipleDrawings";
 import Host from "../modules/host";
 import { Drawing, Poem } from "../modules/collaboration";
 import { logger } from "./loggerUtils";
+import type { TypedServer, TypedSocket } from "../types";
 
 
 export function getRouteForGameStateAndRole(gameState: GameState, role: Role): string {
@@ -67,11 +63,8 @@ export function getEditorSocketID(roomID: string | undefined, editorID: string |
 
 
 export function standardReconnect(
-    io: Server<ClientToServerEvents,
-        ServerToClientEvents,
-        InterServerEvents,
-        SocketData>,
-    socket: Socket,
+    io: TypedServer,
+    socket: TypedSocket,
     member: PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator | undefined,
 ) {
     if (member && member.socket) {

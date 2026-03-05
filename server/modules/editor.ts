@@ -1,16 +1,11 @@
 import { isNil } from "es-toolkit";
-import { Server, Socket } from "socket.io";
 import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid for lines
 import {
-    ClientToServerEvents,
     GameState,
     IGameSettingsInfo,
     IPanel,
     IPoem,
-    InterServerEvents,
     Point,
-    ServerToClientEvents,
-    SocketData,
 } from "../../src/types";
 import { storePoem } from "../queries";
 import { lineSepString } from "../../src/constants";
@@ -22,6 +17,7 @@ import { DrawingRoom, PoemRoom } from "./room";
 import { guaranteeHalfLineCompletion } from "./poem_bot";
 import { delay, isBotUsageAuthorized } from "../llm_utils/llm_funcs";
 import { logger } from "../utilities/loggerUtils";
+import type { TypedServer, TypedSocket } from "../types";
 
 
 class Editor extends Member {
@@ -31,11 +27,8 @@ class Editor extends Member {
     isCurrentlyEditing: boolean;
 
     constructor(
-        io: Server<ClientToServerEvents,
-            ServerToClientEvents,
-            InterServerEvents,
-            SocketData>,
-        hostSocket: Socket,
+        io: TypedServer,
+        hostSocket: TypedSocket,
         roomID: string,
         deviceID: string,
         name: string,
@@ -120,21 +113,14 @@ class Editor extends Member {
 
     setReceive() {
         super.setReceive();
-        this.socket.on("ctsRequestEditorActive", () => this.sendActivity());
-        this.socket.on("ctsStartGame", () => this.broadcastStartGame());
-        this.socket.on("ctsAlterGameSettings", (value) => this.alterGameSettings(value));
-    }
-
-    unsetReceive() {
-        super.unsetReceive();
-        this.socket.removeAllListeners("ctsRequestEditorActive");
-        this.socket.removeAllListeners("ctsStartGame");
-        this.socket.removeAllListeners("ctsAlterGameSettings");
+        this.listen("ctsRequestEditorActive", () => this.sendActivity());
+        this.listen("ctsStartGame", () => this.broadcastStartGame());
+        this.listen("ctsAlterGameSettings", (value) => this.alterGameSettings(value));
     }
 
     sendActivity() {
         logger.debug(`${this.name} requestEditorActivity`);
-        this.io.to(this.socket.id).emit("stcEditorActive", this.hasWorkInQueue());
+        this.emitToSelf("stcEditorActive", this.hasWorkInQueue());
     }
 
     hasWorkInQueue() {
@@ -143,7 +129,7 @@ class Editor extends Member {
 
     sendSettingsEnabled() {
         logger.debug(`${this.name} requestSettingsEnabled`);
-        this.io.to(this.socket.id).emit("stcGameSettingsEnabled", Boolean(this.isVIP()));
+        this.emitToSelf("stcGameSettingsEnabled", Boolean(this.isVIP()));
     }
 
     isVIP() {
@@ -179,24 +165,14 @@ export class PoemEditor extends Editor {
 
     setReceive() {
         super.setReceive();
-        this.socket.on("ctsRequestLineEdit", () => this.sendLineEdit()); // initial populate
-        this.socket.on("ctsEditLine", (value) => this.handleLineEdit(value)); // whenever the input box is edited.
-        this.socket.on("ctsSendLineParts", (firstPart, secondPart) =>
+        this.listen("ctsRequestLineEdit", () => this.sendLineEdit()); // initial populate
+        this.listen("ctsEditLine", (value) => this.handleLineEdit(value)); // whenever the input box is edited.
+        this.listen("ctsSendLineParts", (firstPart, secondPart) =>
             this.handleLineParts(firstPart, secondPart),
         );
-        this.socket.on("ctsSendLastLine", (value) => this.handleLastLine(value)); // whenever a new line has been submitted into the poem.
-        this.socket.on("ctsRequestLastContributionStatus", () => this.sendLastContributionStatus());
-        this.socket.on("ctsAddPoemBot", () => this.requestAddPoemBotToRoom());
-    }
-
-    unsetReceive() {
-        super.unsetReceive();
-        this.socket.removeAllListeners("ctsRequestLineEdit");
-        this.socket.removeAllListeners("ctsEditLine");
-        this.socket.removeAllListeners("ctsSendLineParts");
-        this.socket.removeAllListeners("ctsSendLastLine");
-        this.socket.removeAllListeners("ctsRequestLastContributionStatus");
-        this.socket.removeAllListeners("ctsAddPoemBot");
+        this.listen("ctsSendLastLine", (value) => this.handleLastLine(value)); // whenever a new line has been submitted into the poem.
+        this.listen("ctsRequestLastContributionStatus", () => this.sendLastContributionStatus());
+        this.listen("ctsAddPoemBot", () => this.requestAddPoemBotToRoom());
     }
 
     broadcastStartGame() {
@@ -226,7 +202,7 @@ export class PoemEditor extends Editor {
         // the halfLine of the first Poem in the queue (if this editor is active)
 
         if (this.hasWorkInQueue()) {
-            this.io.to(this.socket.id).emit("stcLineEdit", (this.contributionQueue[0] as Poem)?.halfLine);
+            this.emitToSelf("stcLineEdit", (this.contributionQueue[0] as Poem)?.halfLine);
         }
     }
 
@@ -294,20 +270,20 @@ export class PoemEditor extends Editor {
     possibleStartNewTurn() {
         if (this.hasWorkInQueue()) {
             this.lastActivity = Date.now(); // give them some time to type
-            this.io.to(this.socket.id).emit("stcLineEdit", (this.contributionQueue[0] as Poem).halfLine);
+            this.emitToSelf("stcLineEdit", (this.contributionQueue[0] as Poem).halfLine);
             const poem = this.contributionQueue[0] as Poem;
             logger.debug(`we think the poem has ${poem.lines.size} submissions so far`);
 
             if (poem.lines.size === poem.nContributions - 2) {
-                this.io.to(this.socket.id).emit("stcLastContribution", true);
+                this.emitToSelf("stcLastContribution", true);
             } else {
-                this.io.to(this.socket.id).emit("stcLastContribution", false);
+                this.emitToSelf("stcLastContribution", false);
             }
-            this.io.to(this.socket.id).emit("stcEditorActive", true);
+            this.emitToSelf("stcEditorActive", true);
             this.isCurrentlyEditing = true;
         } else {
-            this.io.to(this.socket.id).emit("stcLineEdit", "");
-            this.io.to(this.socket.id).emit("stcEditorActive", false);
+            this.emitToSelf("stcLineEdit", "");
+            this.emitToSelf("stcEditorActive", false);
             this.isCurrentlyEditing = false;
         } // otherwise, leave it the way it was?
     }
@@ -325,7 +301,7 @@ export class PoemEditor extends Editor {
 
     sendLastContributionStatus() {
         logger.debug("requestLastContributionStatus");
-        this.io.to(this.socket.id).emit("stcLastContribution", this.currentlyOnLastContribution());
+        this.emitToSelf("stcLastContribution", this.currentlyOnLastContribution());
     }
 
     handleLastLine(lastPart: string) {
@@ -367,12 +343,6 @@ export class PoemEditor extends Editor {
             room.gameState = GameState.END;
             room.sendToEnd();  // send everyone to the end screen
             room.selfDestruct();  // self-destruct after some time
-
-            // logger.debug(`deviceIDToRoomID ${deviceIDToRoomID}`);
-            // logger.debug(`roomIDToHost ${roomIDToHost}`);
-            // logger.debug(`roomIDToRoom ${roomIDToRoom}`);
-            // logger.debug(`room.editors ${room.editors}`);
-            // logger.debug(`room.spectators ${room.spectators}`);
         }
     }
 
@@ -464,16 +434,9 @@ export class PoemBot extends PoemEditor {
 export class DrawingEditor extends Editor {
     setReceive() {
         super.setReceive();
-        this.socket.on("ctsSendPanel", (value: Point[][]) => this.handlePanel(value));
-        this.socket.on("ctsSendPanelEdit", (value: Point[][]) => this.handlePanelEdit(value));
-        this.socket.on("ctsSendLastPanel", (value) => this.handleLastPanel(value));
-    }
-
-    unsetReceive() {
-        super.unsetReceive();
-        this.socket.removeAllListeners("ctsSendPanel");
-        this.socket.removeAllListeners("ctsSendPanelEdit");
-        this.socket.removeAllListeners("ctsSendLastPanel");
+        this.listen("ctsSendPanel", (value: Point[][]) => this.handlePanel(value));
+        this.listen("ctsSendPanelEdit", (value: Point[][]) => this.handlePanelEdit(value));
+        this.listen("ctsSendLastPanel", (value) => this.handleLastPanel(value));
     }
 
     handlePanel(panelContent: IPanel["content"]) {
@@ -531,18 +494,18 @@ export class DrawingEditor extends Editor {
             const latestPanel = Array.from((drawing)?.panels).pop();
             if (!latestPanel) throw new Error("All your pylons I mean panels are belong to us :(");
 
-            this.io.to(this.socket.id).emit("stcStrokeHistory", latestPanel["content"]);
+            this.emitToSelf("stcStrokeHistory", latestPanel["content"]);
             logger.debug(`we think the drawing has ${drawing.panels.size} submissions so far`);
 
             if (drawing.panels.size === drawing.nContributions - 1) {
-                this.io.to(this.socket.id).emit("stcLastContribution", true);
+                this.emitToSelf("stcLastContribution", true);
             } else {
-                this.io.to(this.socket.id).emit("stcLastContribution", false);
+                this.emitToSelf("stcLastContribution", false);
             }
-            this.io.to(this.socket.id).emit("stcEditorActive", true);
+            this.emitToSelf("stcEditorActive", true);
             this.isCurrentlyEditing = true;
         } else {
-            this.io.to(this.socket.id).emit("stcEditorActive", false);
+            this.emitToSelf("stcEditorActive", false);
             this.isCurrentlyEditing = false;
         } // otherwise, leave it the way it was?
     }
@@ -563,7 +526,7 @@ export class DrawingEditor extends Editor {
 
     sendLastContributionStatus() {
         logger.debug("requestLastContributionStatus");
-        this.io.to(this.socket.id).emit("stcLastContribution", this.currentlyOnLastContribution());
+        this.emitToSelf("stcLastContribution", this.currentlyOnLastContribution());
     }
 
     handleLastPanel(lastPart: IPanel["content"]) {
@@ -603,12 +566,6 @@ export class DrawingEditor extends Editor {
             room.gameState = GameState.END;
             room.sendToEnd();  // send everyone to the end screen
             room.selfDestruct();  // self-destruct after some time
-
-            // logger.debug(`deviceIDToRoomID ${deviceIDToRoomID}`);
-            // logger.debug(`roomIDToHost ${roomIDToHost}`);
-            // logger.debug(`roomIDToRoom ${roomIDToRoom}`);
-            // logger.debug(`room.editors ${room.editors}`);
-            // logger.debug(`room.spectators ${room.spectators}`);
         }
     }
 

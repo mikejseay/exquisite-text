@@ -1,4 +1,3 @@
-import { Server, Socket } from "socket.io";
 import { io as ioClient } from "socket.io-client";
 
 import {
@@ -15,16 +14,13 @@ import { PoemBot } from "./editor";
 import Member from "./member";
 import { Drawing, Poem } from "./collaboration";
 import {
-    ClientToServerEvents,
     GameState,
     IGameSettingsInfo,
     IUserTableInfo,
-    InterServerEvents,
     Medium,
     Point,
-    ServerToClientEvents,
-    SocketData,
 } from "../../src/types";
+import type { TypedServer, TypedSocket } from "../types";
 import {
     checkActivityInterval,
     defaultGameSettings,
@@ -44,18 +40,8 @@ logger.debug(`serverPath is ${serverPath} in room.ts`);
 
 class Room {
     // represents a socket.io room and a game of Exquisite Text
-    io: Server<
-        ClientToServerEvents,
-        ServerToClientEvents,
-        InterServerEvents,
-        SocketData
-    >;
-    hostSocket: null | Socket<
-        ClientToServerEvents,
-        ServerToClientEvents,
-        InterServerEvents,
-        SocketData
-    >;
+    io: TypedServer;
+    hostSocket: TypedSocket | null;
     roomID: string;
 
     editors: Map<string, PoemEditor | DrawingEditor>;
@@ -70,13 +56,8 @@ class Room {
     medium: Medium;
 
     constructor(
-        io: Server<
-            ClientToServerEvents,
-            ServerToClientEvents,
-            InterServerEvents,
-            SocketData
-        >,
-        hostSocket: Socket,
+        io: TypedServer,
+        hostSocket: TypedSocket,
         room: string,
     ) {
         this.io = io;
@@ -234,11 +215,8 @@ class Room {
 
 export class PoemRoom extends Room {
     constructor(
-        io: Server<ClientToServerEvents,
-            ServerToClientEvents,
-            InterServerEvents,
-            SocketData>,
-        hostSocket: Socket,
+        io: TypedServer,
+        hostSocket: TypedSocket,
         room: string,
     ) {
         super(io, hostSocket, room);
@@ -307,11 +285,8 @@ export class DrawingRoom extends Room {
     finishedCanvas: Point[][]; // from testing, probably unused
 
     constructor(
-        io: Server<ClientToServerEvents,
-            ServerToClientEvents,
-            InterServerEvents,
-            SocketData>,
-        hostSocket: Socket,
+        io: TypedServer,
+        hostSocket: TypedSocket,
         room: string,
     ) {
         super(io, hostSocket, room);
