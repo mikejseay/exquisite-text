@@ -8,11 +8,10 @@ import { LineLength } from "../../types";
 import {
     emitAddPoemBot,
     emitAlterGameSettings,
-    emitRequestGameSettingsInfo,
-    emitRequestSettingsEnabled,
     emitStartGame,
 } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
+import { useInitializeGameSettings } from "../../hooks/useInitializeGameSettings";
 
 function PoemGameSettings() {
     const {
@@ -26,15 +25,10 @@ function PoemGameSettings() {
         userInfo,
     } = useSocketInfo();
 
+    useInitializeGameSettings();
+
     if (settingsEnabled === null || userInfo === null) {
         return null;
-    }
-
-    const [ rendered, setRendered ] = React.useState(false);
-    if (!rendered) {
-        emitRequestSettingsEnabled();
-        emitRequestGameSettingsInfo();
-        setRendered(true);
     }
 
     // extract editors data from userInfo to determine whether room is full

@@ -1,5 +1,5 @@
 // src/screens/Canvas/index.tsx
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import IconButton from "@mui/material/IconButton";
 import Slider from "@mui/material/Slider";
 import Divider from "@mui/material/Divider";
@@ -8,7 +8,6 @@ import { useTheme } from "@mui/material/styles";
 import { debounce } from "es-toolkit";
 import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
 import UndoIcon from "@mui/icons-material/Undo";
-// Pass / Complete Drawing Icon options:
 import MoveUpIcon from "@mui/icons-material/MoveUp";
 import DoneIcon from "@mui/icons-material/Done";
 import RedoIcon from "@mui/icons-material/Redo";
@@ -21,8 +20,8 @@ import { emitSendLastPanel, emitSendPanel, emitSendPanelEdit } from "../../conte
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { DEFAULT_COLOR, drawOnCanvas } from "../../utilities/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
+import { useCanvasResize } from "../../hooks/useCanvasResize";
 import { ScaleDirection, pixelRatio, scalePoints } from "../../utilities/scaleUtils";
-import { aboveCanvasHeight } from "../../constants";
 
 /* // TODO:
     * Now that we're using buttons for canvas controls
@@ -68,76 +67,25 @@ export const DRAWING_ASPECT_RATIO = DRAWING_WIDTH_MIN / DRAWING_HEIGHT_MIN;
 const Canvas: React.FC = () => {
     const theme = useTheme();
     const { strokeHistory, editorActive, onLastContribution } = useSocketInfo();
+    const { canvasRef, dimensions, scaleFactor } = useCanvasResize(PANEL_WIDTH_MIN, PANEL_HEIGHT_MIN, PANEL_ASPECT_RATIO);
     const [ points, setPoints ] = useState<Point[]>([]);
     const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
     const [ undidStrokeHistory, setUndidStrokeHistory ] = useState<Point[][]>([]);
     const [ isMousedown, setIsMousedown ] = useState(false);
     const [ passEnabled, setPassEnabled ] = useState(false);
-    const [ dimensions, setDimensions ] = useState({
-        width: PANEL_WIDTH_MIN,
-        height: PANEL_HEIGHT_MIN,
-    });
     const [ strokeColor, setStrokeColor ] = useState<string>(DEFAULT_COLOR);
     const [ isEraserActive, setIsEraserActive ] = useState<boolean>(false);
-    const [ scaleFactor, setScaleFactor ] = useState<number>(1);
     const [ triggerRedraw, setTriggerRedraw ] = useState<number>(0);
     const [ baseLineWidth, setBaseLineWidth ] =
     useState<number>(DEFAULT_LINE_WIDTH);
     logger.debug(theme.palette.text);
     const localStrokeHistoryRef = useRef<Point[][]>(localStrokeHistory);
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
     useEffect(() => {
         localStrokeHistoryRef.current = localStrokeHistory;
     }, [ localStrokeHistory ]);
 
     useDisableScroll();
-
-    // Handle resizing of the window
-    useLayoutEffect(() => {
-        const handleResize = () => {
-            const canvas = canvasRef.current;
-            if (!canvas) return;
-            // Warning in browser log regarding willReadFrequently went away after adding as true
-            const context = canvas.getContext("2d", { willReadFrequently: true });
-            if (!context) return;
-
-            // Calculate new dimensions
-            const viewportHeight = window.innerHeight - aboveCanvasHeight;
-            const viewportWidth = window.innerWidth;
-            const viewportAspectRatio = viewportWidth / viewportHeight;
-            let newWidth: number;
-            let newHeight: number;
-
-            if (viewportAspectRatio < PANEL_ASPECT_RATIO) {
-                newWidth = Math.max(viewportWidth, PANEL_WIDTH_MIN);
-                newHeight = Math.max(newWidth / PANEL_ASPECT_RATIO, PANEL_HEIGHT_MIN);
-            } else {
-                newHeight = Math.max(viewportHeight, PANEL_HEIGHT_MIN);
-                newWidth = Math.max(newHeight * PANEL_ASPECT_RATIO, PANEL_WIDTH_MIN);
-            }
-
-            const newScaleFactor = newWidth / PANEL_WIDTH_MIN;
-            logger.debug(`New Scale Factor: ${newScaleFactor}`);
-
-            // Update state for layout purposes
-            setDimensions({ width: newWidth, height: newHeight });
-            setScaleFactor(newScaleFactor);
-        };
-
-        const debouncedHandleResize = debounce(() => {
-            logger.debug("Debounced handle resize");
-            handleResize();
-        }, 200);
-
-        handleResize();
-        window.addEventListener("resize", debouncedHandleResize);
-
-        return () => {
-            debouncedHandleResize.cancel();
-            window.removeEventListener("resize", debouncedHandleResize);
-        };
-    }, []);
 
     // Redraw the canvas whenever dimensions or scaleFactor change
     useEffect(() => {

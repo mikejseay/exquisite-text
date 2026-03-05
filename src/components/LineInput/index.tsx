@@ -252,7 +252,9 @@ const LineInput = () => {
         setPoemDoneVisible(false);
 
         // post the current input to the lines
-        emitSendLastLine(poemInput);
+        if (poemInput !== null) {
+            emitSendLastLine(poemInput);
+        }
     }
 
     function handleKeyDown({ charCode, key, ctrlKey, metaKey }: React.KeyboardEvent) {

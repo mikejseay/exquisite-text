@@ -4,14 +4,15 @@ import { ILine, IPanel, IUserTableInfo, LineLength, Medium, Point } from "../../
 import { defaultGameSettings } from "../../constants";
 import { socketListeners } from "../../context/SocketListeners";
 import { useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
+import { ServerToClientEvents, ClientToServerEvents } from "../../types";
 
 const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
 const serverPath: URL["pathname"] | URL["href"] = isDevelopment
     ? `http://${window.location.hostname}:3000`
     : "/";
 
-export const socket = io(serverPath);
+export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(serverPath);
 
 
 type Props = {

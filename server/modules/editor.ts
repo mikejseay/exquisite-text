@@ -141,12 +141,12 @@ class Editor extends Member {
     }
 
 
-    alterGameSettings(gameSettings: IGameSettingsInfo) {
+    alterGameSettings(gameSettings: Partial<IGameSettingsInfo>) {
         logger.debug("ctsAlterGameSettings");
         const room = getRoom(this.roomID);
         if (room) {
-            room.gameSettings = gameSettings;
-            this.socket.to(this.roomID).emit("stcGameSettingsInfo", gameSettings);
+            room.gameSettings = { ...room.gameSettings, ...gameSettings };
+            this.socket.to(this.roomID).emit("stcGameSettingsInfo", room.gameSettings);
         }
     }
 

@@ -143,7 +143,7 @@ export interface ClientToServerEvents {
     ctsJoinAsBot: (roomID: string, name: string, botDeviceID: string) => void;
     ctsRequestGameSettingsInfo: () => void;
     ctsRequestLastContributionStatus: () => void;
-    ctsAlterGameSettings: (a: IGameSettingsInfo) => void;
+    ctsAlterGameSettings: (a: Partial<IGameSettingsInfo>) => void;
     ctsRequestSettingsEnabled: () => void;
     ctsStartGame: () => void;
     ctsAddPoemBot: () => void;
