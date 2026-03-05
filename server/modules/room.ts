@@ -167,6 +167,12 @@ class Room {
         }
     }
 
+    finishGame() {
+        this.gameState = GameState.END;
+        this.sendToEnd();
+        this.selfDestruct();
+    }
+
     sendToEnd() {
         logger.debug(`${this.roomID} sending everyone to the end screen`);
         this.io.in(this.roomID).emit("stcNavigate", "/end");
@@ -325,15 +331,11 @@ export class DrawingRoom extends Room {
         this.finishedWorks.push(drawingObj);
     }
 
-    //     ROOM:
-    //     this.panels = new Set<IPanel>;
-    // }
-    // export interface IPanel extends IContribution {
-    //     content: Point[][];
-    //     hintSize: number;
-    // }
-    // this.finishedWorks is an array of Drawing. drawing.panels is Set<IPanel>
-    // on IPanel, content is Point[][]
+    finishGame() {
+        this.sendCompletedDrawings();
+        super.finishGame();
+    }
+
     sendCompletedDrawings() {
         logger.debug("sendCompletedDrawings ;))))))))))");
         const iPanels = Array.from(this.finishedWorks as Drawing[]).map((drawing) => Array.from(drawing?.panels));

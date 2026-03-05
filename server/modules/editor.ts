@@ -57,7 +57,6 @@ class Editor extends Member {
         logger.debug(`safeNextIndex ${safeNextIndex}`);
         this.targetEditorID = editorDeviceIDs[safeNextIndex];
         logger.debug(`this.targetEditorID ${this.targetEditorID}`);
-        // this.targetEditorSocketID = room.editors.get(this.targetEditorID).socket.id;
         logger.debug(`
             ${this.deviceID}
             in position
@@ -175,15 +174,6 @@ export class PoemEditor extends Editor {
         this.listen("ctsAddPoemBot", () => this.requestAddPoemBotToRoom());
     }
 
-    broadcastStartGame() {
-        // global in nature, so it will mainly deal with the room
-        logger.debug("ctsStartGame");
-        const room = getRoom(this.roomID) as PoemRoom;
-        if (room) {
-            room.setUpGame();
-        }
-    }
-
     requestAddPoemBotToRoom() {
         logger.debug("ctsAddPoemBot");
         if (this.name !== process.env.AUTHORIZED_BOT_USER_NAME) {
@@ -242,8 +232,6 @@ export class PoemEditor extends Editor {
             return;
         }
 
-        // TODO: does this fix the race condition?
-        // await poemToPass.submitLine(this.deviceID, firstPart, secondPart);
         poemToPass.submitLine(this.deviceID, firstPart, secondPart);
         poemToPass.sendLineEditToSpectators(secondPart);
         if (!room) {
@@ -340,9 +328,7 @@ export class PoemEditor extends Editor {
         // remove each of the editor/spectator deviceIDs from deviceIDToRoomId
         if (room.nUnfinishedWorks === 0) {
             logger.debug("no poems left to finish; forget everyone's device, delete room and poem globals");
-            room.gameState = GameState.END;
-            room.sendToEnd();  // send everyone to the end screen
-            room.selfDestruct();  // self-destruct after some time
+            room.finishGame();
         }
     }
 
@@ -364,9 +350,6 @@ export class PoemEditor extends Editor {
             storePoem(poem);
         }
 
-        // broadcast the poem to room members via sockets
-        // this.sendPoem(poem);
-        // try out the new view
         this.sendPoemAsLines(poemObj);
 
         // save the poem into the Room object
@@ -560,30 +543,12 @@ export class DrawingEditor extends Editor {
         // if all editors' poem queues are empty
         // remove each of the editor/spectator deviceIDs from deviceIDToRoomId
         if (room.nUnfinishedWorks === 0) {
-            // broadcast completed drawings to everyone
             logger.debug("no drawings left to finish; forget everyone's device, delete room and drawing globals");
-            room.sendCompletedDrawings();
-            room.gameState = GameState.END;
-            room.sendToEnd();  // send everyone to the end screen
-            room.selfDestruct();  // self-destruct after some time
+            room.finishGame();
         }
     }
 
     handleDrawing(drawingObj: Drawing) {
-        // if (process.env.IS_LIBRARY_ENABLED === "true") {
-        //     const drawingArray = Array.from(drawingObj.panels).flatMap(x => x?.content);
-        //     const drawing: IDrawing = {
-        //         content: drawingArray,
-        //         createdAt: new Date(),
-        //         id: uuidv4(),
-        //         title: `exquisite text #${Math.round(Math.random() * 100)}`,
-        //     };
-
-        //     // add the drawing to the database
-        //     // NOTE: Does not exist yet
-        //     storeDrawing(drawing);
-        // }
-
         this.sendDrawingAsPanels(drawingObj);
 
         // save the drawing into the Room object
