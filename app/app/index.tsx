@@ -9,32 +9,9 @@ import type {
 } from "react-native-webview/lib/WebViewTypes";
 
 import CustomStatusBar from "./components/CustomStatusBar";
+import { allowedOrigin, getIsAllowedUrl } from "../urlValidation";
 
 void SplashScreen.preventAutoHideAsync();
-
-const allowedHosts = new Set([ "exquisitetext.com", "www.exquisitetext.com" ]);
-const allowedOrigin = "https://www.exquisitetext.com";
-
-const getIsAllowedUrl = (url: string): boolean => {
-    if (!url) {
-        return false;
-    }
-
-    if (url === "about:blank") {
-        return true;
-    }
-
-    try {
-        const parsedUrl = new URL(url);
-        if (parsedUrl.protocol !== "https:") {
-            return false;
-        }
-
-        return allowedHosts.has(parsedUrl.host);
-    } catch {
-        return false;
-    }
-};
 
 export default function Index() {
     const initialUrl = `${allowedOrigin}/`;

@@ -7,7 +7,16 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "test": "jest"
+  },
+  "jest": {
+    "transform": {
+      "\\.[jt]sx?$": "babel-jest"
+    },
+    "testMatch": [
+      "**/__tests__/**/*.test.[jt]s?(x)"
+    ]
   },
   "dependencies": {
     "expo": "^54.0.0",
@@ -26,7 +35,9 @@
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.1.10",
+    "jest": "^30.2.0",
     "typescript": "~5.9.2"
   },
   "private": true,
