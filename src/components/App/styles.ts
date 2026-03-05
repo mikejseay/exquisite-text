@@ -12,7 +12,7 @@ export const appHeader: React.CSSProperties = {
 
 export const appTitle: React.CSSProperties = {
     fontFamily: "'Esteban', serif",
-    fontSize: "24px",
+    fontSize: "clamp(1rem, 6.67vw, 1.5rem)",
     left: "50%",
     position: "absolute",
     transform: "translate(-50%, 0)",

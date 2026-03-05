@@ -4,10 +4,9 @@ import ArticleIcon from "@mui/icons-material/Article";
 import BrushIcon from "@mui/icons-material/Brush";
 import Fab from "@mui/material/Fab";
 import Alert from "@mui/material/Alert";
-import Box from "@mui/material/Box";
 import { useClipboard } from "use-clipboard-copy";
 
-import { hostFAB, roomCodeStyles } from "./styles";
+import { hostButtonLabel, hostButtonWrapper, hostButtonsContainer, roomCodeStyles } from "./styles";
 import { generateAlphaString } from "../../helpers";
 import { roomCodeLength } from "../../constants";
 import { emitCreateRoomAndHost } from "../../context/SocketRequestors";
@@ -49,33 +48,27 @@ function HostButton() {
         </div>
     );
 
+    const buttons: { medium: Medium; label: string; ariaLabel: string; color: "primary" | "secondary"; icon: React.ReactNode }[] = [
+        { medium: Medium.POETRY, label: "Host\nPoetry", ariaLabel: "create poem", color: "primary", icon: <ArticleIcon /> },
+        { medium: Medium.DRAWING, label: "Host\nDrawing", ariaLabel: "create drawing", color: "secondary", icon: <BrushIcon /> },
+    ];
+
     return (
-        <div className={"create-game-fab"}>
-            <Box>
-                <Fab
-                    aria-label="create poem"
-                    color="primary"
-                    onClick={() => {
-                        handleClick(Medium.POETRY);
-                    }}
-                    size="small"
-                    sx={hostFAB}
-                >
-                    <ArticleIcon />
-                </Fab>
-                <Fab
-                    aria-label="create drawing"
-                    color="secondary"
-                    onClick={() => {
-                        handleClick(Medium.DRAWING);
-                    }}
-                    size="small"
-                    sx={{ ...hostFAB, marginLeft: 6 }}
-                >
-                    <BrushIcon />
-                </Fab>
-                {alerts}
-            </Box>
+        <div style={hostButtonsContainer}>
+            {buttons.map(({ medium, label, ariaLabel, color, icon }) => (
+                <div key={medium} style={hostButtonWrapper}>
+                    <Fab
+                        aria-label={ariaLabel}
+                        color={color}
+                        onClick={() => handleClick(medium)}
+                        size="small"
+                    >
+                        {icon}
+                    </Fab>
+                    <span style={hostButtonLabel}>{label}</span>
+                </div>
+            ))}
+            {alerts}
         </div>
     );
 }
