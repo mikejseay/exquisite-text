@@ -7,7 +7,8 @@ import "@testing-library/jest-dom";
 // Polyfill setImmediate for socket.io-client's xmlhttprequest-ssl dependency
 // (removed from newer Node.js but still used by the library)
 if (typeof globalThis.setImmediate === "undefined") {
-    (globalThis as any).setImmediate = (fn: (...args: any[]) => void, ...args: any[]) =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).setImmediate = (fn: (...args: unknown[]) => void, ...args: unknown[]) =>
         setTimeout(fn, 0, ...args);
 }
 

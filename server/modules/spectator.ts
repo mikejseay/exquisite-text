@@ -2,7 +2,7 @@ import { roomIDToRoom } from "./globals";
 import Member from "./member";
 import { getRoom, sendCollaborationContributionsInfo } from "../utilities/socketUtils";
 import type { DrawingRoom, PoemRoom } from "./room";
-import type { Poem } from "./collaboration";
+import type { Drawing, Poem } from "./collaboration";
 import { logger } from "../utilities/loggerUtils";
 
 class Spectator extends Member {
@@ -66,5 +66,24 @@ export class DrawingSpectator extends Spectator {
         const canvas = room.finishedCanvas;
         logger.debug(`sendCanvas activated sending ${canvas}`);
         this.emitToSelf("stcStrokeHistory", canvas);
+    }
+
+    sendAllDrawingPanels() {
+        const room = roomIDToRoom.get(this.roomID) as DrawingRoom;
+        if (!room) {
+            logger.debug("room not found");
+            return;
+        }
+        for (const editor of room.editors.values()) {
+            for (const drawing of editor.contributionQueue) {
+                (drawing as Drawing).sendAllPanelsTo(this.socket.id);
+            }
+        }
+    }
+
+    reinstateContext() {
+        super.reinstateContext();
+        this.sendAllDrawingPanels();
+        sendCollaborationContributionsInfo(this);
     }
 }

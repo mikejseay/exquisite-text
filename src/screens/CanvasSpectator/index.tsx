@@ -1,45 +1,41 @@
 // src/screens/CanvasSpectator/index.tsx
 import React, { useEffect, useState } from "react";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { Point } from "../../types";
+import { IPanel, Point } from "../../types";
 import MultipleDrawings from "../../components/MultipleDrawings";
 import { logger } from "../../utilities/loggerUtils";
 
+export function combineDrawingPanels(
+    panels: Array<Array<IPanel["content"]>> | null,
+    panelEdits: Array<IPanel["content"]> | null,
+    nDrawings: number,
+): Point[][][][] {
+    const combined: Point[][][][] = [];
+
+    for (let drawingIndex = 0; drawingIndex < nDrawings; drawingIndex++) {
+        const currentPanels: Point[][][] = [];
+
+        if (panels && panels[drawingIndex]) {
+            currentPanels.push(...panels[drawingIndex]);
+        }
+
+        if (panelEdits && panelEdits[drawingIndex] && panelEdits[drawingIndex].length > 0) {
+            currentPanels.push(panelEdits[drawingIndex]);
+        }
+
+        combined.push(currentPanels);
+    }
+    return combined;
+}
+
 const CanvasSpectator: React.FC = () => {
     const { panels, panelEdits, nDrawings  } = useSocketInfo();
-    // Represents all completed panels and panel edits in an ongoing game
     const [ currentDrawings, setCurrentDrawings ] = useState<Point[][][][]>([]);
 
     useEffect(() => {
         if (!nDrawings) return;
         logger.debug({ panels, panelEdits });
-        // Levels //
-        // Outer: Drawings
-        // Panels
-        // Strokes
-        // Points
-
-        const combinedPanelsAndPanelEdits: Point[][][][] = [];
-
-        for (let drawingIndex = 0; drawingIndex < nDrawings; drawingIndex++) {
-            const currentPanels: Point[][][] = [];
-
-            if (panels && panels[drawingIndex]) {
-            // panels[drawingIndex] is Point[][][]
-            // "Extending" currentPanels by pushing all panels for this drawing
-                currentPanels.push(...panels[drawingIndex]);
-            }
-
-            if (panelEdits && panelEdits[drawingIndex]) {
-            // panelEdits[drawingIndex] is Point[][]
-            // Appending the panel edits for this drawing
-                currentPanels.push(panelEdits[drawingIndex]);
-            }
-
-            combinedPanelsAndPanelEdits.push(currentPanels);
-        }
-        setCurrentDrawings(combinedPanelsAndPanelEdits);
-
+        setCurrentDrawings(combineDrawingPanels(panels, panelEdits, nDrawings));
     }, [ panels, panelEdits, nDrawings ]);
 
     return (
