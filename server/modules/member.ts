@@ -41,7 +41,9 @@ class Member {
     // Registers a socket event listener and tracks it for automatic cleanup in unsetReceive().
     // Subclasses use this in setReceive() instead of this.socket.on() directly,
     // eliminating the need to maintain a parallel unsetReceive() with the same event names.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     protected listen(event: string, handler: (...args: any[]) => void): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.socket.on(event as any, handler);
         this._registeredEvents.push(event);
     }
@@ -84,6 +86,7 @@ class Member {
     // Subclasses do NOT need to override this — listen() tracks all events automatically.
     unsetReceive() {
         for (const event of this._registeredEvents) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.socket.removeAllListeners(event as any);
         }
         this._registeredEvents = [];

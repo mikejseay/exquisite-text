@@ -9,6 +9,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "test": "jest",
+    "lint": "npx eslint . --ext .ts,.tsx --max-warnings 0 --ignore-pattern node_modules",
     "typecheck": "tsc --noEmit"
   },
   "jest": {

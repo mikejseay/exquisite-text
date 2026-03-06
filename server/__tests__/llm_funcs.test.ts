@@ -101,7 +101,7 @@ describe("processPoetryLines", () => {
     });
 
     it("handles empty line one by absorbing words from line two", () => {
-        const [ newOne, newTwo ] = processPoetryLines("", "hello world foo bar baz");
+        const [ newOne ] = processPoetryLines("", "hello world foo bar baz");
         assert.ok(newOne.length > 0);
     });
 

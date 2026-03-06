@@ -92,7 +92,7 @@ export function isBotUsageAuthorized(room: PoemRoom): boolean {
     return true;
 }
 
-function main() {
+function _main() {
     // Example usage:
     const lineOne = "A quick brown fox";
     const lineTwo = "jumps over the lazy dog who is lying in the sun";

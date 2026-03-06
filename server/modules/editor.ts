@@ -1,13 +1,10 @@
 import { isNil } from "es-toolkit";
-import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid for lines
 import {
     GameState,
     IGameSettingsInfo,
     IPanel,
-    IPoem,
     Point,
 } from "../../src/types";
-import { lineSepString } from "../../src/constants";
 import { roomIDToRoom } from "./globals";
 import type { Drawing, Poem } from "./collaboration";
 import Member from "./member";
@@ -332,18 +329,6 @@ export class PoemEditor extends Editor {
     }
 
     handlePoem(poemObj: Poem) {
-        let poemString = "";
-        for (const line of poemObj.lines) {
-            poemString += line.content + lineSepString;
-        }
-
-        const poem: IPoem = {
-            content: poemString,
-            createdAt: new Date(),
-            id: uuidv4(),
-            title: `exquisite text #${Math.round(Math.random() * 100)}`,
-        };
-
         this.sendPoemAsLines(poemObj);
 
         // save the poem into the Room object
