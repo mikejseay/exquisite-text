@@ -7,7 +7,6 @@ import {
     IPoem,
     Point,
 } from "../../src/types";
-import { storePoem } from "../queries";
 import { lineSepString } from "../../src/constants";
 import { roomIDToRoom } from "./globals";
 import type { Drawing, Poem } from "./collaboration";
@@ -344,11 +343,6 @@ export class PoemEditor extends Editor {
             id: uuidv4(),
             title: `exquisite text #${Math.round(Math.random() * 100)}`,
         };
-
-        // add the poem to the database
-        if (process.env.IS_LIBRARY_ENABLED === "true") {
-            storePoem(poem);
-        }
 
         this.sendPoemAsLines(poemObj);
 

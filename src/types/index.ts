@@ -52,10 +52,6 @@ export interface IGameSettingsInfo {
     nDrawings: number;
 }
 
-export interface IPoems {
-    [id: string]: IPoem;
-}
-
 interface ICollaboration {
     id: Key;
     createdAt: Date;

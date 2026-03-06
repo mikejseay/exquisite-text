@@ -18,15 +18,11 @@ import { createServer } from "http";
 import app from "./app";
 import sockets from "./modules/sockets";
 
-import debug0 from "debug";
 import { isNil } from "es-toolkit";
 
 /**
  * Module dependencies.
  */
-
-// no ideas... chat-server is the name in package.json?
-const debug = debug0("chat-server:server");
 
 /**
  * Get port from environment and store in Express.
@@ -127,7 +123,7 @@ function onListening() {
       typeof address === "string"
           ? `pipe ${address}`
           : `port ${address.port}`;
-        debug(`Listening on ${bind}`);
+        logger.info(`Listening on ${bind}`);
     }
 }
 

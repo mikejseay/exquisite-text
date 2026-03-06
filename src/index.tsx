@@ -9,10 +9,7 @@ import "./index.css";
 import App from "./components/App";
 import End from "./screens/End";
 import Game from "./screens/Game";
-// import Host from "./screens/Host";
 import Join from "./screens/Join";
-import Library from "./screens/Library";
-import Page from "./screens/Page";
 import Lobby from "./screens/Lobby";
 import Spectate from "./screens/Spectate";
 import Disconnected from "./screens/Disconnected";
@@ -31,12 +28,6 @@ const noMatchRouteElement = (
         <p>There&apos;s nothing here!</p>
     </main>
 );
-
-function isComponentEnabled(element: JSX.Element): JSX.Element | null {
-    return process.env.REACT_APP_IS_LIBRARY_ENABLED === "true"
-        ? element
-        : null;
-}
 
 function Root() {
     const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
@@ -57,7 +48,6 @@ function Root() {
                         <Route path="/" element={<App />}>
 
                             <Route path="/" element={<Join />} />
-                            {/* <Route path="host" element={<Host />} /> */}
                             <Route path="lobby" element={<Lobby />} />
                             <Route path="game" element={<Game />} />
                             <Route path="spectate" element={<Spectate />} />
@@ -66,8 +56,6 @@ function Root() {
                             <Route path="endtestdrawing" element={<End testingMedium={Medium.DRAWING} />} />
                             <Route path="canvas" element={<Canvas />} />
                             <Route path="canvasspectator" element={<CanvasSpectator />} />
-                            {isComponentEnabled(<Route path="library" element={<Library />} />)}
-                            {isComponentEnabled(<Route path="page/:id" element={<Page />} />)}
                             <Route path="disconnected" element={<Disconnected />} />
 
                             <Route path="/:id" element={<Join />} />

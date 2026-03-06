@@ -6,7 +6,6 @@ import {
     ServerToClientEvents,
 } from "../../src/types";
 import type { TypedServer } from "../types";
-import { storeLine } from "../queries";
 import { getRoom } from "../utilities/socketUtils";
 import { analyzeBeginning } from "./poem_bot";
 import type { PoemRoom } from "./room";
@@ -77,9 +76,6 @@ export class Poem extends Collaboration {
             addedAt: new Date(),
         };
         this.lines.add(myLine);
-        if (process.env.IS_LIBRARY_ENABLED === "true") {
-            storeLine(myLine);
-        }
         this.mostRecentEditor = authorID;
         this.halfLine = secondPart;
         this.emitToSpectators("stcLineSpectator", this.indexInGame, firstPart);
