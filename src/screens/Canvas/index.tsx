@@ -67,7 +67,8 @@ export const DRAWING_ASPECT_RATIO = DRAWING_WIDTH_MIN / DRAWING_HEIGHT_MIN;
 const Canvas: React.FC = () => {
     const theme = useTheme();
     const { strokeHistory, editorActive, onLastContribution } = useSocketInfo();
-    const { canvasRef, dimensions, scaleFactor } = useCanvasResize(PANEL_WIDTH_MIN, PANEL_HEIGHT_MIN, PANEL_ASPECT_RATIO);
+    const toolbarRef = useRef<HTMLDivElement>(null);
+    const { canvasRef, dimensions, scaleFactor } = useCanvasResize(PANEL_WIDTH_MIN, PANEL_HEIGHT_MIN, PANEL_ASPECT_RATIO, toolbarRef);
     const [ points, setPoints ] = useState<Point[]>([]);
     const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
     const [ undidStrokeHistory, setUndidStrokeHistory ] = useState<Point[][]>([]);
@@ -322,6 +323,7 @@ const Canvas: React.FC = () => {
     return (
         <>
             <div
+                ref={toolbarRef}
                 className="canvas-toolbar"
                 style={{
                     display: "flex",
@@ -374,7 +376,7 @@ const Canvas: React.FC = () => {
                         disabled={!editorActive}
                         sx={{
                             marginRight: theme.spacing(2.75),
-                            width: 120,
+                            width: "clamp(60px, 20vw, 120px)",
                             cursor: "ew-resize",
                             color: strokeColor,
                             "& .MuiSlider-rail": {

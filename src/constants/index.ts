@@ -6,7 +6,6 @@ export const maxNameChars = 13;
 export const FABSpace = 10;
 export const FABDiameter = 40;
 export const headerHeight = 60;
-export const aboveCanvasHeight = headerHeight + 100;
 
 export const shortDur = 3000;
 

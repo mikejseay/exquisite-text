@@ -1,13 +1,14 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { RefObject, useLayoutEffect, useRef, useState } from "react";
 import { debounce } from "es-toolkit";
 
 import { logger } from "../utilities/loggerUtils";
-import { aboveCanvasHeight } from "../constants";
+import { headerHeight } from "../constants";
 
 export function useCanvasResize(
     widthMin: number,
     heightMin: number,
     aspectRatio: number,
+    toolbarRef?: RefObject<HTMLDivElement | null>,
 ) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [ dimensions, setDimensions ] = useState({ width: widthMin, height: heightMin });
@@ -21,7 +22,11 @@ export function useCanvasResize(
             const context = canvas.getContext("2d");
             if (!context) return;
 
-            const viewportHeight = window.innerHeight - aboveCanvasHeight;
+            const aboveCanvas = toolbarRef?.current
+                ? toolbarRef.current.getBoundingClientRect().bottom
+                : headerHeight;
+
+            const viewportHeight = window.innerHeight - aboveCanvas;
             const viewportWidth = window.innerWidth;
             const viewportAspectRatio = viewportWidth / viewportHeight;
             let newWidth: number;
@@ -52,9 +57,17 @@ export function useCanvasResize(
         handleResize();
         window.addEventListener("resize", debouncedHandleResize);
 
+        // Watch for toolbar height changes (e.g. wrapping on narrow screens)
+        let resizeObserver: ResizeObserver | undefined;
+        if (toolbarRef?.current) {
+            resizeObserver = new ResizeObserver(debouncedHandleResize);
+            resizeObserver.observe(toolbarRef.current);
+        }
+
         return () => {
             debouncedHandleResize.cancel();
             window.removeEventListener("resize", debouncedHandleResize);
+            resizeObserver?.disconnect();
         };
     }, []);
 
