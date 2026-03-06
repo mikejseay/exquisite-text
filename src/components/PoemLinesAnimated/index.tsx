@@ -69,13 +69,13 @@ function PoemLinesAnimated({
                 random={20}
                 delay={200}
             />
-            <Card>
-                <CardContent style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", marginTop: "2rem" }}>
+            <Card style={{ marginTop: "auto" }}>
+                <CardContent sx={{ display: "flex", flexWrap: "wrap", justifyContent: "center", padding: "0.4rem 0.5rem", "&:last-child": { paddingBottom: "0.4rem" } }}>
                     {editors.map((editorName, editorIndex) => {
                         return (
-                            <Box key={editorIndex} style={{ margin: "0.5rem", display: "flex", alignItems: "center" }}>
-                                <FiberManualRecordIcon style={{ color: editorColors[editorIndex] }} />
-                                <Typography style={{ marginLeft: "0.5rem" }}>{editorName}</Typography>
+                            <Box key={editorIndex} style={{ margin: "0.2rem 0.4rem", display: "flex", alignItems: "center" }}>
+                                <FiberManualRecordIcon style={{ color: editorColors[editorIndex], fontSize: "0.75rem" }} />
+                                <Typography style={{ marginLeft: "0.3rem", fontSize: "0.8rem" }}>{editorName}</Typography>
                             </Box>
                         );
                     })}
