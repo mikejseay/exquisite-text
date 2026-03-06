@@ -361,9 +361,12 @@ export class PoemBot extends PoemEditor {
 
     async possibleStartNewTurn() {
         if (this.hasWorkInQueue()) {
+            this.isCurrentlyEditing = true;
+
             // pre-determine the optimal line lengths
             const room = getRoom(this.roomID) as PoemRoom;
             if (!room) {
+                this.isCurrentlyEditing = false;
                 return;
             }
 
@@ -381,6 +384,7 @@ export class PoemBot extends PoemEditor {
                 : halfLine.includes(".");
             logger.debug("possibleStartNewTurn invoking guaranteeHalfLineCompletion");
             if (!isBotUsageAuthorized(room)) {
+                this.isCurrentlyEditing = false;
                 return;
             }
             const parts = await guaranteeHalfLineCompletion(
@@ -396,6 +400,8 @@ export class PoemBot extends PoemEditor {
             } else {
                 this.handleLineParts(parts[0], parts[1]);
             }
+        } else {
+            this.isCurrentlyEditing = false;
         }
     }
 }

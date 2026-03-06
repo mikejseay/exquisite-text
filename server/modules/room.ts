@@ -263,6 +263,13 @@ export class PoemRoom extends Room {
         }
 
         this.navigateMembersToGame();
+
+        // Bots have no client UI to trigger their first turn, so start them explicitly
+        for (const editor of this.editors.values()) {
+            if (editor instanceof PoemBot && editor.hasWorkInQueue()) {
+                editor.possibleStartNewTurn();
+            }
+        }
     }
 
     addPoemBot() {
