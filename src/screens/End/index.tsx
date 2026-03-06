@@ -13,6 +13,7 @@ import {
 import { Medium } from "../../types";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import MultipleDrawings from "../../components/MultipleDrawings";
+import LeaveButton from "../../components/LeaveButton";
 
 function End({ testingMedium }: { testingMedium?: Medium }) {
     const { medium } = useSocketInfo();
@@ -49,6 +50,7 @@ function End({ testingMedium }: { testingMedium?: Medium }) {
 
     return (
         <div style={centered}>
+            <LeaveButton />
             {medium === Medium.POETRY && <IconButton onClick={handleChange} sx={floatingToggleAnimate}>
                 <KeyboardIcon
                     color={
