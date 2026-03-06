@@ -115,6 +115,22 @@ const LineInput = () => {
         }
     }, [ textAreaVisible ]);
 
+    // auto-focus textarea when user presses a printable character key while not focused on it
+    React.useEffect(() => {
+        if (!textAreaVisible) return;
+
+        function handleGlobalKeyDown(e: KeyboardEvent) {
+            if (document.activeElement === textareaRef.current) return;
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            if (e.key.length === 1) {
+                textareaRef.current?.focus();
+            }
+        }
+
+        window.addEventListener("keydown", handleGlobalKeyDown);
+        return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+    }, [ textAreaVisible ]);
+
     function helpBasedOnProgress(messageType: number, progressProp: number) {
         if (messageType === 1) {
             if (progressProp < 0.3) {
