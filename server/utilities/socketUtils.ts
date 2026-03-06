@@ -109,23 +109,20 @@ export function sendCollaborationContributionsInfo(member: Host | PoemEditor | P
         return;
     }
     logger.debug(`${member.name} request collaborations from room which has ${room.finishedWorks.length}`);
-    for (const collaborationObj of room.finishedWorks) {
-        // TODO: Explore this, this could improve server-side efficiency:
-        // poemMember.io.in(poemMember.roomID).emit("stcPoemLines", Array.from(poemObj.lines));
-        if ("lines" in collaborationObj) {
+
+    if (room.medium === Medium.POETRY) {
+        for (const collaborationObj of room.finishedWorks) {
             member.io
                 .to(member.socket.id)
                 .emit(
                     "stcPoemLines",
                     Array.from((collaborationObj as Poem).lines),
                 );
-        } else {
-            member.io
-                .to(member.socket.id)
-                .emit(
-                    "stcDrawingPanels",
-                    Array.from((collaborationObj as Drawing).panels),
-                );
         }
+    } else if (room.medium === Medium.DRAWING) {
+        const completedDrawings = (room.finishedWorks as Drawing[]).map(
+            (drawing) => Array.from(drawing.panels).map(panel => panel.content),
+        );
+        member.io.to(member.socket.id).emit("stcCompletedDrawings", completedDrawings);
     }
 }

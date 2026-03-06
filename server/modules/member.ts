@@ -161,9 +161,17 @@ class Member {
         logger.debug(`socket ${this.socket.id} disconnecting from ${this.socket.rooms}`);
     }
 
+    sendMedium() {
+        const room = getRoom(this.roomID);
+        if (room) {
+            this.emitToSelf("stcMedium", room.medium);
+        }
+    }
+
     reinstateContext() {
         this.requestRoomCode();
         this.sendUserTableInfo(false);
+        this.sendMedium();
     }
 }
 
