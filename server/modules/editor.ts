@@ -376,7 +376,9 @@ export class PoemBot extends PoemEditor {
                 await delay(6000);
             }
             const halfLine = poem.halfLine;
-            const forceIncomplete = halfLine.includes(".");
+            const forceIncomplete = this.currentlyOnLastContribution()
+                ? false
+                : halfLine.includes(".");
             logger.debug("possibleStartNewTurn invoking guaranteeHalfLineCompletion");
             if (!isBotUsageAuthorized(room)) {
                 return;
@@ -388,7 +390,12 @@ export class PoemBot extends PoemEditor {
                 forceIncomplete,
                 poem.analysis,
             );
-            this.handleLineParts(parts[0], parts[1]);
+
+            if (this.currentlyOnLastContribution()) {
+                this.handleLastLine(parts[0]);
+            } else {
+                this.handleLineParts(parts[0], parts[1]);
+            }
         }
     }
 }
