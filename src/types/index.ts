@@ -105,51 +105,51 @@ export interface Point {
 }
 
 export interface ServerToClientEvents {
-    stcLineEdit: (a: string) => void;
-    stcDrawingPanel: (a: IPanel) => void;
-    stcPoemLines: (a: ILine[]) => void;
-    stcDrawingPanels: (a: IPanel[]) => void;
-    stcRoomCode: (a: string) => void;
-    stcJoinError: (a: string) => void;
-    stcUserTableInfo: (a: IUserTableInfo) => void;
-    stcGameSettingsInfo: (a: IGameSettingsInfo) => void;
-    stcGameSettingsEnabled: (a: boolean) => void;
-    stcNavigate: (a: string) => void;
-    stcEditorActive: (a: boolean) => void;
-    stcLastContribution: (a: boolean) => void;
-    stcLineEditorWatch: (a: string) => void;
+    stcLineEdit: (lineEdit: string) => void;
+    stcDrawingPanel: (panel: IPanel) => void;
+    stcPoemLines: (lines: ILine[]) => void;
+    stcDrawingPanels: (panels: IPanel[]) => void;
+    stcRoomCode: (roomCode: string) => void;
+    stcJoinError: (errorMessage: string) => void;
+    stcUserTableInfo: (userTableInfo: IUserTableInfo) => void;
+    stcGameSettingsInfo: (gameSettings: IGameSettingsInfo) => void;
+    stcGameSettingsEnabled: (enabled: boolean) => void;
+    stcNavigate: (targetRoute: string) => void;
+    stcEditorActive: (isActive: boolean) => void;
+    stcLastContribution: (isLast: boolean) => void;
+    stcLineEditorWatch: (lineEdit: string) => void;
     stcLineSpectator: (indexInGame: number, content: ILine["content"]) => void;
     stcPanelSpectator: (indexInGame: number, content: IPanel["content"]) => void;
     stcPanelEditSpectator: (indexInGame: number, content: IPanel["content"]) => void;
-    stcLineEditSpectator: (a: number, b: string) => void;
-    stcStrokeHistory: (a: Point[][]) => void;
-    stcCompletedDrawings: (a: Point[][][][]) => void;
+    stcLineEditSpectator: (poemIndex: number, lineEdit: string) => void;
+    stcStrokeHistory: (strokeHistory: Point[][]) => void;
+    stcCompletedDrawings: (completedDrawings: Point[][][][]) => void;
     stcMedium: (medium: Medium) => void;
 }
 
 export interface ClientToServerEvents {
-    ctsRequestUserTableInfo: (a: boolean) => void;
+    ctsRequestUserTableInfo: (shouldTest: boolean) => void;
     ctsRequestPoemsLines: () => void;
     ctsRequestDrawings: () => void;
     ctsRequestLineEdit: () => void;
-    ctsEditLine: (a: string) => void;
-    ctsRecognizeDevice: (a: string) => void;
-    ctsCreateRoomAndHost: (a: string, b: Medium) => void;
+    ctsEditLine: (value: string) => void;
+    ctsRecognizeDevice: (deviceID: string) => void;
+    ctsCreateRoomAndHost: (roomID: string, medium: Medium) => void;
     ctsJoinAs: (roomID: string, name: string, role: Role, isTest: boolean) => void;
     ctsJoinAsBot: (roomID: string, name: string, botDeviceID: string) => void;
     ctsRequestGameSettingsInfo: () => void;
     ctsRequestLastContributionStatus: () => void;
-    ctsAlterGameSettings: (a: Partial<IGameSettingsInfo>) => void;
+    ctsAlterGameSettings: (gameSettings: Partial<IGameSettingsInfo>) => void;
     ctsRequestSettingsEnabled: () => void;
     ctsStartGame: () => void;
     ctsAddPoemBot: () => void;
     ctsRequestEditorActive: () => void;
-    ctsSendLineParts: (a: string, b: string) => void;
-    ctsSendLastLine: (a: string) => void;
-    ctsSendLastPanel: (a: Point[][]) => void;
+    ctsSendLineParts: (firstPart: string, secondPart: string) => void;
+    ctsSendLastLine: (lastLine: string) => void;
+    ctsSendLastPanel: (panelContent: Point[][]) => void;
     ctsLeave: () => void;
-    ctsSendPanel: (a: Point[][]) => void;
-    ctsSendPanelEdit: (a: Point[][]) => void;
+    ctsSendPanel: (panelContent: Point[][]) => void;
+    ctsSendPanelEdit: (panelContent: Point[][]) => void;
     ctsRequestCanvas: () => void;
 }
 
