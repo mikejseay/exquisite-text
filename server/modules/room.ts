@@ -316,17 +316,23 @@ export class DrawingRoom extends Room {
         this.nUnfinishedWorks = nDrawingsToHandOut;
         let drawingIndex = 0;
 
+        // prepare each player for the game
         for (const editor of this.editors.values()) {
             editor.lastActivity = Date.now(); // refresh AFK timers upon game start
             editor.prepareForGame();
-
-            // give the editor a new drawing
-            if (nDrawingsToHandOut > 0) {
-                const drawing = new Drawing(this.io, this.roomID, nContributions, drawingIndex); // creates Poem object
+        }
+        // as long as there are drawings, cycle through editors, giving one to each
+        while (nDrawingsToHandOut > 0) {
+            for (const editor of this.editors.values()) {
+                const drawing = new Drawing(this.io, this.roomID, nContributions, drawingIndex);
                 editor.contributionQueue.push(drawing);
                 editor.isCurrentlyEditing = true;
                 nDrawingsToHandOut--;
                 drawingIndex++;
+
+                if (nDrawingsToHandOut <= 0) {
+                    break;
+                }
             }
         }
 
