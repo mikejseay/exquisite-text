@@ -151,7 +151,7 @@ export class Drawing extends Collaboration {
     }
 
     sendPanelEditToSpectators(value: IPanel["content"]) {
-        logger.debug(`sendPanelEditToSpectators... ${this.indexInGame} ${value}`);
+        logger.debug(`sendPanelEditToSpectators... ${this.indexInGame} ${JSON.stringify(value)}`);
         this.emitToSpectators("stcPanelEditSpectator", this.indexInGame, value);
     }
 

@@ -4,6 +4,8 @@ import { useLocation } from "react-router-dom";
 import HostButton from "../HostButton";
 import Tutorial from "../Tutorial";
 
+const screensWithLeaveButton = new Set([ "/game", "/lobby", "/spectate", "/end", "/canvas", "/canvasspectator" ]);
+
 export function MenuButtons(): JSX.Element {
     const [ isGameScreen, setIsGameScreen ] = React.useState(false);
     const location = useLocation();
@@ -18,8 +20,10 @@ export function MenuButtons(): JSX.Element {
         setIsGameScreen(location.pathname === "/game");
     }, [ location ]);
 
+    const showTutorial = !screensWithLeaveButton.has(location.pathname);
+
     return <>
-        <Tutorial />
+        {showTutorial && <Tutorial />}
         {nonGameButtons}
     </>;
 }

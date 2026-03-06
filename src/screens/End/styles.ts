@@ -10,7 +10,8 @@ export const centered: React.CSSProperties = {
 };
 
 export const floatingToggleAnimate: SxProps = {
-    position: "absolute",
+    position: "fixed",
     right: FABDiameter + 2 * FABSpace + 5,
     top: FABSpace,
+    zIndex: 11,
 };

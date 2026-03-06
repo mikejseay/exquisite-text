@@ -326,12 +326,10 @@ const Canvas: React.FC = () => {
                 style={{
                     display: "flex",
                     flexDirection: "row",
+                    flexWrap: "wrap",
                     alignItems: "center",
                     gap: theme.spacing(1),
                     marginBottom: theme.spacing(1),
-                    // Optionally center elements in this bar
-                    // justifyContent: "flex-start",
-                    // width: "100%",
                 }}
             >
                 <Tooltip title="Undo">
