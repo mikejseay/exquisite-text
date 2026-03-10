@@ -13,7 +13,7 @@ import {
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { useInitializeGameSettings } from "../../hooks/useInitializeGameSettings";
 
-function PoemGameSettings() {
+function PoemGameSettings({ hideStartButton = false }: { hideStartButton?: boolean }) {
     const {
         settingsEnabled,
         lineLength,
@@ -124,13 +124,15 @@ function PoemGameSettings() {
                         Add Bot
                 </Button>
 
-                <Button
-                    disabled={!settingsEnabled}
-                    onClick={handlePressStartGameButton}
-                    variant="contained"
-                >
-                    Start Game
-                </Button>
+                {!hideStartButton && (
+                    <Button
+                        disabled={!settingsEnabled}
+                        onClick={handlePressStartGameButton}
+                        variant="contained"
+                    >
+                        Start Game
+                    </Button>
+                )}
             </Stack>
         </div>
     );

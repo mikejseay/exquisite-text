@@ -11,7 +11,7 @@ import {
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { useInitializeGameSettings } from "../../hooks/useInitializeGameSettings";
 
-export default function DrawingGameSettings() {
+export default function DrawingGameSettings({ hideStartButton = false }: { hideStartButton?: boolean }) {
     const {
         settingsEnabled,
         nDrawings,
@@ -60,13 +60,15 @@ export default function DrawingGameSettings() {
                     </ToggleButtonGroup>
                 </div>
 
-                <Button
-                    disabled={!settingsEnabled}
-                    onClick={handlePressStartGameButton}
-                    variant="contained"
-                >
-                    Start Game
-                </Button>
+                {!hideStartButton && (
+                    <Button
+                        disabled={!settingsEnabled}
+                        onClick={handlePressStartGameButton}
+                        variant="contained"
+                    >
+                        Start Game
+                    </Button>
+                )}
             </Stack>
         </div>
     );
