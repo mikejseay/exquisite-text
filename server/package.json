@@ -44,7 +44,7 @@
     "startwatch": "nodemon --watch './**/*.ts' --exec ts-node start.ts",
     "start": "ts-node start.ts",
     "test": "OPENAI_API_KEY=test-dummy node --import tsx --test --test-force-exit './__tests__/**/*.test.ts'",
-    "lint": "eslint . --ext .ts --max-warnings 0 --ignore-pattern node_modules",
+    "lint": "node ../node_modules/eslint/bin/eslint.js . --ext .ts --max-warnings 0 --ignore-pattern node_modules",
     "typecheck": "tsc --noEmit"
   },
   "packageManager": "yarn@4.4.0"
