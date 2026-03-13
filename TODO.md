@@ -1,0 +1,13 @@
+- Mike should update his .env to be the same as his old computer and re-test the LLM functionality
+- Join screen
+    - The banner stating "for best experience rotate to landscape" is no longer there
+    - landscape view on mobile requires scroll
+- Lobby screen
+    - "ADD BOT" button should be on the players page
+    - "ADD BOT" button should only be visible if the first player has the secret name ("SANANBYEKIM")
+    - If there are no spectators, the "Spectators:" heading should not be displayed
+    - Only on mobile, in my testing, when creating a new game as host, the "Start game" button was greyed out until you swap to the settings tab and back
+    - on mobile, landscape view requires scroll and the room code is aligned right for no obvious reason
+- End screen for Poetry
+    - slightly more space below "Done! If you'd like to play again, make a new room."
+    - slightly more space below the color key for poetry contributions
