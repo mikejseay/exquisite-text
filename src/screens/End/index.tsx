@@ -60,8 +60,7 @@ function End({ testingMedium }: { testingMedium?: Medium }) {
                     }
                 />
             </IconButton>}
-            <span>Done! If you&apos;d like to play again, make a new room.</span>
-            <br />
+            <span style={{ marginBottom: "1em" }}>Done! If you&apos;d like to play again, make a new room.</span>
             {displayedCompletedArt}
         </div>
     );

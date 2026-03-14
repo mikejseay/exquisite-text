@@ -55,7 +55,7 @@ export default function Join() {
 
     return (
         <div>
-            <div style={{ display: "flex", justifyContent: "center", marginTop: "6em" }}>
+            <div style={{ display: "flex", justifyContent: "center", marginTop: "clamp(1em, 8vh, 6em)" }}>
                 <Box
                     autoComplete="off"
                     component="form"

@@ -13,11 +13,14 @@ import Tabs from "@mui/material/Tabs";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { emitStartGame } from "../../context/SocketRequestors";
+import { useInitializeGameSettings } from "../../hooks/useInitializeGameSettings";
 
 function Lobby() {
     const { medium, settingsEnabled } = useSocketInfo();
     const isLandscape = useMediaQuery("(min-aspect-ratio: 1/1)");
     const [ activeTab, setActiveTab ] = useState(0);
+
+    useInitializeGameSettings();
 
     const gameSettings = medium === Medium.POETRY
         ? <PoemGameSettings hideStartButton={!isLandscape} />
@@ -29,11 +32,13 @@ function Lobby() {
                 display: "flex",
                 flexDirection: "row",
                 flex: 1,
+                minHeight: 0,
                 textAlign: "center",
                 borderTop: "1px solid rgba(255,255,255,0.12)",
             }}>
                 <Box sx={{
                     flex: 1,
+                    minHeight: 0,
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
@@ -46,6 +51,7 @@ function Lobby() {
                 </Box>
                 <Box sx={{
                     flex: 1,
+                    minHeight: 0,
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
