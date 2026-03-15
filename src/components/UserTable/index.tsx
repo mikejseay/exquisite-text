@@ -3,6 +3,7 @@ import Button from "@mui/material/Button";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { emitAddPoemBot } from "../../context/SocketRequestors";
 import { Medium } from "../../types";
+import { textCentered } from "../../styles/common";
 import { logger } from "../../utilities/loggerUtils";
 
 const SECRET_NAME = "SANANBYEKIM";
@@ -29,7 +30,7 @@ function UserTable() {
         && editors[0] === SECRET_NAME;
 
     return (
-        <div className={"userTable"} style={{ textAlign: "center" }}>
+        <div className={"userTable"} style={textCentered}>
             <div className={"editors"}>
                 <h2>Editors:</h2>
                 {editors.map((name, nameIndex) => {

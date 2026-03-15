@@ -1,19 +1,16 @@
 import * as React from "react";
 
 import { useSocketInfo } from "../../context/SocketInfoProvider";
+import { roomCodeLabel, roomCodeValue, roomCodeWrapper } from "./styles";
 
 function RoomCode({ prominent = false }: { prominent?: boolean }) {
     const { roomCode } = useSocketInfo();
 
     if (prominent) {
         return (
-            <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: "0.9rem", opacity: 0.7 }}>Room Code</div>
-                <div style={{
-                    fontSize: "2.5rem",
-                    fontWeight: "bold",
-                    letterSpacing: "0.15em",
-                }}>
+            <div style={roomCodeWrapper}>
+                <div style={roomCodeLabel}>Room Code</div>
+                <div style={roomCodeValue}>
                     {roomCode}
                 </div>
             </div>
@@ -21,7 +18,7 @@ function RoomCode({ prominent = false }: { prominent?: boolean }) {
     }
 
     return (
-        <div style={{ textAlign: "center" }} >
+        <div style={roomCodeWrapper}>
             <h2>Room Code: {roomCode}</h2>
         </div>
     );

@@ -1,13 +1,8 @@
-import * as React from "react";
 import { SxProps } from "@mui/system";
 import { FABDiameter, FABSpace } from "../../constants";
+import { centeredFlex } from "../../styles/common";
 
-export const centered: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-};
+export { centeredFlex as centered };
 
 export const floatingToggleAnimate: SxProps = {
     position: "fixed",

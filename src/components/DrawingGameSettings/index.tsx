@@ -10,6 +10,7 @@ import {
 } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { useInitializeGameSettings } from "../../hooks/useInitializeGameSettings";
+import { textCentered } from "../../styles/common";
 
 export default function DrawingGameSettings({ hideStartButton = false }: { hideStartButton?: boolean }) {
     const {
@@ -37,7 +38,7 @@ export default function DrawingGameSettings({ hideStartButton = false }: { hideS
     };
 
     return (
-        <div className={"gameSettings"} style={{ textAlign: "center" }}>
+        <div className={"gameSettings"} style={textCentered}>
             <h2>Game settings:</h2>
             <Stack
                 spacing={2}
