@@ -1,5 +1,6 @@
 import * as React from "react";
 import { headerHeight } from "../../constants";
+import { estebanFont } from "../../styles/common";
 
 export const appHeader: React.CSSProperties = {
     alignItems: "center",
@@ -12,7 +13,7 @@ export const appHeader: React.CSSProperties = {
 };
 
 export const appTitle: React.CSSProperties = {
-    fontFamily: "'Esteban', serif",
+    fontFamily: estebanFont,
     fontSize: "clamp(1rem, 6.67vw, 1.5rem)",
     left: "50%",
     position: "absolute",
