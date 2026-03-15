@@ -11,10 +11,11 @@ import {
 import { emitJoinAs } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { Role } from "../../types";
+import { joinErrorMessage, joinFormWrapper, uppercaseInput } from "./styles";
 
 export default function Join() {
 
-    const { joinErrorMessage, setRoomCode } = useSocketInfo();
+    const { joinErrorMessage: errorMessage, setRoomCode } = useSocketInfo();
 
     const { id } = useParams();
 
@@ -55,7 +56,7 @@ export default function Join() {
 
     return (
         <div>
-            <div style={{ display: "flex", justifyContent: "center", marginTop: "6em" }}>
+            <div style={joinFormWrapper}>
                 <Box
                     autoComplete="off"
                     component="form"
@@ -68,7 +69,7 @@ export default function Join() {
                     }}
                 >
                     <TextField
-                        inputProps={{ maxLength: roomCodeLength, style: { textTransform: "uppercase" } }}
+                        inputProps={{ maxLength: roomCodeLength, style: uppercaseInput }}
                         label={`Enter ${String(roomCodeLength)}-Letter Code`}
                         onChange={handleRoomEntryChange}
                         required
@@ -76,7 +77,7 @@ export default function Join() {
                         variant="standard"
                     />
                     <TextField
-                        inputProps={{ maxLength: maxNameChars, style: { textTransform: "uppercase" } }}
+                        inputProps={{ maxLength: maxNameChars, style: uppercaseInput }}
                         label="Enter Your Name"
                         onChange={handleNameEntryChange}
                         required
@@ -107,12 +108,8 @@ export default function Join() {
             </Stack>
             <div
                 className={"joinErrorMessage"}
-                style={{
-                    color: "red",
-                    marginTop: "1em",
-                    textAlign: "center",
-                }}>
-                {joinErrorMessage}
+                style={joinErrorMessage}>
+                {errorMessage}
             </div>
         </div>
     );

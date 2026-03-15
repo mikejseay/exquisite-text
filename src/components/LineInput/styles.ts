@@ -1,6 +1,9 @@
 import * as React from "react";
 import { SxProps } from "@mui/system";
 import { FABDiameter, FABSpace } from "../../constants";
+import { completeConfirmBox, estebanFont } from "../../styles/common";
+
+export { completeConfirmBox };
 
 export const inputBox: React.CSSProperties = {
     display: "flex",
@@ -45,7 +48,7 @@ export const poemInputStyle: React.CSSProperties = {
     boxShadow: "none",
     cursor: "text",
     display: "block",
-    fontFamily: "'Esteban', serif",
+    fontFamily: estebanFont,
     fontSize: "18px",
     gridColumnStart: 1,
     gridRowStart: 1,
@@ -116,20 +119,6 @@ export const caret: React.CSSProperties = {
     display: "inline-block",
     height: "20px",
     width: "1px",
-};
-
-export const completeConfirmBox: SxProps = {
-    position: "absolute",
-    top: FABDiameter + 2 * FABSpace,
-    right: FABDiameter + 2 * FABSpace + 5,
-    zIndex: 3,
-    border: "1px solid",
-    p: 1,
-    bgcolor: "background.paper",
-    width: 170,
-    marginRight: 0,
-    marginLeft: "auto",
-    fontFamily: "sans-serif",
 };
 
 export const completeFAB: SxProps = {

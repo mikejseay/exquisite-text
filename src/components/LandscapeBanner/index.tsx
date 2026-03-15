@@ -8,26 +8,31 @@ const DISMISSED_KEY = "landscapeBannerDismissed";
 const END_ROUTES = [ "/end", "/endtestpoem", "/endtestdrawing" ];
 
 export function LandscapeBanner() {
-    const [ visible, setVisible ] = React.useState(false);
+    const [ isPortrait, setIsPortrait ] = React.useState(false);
+    const [ dismissed, setDismissed ] = React.useState(
+        () => sessionStorage.getItem(DISMISSED_KEY) === "true",
+    );
     const location = useLocation();
 
     React.useEffect(() => {
-        if (localStorage.getItem(DISMISSED_KEY)) return;
-
         const mql = window.matchMedia("(orientation: portrait) and (pointer: coarse)");
-        const onChange = (e: MediaQueryListEvent | MediaQueryList) =>
-            setVisible(e.matches);
+        const onChange = (e: MediaQueryListEvent | MediaQueryList) => {
+            setIsPortrait(e.matches);
+            if (e.matches) {
+                setDismissed(sessionStorage.getItem(DISMISSED_KEY) === "true");
+            }
+        };
 
         onChange(mql);
         mql.addEventListener("change", onChange);
         return () => mql.removeEventListener("change", onChange);
     }, []);
 
-    if (!visible || END_ROUTES.includes(location.pathname)) return null;
+    if (!isPortrait || dismissed || END_ROUTES.includes(location.pathname)) return null;
 
     const handleDismiss = () => {
-        localStorage.setItem(DISMISSED_KEY, "true");
-        setVisible(false);
+        sessionStorage.setItem(DISMISSED_KEY, "true");
+        setDismissed(true);
     };
 
     return (

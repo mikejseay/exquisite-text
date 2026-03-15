@@ -1,4 +1,3 @@
-import { Server, Socket } from "socket.io";
 import { io as ioClient } from "socket.io-client";
 
 import {
@@ -15,16 +14,13 @@ import { PoemBot } from "./editor";
 import Member from "./member";
 import { Drawing, Poem } from "./collaboration";
 import {
-    ClientToServerEvents,
     GameState,
     IGameSettingsInfo,
     IUserTableInfo,
-    InterServerEvents,
     Medium,
     Point,
-    ServerToClientEvents,
-    SocketData,
 } from "../../src/types";
+import type { TypedServer, TypedSocket } from "../types";
 import {
     checkActivityInterval,
     defaultGameSettings,
@@ -44,18 +40,8 @@ logger.debug(`serverPath is ${serverPath} in room.ts`);
 
 class Room {
     // represents a socket.io room and a game of Exquisite Text
-    io: Server<
-        ClientToServerEvents,
-        ServerToClientEvents,
-        InterServerEvents,
-        SocketData
-    >;
-    hostSocket: null | Socket<
-        ClientToServerEvents,
-        ServerToClientEvents,
-        InterServerEvents,
-        SocketData
-    >;
+    io: TypedServer;
+    hostSocket: TypedSocket | null;
     roomID: string;
 
     editors: Map<string, PoemEditor | DrawingEditor>;
@@ -70,13 +56,8 @@ class Room {
     medium: Medium;
 
     constructor(
-        io: Server<
-            ClientToServerEvents,
-            ServerToClientEvents,
-            InterServerEvents,
-            SocketData
-        >,
-        hostSocket: Socket,
+        io: TypedServer,
+        hostSocket: TypedSocket,
         room: string,
     ) {
         this.io = io;
@@ -186,6 +167,12 @@ class Room {
         }
     }
 
+    finishGame() {
+        this.gameState = GameState.END;
+        this.sendToEnd();
+        this.selfDestruct();
+    }
+
     sendToEnd() {
         logger.debug(`${this.roomID} sending everyone to the end screen`);
         this.io.in(this.roomID).emit("stcNavigate", "/end");
@@ -234,11 +221,8 @@ class Room {
 
 export class PoemRoom extends Room {
     constructor(
-        io: Server<ClientToServerEvents,
-            ServerToClientEvents,
-            InterServerEvents,
-            SocketData>,
-        hostSocket: Socket,
+        io: TypedServer,
+        hostSocket: TypedSocket,
         room: string,
     ) {
         super(io, hostSocket, room);
@@ -279,6 +263,13 @@ export class PoemRoom extends Room {
         }
 
         this.navigateMembersToGame();
+
+        // Bots have no client UI to trigger their first turn, so start them explicitly
+        for (const editor of this.editors.values()) {
+            if (editor instanceof PoemBot && editor.hasWorkInQueue()) {
+                editor.possibleStartNewTurn();
+            }
+        }
     }
 
     addPoemBot() {
@@ -307,11 +298,8 @@ export class DrawingRoom extends Room {
     finishedCanvas: Point[][]; // from testing, probably unused
 
     constructor(
-        io: Server<ClientToServerEvents,
-            ServerToClientEvents,
-            InterServerEvents,
-            SocketData>,
-        hostSocket: Socket,
+        io: TypedServer,
+        hostSocket: TypedSocket,
         room: string,
     ) {
         super(io, hostSocket, room);
@@ -328,17 +316,23 @@ export class DrawingRoom extends Room {
         this.nUnfinishedWorks = nDrawingsToHandOut;
         let drawingIndex = 0;
 
+        // prepare each player for the game
         for (const editor of this.editors.values()) {
             editor.lastActivity = Date.now(); // refresh AFK timers upon game start
             editor.prepareForGame();
-
-            // give the editor a new drawing
-            if (nDrawingsToHandOut > 0) {
-                const drawing = new Drawing(this.io, this.roomID, nContributions, drawingIndex); // creates Poem object
+        }
+        // as long as there are drawings, cycle through editors, giving one to each
+        while (nDrawingsToHandOut > 0) {
+            for (const editor of this.editors.values()) {
+                const drawing = new Drawing(this.io, this.roomID, nContributions, drawingIndex);
                 editor.contributionQueue.push(drawing);
                 editor.isCurrentlyEditing = true;
                 nDrawingsToHandOut--;
                 drawingIndex++;
+
+                if (nDrawingsToHandOut <= 0) {
+                    break;
+                }
             }
         }
 
@@ -350,15 +344,11 @@ export class DrawingRoom extends Room {
         this.finishedWorks.push(drawingObj);
     }
 
-    //     ROOM:
-    //     this.panels = new Set<IPanel>;
-    // }
-    // export interface IPanel extends IContribution {
-    //     content: Point[][];
-    //     hintSize: number;
-    // }
-    // this.finishedWorks is an array of Drawing. drawing.panels is Set<IPanel>
-    // on IPanel, content is Point[][]
+    finishGame() {
+        this.sendCompletedDrawings();
+        super.finishGame();
+    }
+
     sendCompletedDrawings() {
         logger.debug("sendCompletedDrawings ;))))))))))");
         const iPanels = Array.from(this.finishedWorks as Drawing[]).map((drawing) => Array.from(drawing?.panels));

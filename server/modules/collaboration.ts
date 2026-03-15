@@ -1,15 +1,11 @@
-import { Server } from "socket.io";
 import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid for lines
 import {
-    ClientToServerEvents,
     ILine,
     IPanel,
-    InterServerEvents,
     Point,
     ServerToClientEvents,
-    SocketData,
 } from "../../src/types";
-import { storeLine } from "../queries";
+import type { TypedServer } from "../types";
 import { getRoom } from "../utilities/socketUtils";
 import { analyzeBeginning } from "./poem_bot";
 import type { PoemRoom } from "./room";
@@ -17,12 +13,7 @@ import { logger } from "../utilities/loggerUtils";
 import { isBotUsageAuthorized } from "../llm_utils/llm_funcs";
 
 class Collaboration {
-    io: Server<
-        ClientToServerEvents,
-        ServerToClientEvents,
-        InterServerEvents,
-        SocketData
-    >;
+    io: TypedServer;
     roomID: string;
     nContributions: number; // number of contributions to the artwork
     indexInGame: number; // index amongst the game's multiple Collaborations
@@ -30,12 +21,7 @@ class Collaboration {
     mostRecentEditor: string; // deviceID (uuid)
 
     constructor(
-        io: Server<
-            ClientToServerEvents,
-            ServerToClientEvents,
-            InterServerEvents,
-            SocketData
-        >,
+        io: TypedServer,
         roomID: string,
         nContributions: number,
         indexInGame: number,
@@ -46,6 +32,13 @@ class Collaboration {
         this.indexInGame = indexInGame;
         this.ID = uuidv4();
         this.mostRecentEditor = "";
+    }
+
+    protected emitToSpectators<E extends keyof ServerToClientEvents>(
+        event: E,
+        ...args: Parameters<ServerToClientEvents[E]>
+    ): void {
+        this.io.in(`${this.roomID}_Spectators`).emit(event, ...args);
     }
 }
 
@@ -61,12 +54,7 @@ export class Poem extends Collaboration {
 
     constructor(
 
-        io: Server<
-            ClientToServerEvents,
-            ServerToClientEvents,
-            InterServerEvents,
-            SocketData
-        >,
+        io: TypedServer,
         roomID: string,
         nContributions: number,
         indexInGame: number,
@@ -88,14 +76,9 @@ export class Poem extends Collaboration {
             addedAt: new Date(),
         };
         this.lines.add(myLine);
-        if (process.env.IS_LIBRARY_ENABLED === "true") {
-            storeLine(myLine);
-        }
         this.mostRecentEditor = authorID;
         this.halfLine = secondPart;
-        this.io
-            .in(`${this.roomID}_Spectators`)
-            .emit("stcLineSpectator", this.indexInGame, firstPart);
+        this.emitToSpectators("stcLineSpectator", this.indexInGame, firstPart);
 
         // only if we just added the very first line,
         // check if this poem's room contains any AI players. if so, analyze the poem
@@ -120,9 +103,7 @@ export class Poem extends Collaboration {
     }
 
     sendLineEditToSpectators(value: string) {
-        this.io
-            .in(`${this.roomID}_Spectators`)
-            .emit("stcLineEditSpectator", this.indexInGame, value);
+        this.emitToSpectators("stcLineEditSpectator", this.indexInGame, value);
     }
 
     sendAllLinesTo(socketID: string) {
@@ -142,12 +123,7 @@ export class Drawing extends Collaboration {
     panels: Set<IPanel>;
 
     constructor(
-        io: Server<
-            ClientToServerEvents,
-            ServerToClientEvents,
-            InterServerEvents,
-            SocketData
-        >,
+        io: TypedServer,
         roomID: string,
         nContributions: number,
         indexInGame: number,
@@ -171,17 +147,12 @@ export class Drawing extends Collaboration {
 
         this.mostRecentEditor = authorID;
         this.panelHint = []; // reset the hint
-        // Emit the stroke history (which is the panel content) to all Spectators
-        this.io
-            .in(`${this.roomID}_Spectators`)
-            .emit("stcPanelSpectator", this.indexInGame, content);
+        this.emitToSpectators("stcPanelSpectator", this.indexInGame, content);
     }
 
     sendPanelEditToSpectators(value: IPanel["content"]) {
-        logger.debug(`sendPanelEditToSpectators... ${this.indexInGame} ${value}`);
-        this.io
-            .in(`${this.roomID}_Spectators`)
-            .emit("stcPanelEditSpectator", this.indexInGame, value);
+        logger.debug(`sendPanelEditToSpectators... ${this.indexInGame} ${JSON.stringify(value)}`);
+        this.emitToSpectators("stcPanelEditSpectator", this.indexInGame, value);
     }
 
     sendAllPanelsTo(socketID: string) {

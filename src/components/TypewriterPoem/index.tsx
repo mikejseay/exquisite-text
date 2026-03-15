@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ILine } from "../../types";
 import { lineSepString } from "../../constants";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
+import { poemTypography } from "../../styles/common";
 
 const DEFAULT_MS = 30;
 
@@ -157,12 +158,11 @@ export default function TypewriterPoem({
 
     return (
         <div style={{
+            ...poemTypography,
             whiteSpace: "pre-line",
             height: `${nLines + 4}em`,
             width: `${width}px`,
             textAlign: "left",
-            fontFamily: "'Esteban', serif",
-            fontSize: "18px",
         }}>
             {shouldAnimate
                 ?

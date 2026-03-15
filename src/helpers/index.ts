@@ -33,9 +33,7 @@ export function alphaCharacterRotate(text: string) {
 export function getItemsOnCurrentPage(items: IPoem[], page: number, itemsPerPage: number): IPoem[] {
     const { length } = items;
     const firstIndex = (page - 1) * itemsPerPage;
-    const lastIndex = length < itemsPerPage
-        ? length
-        : firstIndex + itemsPerPage;
+    const lastIndex = Math.min(firstIndex + itemsPerPage, length);
 
     const itemsOnCurrentPage: IPoem[] = [];
     for (let i = firstIndex; i < lastIndex; i++) {

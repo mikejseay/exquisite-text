@@ -4,6 +4,7 @@ import UserTable from "../../components/UserTable";
 import PoemGameSettings from "../../components/PoemGameSettings";
 import { generateAlphaString } from "../../helpers";
 import { roomCodeLength } from "../../constants";
+import { textCentered } from "../../styles/common";
 
 export default function Host() {
 
@@ -12,7 +13,7 @@ export default function Host() {
     const roomID = generateAlphaString(roomCodeLength);
 
     return (
-        <main style={{ textAlign: "center" }}>
+        <main style={textCentered}>
             <h2>
                 <p>Go to&nbsp;
                     <a

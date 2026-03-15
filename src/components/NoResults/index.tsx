@@ -1,8 +1,9 @@
 import * as React from "react";
+import { textCentered } from "../../styles/common";
 
 export default function NoResults({ message }: { message: string }): JSX.Element {
     return (
-        <div style={{ textAlign: "center" }}>
+        <div style={textCentered}>
             <h4>
                 {message}
             </h4>

@@ -2,10 +2,15 @@
   "extends": "@tsconfig/node16/tsconfig.json",
   "compilerOptions": {
     "target": "es5",
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "noEmit": true,
+    "skipLibCheck": true
   },
   "include": [
-    "src"
+    "**/*.ts",
+    "../src/types",
+    "../src/constants",
+    "../src/helpers"
   ],
   "exclude": [
     "node_modules"

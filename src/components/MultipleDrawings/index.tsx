@@ -3,24 +3,16 @@ import React from "react";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { Carousel } from "react-responsive-carousel";
 
-import { logger } from "../../utilities/loggerUtils";
 import { title } from "./styles";
 import { Point } from "../../types";
 import { CompletedDrawing } from "../CompletedDrawings";
 
-export const renderDrawings = (
+const renderDrawings = (
     completedDrawings: Point[][][][] | null,
-    reRenderIndex?: number,
     shouldAnimate = false,
 ) => {
-    logger.debug("IN renderDrawings...");
-    logger.debug({ completedDrawings });
     return completedDrawings?.map((completedDrawing, index) => (
-        <div
-            key={index}
-            className={"drawing-container"}
-            style={{}}
-        >
+        <div key={index} className={"drawing-container"}>
             <div style={title} className={"drawing-title"}>
                 <strong>{`exquisite corpse #${index}`}</strong>
             </div>
@@ -32,32 +24,16 @@ export const renderDrawings = (
 function MultipleDrawings(
     { completedDrawings, shouldAnimate }: { completedDrawings: Point[][][][] | null, shouldAnimate: boolean },
 ) {
-    const [ reRender, setReRenderIndex ] = React.useState<number>(-1);
-    // TODO: get dimensions from context and use in below commented code
-
     return (
-        <div className={"multiple-drawings"} style={{
-            width: "100%",
-            // display: "flex",
-            // justifyContent: "space-between",
-            // height: dimensions.height,
-        }}>
+        <div className={"multiple-drawings"} style={{ width: "100%" }}>
             {completedDrawings && completedDrawings.length > 1
-                ?
-                // renderDrawings(completedDrawings, reRender, shouldAnimate)
-                (
-                    <Carousel
-                        onChange={(slideIndex) => {
-                            setReRenderIndex(slideIndex);
-                        }}
-                        showThumbs={false}
-                    >
-                        {renderDrawings(completedDrawings, reRender, shouldAnimate)}
+                ? (
+                    <Carousel showThumbs={false}>
+                        {renderDrawings(completedDrawings, shouldAnimate)}
                     </Carousel>
                 )
-                : (
-                    renderDrawings(completedDrawings, reRender, shouldAnimate)
-                )}
+                : renderDrawings(completedDrawings, shouldAnimate)
+            }
         </div>
     );
 }

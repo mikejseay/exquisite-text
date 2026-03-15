@@ -6,7 +6,7 @@ dotenv.config({ path: __dirname + "/.env" });
 
 import { Server } from "socket.io";
 import { logger } from "./utilities/loggerUtils";
-import type { ClientToServerEvents, InterServerEvents, ServerToClientEvents, SocketData } from "../src/types";
+import type { TypedServer } from "./types";
 
 // import the http library
 import { createServer } from "http";
@@ -18,15 +18,11 @@ import { createServer } from "http";
 import app from "./app";
 import sockets from "./modules/sockets";
 
-import debug0 from "debug";
 import { isNil } from "es-toolkit";
 
 /**
  * Module dependencies.
  */
-
-// no ideas... chat-server is the name in package.json?
-const debug = debug0("chat-server:server");
 
 /**
  * Get port from environment and store in Express.
@@ -43,12 +39,7 @@ app.set("port", port);
 const httpServer = createServer(app);
 // const server = https.createServer(credentials, app);
 
-const io = new Server<
-  ClientToServerEvents,
-  ServerToClientEvents,
-  InterServerEvents,
-  SocketData
->(httpServer, {
+const io: TypedServer = new Server(httpServer, {
     cors: {
         methods: [ "GET", "POST" ],
         origin: "*",
@@ -132,7 +123,7 @@ function onListening() {
       typeof address === "string"
           ? `pipe ${address}`
           : `port ${address.port}`;
-        debug(`Listening on ${bind}`);
+        logger.info(`Listening on ${bind}`);
     }
 }
 

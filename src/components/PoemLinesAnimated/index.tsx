@@ -10,7 +10,15 @@ import Card from "@mui/material/Card";
 import { useClipboard } from "use-clipboard-copy";
 
 import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { poemBody } from "./styles";
+import {
+    colorKeyCard,
+    colorKeyContent,
+    colorKeyDot,
+    colorKeyEntry,
+    colorKeyName,
+    copyButton,
+    poemBody,
+} from "./styles";
 import { ILine } from "../../types";
 import { lineSepString, shortDur } from "../../constants";
 import TypewriterPoem from "../TypewriterPoem";
@@ -44,10 +52,7 @@ function PoemLinesAnimated({
         <div className={"poem-body"} style={poemBody}>
             <div
                 className={"copy-button"}
-                style={{
-                    display: "flex",
-                    marginTop: "-2em",
-                }}
+                style={copyButton}
             >
                 <IconButton
                     onClick={() => clipboard.copy(poemLines.map(line => line.content).join(lineSepString))}
@@ -69,13 +74,13 @@ function PoemLinesAnimated({
                 random={20}
                 delay={200}
             />
-            <Card>
-                <CardContent style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", marginTop: "2rem" }}>
+            <Card style={colorKeyCard}>
+                <CardContent sx={colorKeyContent}>
                     {editors.map((editorName, editorIndex) => {
                         return (
-                            <Box key={editorIndex} style={{ margin: "0.5rem", display: "flex", alignItems: "center" }}>
-                                <FiberManualRecordIcon style={{ color: editorColors[editorIndex] }} />
-                                <Typography style={{ marginLeft: "0.5rem" }}>{editorName}</Typography>
+                            <Box key={editorIndex} style={colorKeyEntry}>
+                                <FiberManualRecordIcon style={{ ...colorKeyDot, color: editorColors[editorIndex] }} />
+                                <Typography style={colorKeyName}>{editorName}</Typography>
                             </Box>
                         );
                     })}

@@ -6,15 +6,14 @@ import * as React from "react";
 
 import { LineLength } from "../../types";
 import {
-    emitAddPoemBot,
     emitAlterGameSettings,
-    emitRequestGameSettingsInfo,
-    emitRequestSettingsEnabled,
     emitStartGame,
 } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
+import { useInitializeGameSettings } from "../../hooks/useInitializeGameSettings";
+import { textCentered } from "../../styles/common";
 
-function PoemGameSettings() {
+function PoemGameSettings({ hideStartButton = false }: { hideStartButton?: boolean }) {
     const {
         settingsEnabled,
         lineLength,
@@ -23,22 +22,13 @@ function PoemGameSettings() {
         setLineLength,
         setNRounds,
         setNPoems,
-        userInfo,
     } = useSocketInfo();
 
-    if (settingsEnabled === null || userInfo === null) {
+    useInitializeGameSettings();
+
+    if (settingsEnabled === null) {
         return null;
     }
-
-    const [ rendered, setRendered ] = React.useState(false);
-    if (!rendered) {
-        emitRequestSettingsEnabled();
-        emitRequestGameSettingsInfo();
-        setRendered(true);
-    }
-
-    // extract editors data from userInfo to determine whether room is full
-    const { editors } = userInfo;
 
     // these will only ever take place for the VIP editor
     const handleLineLength = (event: React.MouseEvent<HTMLElement>, newLineLength: LineLength) => {
@@ -69,12 +59,8 @@ function PoemGameSettings() {
         emitStartGame();
     };
 
-    const handlePressAddBotButton = () => {
-        emitAddPoemBot();
-    };
-
     return (
-        <div className={"gameSettings"} style={{ textAlign: "center" }}>
+        <div className={"gameSettings"} style={textCentered}>
             <h2>Game settings:</h2>
             <Stack
                 spacing={2}
@@ -122,21 +108,15 @@ function PoemGameSettings() {
                         <ToggleButton value={4}>4</ToggleButton>
                     </ToggleButtonGroup>
                 </div>
-                <Button
-                    disabled={!settingsEnabled || editors.length >= 4}
-                    onClick={handlePressAddBotButton}
-                    variant="contained"
-                >
-                        Add Bot
-                </Button>
-
-                <Button
-                    disabled={!settingsEnabled}
-                    onClick={handlePressStartGameButton}
-                    variant="contained"
-                >
-                    Start Game
-                </Button>
+                {!hideStartButton && (
+                    <Button
+                        disabled={!settingsEnabled}
+                        onClick={handlePressStartGameButton}
+                        variant="contained"
+                    >
+                        Start Game
+                    </Button>
+                )}
             </Stack>
         </div>
     );

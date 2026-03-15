@@ -1,10 +1,8 @@
 // src/components/CompletedDrawings/index.tsx
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
-import { debounce } from "es-toolkit";
 import { useTheme } from "@mui/material/styles";
 
-import { logger } from "../../utilities/loggerUtils";
 import {
     DRAWING_ASPECT_RATIO,
     DRAWING_HEIGHT_MIN,
@@ -15,8 +13,8 @@ import {
 import { Point } from "../../types";
 import { drawOnCanvas } from "../../utilities/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
+import { useCanvasResize } from "../../hooks/useCanvasResize";
 import { ScaleDirection, pixelRatio, scalePoints } from "../../utilities/scaleUtils";
-import { aboveCanvasHeight } from "../../constants";
 
 
 export const CompletedDrawing = ({
@@ -27,73 +25,10 @@ export const CompletedDrawing = ({
     shouldAnimate: boolean;
 }): JSX.Element | null => {
     const theme = useTheme();
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const { canvasRef, dimensions, scaleFactor } = useCanvasResize(DRAWING_WIDTH_MIN, DRAWING_HEIGHT_MIN, DRAWING_ASPECT_RATIO);
     const animationRef = useRef<number>();
-    const [ dimensions, setDimensions ] = useState({ width: DRAWING_WIDTH_MIN, height: DRAWING_HEIGHT_MIN });
-    const [ scaleFactor, setScaleFactor ] = useState<number>(1);
 
     useDisableScroll();
-
-    // Handle resizing of the window // mostly matches useLayoutEffect in Canvas/index.tsx
-    useLayoutEffect(() => {
-        const handleResize = () => {
-            const canvas = canvasRef.current;
-            if (!canvas) return;
-
-            const context = canvas.getContext("2d");
-            if (!context) return;
-
-            // TODO: bump this logic up to the singular parent component
-            // Calculate new dimensions
-            const viewportHeight = window.innerHeight - aboveCanvasHeight;
-            const viewportWidth = window.innerWidth;
-            const viewportAspectRatio = viewportWidth / viewportHeight;
-            let newWidth: number;
-            let newHeight: number;
-
-            // Viewport more portrait than drawing
-            if (viewportAspectRatio < DRAWING_ASPECT_RATIO) {
-                logger.debug("viewportAspectRatio < DRAWING_ASPECT_RATIO");
-                newWidth = Math.max(viewportWidth, DRAWING_WIDTH_MIN);
-                newHeight = Math.max(newWidth / DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN);
-                logger.debug({ viewportWidth, DRAWING_WIDTH_MIN });
-                logger.debug(`Math.max(viewportWidth, DRAWING_WIDTH_MIN) ${Math.max(viewportWidth, DRAWING_WIDTH_MIN)}`);
-                logger.debug({ newWidth, DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN });
-                logger.debug(`Math.max(newWidth / DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN) ${Math.max(newWidth / DRAWING_ASPECT_RATIO, DRAWING_HEIGHT_MIN)}`);
-            // Viewport more landscape than drawing
-            } else {
-                logger.debug("else");
-                // DRAWING_HEIGHT_MIN = 780
-                newHeight = Math.max(viewportHeight, DRAWING_HEIGHT_MIN);
-                newWidth = Math.max(newHeight * DRAWING_ASPECT_RATIO, DRAWING_WIDTH_MIN);
-                logger.debug({ viewportHeight, DRAWING_HEIGHT_MIN, newHeight, DRAWING_ASPECT_RATIO, DRAWING_WIDTH_MIN });
-                logger.debug({ newWidth });
-            }
-
-            const newScaleFactor = newWidth / DRAWING_WIDTH_MIN;
-            logger.debug({ viewportHeight, viewportWidth, viewportAspectRatio, newWidth, newHeight });
-            logger.debug(`New Scale Factor: ${newScaleFactor}`);
-
-            // Update state for layout purposes
-            setDimensions({ width: newWidth, height: newHeight });
-            setScaleFactor(newScaleFactor);
-        };
-
-        const debouncedHandleResize = debounce(() => {
-            logger.debug("Debounced handle resize");
-            handleResize();
-        }, 200); // Reduced debounce delay
-
-        // Initial resize to set up canvas correctly
-        handleResize();
-
-        window.addEventListener("resize", debouncedHandleResize);
-
-        return () => {
-            debouncedHandleResize.cancel();
-            window.removeEventListener("resize", debouncedHandleResize);
-        };
-    }, []);
 
     useEffect(() => {
         const canvas = canvasRef.current;

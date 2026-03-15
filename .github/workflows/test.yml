@@ -1,0 +1,56 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  client-tests:
+    name: Client (React)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable && yarn install
+      - run: yarn lint
+      - run: yarn typecheck
+      - run: yarn test
+
+  server-tests:
+    name: Server (Node)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable && yarn install
+        working-directory: .
+      - run: yarn lint
+      - run: yarn typecheck
+      - run: yarn test
+
+  app-tests:
+    name: App (Expo)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable && yarn install
+        working-directory: .
+      - run: yarn install
+      - run: yarn lint
+      - run: yarn typecheck
+      - run: yarn test

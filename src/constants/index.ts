@@ -6,7 +6,6 @@ export const maxNameChars = 13;
 export const FABSpace = 10;
 export const FABDiameter = 40;
 export const headerHeight = 60;
-export const aboveCanvasHeight = headerHeight + 100;
 
 export const shortDur = 3000;
 
@@ -37,8 +36,6 @@ export const lineConstraints: ILineConstraintDict = {
 
 // server constants
 
-export const nPoemsInLibrary = 100;
-export const nPoemsPerPage = 10;
 export const maxEditors = 4;
 export const defaultGameSettings: IGameSettingsInfo = {
     lineLength: LineLength.SHORT,

@@ -3,6 +3,9 @@ import { IGameSettingsInfo, ILine, IPanel, ISocketInfoListeners, IUserTableInfo,
 import { shortDur } from "../constants";
 import { logger } from "../utilities/loggerUtils";
 
+function updateAtIndex<T>(array: T[], index: number, value: T): T[] {
+    return [ ...array.slice(0, index), value, ...array.slice(index + 1) ];
+}
 
 export const socketListeners = ({
     setUserInfo,
@@ -64,43 +67,25 @@ export const socketListeners = ({
     // each collaboration is of type Array<ILine["content"]>
     // and thus all the lines together for all collaborations is Array<Array<ILine["content"]>>
     const receiveLineSpectator = (collaborationIndex: number, content: ILine["content"]) => {
-        // Here, the spectator receives a single line at a time
-        setLines(prevLines => {
-            // The slicing accomplishes only appending to the particular collaboration
-            return [ ...prevLines.slice(0, collaborationIndex), [ ...prevLines[collaborationIndex], content ], ...prevLines.slice(collaborationIndex + 1) ];
-        },
+        setLines(prevLines =>
+            updateAtIndex(prevLines, collaborationIndex, [ ...prevLines[collaborationIndex], content ]),
         );
     };
 
     const receivePanelSpectator = (collaborationIndex: number, content: IPanel["content"]) => {
-        // If we are receiving a new panel, that's because the previous edit no longer applies
-        setPanelEdits(prevPanelEdits => [
-            ...prevPanelEdits.slice(0, collaborationIndex),
-            [],
-            ...prevPanelEdits.slice(collaborationIndex + 1),
-        ]);
-        setPanels(prevPanels => {
-            return [ ...prevPanels.slice(0, collaborationIndex), [ ...prevPanels[collaborationIndex], content ], ...prevPanels.slice(collaborationIndex + 1) ];
-        },
+        setPanelEdits(prevPanelEdits => updateAtIndex(prevPanelEdits, collaborationIndex, []));
+        setPanels(prevPanels =>
+            updateAtIndex(prevPanels, collaborationIndex, [ ...prevPanels[collaborationIndex], content ]),
         );
     };
 
-    // IS THS LOGIC LEGIT!??@!?@!
     const receivePanelEditSpectator = (collaborationIndex: number, content: IPanel["content"]) => {
         logger.debug(`receivePanelEditSpectator ${collaborationIndex} ${content}`);
-        setPanelEdits(prevPanelEdits => [
-            ...prevPanelEdits.slice(0, collaborationIndex),
-            content,
-            ...prevPanelEdits.slice(collaborationIndex + 1),
-        ]);
+        setPanelEdits(prevPanelEdits => updateAtIndex(prevPanelEdits, collaborationIndex, content));
     };
 
     const receiveLineEditSpectator = (poemIndex: number, value: string) => {
-        setLineEdits(prevLineEdits => [
-            ...prevLineEdits.slice(0, poemIndex),
-            value,
-            ...prevLineEdits.slice(poemIndex + 1),
-        ]);
+        setLineEdits(prevLineEdits => updateAtIndex(prevLineEdits, poemIndex, value));
     };
 
     const receiveLineEdit = (lineEdit: string) => {

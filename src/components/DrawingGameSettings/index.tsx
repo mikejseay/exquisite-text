@@ -6,29 +6,23 @@ import * as React from "react";
 
 import {
     emitAlterGameSettings,
-    emitRequestGameSettingsInfo,
-    emitRequestSettingsEnabled,
     emitStartGame,
 } from "../../context/SocketRequestors";
 import { useSocketInfo } from "../../context/SocketInfoProvider";
+import { useInitializeGameSettings } from "../../hooks/useInitializeGameSettings";
+import { textCentered } from "../../styles/common";
 
-export default function DrawingGameSettings() {
+export default function DrawingGameSettings({ hideStartButton = false }: { hideStartButton?: boolean }) {
     const {
         settingsEnabled,
         nDrawings,
         setNDrawings,
     } = useSocketInfo();
 
+    useInitializeGameSettings();
+
     if (settingsEnabled === null) {
         return null;
-    }
-
-    // TODO: refactor by giving info before navigating user to Lobby route
-    const [ rendered, setRendered ] = React.useState(false);
-    if (!rendered) {
-        emitRequestSettingsEnabled();
-        emitRequestGameSettingsInfo();
-        setRendered(true);
     }
 
     const handleNDrawings = (event: React.MouseEvent<HTMLElement>, nDrawings: number) => {
@@ -44,7 +38,7 @@ export default function DrawingGameSettings() {
     };
 
     return (
-        <div className={"gameSettings"} style={{ textAlign: "center" }}>
+        <div className={"gameSettings"} style={textCentered}>
             <h2>Game settings:</h2>
             <Stack
                 spacing={2}
@@ -67,13 +61,15 @@ export default function DrawingGameSettings() {
                     </ToggleButtonGroup>
                 </div>
 
-                <Button
-                    disabled={!settingsEnabled}
-                    onClick={handlePressStartGameButton}
-                    variant="contained"
-                >
-                    Start Game
-                </Button>
+                {!hideStartButton && (
+                    <Button
+                        disabled={!settingsEnabled}
+                        onClick={handlePressStartGameButton}
+                        variant="contained"
+                    >
+                        Start Game
+                    </Button>
+                )}
             </Stack>
         </div>
     );

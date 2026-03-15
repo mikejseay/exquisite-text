@@ -1,17 +1,19 @@
 import * as React from "react";
 import { headerHeight } from "../../constants";
+import { estebanFont } from "../../styles/common";
 
 export const appHeader: React.CSSProperties = {
     alignItems: "center",
     display: "flex",
     flexDirection: "row",
+    flexShrink: 0,
     flexWrap: "nowrap",
     height: headerHeight,
     justifyContent: "space-between",
 };
 
 export const appTitle: React.CSSProperties = {
-    fontFamily: "'Esteban', serif",
+    fontFamily: estebanFont,
     fontSize: "clamp(1rem, 6.67vw, 1.5rem)",
     left: "50%",
     position: "absolute",
@@ -19,9 +21,10 @@ export const appTitle: React.CSSProperties = {
 };
 
 export const app: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
     height: "100%",
     width: "100%",
-    // maxWidth: "90ch",
     margin: "auto",
 };
 

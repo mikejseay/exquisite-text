@@ -1,5 +1,5 @@
 // src/screens/Canvas/index.tsx
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import IconButton from "@mui/material/IconButton";
 import Slider from "@mui/material/Slider";
 import Divider from "@mui/material/Divider";
@@ -8,7 +8,6 @@ import { useTheme } from "@mui/material/styles";
 import { debounce } from "es-toolkit";
 import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
 import UndoIcon from "@mui/icons-material/Undo";
-// Pass / Complete Drawing Icon options:
 import MoveUpIcon from "@mui/icons-material/MoveUp";
 import DoneIcon from "@mui/icons-material/Done";
 import RedoIcon from "@mui/icons-material/Redo";
@@ -21,27 +20,8 @@ import { emitSendLastPanel, emitSendPanel, emitSendPanelEdit } from "../../conte
 import { useSocketInfo } from "../../context/SocketInfoProvider";
 import { DEFAULT_COLOR, drawOnCanvas } from "../../utilities/canvasUtils";
 import { useDisableScroll } from "../../hooks/useDisableScroll";
+import { useCanvasResize } from "../../hooks/useCanvasResize";
 import { ScaleDirection, pixelRatio, scalePoints } from "../../utilities/scaleUtils";
-import { aboveCanvasHeight } from "../../constants";
-
-/* // TODO:
-    * Now that we're using buttons for canvas controls
-        Make clicking the button show the descriptor tooltip
-        because ipad/iphone has no mouseover
-    * In highly-portrait viewport situations, the line width slider overflows out of view to the left
-    * On iPad, the default line width of using your finger after using pencil is extremely small,
-        but a single dot is very large
-    * End screen aspect ratio not getting set up correctly for small macbook / iPad screen in landscape
-    * "How to play" modal for the drawing version of the game?
-    * Fix bug where user changes system theme it disconnects them and they have to refresh browser
-    * General code quality
-    * One player two drawings, it should alternate between drawings
-    * Two players two drawings, one drawing is complete, player gets no visual feedback that
-        they're waiting on the other player
-    * Spectator view currently defaults to carousel, but if enough real estate is available
-        We could consider laying them out as two columns
-    * Lobby vertically centered, probably too far down the page
-*/
 
 type PointerLikeEvent = {
     clientX: number;
@@ -68,76 +48,26 @@ export const DRAWING_ASPECT_RATIO = DRAWING_WIDTH_MIN / DRAWING_HEIGHT_MIN;
 const Canvas: React.FC = () => {
     const theme = useTheme();
     const { strokeHistory, editorActive, onLastContribution } = useSocketInfo();
+    const toolbarRef = useRef<HTMLDivElement>(null);
+    const { canvasRef, dimensions, scaleFactor } = useCanvasResize(PANEL_WIDTH_MIN, PANEL_HEIGHT_MIN, PANEL_ASPECT_RATIO, toolbarRef);
     const [ points, setPoints ] = useState<Point[]>([]);
     const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
     const [ undidStrokeHistory, setUndidStrokeHistory ] = useState<Point[][]>([]);
     const [ isMousedown, setIsMousedown ] = useState(false);
     const [ passEnabled, setPassEnabled ] = useState(false);
-    const [ dimensions, setDimensions ] = useState({
-        width: PANEL_WIDTH_MIN,
-        height: PANEL_HEIGHT_MIN,
-    });
     const [ strokeColor, setStrokeColor ] = useState<string>(DEFAULT_COLOR);
     const [ isEraserActive, setIsEraserActive ] = useState<boolean>(false);
-    const [ scaleFactor, setScaleFactor ] = useState<number>(1);
     const [ triggerRedraw, setTriggerRedraw ] = useState<number>(0);
     const [ baseLineWidth, setBaseLineWidth ] =
     useState<number>(DEFAULT_LINE_WIDTH);
     logger.debug(theme.palette.text);
     const localStrokeHistoryRef = useRef<Point[][]>(localStrokeHistory);
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
     useEffect(() => {
         localStrokeHistoryRef.current = localStrokeHistory;
     }, [ localStrokeHistory ]);
 
     useDisableScroll();
-
-    // Handle resizing of the window
-    useLayoutEffect(() => {
-        const handleResize = () => {
-            const canvas = canvasRef.current;
-            if (!canvas) return;
-            // Warning in browser log regarding willReadFrequently went away after adding as true
-            const context = canvas.getContext("2d", { willReadFrequently: true });
-            if (!context) return;
-
-            // Calculate new dimensions
-            const viewportHeight = window.innerHeight - aboveCanvasHeight;
-            const viewportWidth = window.innerWidth;
-            const viewportAspectRatio = viewportWidth / viewportHeight;
-            let newWidth: number;
-            let newHeight: number;
-
-            if (viewportAspectRatio < PANEL_ASPECT_RATIO) {
-                newWidth = Math.max(viewportWidth, PANEL_WIDTH_MIN);
-                newHeight = Math.max(newWidth / PANEL_ASPECT_RATIO, PANEL_HEIGHT_MIN);
-            } else {
-                newHeight = Math.max(viewportHeight, PANEL_HEIGHT_MIN);
-                newWidth = Math.max(newHeight * PANEL_ASPECT_RATIO, PANEL_WIDTH_MIN);
-            }
-
-            const newScaleFactor = newWidth / PANEL_WIDTH_MIN;
-            logger.debug(`New Scale Factor: ${newScaleFactor}`);
-
-            // Update state for layout purposes
-            setDimensions({ width: newWidth, height: newHeight });
-            setScaleFactor(newScaleFactor);
-        };
-
-        const debouncedHandleResize = debounce(() => {
-            logger.debug("Debounced handle resize");
-            handleResize();
-        }, 200);
-
-        handleResize();
-        window.addEventListener("resize", debouncedHandleResize);
-
-        return () => {
-            debouncedHandleResize.cancel();
-            window.removeEventListener("resize", debouncedHandleResize);
-        };
-    }, []);
 
     // Redraw the canvas whenever dimensions or scaleFactor change
     useEffect(() => {
@@ -374,16 +304,15 @@ const Canvas: React.FC = () => {
     return (
         <>
             <div
+                ref={toolbarRef}
                 className="canvas-toolbar"
                 style={{
                     display: "flex",
                     flexDirection: "row",
+                    flexWrap: "wrap",
                     alignItems: "center",
                     gap: theme.spacing(1),
                     marginBottom: theme.spacing(1),
-                    // Optionally center elements in this bar
-                    // justifyContent: "flex-start",
-                    // width: "100%",
                 }}
             >
                 <Tooltip title="Undo">
@@ -428,7 +357,7 @@ const Canvas: React.FC = () => {
                         disabled={!editorActive}
                         sx={{
                             marginRight: theme.spacing(2.75),
-                            width: 120,
+                            width: "clamp(60px, 20vw, 120px)",
                             cursor: "ew-resize",
                             color: strokeColor,
                             "& .MuiSlider-rail": {

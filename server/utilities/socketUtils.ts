@@ -1,15 +1,10 @@
 import { roomIDToRoom } from "../modules/globals";
 import { DrawingEditor, PoemEditor } from "../modules/editor";
 import { DrawingRoom, PoemRoom } from "../modules/room";
-import { Server, Socket } from "socket.io";
 import {
-    ClientToServerEvents,
     GameState,
-    InterServerEvents,
     Medium,
     Role,
-    ServerToClientEvents,
-    SocketData,
 } from "../../src/types";
 import { DrawingSpectator, PoemSpectator } from "../modules/spectator";
 import { poemsLines as poemsLinesTestData } from "../../src/data/multiplePoems";
@@ -17,6 +12,7 @@ import { multipleDrawingsTestData } from "../../src/data/multipleDrawings";
 import Host from "../modules/host";
 import { Drawing, Poem } from "../modules/collaboration";
 import { logger } from "./loggerUtils";
+import type { TypedServer, TypedSocket } from "../types";
 
 
 export function getRouteForGameStateAndRole(gameState: GameState, role: Role): string {
@@ -67,11 +63,8 @@ export function getEditorSocketID(roomID: string | undefined, editorID: string |
 
 
 export function standardReconnect(
-    io: Server<ClientToServerEvents,
-        ServerToClientEvents,
-        InterServerEvents,
-        SocketData>,
-    socket: Socket,
+    io: TypedServer,
+    socket: TypedSocket,
     member: PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator | undefined,
 ) {
     if (member && member.socket) {
@@ -116,23 +109,20 @@ export function sendCollaborationContributionsInfo(member: Host | PoemEditor | P
         return;
     }
     logger.debug(`${member.name} request collaborations from room which has ${room.finishedWorks.length}`);
-    for (const collaborationObj of room.finishedWorks) {
-        // TODO: Explore this, this could improve server-side efficiency:
-        // poemMember.io.in(poemMember.roomID).emit("stcPoemLines", Array.from(poemObj.lines));
-        if ("lines" in collaborationObj) {
+
+    if (room.medium === Medium.POETRY) {
+        for (const collaborationObj of room.finishedWorks) {
             member.io
                 .to(member.socket.id)
                 .emit(
                     "stcPoemLines",
                     Array.from((collaborationObj as Poem).lines),
                 );
-        } else {
-            member.io
-                .to(member.socket.id)
-                .emit(
-                    "stcDrawingPanels",
-                    Array.from((collaborationObj as Drawing).panels),
-                );
         }
+    } else if (room.medium === Medium.DRAWING) {
+        const completedDrawings = (room.finishedWorks as Drawing[]).map(
+            (drawing) => Array.from(drawing.panels).map(panel => panel.content),
+        );
+        member.io.to(member.socket.id).emit("stcCompletedDrawings", completedDrawings);
     }
 }

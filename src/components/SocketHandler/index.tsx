@@ -4,14 +4,15 @@ import { ILine, IPanel, IUserTableInfo, LineLength, Medium, Point } from "../../
 import { defaultGameSettings } from "../../constants";
 import { socketListeners } from "../../context/SocketListeners";
 import { useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
+import { Socket, io } from "socket.io-client";
+import { ClientToServerEvents, ServerToClientEvents } from "../../types";
 
 const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
 const serverPath: URL["pathname"] | URL["href"] = isDevelopment
     ? `http://${window.location.hostname}:3000`
     : "/";
 
-export const socket = io(serverPath);
+export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(serverPath);
 
 
 type Props = {
@@ -35,7 +36,7 @@ export default function SocketHandler({ children }: Props) {
     const [ nDrawings, setNDrawings ] = React.useState<number>(defaultGameSettings.nDrawings);
     const [ lines, setLines ] = React.useState<Array<Array<ILine["content"]>>>([ [], [], [], [] ]);
     const [ panels, setPanels ] = React.useState<Array<Array<IPanel["content"]>>>([ [], [], [], [] ]);
-    const [ panelEdits, setPanelEdits ] = React.useState<Array<IPanel["content"]>>([]);
+    const [ panelEdits, setPanelEdits ] = React.useState<Array<IPanel["content"]>>([ [], [], [], [] ]);
     const [ lineEdits, setLineEdits ] = React.useState<Array<string>>([ "", "", "", "" ]);
     const [ poemInput, setPoemInput ] = React.useState<string>("");
     const [ poemInputSpectate, setPoemInputSpectate ] = React.useState<string>("");

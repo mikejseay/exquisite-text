@@ -1,7 +1,7 @@
 import { socket } from "../components/SocketHandler";
 import { v4 as uuidv4 } from "uuid";
 import { isNil } from "es-toolkit";
-import { LineLength, Medium, Point, Role } from "../types";
+import { IGameSettingsInfo, Medium, Point, Role } from "../types";
 import { logger } from "../utilities/loggerUtils";
 
 export const emitRecognizeDevice = () => {
@@ -46,13 +46,7 @@ export const emitJoinAs = (roomID: string, name: string, memberType: Role, isTes
     socket.emit("ctsJoinAs", roomID.toUpperCase(), name.toUpperCase(), memberType, isTest);
 };
 
-interface IGameSettings {
-    lineLength?: LineLength;
-    nPoems?: number;
-    nRounds?: number;
-    nDrawings?: number;
-}
-export const emitAlterGameSettings = (gameSettings: IGameSettings) => {
+export const emitAlterGameSettings = (gameSettings: Partial<IGameSettingsInfo>) => {
     socket.emit("ctsAlterGameSettings", gameSettings);
 };
 
@@ -84,20 +78,20 @@ export const emitSendLineParts = (firstPart: string, secondPart: string) => {
     socket.emit("ctsSendLineParts", firstPart, secondPart);
 };
 
-export const emitSendLastLine = (value: string | null) => {
+export const emitSendLastLine = (value: string) => {
     socket.emit("ctsSendLastLine", value);
 };
 
-export const emitSendPanelEdit = (value: Point[][] | null) => {
+export const emitSendPanelEdit = (value: Point[][]) => {
     logger.debug(`sendPanelEdit: ${value}`);
     socket.emit("ctsSendPanelEdit", value);
 };
 
-export const emitSendPanel = (value: Point[][] | null) => {
+export const emitSendPanel = (value: Point[][]) => {
     logger.debug(`sendCanvas: ${value}`);
     socket.emit("ctsSendPanel", value);
 };
 
-export const emitSendLastPanel = (value: Point[][] | null) => {
+export const emitSendLastPanel = (value: Point[][]) => {
     socket.emit("ctsSendLastPanel", value);
 };

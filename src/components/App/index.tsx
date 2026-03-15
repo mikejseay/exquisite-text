@@ -21,7 +21,9 @@ export default function App() {
                     <h1 style={appTitle}>Exquisite Text</h1>
                 </header>
                 <LandscapeBanner />
-                <Outlet />
+                <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+                    <Outlet />
+                </div>
             </Paper>
         </div>
     );
