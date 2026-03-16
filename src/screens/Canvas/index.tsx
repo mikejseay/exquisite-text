@@ -185,7 +185,14 @@ const Canvas: React.FC = () => {
             ? rawPressure
             : DEFAULT_PRESSURE;
 
-        const lineWidth = Math.log(pressure + 1) * baseLineWidth * scaleFactor;
+        // Normalize pressure by input type: finger/touch reports flat ~0.5 while
+        // Apple Pencil reports analog 0.01-1.0, so use a fixed multiplier for touch
+        // to keep line width consistent when switching between input types
+        const pressureMultiplier = event.pointerType === "touch"
+            ? DEFAULT_PRESSURE
+            : pressure;
+
+        const lineWidth = Math.log(pressureMultiplier + 1) * baseLineWidth * scaleFactor;
         const color = isEraserActive
             ? "!e"
             : strokeColor;

@@ -34,12 +34,14 @@ export function useCanvasResize(
 
             if (viewportAspectRatio < aspectRatio) {
                 logger.debug("viewportAspectRatio < aspectRatio");
-                newWidth = Math.max(viewportWidth, widthMin);
-                newHeight = Math.max(newWidth / aspectRatio, heightMin);
+                // Width-constrained: fit to viewport width, allow shrinking below min
+                newWidth = viewportWidth;
+                newHeight = newWidth / aspectRatio;
             } else {
                 logger.debug("viewportAspectRatio >= aspectRatio");
-                newHeight = Math.max(viewportHeight, heightMin);
-                newWidth = Math.max(newHeight * aspectRatio, widthMin);
+                // Height-constrained: fit to viewport height, allow shrinking below min
+                newHeight = viewportHeight;
+                newWidth = newHeight * aspectRatio;
             }
 
             const newScaleFactor = newWidth / widthMin;

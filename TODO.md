@@ -1,4 +1,2 @@
 - Mike should update his .env to be the same as his old computer and re-test the LLM functionality
-- On iPad, the default line width of using your finger after using pencil is extremely small, but a single dot is very large
-- End screen aspect ratio not getting set up correctly for small macbook / iPad screen in landscape
 - "How to play" modal for the drawing version of the game?

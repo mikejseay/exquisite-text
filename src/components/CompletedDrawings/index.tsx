@@ -12,7 +12,6 @@ import {
 } from "../../screens/Canvas";
 import { Point } from "../../types";
 import { drawOnCanvas } from "../../utilities/canvasUtils";
-import { useDisableScroll } from "../../hooks/useDisableScroll";
 import { useCanvasResize } from "../../hooks/useCanvasResize";
 import { ScaleDirection, pixelRatio, scalePoints } from "../../utilities/scaleUtils";
 
@@ -27,8 +26,6 @@ export const CompletedDrawing = ({
     const theme = useTheme();
     const { canvasRef, dimensions, scaleFactor } = useCanvasResize(DRAWING_WIDTH_MIN, DRAWING_HEIGHT_MIN, DRAWING_ASPECT_RATIO);
     const animationRef = useRef<number>();
-
-    useDisableScroll();
 
     useEffect(() => {
         const canvas = canvasRef.current;
