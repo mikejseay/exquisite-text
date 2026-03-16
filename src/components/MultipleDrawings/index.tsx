@@ -1,5 +1,6 @@
 // src/components/MultipleDrawings/index.tsx
 import React from "react";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { Carousel } from "react-responsive-carousel";
 
@@ -24,14 +25,27 @@ const renderDrawings = (
 function MultipleDrawings(
     { completedDrawings, shouldAnimate }: { completedDrawings: Point[][][][] | null, shouldAnimate: boolean },
 ) {
+    const isWide = useMediaQuery("(min-width: 1200px)");
+    const useGrid = isWide && completedDrawings && completedDrawings.length > 1;
+
     return (
         <div className={"multiple-drawings"} style={{ width: "100%" }}>
             {completedDrawings && completedDrawings.length > 1
-                ? (
-                    <Carousel showThumbs={false}>
-                        {renderDrawings(completedDrawings, shouldAnimate)}
-                    </Carousel>
-                )
+                ? useGrid
+                    ? (
+                        <div style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: "1em",
+                        }}>
+                            {renderDrawings(completedDrawings, shouldAnimate)}
+                        </div>
+                    )
+                    : (
+                        <Carousel showThumbs={false}>
+                            {renderDrawings(completedDrawings, shouldAnimate)}
+                        </Carousel>
+                    )
                 : renderDrawings(completedDrawings, shouldAnimate)
             }
         </div>

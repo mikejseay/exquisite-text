@@ -315,7 +315,7 @@ const Canvas: React.FC = () => {
                     marginBottom: theme.spacing(1),
                 }}
             >
-                <Tooltip title="Undo">
+                <Tooltip title="Undo" enterTouchDelay={0} leaveTouchDelay={1500}>
                     <span>
                         <IconButton
                             onClick={handleUndo}
@@ -325,7 +325,7 @@ const Canvas: React.FC = () => {
                         </IconButton>
                     </span>
                 </Tooltip>
-                <Tooltip title="Redo">
+                <Tooltip title="Redo" enterTouchDelay={0} leaveTouchDelay={1500}>
                     <span>
                         <IconButton
                             onClick={handleRedo}
@@ -346,7 +346,7 @@ const Canvas: React.FC = () => {
                     }}
                 />
                 {/* Other controls */}
-                <Tooltip title="Pick Line Width">
+                <Tooltip title="Pick Line Width" enterTouchDelay={0} leaveTouchDelay={1500}>
                     <Slider
                         value={baseLineWidth}
                         onChange={(_, v) => setBaseLineWidth(v as number)}
@@ -381,7 +381,7 @@ const Canvas: React.FC = () => {
                         }}
                     />
                 </Tooltip>
-                <Tooltip title="Pick Color">
+                <Tooltip title="Pick Color" enterTouchDelay={0} leaveTouchDelay={1500}>
                     <span>
                         <IconButton
                             component="label"
@@ -401,6 +401,8 @@ const Canvas: React.FC = () => {
                     title={isEraserActive
                         ? "Switch to Pen"
                         : "Switch to Eraser"}
+                    enterTouchDelay={0}
+                    leaveTouchDelay={1500}
                 >
                     <span>
                         <IconButton
@@ -428,7 +430,7 @@ const Canvas: React.FC = () => {
                     onLastContribution
                         ? "Complete Drawing"
                         : "Pass"
-                }>
+                } enterTouchDelay={0} leaveTouchDelay={1500}>
                     <span>
                         <Button
                             variant="contained"
@@ -456,8 +458,23 @@ const Canvas: React.FC = () => {
                     alignItems: "flex-start",
                     paddingLeft: theme.spacing(2),
                     overflow: "visible",
+                    position: "relative",
                 }}
             >
+                {!editorActive && (
+                    <div style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        zIndex: 1,
+                        textAlign: "center",
+                        color: theme.palette.text.primary,
+                        pointerEvents: "none",
+                    }}>
+                        Waiting for other players...
+                    </div>
+                )}
                 <canvas
                     ref={canvasRef}
                     width={dimensions.width * pixelRatio}

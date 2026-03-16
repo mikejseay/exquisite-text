@@ -29,7 +29,7 @@ const noMatchRouteElement = (
     </main>
 );
 
-function Root() {
+function ThemeWrapper({ children }: { children: React.ReactNode }) {
     const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
 
     const theme = React.useMemo(
@@ -42,6 +42,14 @@ function Root() {
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
+            {children}
+        </ThemeProvider>
+    );
+}
+
+function Root() {
+    return (
+        <ThemeWrapper>
             <BrowserRouter>
                 <SocketHandler>
                     <Routes>
@@ -67,7 +75,7 @@ function Root() {
                     </Routes>
                 </SocketHandler>
             </BrowserRouter>
-        </ThemeProvider>
+        </ThemeWrapper>
     );
 }
 
