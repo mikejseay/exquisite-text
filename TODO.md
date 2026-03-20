@@ -1,2 +1,24 @@
 - Mike should update his .env to be the same as his old computer and re-test the LLM functionality
 - "How to play" modal for the drawing version of the game?
+- for some reason Mike can't get any screen to load when accessing the local yarn / vite build from ipad via local network, but can access it with metro build and access via local network. This might be an issue on Mike's end.
+- the core toggle based on portrait vs. landscape viewport, but it should really toggle based on an absolute amount of horizontal space (pixels or EM)
+    - example 1: on iPad, on Join screen, in portrait, i still get the banner, when arguably i have plenty horizontal space to play any game
+- Lobby page
+    - previously only the host (first player in the room) could control the game settings, now it seems secondary players (non-hosts) can change the settings, which could lead to players "fighting" over the settings
+        - correctly, currently the host is the only person who can click "Start game"
+    - the host player should be indicated in some way (an asterisk or HOST in parentheses after the name?)
+    - more aesthetic TLC
+        - each setting title is aligned (left)
+        - each multi-select has the same width
+        - a grouping rounded rectangle around all the settings
+        - The title "Game settings:" could probably be underlined with no colon
+        - The title "Editors:" could probably be underlined with no colon
+        - The names of the players could probably be larger and also surrounded by a grouping rounded rectangle
+        - "Room code" text slightly larger
+    - strictly about the landscape browser view of the lobby
+        - rather than two large column panels with content centered horizontally, we could make the two panels have like a maximum width so that when horizontal space is abundant, the two panels' content are closer together. Currently they look very far apart from each other.
+- Poetry End screen
+    - the "dots" for the carousel are a little close to the player names. Perhaps the overall container for the poem carousel needs more margin / border to make it feel less cramped.
+- Canvas game screen
+    - on iPad, both "color picker" and "eraser" buttons are broken
+        - i cannot get the "color picker" menu to come up with either finger or pencil. clicking the button with either finger or pencil opens a small popover dialog that says "Pick Color" but the color picker menu never appears
