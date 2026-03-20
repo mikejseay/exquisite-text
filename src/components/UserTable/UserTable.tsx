@@ -13,7 +13,7 @@ function UserTable() {
     if (!userInfo) {
         return null;
     }
-    const { editors, editorColors, spectators } = userInfo;
+    const { editors, editorColors, spectators, hostIndex } = userInfo;
     logger.debug(`editors ${editors}`);
     logger.debug(`editorColors ${editorColors}`);
     logger.debug(`spectators ${spectators}`);
@@ -28,12 +28,13 @@ function UserTable() {
 
     return (
         <div className={"userTable"} style={textCentered}>
-            <div className={"editors"}>
-                <h2>Editors:</h2>
+            <div className={"editors"} style={{ background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: "1rem 1.5rem", marginBottom: "0.5rem" }}>
+                <h2 style={{ textDecoration: "underline", marginTop: 0 }}>Editors</h2>
                 {editors.map((name, nameIndex) => {
                     return (
-                        <p key={nameIndex} style={{ color: editorColors[nameIndex] }}>
+                        <p key={nameIndex} style={{ color: editorColors[nameIndex], fontSize: "1.2rem" }}>
                             {name}
+                            {nameIndex === hostIndex && " (HOST)"}
                         </p>
                     );
                 })}
@@ -49,8 +50,8 @@ function UserTable() {
                 )}
             </div>
             {spectators.length > 0 && (
-                <div className={"spectators"}>
-                    <h2>Spectators:</h2>
+                <div className={"spectators"} style={{ marginTop: "1rem" }}>
+                    <h2 style={{ textDecoration: "underline" }}>Spectators</h2>
                     {spectators.map((name, nameIndex) => {
                         return <p key={nameIndex}>{name}</p>;
                     })}

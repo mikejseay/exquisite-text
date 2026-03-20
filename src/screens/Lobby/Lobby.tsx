@@ -16,7 +16,7 @@ import { Medium } from "types/types";
 
 function Lobby() {
     const { medium, settingsEnabled } = useSocketInfo();
-    const isLandscape = useMediaQuery("(min-aspect-ratio: 1/1)");
+    const isLandscape = useMediaQuery("(min-width: 768px)");
     const [activeTab, setActiveTab] = useState(0);
 
     useInitializeGameSettings();
@@ -38,6 +38,9 @@ function Lobby() {
                     minHeight: 0,
                     textAlign: "center",
                     borderTop: "1px solid rgba(255,255,255,0.12)",
+                    maxWidth: 1200,
+                    margin: "0 auto",
+                    width: "100%",
                 }}
             >
                 <Box

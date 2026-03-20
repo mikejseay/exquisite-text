@@ -1,5 +1,7 @@
 - Mike should update his .env to be the same as his old computer and re-test the LLM functionality
 - "How to play" modal for the drawing version of the game?
+
+------ CONFIRM THAT THESE ARE FIXED BEFORE REMOVING ------
 - for some reason Mike can't get any screen to load when accessing the local yarn / vite build from ipad via local network, but can access it with metro build and access via local network. This might be an issue on Mike's end.
 - the core toggle based on portrait vs. landscape viewport, but it should really toggle based on an absolute amount of horizontal space (pixels or EM)
     - example 1: on iPad, on Join screen, in portrait, i still get the banner, when arguably i have plenty horizontal space to play any game

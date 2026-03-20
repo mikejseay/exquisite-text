@@ -126,6 +126,7 @@ class Editor extends Member {
 
     alterGameSettings(gameSettings: Partial<IGameSettingsInfo>) {
         logger.debug("ctsAlterGameSettings");
+        if (!this.isVIP()) return;
         const room = getRoom(this.roomID);
         if (room) {
             room.gameSettings = { ...room.gameSettings, ...gameSettings };

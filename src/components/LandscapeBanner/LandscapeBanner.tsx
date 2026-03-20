@@ -13,7 +13,7 @@ export function LandscapeBanner() {
     const location = useLocation();
 
     React.useEffect(() => {
-        const mql = window.matchMedia("(orientation: portrait) and (pointer: coarse)");
+        const mql = window.matchMedia("(max-width: 767px) and (pointer: coarse)");
         const onChange = (e: MediaQueryListEvent | MediaQueryList) => {
             setIsPortrait(e.matches);
             if (e.matches) {

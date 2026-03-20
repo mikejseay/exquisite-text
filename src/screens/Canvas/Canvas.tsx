@@ -50,6 +50,7 @@ const Canvas: React.FC = () => {
     const theme = useTheme();
     const { strokeHistory, editorActive, onLastContribution } = useSocketInfo();
     const toolbarRef = useRef<HTMLDivElement>(null);
+    const colorInputRef = useRef<HTMLInputElement>(null);
     const { canvasRef, dimensions, scaleFactor } = useCanvasResize(
         PANEL_WIDTH_MIN,
         PANEL_HEIGHT_MIN,
@@ -374,13 +375,17 @@ const Canvas: React.FC = () => {
                 </Tooltip>
                 <Tooltip title="Pick Color" enterTouchDelay={0} leaveTouchDelay={1500}>
                     <span>
-                        <IconButton component="label" disabled={!editorActive || isEraserActive}>
-                            <input
-                                type="color"
-                                hidden
-                                value={strokeColor}
-                                onChange={(e) => setStrokeColor(e.target.value)}
-                            />
+                        <input
+                            ref={colorInputRef}
+                            type="color"
+                            value={strokeColor}
+                            onChange={(e) => setStrokeColor(e.target.value)}
+                            style={{ position: "absolute", width: 0, height: 0, opacity: 0, pointerEvents: "none" }}
+                        />
+                        <IconButton
+                            onClick={() => colorInputRef.current?.click()}
+                            disabled={!editorActive || isEraserActive}
+                        >
                             <PaletteIcon />
                         </IconButton>
                     </span>

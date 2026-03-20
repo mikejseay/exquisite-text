@@ -30,18 +30,21 @@ export default function DrawingGameSettings({ hideStartButton = false }: { hideS
         emitStartGame();
     };
 
+    const settingRow: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", width: "100%" };
+    const settingLabel: React.CSSProperties = { textAlign: "left", minWidth: 100 };
+
     return (
         <div className={"gameSettings"} style={textCentered}>
-            <h2>Game settings:</h2>
-            <Stack spacing={2} direction="column" style={{ alignItems: "center" }}>
-                <div>
-                    {"Drawings: "}
+            <h2 style={{ textDecoration: "underline" }}>Game Settings</h2>
+            <Stack spacing={2} direction="column" style={{ alignItems: "center", background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: "1rem 1.5rem" }}>
+                <div style={settingRow}>
+                    <span style={settingLabel}>Drawings</span>
                     <ToggleButtonGroup
                         value={nDrawings}
                         exclusive
                         onChange={handleNDrawings}
-                        disabled={false} // TODO: Get this working then enable this
-                        // disabled={!settingsEnabled}
+                        disabled={!settingsEnabled}
+                        sx={{ minWidth: 160 }}
                     >
                         <ToggleButton value={1}>1</ToggleButton>
                         <ToggleButton value={2}>2</ToggleButton>

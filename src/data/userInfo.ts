@@ -6,4 +6,5 @@ export const userInfo = {
     },
     editors: ["MIKEY", "PETER"],
     spectators: [],
+    hostIndex: 0,
 };

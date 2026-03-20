@@ -43,6 +43,7 @@ export interface IUserTableInfo {
     spectators: Array<string>;
     editorColorMap: Record<string, string>;
     editorColors: Array<string>;
+    hostIndex: number;
 }
 
 export interface IGameSettingsInfo {

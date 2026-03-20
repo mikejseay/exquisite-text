@@ -6,7 +6,7 @@ export const roomCodeWrapper: React.CSSProperties = {
 };
 
 export const roomCodeLabel: React.CSSProperties = {
-    fontSize: "0.9rem",
+    fontSize: "1.1rem",
     opacity: 0.7,
 };
 

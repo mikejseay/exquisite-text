@@ -106,6 +106,7 @@ class Room {
             spectators: spectatorNames,
             editorColorMap: editorColorMap,
             editorColors: editorColors,
+            hostIndex: 0,
         };
     }
 
