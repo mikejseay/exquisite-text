@@ -16,7 +16,7 @@
         "typescript": "^5.8.0"
     },
     "devDependencies": {
-        "@tsconfig/node22": "^22.0.0",
+        "@tsconfig/node24": "^24.0.4",
         "@types/cookie-parser": "^1.4.3",
         "@types/express": "^5.0.0",
         "@types/node": "^22.0.0",
@@ -24,7 +24,7 @@
         "tsx": "^4.21.0"
     },
     "engines": {
-        "node": ">=20.0.0"
+        "node": ">=24.0.0"
     },
     "scripts": {
         "startwatch": "node --watch --env-file-if-exists=.env --import tsx -r tsconfig-paths/register start.ts",

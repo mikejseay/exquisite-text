@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "scripts": {
-    "eas-build-pre-install": "corepack enable && yarn set version 4.4.0",
+    "eas-build-pre-install": "corepack enable && yarn set version 4.13.0",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
@@ -45,5 +45,8 @@
     "typescript": "~5.9.2"
   },
   "private": true,
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "packageManager": "yarn@4.13.0"
 }
