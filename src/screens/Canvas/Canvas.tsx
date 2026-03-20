@@ -46,6 +46,33 @@ export const DRAWING_WIDTH_MIN = PANEL_WIDTH_MIN;
 // 0.86
 export const DRAWING_ASPECT_RATIO = DRAWING_WIDTH_MIN / DRAWING_HEIGHT_MIN;
 
+function getPointViaPointerEvent(
+    event: PointerLikeEvent,
+    canvas: HTMLCanvasElement,
+    baseLineWidth: number,
+    scaleFactor: number,
+    isEraserActive: boolean,
+    strokeColor: string,
+) {
+    const canvasBounds = canvas.getBoundingClientRect();
+    const x = event.clientX - canvasBounds.left;
+    const y = event.clientY - canvasBounds.top;
+
+    const rawPressure = typeof event.pressure === "number" ? event.pressure : DEFAULT_PRESSURE;
+
+    const pressure = rawPressure > 0 ? rawPressure : DEFAULT_PRESSURE;
+
+    // Normalize pressure by input type: finger/touch reports flat ~0.5 while
+    // Apple Pencil reports analog 0.01-1.0, so use a fixed multiplier for touch
+    // to keep line width consistent when switching between input types
+    const pressureMultiplier = event.pointerType === "touch" ? DEFAULT_PRESSURE : pressure;
+
+    const lineWidth = Math.log(pressureMultiplier + 1) * baseLineWidth * scaleFactor;
+    const color = isEraserActive ? "!e" : strokeColor;
+
+    return { x, y, lineWidth, color };
+}
+
 const Canvas: React.FC = () => {
     const theme = useTheme();
     const { strokeHistory, editorActive, onLastContribution } = useSocketInfo();
@@ -147,33 +174,6 @@ const Canvas: React.FC = () => {
         setUndidStrokeHistory([]);
     }, [points, scaleFactor, debouncedEmitPanel, localStrokeHistory]);
 
-    const getPointViaPointerEvent = (
-        event: PointerLikeEvent,
-        canvas: HTMLCanvasElement,
-        baseLineWidth: number,
-        scaleFactor: number,
-        isEraserActive: boolean,
-        strokeColor: string,
-    ) => {
-        const canvasBounds = canvas.getBoundingClientRect();
-        const x = event.clientX - canvasBounds.left;
-        const y = event.clientY - canvasBounds.top;
-
-        const rawPressure = typeof event.pressure === "number" ? event.pressure : DEFAULT_PRESSURE;
-
-        const pressure = rawPressure > 0 ? rawPressure : DEFAULT_PRESSURE;
-
-        // Normalize pressure by input type: finger/touch reports flat ~0.5 while
-        // Apple Pencil reports analog 0.01-1.0, so use a fixed multiplier for touch
-        // to keep line width consistent when switching between input types
-        const pressureMultiplier = event.pointerType === "touch" ? DEFAULT_PRESSURE : pressure;
-
-        const lineWidth = Math.log(pressureMultiplier + 1) * baseLineWidth * scaleFactor;
-        const color = isEraserActive ? "!e" : strokeColor;
-
-        return { x, y, lineWidth, color };
-    };
-
     const handlePointerStart = useCallback(
         (e: React.PointerEvent<HTMLCanvasElement>) => {
             const canvas = canvasRef.current;
@@ -204,15 +204,7 @@ const Canvas: React.FC = () => {
                 eraserColor: theme.palette.canvas.background,
             });
         },
-        [
-            scaleFactor,
-            strokeColor,
-            isEraserActive,
-            baseLineWidth,
-            canvasRef.current,
-            getPointViaPointerEvent,
-            theme.palette.canvas.background,
-        ],
+        [scaleFactor, strokeColor, isEraserActive, baseLineWidth, canvasRef.current, theme.palette.canvas.background],
     );
 
     const handlePointerMove = useCallback(
@@ -254,7 +246,6 @@ const Canvas: React.FC = () => {
             isEraserActive,
             baseLineWidth,
             canvasRef.current,
-            getPointViaPointerEvent,
             theme.palette.canvas.background,
         ],
     );

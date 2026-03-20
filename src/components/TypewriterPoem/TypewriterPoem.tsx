@@ -1,6 +1,6 @@
 import { lineSepString } from "constants/constants";
 import { useSocketInfo } from "context/SocketInfoProvider";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { poemTypography } from "styles/common";
 import type { ILine } from "types/types";
 
@@ -79,11 +79,11 @@ export default function TypewriterPoem({
 
     const resetCurrentLetter = () => setCurrentLetter(0);
 
-    const initializeTypewriter = () => {
+    const initializeTypewriter = useCallback(() => {
         setCurrentPiece(0);
         setCurrentLetter(0);
         setCurrentPieceLengths([0]);
-    };
+    }, []);
 
     // Whenever the animation toggle is toggled, initialize the typewriter
     useEffect(() => {

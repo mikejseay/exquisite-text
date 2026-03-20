@@ -28,7 +28,15 @@ function UserTable() {
 
     return (
         <div className={"userTable"} style={textCentered}>
-            <div className={"editors"} style={{ background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: "1rem 1.5rem", marginBottom: "0.5rem" }}>
+            <div
+                className={"editors"}
+                style={{
+                    background: "rgba(255,255,255,0.05)",
+                    borderRadius: 12,
+                    padding: "1rem 1.5rem",
+                    marginBottom: "0.5rem",
+                }}
+            >
                 <h2 style={{ textDecoration: "underline", marginTop: 0 }}>Editors</h2>
                 {editors.map((name, nameIndex) => {
                     return (

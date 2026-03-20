@@ -47,13 +47,28 @@ function PoemGameSettings({ hideStartButton = false }: { hideStartButton?: boole
         emitStartGame();
     };
 
-    const settingRow: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", width: "100%" };
+    const settingRow: React.CSSProperties = {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "1rem",
+        width: "100%",
+    };
     const settingLabel: React.CSSProperties = { textAlign: "left", minWidth: 100 };
 
     return (
         <div className={"gameSettings"} style={textCentered}>
             <h2 style={{ textDecoration: "underline" }}>Game Settings</h2>
-            <Stack spacing={2} direction="column" style={{ alignItems: "center", background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: "1rem 1.5rem" }}>
+            <Stack
+                spacing={2}
+                direction="column"
+                style={{
+                    alignItems: "center",
+                    background: "rgba(255,255,255,0.05)",
+                    borderRadius: 12,
+                    padding: "1rem 1.5rem",
+                }}
+            >
                 <div style={settingRow}>
                     <span style={settingLabel}>Line Length</span>
                     <ToggleButtonGroup
@@ -70,7 +85,13 @@ function PoemGameSettings({ hideStartButton = false }: { hideStartButton?: boole
 
                 <div style={settingRow}>
                     <span style={settingLabel}>Rounds</span>
-                    <ToggleButtonGroup value={nRounds} exclusive onChange={handleNRounds} disabled={!settingsEnabled} sx={{ minWidth: 160 }}>
+                    <ToggleButtonGroup
+                        value={nRounds}
+                        exclusive
+                        onChange={handleNRounds}
+                        disabled={!settingsEnabled}
+                        sx={{ minWidth: 160 }}
+                    >
                         <ToggleButton value={2}>2</ToggleButton>
                         <ToggleButton value={3}>3</ToggleButton>
                         <ToggleButton value={4}>4</ToggleButton>
@@ -79,7 +100,13 @@ function PoemGameSettings({ hideStartButton = false }: { hideStartButton?: boole
 
                 <div style={settingRow}>
                     <span style={settingLabel}>Poems</span>
-                    <ToggleButtonGroup value={nPoems} exclusive onChange={handleNPoems} disabled={!settingsEnabled} sx={{ minWidth: 160 }}>
+                    <ToggleButtonGroup
+                        value={nPoems}
+                        exclusive
+                        onChange={handleNPoems}
+                        disabled={!settingsEnabled}
+                        sx={{ minWidth: 160 }}
+                    >
                         <ToggleButton value={1}>1</ToggleButton>
                         <ToggleButton value={2}>2</ToggleButton>
                         <ToggleButton value={3}>3</ToggleButton>

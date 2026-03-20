@@ -1,5 +1,5 @@
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
 
 // Mock socket.io-client
 vi.mock("socket.io-client", () => ({
