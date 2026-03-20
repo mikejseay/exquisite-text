@@ -3,11 +3,10 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import "@testing-library/jest-dom";
+import { randomUUID } from "crypto";
 
 // Polyfill crypto.randomUUID for JSDOM test environment
 if (typeof globalThis.crypto?.randomUUID !== "function") {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { randomUUID } = require("crypto");
     Object.defineProperty(globalThis, "crypto", {
         value: { ...globalThis.crypto, randomUUID },
     });
