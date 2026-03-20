@@ -1,5 +1,17 @@
-export const allowedHosts = new Set(["exquisitetext.com", "www.exquisitetext.com"]);
-export const allowedOrigin = "https://www.exquisitetext.com";
+const DEFAULT_ORIGIN = "https://www.exquisitetext.com";
+
+function parseOrigin(url: string): URL {
+    try {
+        return new URL(url);
+    } catch {
+        return new URL(DEFAULT_ORIGIN);
+    }
+}
+
+const parsed = parseOrigin(process.env.EXPO_PUBLIC_SERVER_URL ?? DEFAULT_ORIGIN);
+
+export const allowedHosts = new Set([parsed.host, parsed.host.replace(/^www\./, "")]);
+export const allowedOrigin = parsed.origin;
 
 export const getIsAllowedUrl = (url: string): boolean => {
     if (!url) {
@@ -12,7 +24,7 @@ export const getIsAllowedUrl = (url: string): boolean => {
 
     try {
         const parsedUrl = new URL(url);
-        if (parsedUrl.protocol !== "https:") {
+        if (parsedUrl.protocol !== parsed.protocol) {
             return false;
         }
 

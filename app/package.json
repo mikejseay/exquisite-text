@@ -17,6 +17,9 @@
         "transform": {
             "\\.[jt]sx?$": "babel-jest"
         },
+        "transformIgnorePatterns": [
+            "node_modules/(?!expo/)"
+        ],
         "testMatch": [
             "**/__tests__/**/*.test.[jt]s?(x)"
         ],
