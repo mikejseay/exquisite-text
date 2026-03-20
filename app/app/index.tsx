@@ -1,22 +1,19 @@
+import CustomStatusBar from "app/components/CustomStatusBar";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import type React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BackHandler, Platform, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
-import type {
-    ShouldStartLoadRequest,
-    WebViewNavigation,
-} from "react-native-webview/lib/WebViewTypes";
-
-import CustomStatusBar from "app/components/CustomStatusBar";
+import type { ShouldStartLoadRequest, WebViewNavigation } from "react-native-webview/lib/WebViewTypes";
 import { allowedOrigin, getIsAllowedUrl } from "utils/urlValidation";
 
 void SplashScreen.preventAutoHideAsync();
 
 export default function Index() {
     const initialUrl = `${allowedOrigin}/`;
-    const [ webViewKey, setWebViewKey ] = useState(0);
-    const [ sourceUri, setSourceUri ] = useState(initialUrl);
+    const [webViewKey, setWebViewKey] = useState(0);
+    const [sourceUri, setSourceUri] = useState(initialUrl);
 
     const webViewRef = useRef<WebView>(null);
 
@@ -38,15 +35,12 @@ export default function Index() {
             return undefined;
         }
 
-        const backPressSubscription = BackHandler.addEventListener(
-            "hardwareBackPress",
-            onAndroidBackPress,
-        );
+        const backPressSubscription = BackHandler.addEventListener("hardwareBackPress", onAndroidBackPress);
 
         return (): void => {
             backPressSubscription.remove();
         };
-    }, [ onAndroidBackPress ]);
+    }, [onAndroidBackPress]);
 
     const forceBackToAllowedSite = (): void => {
         webViewRef.current?.stopLoading();
@@ -54,9 +48,7 @@ export default function Index() {
         setWebViewKey((currentKey) => currentKey + 1);
     };
 
-    const onShouldStartLoadWithRequest = (
-        request: ShouldStartLoadRequest,
-    ): boolean => {
+    const onShouldStartLoadWithRequest = (request: ShouldStartLoadRequest): boolean => {
         const requestedUrl = request.url ?? "";
         return getIsAllowedUrl(requestedUrl);
     };
