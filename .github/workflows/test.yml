@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: corepack enable && YARN_ENABLE_HARDENED_MODE=0 yarn install
+      - run: corepack enable && yarn install
       - run: yarn lint
       - run: yarn typecheck
       - run: yarn test
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: corepack enable && YARN_ENABLE_HARDENED_MODE=0 yarn install
+      - run: corepack enable && yarn install
         working-directory: .
       - run: yarn lint
       - run: yarn typecheck
@@ -48,9 +48,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: corepack enable && YARN_ENABLE_HARDENED_MODE=0 yarn install
+      - run: corepack enable && yarn install
         working-directory: .
-      - run: YARN_ENABLE_HARDENED_MODE=0 yarn install
+      - run: yarn install
       - run: yarn lint
       - run: yarn typecheck
       - run: yarn test

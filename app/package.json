@@ -20,7 +20,10 @@
     "testMatch": [
       "**/__tests__/**/*.test.[jt]s?(x)"
     ],
-    "moduleDirectories": ["node_modules", "."]
+    "moduleDirectories": [
+      "node_modules",
+      "."
+    ]
   },
   "dependencies": {
     "expo": "^54.0.0",
