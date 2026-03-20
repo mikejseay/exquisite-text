@@ -1,9 +1,9 @@
 import * as React from "react";
-import Lines from "../../components/Lines";
-import LeaveButton from "../../components/LeaveButton";
-import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { Medium } from "../../types";
-import CanvasSpectator from "../CanvasSpectator";
+import Lines from "components/Lines/Lines";
+import LeaveButton from "components/LeaveButton/LeaveButton";
+import { useSocketInfo } from "context/SocketInfoProvider";
+import { Medium } from "types/types";
+import CanvasSpectator from "screens/CanvasSpectator/CanvasSpectator";
 
 function Spectate() {
     const { medium } = useSocketInfo();

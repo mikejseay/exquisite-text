@@ -14,14 +14,14 @@ import RedoIcon from "@mui/icons-material/Redo";
 import PaletteIcon from "@mui/icons-material/Palette";
 import Button from "@mui/material/Button";
 
-import { logger } from "../../utilities/loggerUtils";
-import { Point } from "../../types";
-import { emitSendLastPanel, emitSendPanel, emitSendPanelEdit } from "../../context/SocketRequestors";
-import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { DEFAULT_COLOR, drawOnCanvas } from "../../utilities/canvasUtils";
-import { useDisableScroll } from "../../hooks/useDisableScroll";
-import { useCanvasResize } from "../../hooks/useCanvasResize";
-import { ScaleDirection, pixelRatio, scalePoints } from "../../utilities/scaleUtils";
+import { logger } from "utilities/loggerUtils";
+import { Point } from "types/types";
+import { emitSendLastPanel, emitSendPanel, emitSendPanelEdit } from "context/SocketRequestors";
+import { useSocketInfo } from "context/SocketInfoProvider";
+import { DEFAULT_COLOR, drawOnCanvas } from "utilities/canvasUtils";
+import { useDisableScroll } from "hooks/useDisableScroll";
+import { useCanvasResize } from "hooks/useCanvasResize";
+import { ScaleDirection, pixelRatio, scalePoints } from "utilities/scaleUtils";
 
 type PointerLikeEvent = {
     clientX: number;

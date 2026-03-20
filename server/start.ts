@@ -5,8 +5,8 @@ import * as dotenv from "dotenv";
 dotenv.config({ path: __dirname + "/.env" });
 
 import { Server } from "socket.io";
-import { logger } from "./utilities/loggerUtils";
-import type { TypedServer } from "./types";
+import { logger } from "utilities/loggerUtils";
+import type { TypedServer } from "types";
 
 // import the http library
 import { createServer } from "http";
@@ -15,8 +15,8 @@ import { createServer } from "http";
 // const certificate  = fs.readFileSync("./.cert/cert.pem", "utf8");
 // const credentials = {key: privateKey, cert: certificate};
 // app assembles the two routers and creates the express app and does its basic configuration
-import app from "./app";
-import sockets from "./modules/sockets";
+import app from "app";
+import sockets from "modules/sockets";
 
 import { isNil } from "es-toolkit";
 

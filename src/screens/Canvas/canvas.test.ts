@@ -6,7 +6,7 @@ import {
     PANEL_ASPECT_RATIO,
     PANEL_HEIGHT_MIN,
     PANEL_WIDTH_MIN,
-} from "./index";
+} from "screens/Canvas/Canvas";
 
 describe("Canvas constants", () => {
     it("PANEL_WIDTH_MIN is 667", () => {

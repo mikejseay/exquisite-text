@@ -1,4 +1,4 @@
-import { allowedHosts, allowedOrigin, getIsAllowedUrl } from "../urlValidation";
+import { allowedHosts, allowedOrigin, getIsAllowedUrl } from "utils/urlValidation";
 
 describe("getIsAllowedUrl", () => {
     it("allows https://www.exquisitetext.com", () => {

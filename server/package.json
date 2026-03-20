@@ -35,14 +35,15 @@
     "@types/morgan": "^1.9.3",
     "@types/node": "^18.0.6",
     "@types/uuid": "^8.3.4",
+    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.21.0"
   },
   "engines": {
     "node": ">=20.0.0"
   },
   "scripts": {
-    "startwatch": "nodemon --watch './**/*.ts' --exec ts-node start.ts",
-    "start": "ts-node start.ts",
+    "startwatch": "nodemon --watch './**/*.ts' --exec ts-node -r tsconfig-paths/register start.ts",
+    "start": "ts-node -r tsconfig-paths/register start.ts",
     "test": "OPENAI_API_KEY=test-dummy node --import tsx --test --test-force-exit './__tests__/**/*.test.ts'",
     "lint": "node ../node_modules/eslint/bin/eslint.js . --ext .ts --max-warnings 0 --ignore-pattern node_modules",
     "typecheck": "tsc --noEmit"

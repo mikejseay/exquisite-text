@@ -7,10 +7,10 @@ import * as React from "react";
 import {
     emitAlterGameSettings,
     emitStartGame,
-} from "../../context/SocketRequestors";
-import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { useInitializeGameSettings } from "../../hooks/useInitializeGameSettings";
-import { textCentered } from "../../styles/common";
+} from "context/SocketRequestors";
+import { useSocketInfo } from "context/SocketInfoProvider";
+import { useInitializeGameSettings } from "hooks/useInitializeGameSettings";
+import { textCentered } from "styles/common";
 
 export default function DrawingGameSettings({ hideStartButton = false }: { hideStartButton?: boolean }) {
     const {

@@ -1,11 +1,11 @@
 import * as React from "react";
-import { SocketInfoContext } from "../../context/SocketInfoProvider";
-import { ILine, IPanel, IUserTableInfo, LineLength, Medium, Point } from "../../types";
-import { defaultGameSettings } from "../../constants";
-import { socketListeners } from "../../context/SocketListeners";
+import { SocketInfoContext } from "context/SocketInfoProvider";
+import { ILine, IPanel, IUserTableInfo, LineLength, Medium, Point } from "types/types";
+import { defaultGameSettings } from "constants/constants";
+import { socketListeners } from "context/SocketListeners";
 import { useNavigate } from "react-router-dom";
 import { Socket, io } from "socket.io-client";
-import { ClientToServerEvents, ServerToClientEvents } from "../../types";
+import { ClientToServerEvents, ServerToClientEvents } from "types/types";
 
 const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
 const serverPath: URL["pathname"] | URL["href"] = isDevelopment

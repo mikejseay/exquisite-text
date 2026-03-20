@@ -1,7 +1,7 @@
-import { socket } from "../components/SocketHandler";
-import { IGameSettingsInfo, ILine, IPanel, ISocketInfoListeners, IUserTableInfo, Medium, Point } from "../types";
-import { shortDur } from "../constants";
-import { logger } from "../utilities/loggerUtils";
+import { socket } from "components/SocketHandler/SocketHandler";
+import { IGameSettingsInfo, ILine, IPanel, ISocketInfoListeners, IUserTableInfo, Medium, Point } from "types/types";
+import { shortDur } from "constants/constants";
+import { logger } from "utilities/loggerUtils";
 
 function updateAtIndex<T>(array: T[], index: number, value: T): T[] {
     return [ ...array.slice(0, index), value, ...array.slice(index + 1) ];

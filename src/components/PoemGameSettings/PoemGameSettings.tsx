@@ -4,14 +4,14 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import * as React from "react";
 
-import { LineLength } from "../../types";
+import { LineLength } from "types/types";
 import {
     emitAlterGameSettings,
     emitStartGame,
-} from "../../context/SocketRequestors";
-import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { useInitializeGameSettings } from "../../hooks/useInitializeGameSettings";
-import { textCentered } from "../../styles/common";
+} from "context/SocketRequestors";
+import { useSocketInfo } from "context/SocketInfoProvider";
+import { useInitializeGameSettings } from "hooks/useInitializeGameSettings";
+import { textCentered } from "styles/common";
 
 function PoemGameSettings({ hideStartButton = false }: { hideStartButton?: boolean }) {
     const {

@@ -1,4 +1,4 @@
-import { DEFAULT_COLOR, setCanvasDimensions, setCanvasProperties } from "./canvasUtils";
+import { DEFAULT_COLOR, setCanvasDimensions, setCanvasProperties } from "utilities/canvasUtils";
 
 // Mock pixelRatio since window.devicePixelRatio may not be set in test env
 jest.mock("./scaleUtils", () => ({

@@ -7,11 +7,11 @@ import Button from "@mui/material/Button";
 import {
     maxNameChars,
     roomCodeLength,
-} from "../../constants";
-import { emitJoinAs } from "../../context/SocketRequestors";
-import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { Role } from "../../types";
-import { joinErrorMessage, joinFormWrapper, uppercaseInput } from "./styles";
+} from "constants/constants";
+import { emitJoinAs } from "context/SocketRequestors";
+import { useSocketInfo } from "context/SocketInfoProvider";
+import { Role } from "types/types";
+import { joinErrorMessage, joinFormWrapper, uppercaseInput } from "screens/Join/styles";
 
 export default function Join() {
 

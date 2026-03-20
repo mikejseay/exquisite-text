@@ -8,8 +8,8 @@ import type {
     WebViewNavigation,
 } from "react-native-webview/lib/WebViewTypes";
 
-import CustomStatusBar from "./components/CustomStatusBar";
-import { allowedOrigin, getIsAllowedUrl } from "../urlValidation";
+import CustomStatusBar from "app/components/CustomStatusBar";
+import { allowedOrigin, getIsAllowedUrl } from "utils/urlValidation";
 
 void SplashScreen.preventAutoHideAsync();
 

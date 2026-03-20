@@ -9,8 +9,8 @@ import {
     maxNameChars,
     maxRoomTimeSpentEmpty,
     roomCodeLength,
-} from "./index";
-import { LineLength } from "../types";
+} from "constants/constants";
+import { LineLength } from "types/types";
 
 describe("lineConstraints", () => {
     it("has short and long presets", () => {

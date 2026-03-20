@@ -6,8 +6,8 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import { ClickAwayListener } from "@mui/material";
-import { leaveConfirmBox, leaveFAB } from "./styles";
-import { emitLeave } from "../../context/SocketRequestors";
+import { leaveConfirmBox, leaveFAB } from "components/LeaveButton/styles";
+import { emitLeave } from "context/SocketRequestors";
 
 function LeaveButton() {
     const [ open, setOpen ] = React.useState(false);

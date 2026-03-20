@@ -1,9 +1,9 @@
 // src/screens/CanvasSpectator/index.tsx
 import React, { useEffect, useState } from "react";
-import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { IPanel, Point } from "../../types";
-import MultipleDrawings from "../../components/MultipleDrawings";
-import { logger } from "../../utilities/loggerUtils";
+import { useSocketInfo } from "context/SocketInfoProvider";
+import { IPanel, Point } from "types/types";
+import MultipleDrawings from "components/MultipleDrawings/MultipleDrawings";
+import { logger } from "utilities/loggerUtils";
 
 export function combineDrawingPanels(
     panels: Array<Array<IPanel["content"]>> | null,

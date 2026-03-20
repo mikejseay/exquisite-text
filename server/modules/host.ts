@@ -1,6 +1,6 @@
-import Member from "./member";
-import { sendCompletedArtTestData } from "../utilities/socketUtils";
-import { Medium } from "../../src/types";
+import Member from "modules/member";
+import { sendCompletedArtTestData } from "utilities/socketUtils";
+import { Medium } from "shared/types/types";
 
 class Host extends Member {
     // does not enforce device ID constraint

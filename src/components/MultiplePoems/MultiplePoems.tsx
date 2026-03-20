@@ -3,11 +3,11 @@ import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a lo
 import { Carousel } from "react-responsive-carousel";
 import { isNil } from "es-toolkit";
 
-import { poemTitle } from "./styles";
-import { ILine } from "../../types";
-import PoemLinesAnimated from "../PoemLinesAnimated";
-import { lineSepString } from "../../constants";
-import { useSocketInfo } from "../../context/SocketInfoProvider";
+import { poemTitle } from "components/MultiplePoems/styles";
+import { ILine } from "types/types";
+import PoemLinesAnimated from "components/PoemLinesAnimated/PoemLinesAnimated";
+import { lineSepString } from "constants/constants";
+import { useSocketInfo } from "context/SocketInfoProvider";
 
 function getTextWidth(text: string, font: string) {
     // re-use canvas object for better performance

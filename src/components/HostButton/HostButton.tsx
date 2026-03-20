@@ -6,11 +6,11 @@ import Fab from "@mui/material/Fab";
 import Alert from "@mui/material/Alert";
 import { useClipboard } from "use-clipboard-copy";
 
-import { hostButtonLabel, hostButtonWrapper, hostButtonsContainer, roomCodeStyles } from "./styles";
-import { generateAlphaString } from "../../helpers";
-import { roomCodeLength } from "../../constants";
-import { emitCreateRoomAndHost } from "../../context/SocketRequestors";
-import { Medium } from "../../types";
+import { hostButtonLabel, hostButtonWrapper, hostButtonsContainer, roomCodeStyles } from "components/HostButton/styles";
+import { generateAlphaString } from "helpers/helpers";
+import { roomCodeLength } from "constants/constants";
+import { emitCreateRoomAndHost } from "context/SocketRequestors";
+import { Medium } from "types/types";
 
 function HostButton() {
     const [ open, setOpen ] = React.useState(false);

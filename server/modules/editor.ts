@@ -4,16 +4,16 @@ import {
     IGameSettingsInfo,
     IPanel,
     Point,
-} from "../../src/types";
-import { roomIDToRoom } from "./globals";
-import type { Drawing, Poem } from "./collaboration";
-import Member from "./member";
-import { getEditorSocketID, getRoom, sendCollaborationContributionsInfo } from "../utilities/socketUtils";
-import { DrawingRoom, PoemRoom } from "./room";
-import { guaranteeHalfLineCompletion } from "./poem_bot";
-import { delay, isBotUsageAuthorized } from "../llm_utils/llm_funcs";
-import { logger } from "../utilities/loggerUtils";
-import type { TypedServer, TypedSocket } from "../types";
+} from "shared/types/types";
+import { roomIDToRoom } from "modules/globals";
+import type { Drawing, Poem } from "modules/collaboration";
+import Member from "modules/member";
+import { getEditorSocketID, getRoom, sendCollaborationContributionsInfo } from "utilities/socketUtils";
+import { DrawingRoom, PoemRoom } from "modules/room";
+import { guaranteeHalfLineCompletion } from "modules/poem_bot";
+import { delay, isBotUsageAuthorized } from "llm_utils/llm_funcs";
+import { logger } from "utilities/loggerUtils";
+import type { TypedServer, TypedSocket } from "types";
 
 
 class Editor extends Member {

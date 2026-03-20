@@ -1,5 +1,5 @@
 import * as React from "react";
-import { textCentered } from "../../styles/common";
+import { textCentered } from "styles/common";
 
 export default function NoResults({ message }: { message: string }): JSX.Element {
     return (

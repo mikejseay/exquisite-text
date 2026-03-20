@@ -1,11 +1,11 @@
 import * as React from "react";
 
-import LeaveButton from "../../components/LeaveButton";
-import LineInput from "../../components/LineInput";
-import Canvas from "../Canvas";
-import { gameContainer } from "./styles";
-import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { Medium } from "../../types";
+import LeaveButton from "components/LeaveButton/LeaveButton";
+import LineInput from "components/LineInput/LineInput";
+import Canvas from "screens/Canvas/Canvas";
+import { gameContainer } from "screens/Game/styles";
+import { useSocketInfo } from "context/SocketInfoProvider";
+import { Medium } from "types/types";
 
 function Game() {
     const { medium } = useSocketInfo();

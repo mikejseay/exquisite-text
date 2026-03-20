@@ -2,21 +2,21 @@
 // and using that content, we maintain the user list and current history of the poem.
 // as far as I can tell, this will be the equivalent of the exquisite functionality, etc.
 
-import Host from "./host";
-import { DrawingEditor, PoemBot, PoemEditor } from "./editor";
-import { DrawingSpectator, PoemSpectator } from "./spectator";
-import { DrawingRoom, PoemRoom } from "./room";
+import Host from "modules/host";
+import { DrawingEditor, PoemBot, PoemEditor } from "modules/editor";
+import { DrawingSpectator, PoemSpectator } from "modules/spectator";
+import { DrawingRoom, PoemRoom } from "modules/room";
 import {
     GameState,
     Medium,
     Role,
-} from "../../src/types";
-import { maxEditors } from "../../src/constants";
+} from "shared/types/types";
+import { maxEditors } from "shared/constants/constants";
 
-import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "./globals";
-import { getRoom, getRouteForGameStateAndRole, standardReconnect } from "../utilities/socketUtils";
-import { logger } from "../utilities/loggerUtils";
-import type { TypedServer } from "../types";
+import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "modules/globals";
+import { getRoom, getRouteForGameStateAndRole, standardReconnect } from "utilities/socketUtils";
+import { logger } from "utilities/loggerUtils";
+import type { TypedServer } from "types";
 
 // The module exports a single function poem that takes the Socket.IO server instance as a parameter.
 function sockets(io: TypedServer) {

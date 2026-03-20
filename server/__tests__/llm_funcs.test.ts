@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-import { canBeFixedByShifting, delay, isAcceptableShape, processPoetryLines } from "../llm_utils/llm_funcs";
+import { canBeFixedByShifting, delay, isAcceptableShape, processPoetryLines } from "llm_utils/llm_funcs";
 
 describe("isAcceptableShape", () => {
     // idealCharsOnLineOne = 40, idealCharsOnLineTwo = 20

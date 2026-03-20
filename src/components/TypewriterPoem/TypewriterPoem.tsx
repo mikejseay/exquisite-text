@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { ILine } from "../../types";
-import { lineSepString } from "../../constants";
-import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { poemTypography } from "../../styles/common";
+import { ILine } from "types/types";
+import { lineSepString } from "constants/constants";
+import { useSocketInfo } from "context/SocketInfoProvider";
+import { poemTypography } from "styles/common";
 
 const DEFAULT_MS = 30;
 

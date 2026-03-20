@@ -1,5 +1,5 @@
-import { alphaCharacterRotate, generateAlphaString, getItemsOnCurrentPage, sleep } from "./index";
-import type { IPoem } from "../types";
+import { alphaCharacterRotate, generateAlphaString, getItemsOnCurrentPage, sleep } from "helpers/helpers";
+import type { IPoem } from "types/types";
 
 describe("generateAlphaString", () => {
     it("returns a string of the requested length", () => {

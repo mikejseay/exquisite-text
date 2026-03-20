@@ -1,6 +1,6 @@
 // src/utils/canvasUtils.ts
-import { Point } from "../types";
-import { pixelRatio } from "./scaleUtils";
+import { Point } from "types/types";
+import { pixelRatio } from "utilities/scaleUtils";
 
 export const DEFAULT_COLOR = "#7F7F7F";
 

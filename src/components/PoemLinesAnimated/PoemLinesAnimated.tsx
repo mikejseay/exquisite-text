@@ -9,7 +9,7 @@ import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
 import { useClipboard } from "use-clipboard-copy";
 
-import { useSocketInfo } from "../../context/SocketInfoProvider";
+import { useSocketInfo } from "context/SocketInfoProvider";
 import {
     colorKeyCard,
     colorKeyContent,
@@ -18,10 +18,10 @@ import {
     colorKeyName,
     copyButton,
     poemBody,
-} from "./styles";
-import { ILine } from "../../types";
-import { lineSepString, shortDur } from "../../constants";
-import TypewriterPoem from "../TypewriterPoem";
+} from "components/PoemLinesAnimated/styles";
+import { ILine } from "types/types";
+import { lineSepString, shortDur } from "constants/constants";
+import TypewriterPoem from "components/TypewriterPoem/TypewriterPoem";
 
 function PoemLinesAnimated({
     poemLines,

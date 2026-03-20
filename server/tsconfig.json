@@ -1,10 +1,18 @@
 {
   "extends": "@tsconfig/node16/tsconfig.json",
   "compilerOptions": {
+    "baseUrl": ".",
     "target": "es5",
     "downlevelIteration": true,
     "noEmit": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "shared/*": ["../src/*"],
+      "types/*": ["../src/types/*"],
+      "constants/*": ["../src/constants/*"],
+      "helpers/*": ["../src/helpers/*"],
+      "data/*": ["../src/data/*"]
+    }
   },
   "include": [
     "**/*.ts",

@@ -1,5 +1,5 @@
-import { combineDrawingPanels } from "./index";
-import type { Point } from "../../types";
+import { combineDrawingPanels } from "screens/CanvasSpectator/CanvasSpectator";
+import type { Point } from "types/types";
 import {
     DRAWING_ASPECT_RATIO,
     DRAWING_HEIGHT_MIN,
@@ -8,7 +8,7 @@ import {
     PANEL_ASPECT_RATIO,
     PANEL_HEIGHT_MIN,
     PANEL_WIDTH_MIN,
-} from "../Canvas";
+} from "screens/Canvas/Canvas";
 
 const stroke1: Point[] = [ { x: 10, y: 20, lineWidth: 2, color: "#f00" } ];
 const stroke2: Point[] = [ { x: 30, y: 40, lineWidth: 3, color: "#0f0" } ];

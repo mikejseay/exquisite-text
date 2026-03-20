@@ -1,6 +1,6 @@
 import * as React from "react";
-import { headerHeight } from "../../constants";
-import { poemTypography } from "../../styles/common";
+import { headerHeight } from "constants/constants";
+import { poemTypography } from "styles/common";
 
 export const gameContainer: React.CSSProperties = {
     ...poemTypography,

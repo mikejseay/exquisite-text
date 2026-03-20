@@ -1,4 +1,4 @@
-import { IGameSettingsInfo, ILineConstraintDict, LineLength } from "../types";
+import { IGameSettingsInfo, ILineConstraintDict, LineLength } from "types/types";
 
 export const roomCodeLength = 4;
 export const maxNameChars = 13;

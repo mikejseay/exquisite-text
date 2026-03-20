@@ -4,13 +4,13 @@ import {
     IPanel,
     Point,
     ServerToClientEvents,
-} from "../../src/types";
-import type { TypedServer } from "../types";
-import { getRoom } from "../utilities/socketUtils";
-import { analyzeBeginning } from "./poem_bot";
-import type { PoemRoom } from "./room";
-import { logger } from "../utilities/loggerUtils";
-import { isBotUsageAuthorized } from "../llm_utils/llm_funcs";
+} from "shared/types/types";
+import type { TypedServer } from "types";
+import { getRoom } from "utilities/socketUtils";
+import { analyzeBeginning } from "modules/poem_bot";
+import type { PoemRoom } from "modules/room";
+import { logger } from "utilities/loggerUtils";
+import { isBotUsageAuthorized } from "llm_utils/llm_funcs";
 
 class Collaboration {
     io: TypedServer;

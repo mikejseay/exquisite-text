@@ -9,9 +9,9 @@ import { ClickAwayListener, Fade } from "@mui/material";
 import WarningIcon from "@mui/icons-material/Warning";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 
-import { logger } from "../../utilities/loggerUtils";
-import { lineConstraints, lineSepString, shortDur } from "../../constants";
-import { useStateRef } from "../../helpers";
+import { logger } from "utilities/loggerUtils";
+import { lineConstraints, lineSepString, shortDur } from "constants/constants";
+import { useStateRef } from "helpers/helpers";
 import {
     activeInput,
     alertMessageStyle,
@@ -28,10 +28,10 @@ import {
     textSpacer,
     underlineSpan,
     underlineSuggestionDiv,
-} from "./styles";
+} from "components/LineInput/styles";
 import "./LineInput.css";
-import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { emitEditLine, emitSendLastLine, emitSendLineParts } from "../../context/SocketRequestors";
+import { useSocketInfo } from "context/SocketInfoProvider";
+import { emitEditLine, emitSendLastLine, emitSendLineParts } from "context/SocketRequestors";
 
 const LineInput = () => {
     const {

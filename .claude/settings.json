@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx eslint app/ __tests__/ urlValidation.ts --ext .ts,.tsx --max-warnings 0)",
+      "Bash(npx eslint . --ext .ts,.tsx --max-warnings 0)",
+      "Bash(npx eslint . --ext .ts,.tsx --max-warnings 0 --ignore-pattern node_modules)",
+      "Bash(npx eslint . --ext .ts --max-warnings 0 --ignore-pattern node_modules)",
+      "Bash(npm test)",
+      "Bash(cat /Users/peterklingelhofer/Dev/exquisite-text/.github/workflows/*.yml)",
+      "Bash(node -e \"const p = require\\(''./node_modules/eslint/package.json''\\); console.log\\(p.version\\)\")",
+      "Bash(yarn --version)",
+      "Bash(grep -A5 '\"\"lint\"\"' /Users/peterklingelhofer/Dev/exquisite-text/app/package.json)",
+      "Bash(yarn --cwd .. eslint . --ext .ts --max-warnings 0 --ignore-pattern node_modules)"
+    ]
+  }
+}

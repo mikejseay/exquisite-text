@@ -1,10 +1,10 @@
 import * as React from "react";
 
-import UserTable from "../../components/UserTable";
-import PoemGameSettings from "../../components/PoemGameSettings";
-import { generateAlphaString } from "../../helpers";
-import { roomCodeLength } from "../../constants";
-import { textCentered } from "../../styles/common";
+import UserTable from "components/UserTable/UserTable";
+import PoemGameSettings from "components/PoemGameSettings/PoemGameSettings";
+import { generateAlphaString } from "helpers/helpers";
+import { roomCodeLength } from "constants/constants";
+import { textCentered } from "styles/common";
 
 export default function Host() {
 

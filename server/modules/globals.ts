@@ -1,5 +1,5 @@
-import type Host from "./host";
-import { DrawingRoom, PoemRoom } from "./room";
+import type Host from "modules/host";
+import { DrawingRoom, PoemRoom } from "modules/room";
 import { Socket } from "socket.io-client";
 import { DefaultEventsMap } from "@socket.io/component-emitter";
 import { InMemoryChatMessageHistory } from "@langchain/core/chat_history";

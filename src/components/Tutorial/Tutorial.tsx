@@ -11,8 +11,8 @@ import {
     modalTitle,
     tutorial,
     tutorialButton,
-} from "./styles";
-import exampleGif from "../../assets/images/exquisiteExample.gif";
+} from "components/Tutorial/styles";
+import exampleGif from "assets/images/exquisiteExample.gif";
 
 const Tutorial = () => {
     // check if the user's visited the page before

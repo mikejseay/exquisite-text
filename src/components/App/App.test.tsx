@@ -13,7 +13,7 @@ jest.mock("socket.io-client", () => ({
     }),
 }));
 
-import App from "./index";
+import App from "components/App/App";
 
 test("renders app title", () => {
     const { container } = render(

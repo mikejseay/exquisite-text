@@ -1,8 +1,8 @@
 import * as React from "react";
 
-import { lineSepString } from "../../constants";
-import { spectatorLines } from "./styles";
-import { useSocketInfo } from "../../context/SocketInfoProvider";
+import { lineSepString } from "constants/constants";
+import { spectatorLines } from "components/Lines/styles";
+import { useSocketInfo } from "context/SocketInfoProvider";
 
 const Lines = () => {
     const { lines, lineEdits } = useSocketInfo();

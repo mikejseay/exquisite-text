@@ -1,19 +1,19 @@
 import * as React from "react";
 import { useState } from "react";
-import PoemGameSettings from "../../components/PoemGameSettings";
-import DrawingGameSettings from "../../components/DrawingGameSettings";
-import LeaveButton from "../../components/LeaveButton";
-import UserTable from "../../components/UserTable";
-import RoomCode from "../../components/RoomCode";
-import { Medium } from "../../types";
+import PoemGameSettings from "components/PoemGameSettings/PoemGameSettings";
+import DrawingGameSettings from "components/DrawingGameSettings/DrawingGameSettings";
+import LeaveButton from "components/LeaveButton/LeaveButton";
+import UserTable from "components/UserTable/UserTable";
+import RoomCode from "components/RoomCode/RoomCode";
+import { Medium } from "types/types";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { emitStartGame } from "../../context/SocketRequestors";
-import { useInitializeGameSettings } from "../../hooks/useInitializeGameSettings";
+import { useSocketInfo } from "context/SocketInfoProvider";
+import { emitStartGame } from "context/SocketRequestors";
+import { useInitializeGameSettings } from "hooks/useInitializeGameSettings";
 
 function Lobby() {
     const { medium, settingsEnabled } = useSocketInfo();

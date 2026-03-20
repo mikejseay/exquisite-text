@@ -1,6 +1,6 @@
 import * as React from "react";
-import MultiplePoems from "../../components/MultiplePoems";
-import { centered, floatingToggleAnimate } from "./styles";
+import MultiplePoems from "components/MultiplePoems/MultiplePoems";
+import { centered, floatingToggleAnimate } from "screens/End/styles";
 import IconButton from "@mui/material/IconButton";
 import KeyboardIcon from "@mui/icons-material/Keyboard";
 import {
@@ -9,11 +9,11 @@ import {
     emitRequestDrawings,
     emitRequestPoemsLines,
     emitRequestUserTableInfo,
-} from "../../context/SocketRequestors";
-import { Medium } from "../../types";
-import { useSocketInfo } from "../../context/SocketInfoProvider";
-import MultipleDrawings from "../../components/MultipleDrawings";
-import LeaveButton from "../../components/LeaveButton";
+} from "context/SocketRequestors";
+import { Medium } from "types/types";
+import { useSocketInfo } from "context/SocketInfoProvider";
+import MultipleDrawings from "components/MultipleDrawings/MultipleDrawings";
+import LeaveButton from "components/LeaveButton/LeaveButton";
 
 function End({ testingMedium }: { testingMedium?: Medium }) {
     const { medium } = useSocketInfo();

@@ -9,11 +9,11 @@ import {
     DRAWING_WIDTH_MIN,
     OVERLAP,
     PANEL_HEIGHT_MIN,
-} from "../../screens/Canvas";
-import { Point } from "../../types";
-import { drawOnCanvas } from "../../utilities/canvasUtils";
-import { useCanvasResize } from "../../hooks/useCanvasResize";
-import { ScaleDirection, pixelRatio, scalePoints } from "../../utilities/scaleUtils";
+} from "screens/Canvas/Canvas";
+import { Point } from "types/types";
+import { drawOnCanvas } from "utilities/canvasUtils";
+import { useCanvasResize } from "hooks/useCanvasResize";
+import { ScaleDirection, pixelRatio, scalePoints } from "utilities/scaleUtils";
 
 
 export const CompletedDrawing = ({

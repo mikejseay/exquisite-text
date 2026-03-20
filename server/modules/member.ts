@@ -1,11 +1,11 @@
 import { isNil } from "es-toolkit";
 
-import { deviceIDToRoomID, deviceIDToSocketID, roomIDToRoom, socketIDToDeviceID } from "./globals";
-import { GameState, ServerToClientEvents } from "../../src/types";
-import { userInfo as userInfoTestData } from "../../src/data/userInfo";
-import { getRoom } from "../utilities/socketUtils";
-import { logger } from "../utilities/loggerUtils";
-import type { TypedServer, TypedSocket } from "../types";
+import { deviceIDToRoomID, deviceIDToSocketID, roomIDToRoom, socketIDToDeviceID } from "modules/globals";
+import { GameState, ServerToClientEvents } from "shared/types/types";
+import { userInfo as userInfoTestData } from "shared/data/userInfo";
+import { getRoom } from "utilities/socketUtils";
+import { logger } from "utilities/loggerUtils";
+import type { TypedServer, TypedSocket } from "types";
 
 class Member {
     // represents an Editor or Spectator (which extend this)

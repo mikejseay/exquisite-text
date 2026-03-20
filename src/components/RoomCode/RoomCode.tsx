@@ -1,7 +1,7 @@
 import * as React from "react";
 
-import { useSocketInfo } from "../../context/SocketInfoProvider";
-import { roomCodeLabel, roomCodeValue, roomCodeWrapper } from "./styles";
+import { useSocketInfo } from "context/SocketInfoProvider";
+import { roomCodeLabel, roomCodeValue, roomCodeWrapper } from "components/RoomCode/styles";
 
 function RoomCode({ prominent = false }: { prominent?: boolean }) {
     const { roomCode } = useSocketInfo();

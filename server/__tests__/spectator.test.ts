@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-import { DrawingSpectator, PoemSpectator } from "../modules/spectator";
-import { DrawingRoom, PoemRoom } from "../modules/room";
-import { Drawing, Poem } from "../modules/collaboration";
-import { DrawingEditor, PoemEditor } from "../modules/editor";
-import { deviceIDToRoomID, deviceIDToSocketID, roomIDToRoom, socketIDToDeviceID } from "../modules/globals";
-import { createMockIO, createMockSocket } from "./helpers";
-import type { Point } from "../../src/types";
+import { DrawingSpectator, PoemSpectator } from "modules/spectator";
+import { DrawingRoom, PoemRoom } from "modules/room";
+import { Drawing, Poem } from "modules/collaboration";
+import { DrawingEditor, PoemEditor } from "modules/editor";
+import { deviceIDToRoomID, deviceIDToSocketID, roomIDToRoom, socketIDToDeviceID } from "modules/globals";
+import { createMockIO, createMockSocket } from "__tests__/helpers";
+import type { Point } from "shared/types/types";
 
 describe("PoemSpectator", () => {
     let io: ReturnType<typeof createMockIO>;

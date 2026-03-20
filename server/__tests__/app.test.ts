@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-import app from "../app";
+import app from "app";
 
 describe("Express app", () => {
     it("exports a function (express app)", () => {

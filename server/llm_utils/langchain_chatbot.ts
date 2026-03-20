@@ -4,7 +4,7 @@ import { AIMessage, HumanMessage } from "@langchain/core/messages";
 import { InMemoryChatMessageHistory } from "@langchain/core/chat_history";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { RunnablePassthrough, RunnableSequence, RunnableWithMessageHistory } from "@langchain/core/runnables";
-import { logger } from "../utilities/loggerUtils";
+import { logger } from "utilities/loggerUtils";
 
 async function mainOne() {
 

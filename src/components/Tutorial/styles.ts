@@ -1,5 +1,5 @@
 import * as React from "react";
-import { FABSpace } from "../../constants";
+import { FABSpace } from "constants/constants";
 import { SxProps } from "@mui/system";
 
 export const tutorialButton: React.CSSProperties = {

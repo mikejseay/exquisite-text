@@ -1,5 +1,5 @@
-import { ScaleDirection, scalePoints } from "./scaleUtils";
-import type { Point } from "../types";
+import { ScaleDirection, scalePoints } from "utilities/scaleUtils";
+import type { Point } from "types/types";
 
 describe("scalePoints", () => {
     const samplePoints: Point[] = [

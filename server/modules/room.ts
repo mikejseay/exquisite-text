@@ -7,30 +7,30 @@ import {
     roomIDToHost,
     roomIDToRoom,
     socketIDToDeviceID,
-} from "./globals";
-import { DrawingSpectator, PoemSpectator } from "./spectator";
-import type { DrawingEditor, PoemEditor } from "./editor";
-import { PoemBot } from "./editor";
-import Member from "./member";
-import { Drawing, Poem } from "./collaboration";
+} from "modules/globals";
+import { DrawingSpectator, PoemSpectator } from "modules/spectator";
+import type { DrawingEditor, PoemEditor } from "modules/editor";
+import { PoemBot } from "modules/editor";
+import Member from "modules/member";
+import { Drawing, Poem } from "modules/collaboration";
 import {
     GameState,
     IGameSettingsInfo,
     IUserTableInfo,
     Medium,
     Point,
-} from "../../src/types";
-import type { TypedServer, TypedSocket } from "../types";
+} from "shared/types/types";
+import type { TypedServer, TypedSocket } from "types";
 import {
     checkActivityInterval,
     defaultGameSettings,
     editorColorDefaultsArr,
     maxMemberTimeSpentInactive,
     maxRoomTimeSpentEmpty,
-} from "../../src/constants";
-import { sleep } from "../../src/helpers";
+} from "shared/constants/constants";
+import { sleep } from "shared/helpers/helpers";
 import { v4 as uuidv4 } from "uuid";
-import { logger } from "../utilities/loggerUtils";
+import { logger } from "utilities/loggerUtils";
 
 const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
 const serverPath: string = isDevelopment

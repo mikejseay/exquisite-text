@@ -1,6 +1,6 @@
 import * as React from "react";
-import { headerHeight } from "../../constants";
-import { estebanFont } from "../../styles/common";
+import { headerHeight } from "constants/constants";
+import { estebanFont } from "styles/common";
 
 export const appHeader: React.CSSProperties = {
     alignItems: "center",

@@ -4,9 +4,9 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { Carousel } from "react-responsive-carousel";
 
-import { title } from "./styles";
-import { Point } from "../../types";
-import { CompletedDrawing } from "../CompletedDrawings";
+import { title } from "components/MultipleDrawings/styles";
+import { Point } from "types/types";
+import { CompletedDrawing } from "components/CompletedDrawings/CompletedDrawings";
 
 const renderDrawings = (
     completedDrawings: Point[][][][] | null,

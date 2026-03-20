@@ -1,9 +1,9 @@
 import { beforeEach, describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-import { Drawing, Poem } from "../modules/collaboration";
-import { createMockIO } from "./helpers";
-import type { Point } from "../../src/types";
+import { Drawing, Poem } from "modules/collaboration";
+import { createMockIO } from "__tests__/helpers";
+import type { Point } from "shared/types/types";
 
 describe("Poem", () => {
     let io: ReturnType<typeof createMockIO>;

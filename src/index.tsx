@@ -6,19 +6,19 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import "./index.css";
-import App from "./components/App";
-import End from "./screens/End";
-import Game from "./screens/Game";
-import Join from "./screens/Join";
-import Lobby from "./screens/Lobby";
-import Spectate from "./screens/Spectate";
-import Disconnected from "./screens/Disconnected";
-import Canvas from "./screens/Canvas";
-import reportWebVitals from "./reportWebVitals";
-import SocketHandler from "./components/SocketHandler";
-import CanvasSpectator from "./screens/CanvasSpectator";
-import { Medium } from "./types";
-import { getTheme } from "./theme";
+import App from "components/App/App";
+import End from "screens/End/End";
+import Game from "screens/Game/Game";
+import Join from "screens/Join/Join";
+import Lobby from "screens/Lobby/Lobby";
+import Spectate from "screens/Spectate/Spectate";
+import Disconnected from "screens/Disconnected/Disconnected";
+import Canvas from "screens/Canvas/Canvas";
+import reportWebVitals from "reportWebVitals";
+import SocketHandler from "components/SocketHandler/SocketHandler";
+import CanvasSpectator from "screens/CanvasSpectator/CanvasSpectator";
+import { Medium } from "types/types";
+import { getTheme } from "theme";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement,

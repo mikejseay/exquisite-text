@@ -1,9 +1,9 @@
-import { roomIDToRoom } from "./globals";
-import Member from "./member";
-import { getRoom, sendCollaborationContributionsInfo } from "../utilities/socketUtils";
-import type { DrawingRoom, PoemRoom } from "./room";
-import type { Drawing, Poem } from "./collaboration";
-import { logger } from "../utilities/loggerUtils";
+import { roomIDToRoom } from "modules/globals";
+import Member from "modules/member";
+import { getRoom, sendCollaborationContributionsInfo } from "utilities/socketUtils";
+import type { DrawingRoom, PoemRoom } from "modules/room";
+import type { Drawing, Poem } from "modules/collaboration";
+import { logger } from "utilities/loggerUtils";
 
 class Spectator extends Member {
     joinRoom() {

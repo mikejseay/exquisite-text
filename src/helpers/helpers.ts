@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { IPoem } from "../types";
+import { IPoem } from "types/types";
 
 const allPossibleLetters = "abcdefghijklmnopqrstuvwxyz";
 const quantityAllPossibleLetters = allPossibleLetters.length;

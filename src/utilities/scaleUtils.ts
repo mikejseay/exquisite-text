@@ -1,4 +1,4 @@
-import { Point } from "../types";
+import { Point } from "types/types";
 
 export const pixelRatio = window.devicePixelRatio || 1;
 

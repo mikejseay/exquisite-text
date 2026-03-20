@@ -1,18 +1,18 @@
-import { roomIDToRoom } from "../modules/globals";
-import { DrawingEditor, PoemEditor } from "../modules/editor";
-import { DrawingRoom, PoemRoom } from "../modules/room";
+import { roomIDToRoom } from "modules/globals";
+import { DrawingEditor, PoemEditor } from "modules/editor";
+import { DrawingRoom, PoemRoom } from "modules/room";
 import {
     GameState,
     Medium,
     Role,
-} from "../../src/types";
-import { DrawingSpectator, PoemSpectator } from "../modules/spectator";
-import { poemsLines as poemsLinesTestData } from "../../src/data/multiplePoems";
-import { multipleDrawingsTestData } from "../../src/data/multipleDrawings";
-import Host from "../modules/host";
-import { Drawing, Poem } from "../modules/collaboration";
-import { logger } from "./loggerUtils";
-import type { TypedServer, TypedSocket } from "../types";
+} from "shared/types/types";
+import { DrawingSpectator, PoemSpectator } from "modules/spectator";
+import { poemsLines as poemsLinesTestData } from "shared/data/multiplePoems";
+import { multipleDrawingsTestData } from "shared/data/multipleDrawings";
+import Host from "modules/host";
+import { Drawing, Poem } from "modules/collaboration";
+import { logger } from "utilities/loggerUtils";
+import type { TypedServer, TypedSocket } from "types";
 
 
 export function getRouteForGameStateAndRole(gameState: GameState, role: Role): string {

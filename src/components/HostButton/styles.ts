@@ -1,5 +1,5 @@
 import * as React from "react";
-import { FABDiameter, FABSpace } from "../../constants";
+import { FABDiameter, FABSpace } from "constants/constants";
 
 export const hostButtonLabel: React.CSSProperties = {
     fontSize: "9px",

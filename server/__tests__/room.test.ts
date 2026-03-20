@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-import { DrawingRoom, PoemRoom } from "../modules/room";
-import { createMockIO, createMockSocket } from "./helpers";
-import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "../modules/globals";
-import { GameState, Medium } from "../../src/types";
-import { defaultGameSettings, editorColorDefaultsArr } from "../../src/constants";
+import { DrawingRoom, PoemRoom } from "modules/room";
+import { createMockIO, createMockSocket } from "__tests__/helpers";
+import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "modules/globals";
+import { GameState, Medium } from "shared/types/types";
+import { defaultGameSettings, editorColorDefaultsArr } from "shared/constants/constants";
 
 describe("PoemRoom", () => {
     let io: ReturnType<typeof createMockIO>;

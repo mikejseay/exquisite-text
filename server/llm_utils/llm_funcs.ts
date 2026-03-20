@@ -1,5 +1,5 @@
-import { logger } from "../utilities/loggerUtils";
-import { PoemRoom } from "../modules/room";
+import { logger } from "utilities/loggerUtils";
+import { PoemRoom } from "modules/room";
 
 export function delay(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );

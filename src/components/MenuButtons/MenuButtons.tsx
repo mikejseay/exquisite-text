@@ -1,8 +1,8 @@
 import * as React from "react";
 import { useLocation } from "react-router-dom";
 
-import HostButton from "../HostButton";
-import Tutorial from "../Tutorial";
+import HostButton from "components/HostButton/HostButton";
+import Tutorial from "components/Tutorial/Tutorial";
 
 const screensWithLeaveButton = new Set([ "/game", "/lobby", "/spectate", "/end", "/canvas", "/canvasspectator" ]);
 
