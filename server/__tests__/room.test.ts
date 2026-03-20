@@ -1,11 +1,10 @@
-import { afterEach, beforeEach, describe, it } from "node:test";
 import assert from "node:assert/strict";
-
-import { DrawingRoom, PoemRoom } from "modules/room";
+import { afterEach, beforeEach, describe, it } from "node:test";
 import { createMockIO, createMockSocket } from "__tests__/helpers";
 import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "modules/globals";
-import { GameState, Medium } from "shared/types/types";
+import { DrawingRoom, PoemRoom } from "modules/room";
 import { defaultGameSettings, editorColorDefaultsArr } from "shared/constants/constants";
+import { GameState, Medium } from "shared/types/types";
 
 describe("PoemRoom", () => {
     let io: ReturnType<typeof createMockIO>;
@@ -68,8 +67,8 @@ describe("PoemRoom", () => {
         room.addSpectator("dev-3", { name: "Charlie" } as any);
 
         const info = room.currentUserTableInfo();
-        assert.deepEqual(info.editors, [ "Alice", "Bob" ]);
-        assert.deepEqual(info.spectators, [ "Charlie" ]);
+        assert.deepEqual(info.editors, ["Alice", "Bob"]);
+        assert.deepEqual(info.spectators, ["Charlie"]);
         assert.equal(info.editorColors.length, 2);
         assert.equal(info.editorColors[0], editorColorDefaultsArr[0]);
         assert.equal(info.editorColors[1], editorColorDefaultsArr[1]);
@@ -95,16 +94,12 @@ describe("PoemRoom", () => {
         room.navigateMembersToGame();
 
         assert.equal(room.gameState, GameState.GAME);
-        const editorNav = io.emissions.find(
-            (e: any) => e.target === "ROOM1_Editors" && e.event === "stcNavigate",
-        );
-        const specNav = io.emissions.find(
-            (e: any) => e.target === "ROOM1_Spectators" && e.event === "stcNavigate",
-        );
+        const editorNav = io.emissions.find((e: any) => e.target === "ROOM1_Editors" && e.event === "stcNavigate");
+        const specNav = io.emissions.find((e: any) => e.target === "ROOM1_Spectators" && e.event === "stcNavigate");
         assert.ok(editorNav);
-        assert.deepEqual(editorNav!.args, [ "/game" ]);
+        assert.deepEqual(editorNav!.args, ["/game"]);
         assert.ok(specNav);
-        assert.deepEqual(specNav!.args, [ "/spectate" ]);
+        assert.deepEqual(specNav!.args, ["/spectate"]);
     });
 
     it("hasPoemBot returns false when no bots", () => {
@@ -114,11 +109,9 @@ describe("PoemRoom", () => {
 
     it("sendToEnd emits stcNavigate /end to room", () => {
         room.sendToEnd();
-        const nav = io.emissions.find(
-            (e: any) => e.target === "ROOM1" && e.event === "stcNavigate",
-        );
+        const nav = io.emissions.find((e: any) => e.target === "ROOM1" && e.event === "stcNavigate");
         assert.ok(nav);
-        assert.deepEqual(nav!.args, [ "/end" ]);
+        assert.deepEqual(nav!.args, ["/end"]);
     });
 
     it("cleanUpMember cleans up globals", () => {
@@ -231,14 +224,12 @@ describe("DrawingRoom", () => {
 
     it("sendCompletedDrawings emits to room", () => {
         room.finishedWorks.push({
-            panels: new Set([ { content: [ [ { x: 0, y: 0, lineWidth: 1, color: "#000" } ] ] } ]),
+            panels: new Set([{ content: [[{ x: 0, y: 0, lineWidth: 1, color: "#000" }]] }]),
         } as any);
 
         room.sendCompletedDrawings();
 
-        const emission = io.emissions.find(
-            (e: any) => e.event === "stcCompletedDrawings",
-        );
+        const emission = io.emissions.find((e: any) => e.event === "stcCompletedDrawings");
         assert.ok(emission);
     });
 });

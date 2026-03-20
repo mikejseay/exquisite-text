@@ -1,20 +1,16 @@
-import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { ChatOpenAI } from "@langchain/openai";
 import { logger } from "utilities/loggerUtils";
 
 async function main() {
-
     // instantiate model
     const model: ChatOpenAI = new ChatOpenAI({ model: "gpt-4o" });
 
     // level 1: define messages by hand and pass into model
     // result contains lots of metadata including the text output
-    const messages = [
-        new SystemMessage("Translate the following from English into Italian"),
-        new HumanMessage("hi!"),
-    ];
+    const messages = [new SystemMessage("Translate the following from English into Italian"), new HumanMessage("hi!")];
     const result = await model.invoke(messages);
     logger.debug({ result });
 
@@ -34,28 +30,23 @@ async function main() {
     // level 3: instead of defining "messages" manually, create a prompt template
     // this way it's easy to reuse and pass in different parameters
     const promptTemplate = ChatPromptTemplate.fromMessages([
-        [ "system", "Translate the following into {language}:" ],
-        [ "user", "{text}" ],
+        ["system", "Translate the following into {language}:"],
+        ["user", "{text}"],
     ]);
     // call invoke, passing an object specifying each curly bracket arg in the prompt template
-    const templatedPrompt = await promptTemplate.invoke(
-        { language: "italian", text: "hi" },
-    );
+    const templatedPrompt = await promptTemplate.invoke({ language: "italian", text: "hi" });
     const templatedPromptMessages = templatedPrompt.toChatMessages();
     logger.debug({ templatedPromptMessages });
 
     // level 4: create chain of prompt template --> model --> parser and do it all in one
     const chainTwo = promptTemplate.pipe(model).pipe(parser);
-    const chainTwoResult = await chainTwo.invoke(
-        { language: "italian", text: "hi" },
-    );
+    const chainTwoResult = await chainTwo.invoke({ language: "italian", text: "hi" });
     logger.debug({ chainTwoResult });
 
     // from this we can see that a basic chain always includes three components:
     // 1) Prompt Template - templates string inputs into prompt to make model inputs
     // 2) Model - consumes model inputs to produce raw output
     // 3) Output Parser - templates raw output back into a string
-
 }
 
 main();

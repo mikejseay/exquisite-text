@@ -1,20 +1,17 @@
 #!/usr/bin/env node
 
-import { Server } from "socket.io";
-import { logger } from "utilities/loggerUtils";
-import type { TypedServer } from "types";
-
 // import the http library
-import { createServer } from "http";
-
+import { createServer } from "node:http";
 // const privateKey   = fs.readFileSync("./.cert/key.pem", "utf8");
 // const certificate  = fs.readFileSync("./.cert/cert.pem", "utf8");
 // const credentials = {key: privateKey, cert: certificate};
 // app assembles the two routers and creates the express app and does its basic configuration
 import app from "app";
 import sockets from "modules/sockets";
-
 import { isNil } from "shared/helpers/helpers";
+import { Server } from "socket.io";
+import type { TypedServer } from "types";
+import { logger } from "utilities/loggerUtils";
 
 /**
  * Module dependencies.
@@ -37,7 +34,7 @@ const httpServer = createServer(app);
 
 const io: TypedServer = new Server(httpServer, {
     cors: {
-        methods: [ "GET", "POST" ],
+        methods: ["GET", "POST"],
         origin: "*",
     },
 });
@@ -67,13 +64,13 @@ httpServer.on("listening", onListening);
 function normalizePort(val: string) {
     const port = parseInt(val, 10);
 
-    if (isNaN(port)) {
-    // named pipe
+    if (Number.isNaN(port)) {
+        // named pipe
         return val;
     }
 
     if (port >= 0) {
-    // port number
+        // port number
         return port;
     }
 
@@ -89,22 +86,20 @@ function onError(error: { syscall: string; code: string }) {
         throw error;
     }
 
-    const bind = typeof port === "string"
-        ? "Pipe " + port
-        : "Port " + port;
+    const bind = typeof port === "string" ? `Pipe ${port}` : `Port ${port}`;
 
     // handle specific listen errors with friendly messages
     switch (error.code) {
-    case "EACCES":
-        logger.error(`${bind} requires elevated privileges`);
-        process.exit(1);
-        break;
-    case "EADDRINUSE":
-        logger.error(`${bind} is already in use`);
-        process.exit(1);
-        break;
-    default:
-        throw error;
+        case "EACCES":
+            logger.error(`${bind} requires elevated privileges`);
+            process.exit(1);
+            break;
+        case "EADDRINUSE":
+            logger.error(`${bind} is already in use`);
+            process.exit(1);
+            break;
+        default:
+            throw error;
     }
 }
 
@@ -115,12 +110,7 @@ function onError(error: { syscall: string; code: string }) {
 function onListening() {
     const address = httpServer.address();
     if (!isNil(address)) {
-        const bind =
-      typeof address === "string"
-          ? `pipe ${address}`
-          : `port ${address.port}`;
+        const bind = typeof address === "string" ? `pipe ${address}` : `port ${address.port}`;
         logger.info(`Listening on ${bind}`);
     }
 }
-
-export {};

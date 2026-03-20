@@ -1,5 +1,5 @@
-import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { describe, it } from "node:test";
 
 import { canBeFixedByShifting, delay, isAcceptableShape, processPoetryLines } from "llm_utils/llm_funcs";
 
@@ -70,14 +70,14 @@ describe("canBeFixedByShifting", () => {
 
     it("returns false when line two is shorter than line one (even if shape is bad)", () => {
         const lineOne = "A".repeat(60); // too long
-        const lineTwo = "B".repeat(5);  // shorter AND too short
+        const lineTwo = "B".repeat(5); // shorter AND too short
         assert.equal(canBeFixedByShifting(lineOne, lineTwo, 40, 20), false);
     });
 });
 
 describe("processPoetryLines", () => {
     it("shifts words from line two to line one until line one is ~2x line two", () => {
-        const [ newOne, newTwo ] = processPoetryLines(
+        const [newOne, newTwo] = processPoetryLines(
             "A quick brown fox",
             "jumps over the lazy dog who is lying in the sun",
         );
@@ -90,23 +90,21 @@ describe("processPoetryLines", () => {
 
     it("does not lose any words during shifting", () => {
         const original = "A quick brown fox jumps over the lazy dog who is lying in the sun";
-        const [ newOne, newTwo ] = processPoetryLines(
+        const [newOne, newTwo] = processPoetryLines(
             "A quick brown fox",
             "jumps over the lazy dog who is lying in the sun",
         );
-        const recombined = newTwo
-            ? `${newOne} ${newTwo}`
-            : newOne;
+        const recombined = newTwo ? `${newOne} ${newTwo}` : newOne;
         assert.equal(recombined, original);
     });
 
     it("handles empty line one by absorbing words from line two", () => {
-        const [ newOne ] = processPoetryLines("", "hello world foo bar baz");
+        const [newOne] = processPoetryLines("", "hello world foo bar baz");
         assert.ok(newOne.length > 0);
     });
 
     it("handles single word in line two", () => {
-        const [ newOne, newTwo ] = processPoetryLines("Short", "word");
+        const [newOne, newTwo] = processPoetryLines("Short", "word");
         // Should shift "word" to line one since line one < 2 * line two
         assert.ok(newOne.includes("word") || newTwo === "word");
     });

@@ -15,7 +15,7 @@ export enum Medium {
 
 export enum Role {
     EDITOR = "Editor",
-    SPECTATOR = "Spectator"
+    SPECTATOR = "Spectator",
 }
 
 export enum LineLength {
@@ -36,7 +36,7 @@ export interface ILineConstraints {
 
 export type ILineConstraintDict = {
     [key in LineLength]: ILineConstraints;
-}
+};
 
 export interface IUserTableInfo {
     editors: Array<string>;
@@ -163,60 +163,48 @@ export interface SocketData {
 
 export interface ISocketInfoListeners {
     // React.useState<IUserTableInfo>({} as IUserTableInfo);
-    setUserInfo: (value: IUserTableInfo |
-        ((prevVar: IUserTableInfo) => IUserTableInfo)) => void;
+    setUserInfo: (value: IUserTableInfo | ((prevVar: IUserTableInfo) => IUserTableInfo)) => void;
     // React.useState<Array<ILine[]>>([]);
-    setPoemsLines: (value: Array<ILine[]> |
-        ((prevVar: Array<ILine[]>) => Array<ILine[]>)) => void;
+    setPoemsLines: (value: Array<ILine[]> | ((prevVar: Array<ILine[]>) => Array<ILine[]>)) => void;
     // React.useState<string>("");
-    setJoinErrorMessage: (value: string |
-        ((prevVar: string) => string)) => void;
+    setJoinErrorMessage: (value: string | ((prevVar: string) => string)) => void;
     // React.useState<string>("");
-    setRoomCode: (value: string |
-        ((prevVar: string) => string)) => void;
+    setRoomCode: (value: string | ((prevVar: string) => string)) => void;
     // React.useState<boolean>(false);
-    setSettingsEnabled: (value: boolean |
-        ((prevVar: boolean) => boolean)) => void;
+    setSettingsEnabled: (value: boolean | ((prevVar: boolean) => boolean)) => void;
     // React.useState<LineLength>(defaultGameSettings.lineLength);
-    setLineLength: (value: LineLength |
-        ((prevVar: LineLength) => LineLength)) => void;
+    setLineLength: (value: LineLength | ((prevVar: LineLength) => LineLength)) => void;
     // React.useState<number>(defaultGameSettings.nRounds);
-    setNRounds: (value: number |
-        ((prevVar: number) => number)) => void;
+    setNRounds: (value: number | ((prevVar: number) => number)) => void;
     // React.useState<number>(defaultGameSettings.nPoems);
-    setNPoems: (value: number |
-        ((prevVar: number) => number)) => void;
-    setNDrawings: (value: number |
-        ((prevVar: number) => number)) => void;
+    setNPoems: (value: number | ((prevVar: number) => number)) => void;
+    setNDrawings: (value: number | ((prevVar: number) => number)) => void;
     // React.useState<Array<Array<string>>>([ [], [], [], [] ]);
-    setLines: (value: Array<Array<ILine["content"]>> |
-        ((prevVar: Array<Array<string>>) => Array<Array<string>>)) => void;
-    setPanels: (value: Array<Array<IPanel["content"]>> |
-        ((prevVar: Array<Array<IPanel["content"]>>) => Array<Array<IPanel["content"]>>)) => void;
-    setPanelEdits: (value: Array<IPanel["content"]> |
-        ((prevVar: Array<IPanel["content"]>) => Array<IPanel["content"]>)) => void;
+    setLines: (
+        value: Array<Array<ILine["content"]>> | ((prevVar: Array<Array<string>>) => Array<Array<string>>),
+    ) => void;
+    setPanels: (
+        value:
+            | Array<Array<IPanel["content"]>>
+            | ((prevVar: Array<Array<IPanel["content"]>>) => Array<Array<IPanel["content"]>>),
+    ) => void;
+    setPanelEdits: (
+        value: Array<IPanel["content"]> | ((prevVar: Array<IPanel["content"]>) => Array<IPanel["content"]>),
+    ) => void;
     // React.useState<Array<string>>([ "", "", "", "" ]);
-    setLineEdits: (value: Array<string> |
-        ((prevVar: Array<string>) => Array<string>)) => void;
+    setLineEdits: (value: Array<string> | ((prevVar: Array<string>) => Array<string>)) => void;
     // React.useState<string>("");
-    setPoemInput: (value: string |
-        ((prevVar: string) => string)) => void;
+    setPoemInput: (value: string | ((prevVar: string) => string)) => void;
     // React.useState<string>("");
-    setPoemInputSpectate: (value: string |
-        ((prevVar: string) => string)) => void;
+    setPoemInputSpectate: (value: string | ((prevVar: string) => string)) => void;
     // React.useState<boolean>(false);
-    setOnLastContribution: (value: boolean |
-        ((prevVar: boolean) => boolean)) => void;
+    setOnLastContribution: (value: boolean | ((prevVar: boolean) => boolean)) => void;
     // React.useState<boolean>(false);
-    setEditorActive: (value: boolean |
-        ((prevVar: boolean) => boolean)) => void;
-        navigate: NavigateFunction;
-    setStrokeHistory: (value: Point[][] |
-        ((prevVar: Point[][]) => Point[][])) => void;
-    setCompletedDrawings: (value: Point[][][][] |
-        ((prevVar: Point[][][][]) => Point[][][][])) => void;
-    setMedium: (medium: Medium |
-        ((prevVar: Medium) => Medium)) => void;
+    setEditorActive: (value: boolean | ((prevVar: boolean) => boolean)) => void;
+    navigate: NavigateFunction;
+    setStrokeHistory: (value: Point[][] | ((prevVar: Point[][]) => Point[][])) => void;
+    setCompletedDrawings: (value: Point[][][][] | ((prevVar: Point[][][][]) => Point[][][][])) => void;
+    setMedium: (medium: Medium | ((prevVar: Medium) => Medium)) => void;
 }
 
 export interface ISocketInfo {

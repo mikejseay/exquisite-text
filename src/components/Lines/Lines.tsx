@@ -1,7 +1,6 @@
-import * as React from "react";
+import { spectatorLines } from "components/Lines/styles";
 
 import { lineSepString } from "constants/constants";
-import { spectatorLines } from "components/Lines/styles";
 import { useSocketInfo } from "context/SocketInfoProvider";
 
 const Lines = () => {
@@ -13,16 +12,13 @@ const Lines = () => {
     return (
         <div className={"lines-outer"} style={spectatorLines}>
             {lines.map((lineArray, poemIndex) => {
-                return <div className={"lines-inner"} style={{ marginBottom: "2em" }} key={poemIndex}>
-                    <div className={"lines-array"}>
-                        {lineArray.join(lineSepString)}
+                return (
+                    <div className={"lines-inner"} style={{ marginBottom: "2em" }} key={poemIndex}>
+                        <div className={"lines-array"}>{lineArray.join(lineSepString)}</div>
+                        <div className={"lines-edit"}>{lineEdits[poemIndex]}</div>
                     </div>
-                    <div className={"lines-edit"}>
-                        {lineEdits[poemIndex]}
-                    </div>
-                </div>;
-            },
-            )}
+                );
+            })}
         </div>
     );
 };

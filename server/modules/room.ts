@@ -1,5 +1,8 @@
-import { io as ioClient } from "socket.io-client";
-
+import { randomUUID } from "node:crypto";
+import { setTimeout as sleep } from "node:timers/promises";
+import { Drawing, Poem } from "modules/collaboration";
+import type { DrawingEditor, PoemEditor } from "modules/editor";
+import { PoemBot } from "modules/editor";
 import {
     botDeviceIDToBotSocket,
     deviceIDToRoomID,
@@ -8,19 +11,8 @@ import {
     roomIDToRoom,
     socketIDToDeviceID,
 } from "modules/globals";
-import { DrawingSpectator, PoemSpectator } from "modules/spectator";
-import type { DrawingEditor, PoemEditor } from "modules/editor";
-import { PoemBot } from "modules/editor";
-import Member from "modules/member";
-import { Drawing, Poem } from "modules/collaboration";
-import {
-    GameState,
-    IGameSettingsInfo,
-    IUserTableInfo,
-    Medium,
-    Point,
-} from "shared/types/types";
-import type { TypedServer, TypedSocket } from "types";
+import type Member from "modules/member";
+import type { DrawingSpectator, PoemSpectator } from "modules/spectator";
 import {
     checkActivityInterval,
     defaultGameSettings,
@@ -28,14 +20,13 @@ import {
     maxMemberTimeSpentInactive,
     maxRoomTimeSpentEmpty,
 } from "shared/constants/constants";
-import { sleep } from "shared/helpers/helpers";
-import { randomUUID } from "crypto";
+import { GameState, type IGameSettingsInfo, type IUserTableInfo, Medium, type Point } from "shared/types/types";
+import { io as ioClient } from "socket.io-client";
+import type { TypedServer, TypedSocket } from "types";
 import { logger } from "utilities/loggerUtils";
 
 const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
-const serverPath: string = isDevelopment
-    ? "http://localhost:3000"
-    : (process.env.HEROKU_URL ?? "/");
+const serverPath: string = isDevelopment ? "http://localhost:3000" : (process.env.HEROKU_URL ?? "/");
 logger.debug(`serverPath is ${serverPath} in room.ts`);
 
 class Room {
@@ -55,11 +46,7 @@ class Room {
     finishedWorks: Array<Poem | Drawing>;
     medium: Medium;
 
-    constructor(
-        io: TypedServer,
-        hostSocket: TypedSocket,
-        room: string,
-    ) {
+    constructor(io: TypedServer, hostSocket: TypedSocket, room: string) {
         this.io = io;
         this.hostSocket = hostSocket;
         this.roomID = room;
@@ -70,10 +57,7 @@ class Room {
         this.nUnfinishedWorks = 0;
 
         // check user activity every 30 seconds
-        this.activityInterval = setInterval(
-            this.checkActivity.bind(this),
-            checkActivityInterval,
-        );
+        this.activityInterval = setInterval(this.checkActivity.bind(this), checkActivityInterval);
         this.createdAt = Date.now();
         this.gameSettings = defaultGameSettings;
         this.finishedWorks = [];
@@ -148,19 +132,13 @@ class Room {
             return;
         }
         for (const spectator of this.spectators.values()) {
-            if (
-                !spectator.connected &&
-                currentTime - spectator.lastActivity > maxMemberTimeSpentInactive
-            ) {
+            if (!spectator.connected && currentTime - spectator.lastActivity > maxMemberTimeSpentInactive) {
                 spectator.leaveRoom();
                 logger.debug(`booting ${spectator.name} based on inactivity`);
             }
         }
         for (const editor of this.editors.values()) {
-            if (
-                editor.isCurrentlyEditing &&
-                currentTime - editor.lastActivity > maxMemberTimeSpentInactive
-            ) {
+            if (editor.isCurrentlyEditing && currentTime - editor.lastActivity > maxMemberTimeSpentInactive) {
                 editor.leaveRoom();
                 logger.debug(`booting ${editor.name} based on inactivity`);
             }
@@ -183,11 +161,11 @@ class Room {
         await sleep(100_000);
         logger.debug(`${this.roomID} self-destructing`);
 
-        for (const [ editorID, editor ] of this.editors.entries()) {
+        for (const [editorID, editor] of this.editors.entries()) {
             this.cleanUpMember(editorID, editor);
             this.editors.delete(editorID);
         }
-        for (const [ spectatorID, spectator ] of this.spectators.entries()) {
+        for (const [spectatorID, spectator] of this.spectators.entries()) {
             this.cleanUpMember(spectatorID, spectator);
             this.spectators.delete(spectatorID);
         }
@@ -220,11 +198,7 @@ class Room {
 }
 
 export class PoemRoom extends Room {
-    constructor(
-        io: TypedServer,
-        hostSocket: TypedSocket,
-        room: string,
-    ) {
+    constructor(io: TypedServer, hostSocket: TypedSocket, room: string) {
         super(io, hostSocket, room);
         this.medium = Medium.POETRY;
     }
@@ -236,10 +210,10 @@ export class PoemRoom extends Room {
 
     setUpGame() {
         logger.debug(`setUpGame with this.editors ${this.editors}`);
-        const nContributions = this.gameSettings["nRounds"] * this.editors.size + 2;
+        const nContributions = this.gameSettings.nRounds * this.editors.size + 2;
 
         // have each editor set their important properties
-        let nPoemsToHandOut = this.gameSettings["nPoems"];
+        let nPoemsToHandOut = this.gameSettings.nPoems;
         this.nUnfinishedWorks = nPoemsToHandOut;
         let poemIndex = 0;
         // prepare each player for the game
@@ -281,7 +255,6 @@ export class PoemRoom extends Room {
         const botSocket = ioClient(serverPath);
         botDeviceIDToBotSocket.set(botDeviceID, botSocket);
         botSocket.emit("ctsJoinAsBot", this.roomID, "BOT", botDeviceID);
-
     }
 
     hasPoemBot() {
@@ -297,11 +270,7 @@ export class PoemRoom extends Room {
 export class DrawingRoom extends Room {
     finishedCanvas: Point[][]; // from testing, probably unused
 
-    constructor(
-        io: TypedServer,
-        hostSocket: TypedSocket,
-        room: string,
-    ) {
+    constructor(io: TypedServer, hostSocket: TypedSocket, room: string) {
         super(io, hostSocket, room);
         this.finishedCanvas = [];
         this.medium = Medium.DRAWING;
@@ -312,7 +281,7 @@ export class DrawingRoom extends Room {
         const nContributions = 3;
 
         // have each editor set their important properties
-        let nDrawingsToHandOut = this.gameSettings["nDrawings"];
+        let nDrawingsToHandOut = this.gameSettings.nDrawings;
         this.nUnfinishedWorks = nDrawingsToHandOut;
         let drawingIndex = 0;
 
@@ -352,7 +321,7 @@ export class DrawingRoom extends Room {
     sendCompletedDrawings() {
         logger.debug("sendCompletedDrawings ;))))))))))");
         const iPanels = Array.from(this.finishedWorks as Drawing[]).map((drawing) => Array.from(drawing?.panels));
-        const completedDrawings = Array.from(iPanels).map((iPanel) => iPanel.map(panel => panel?.content));
+        const completedDrawings = Array.from(iPanels).map((iPanel) => iPanel.map((panel) => panel?.content));
 
         this.io.in(this.roomID).emit("stcCompletedDrawings", completedDrawings);
     }

@@ -1,13 +1,13 @@
 import * as React from "react";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
-import { Carousel } from "react-responsive-carousel";
-import { isNil } from "helpers/helpers";
 
 import { poemTitle } from "components/MultiplePoems/styles";
-import { ILine } from "types/types";
 import PoemLinesAnimated from "components/PoemLinesAnimated/PoemLinesAnimated";
 import { lineSepString } from "constants/constants";
 import { useSocketInfo } from "context/SocketInfoProvider";
+import { isNil } from "helpers/helpers";
+import { Carousel } from "react-responsive-carousel";
+import type { ILine } from "types/types";
 
 function getTextWidth(text: string, font: string) {
     // re-use canvas object for better performance
@@ -23,7 +23,6 @@ function getTextWidth(text: string, font: string) {
 }
 
 function maxWidthOfPoemsLines(poemsLines: Array<ILine[]>) {
-
     let maxWidth = 0;
     for (const poemLines of poemsLines) {
         for (const line of poemLines) {
@@ -40,13 +39,12 @@ function maxWidthOfPoemsLines(poemsLines: Array<ILine[]>) {
     maxWidth *= 0.77;
 
     return maxWidth;
-
 }
 
 function MultiplePoems({ shouldAnimate }: { shouldAnimate: boolean }) {
     // define poemsLines and userInfo constantly for testing purposes
 
-    const [ reRender, setReRenderIndex ] = React.useState<number>(-1);
+    const [reRender, setReRenderIndex] = React.useState<number>(-1);
     const { poemsLines } = useSocketInfo();
     if (!poemsLines) {
         return null;
@@ -57,7 +55,7 @@ function MultiplePoems({ shouldAnimate }: { shouldAnimate: boolean }) {
     const renderPoems = (reRenderIndex: number) => {
         return poemsLines.map((poemLines, poemLinesIndex) => (
             <div
-                key = {poemLinesIndex}
+                key={poemLinesIndex}
                 className={"poem-container"}
                 style={{
                     width: `${maxWidth}px`,
@@ -81,12 +79,8 @@ function MultiplePoems({ shouldAnimate }: { shouldAnimate: boolean }) {
     };
 
     return (
-        <div
-            className={"multiple-poems"}
-            style={{ width: `${maxWidth + 60}px` }}
-        >
-            {poemsLines.length > 1
-                ?
+        <div className={"multiple-poems"} style={{ width: `${maxWidth + 60}px` }}>
+            {poemsLines.length > 1 ? (
                 <Carousel
                     onChange={(slideIndex) => {
                         setReRenderIndex(slideIndex);
@@ -95,7 +89,9 @@ function MultiplePoems({ shouldAnimate }: { shouldAnimate: boolean }) {
                 >
                     {renderPoems(reRender)}
                 </Carousel>
-                : renderPoems(reRender)}
+            ) : (
+                renderPoems(reRender)
+            )}
         </div>
     );
 }

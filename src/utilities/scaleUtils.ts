@@ -1,4 +1,4 @@
-import { Point } from "types/types";
+import type { Point } from "types/types";
 
 export const pixelRatio = window.devicePixelRatio || 1;
 
@@ -7,11 +7,7 @@ export enum ScaleDirection {
     TO_UNIVERSAL = "DIVIDE",
 }
 
-export function scalePoints(
-    points: Point[],
-    scaleDirection: ScaleDirection,
-    scaleFactor: number,
-): Point[] {
+export function scalePoints(points: Point[], scaleDirection: ScaleDirection, scaleFactor: number): Point[] {
     let factor = 1;
     if (scaleDirection === ScaleDirection.TO_DISPLAY) {
         factor = scaleFactor;

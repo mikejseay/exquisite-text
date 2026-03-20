@@ -1,29 +1,25 @@
-import * as React from "react";
-import { useParams } from "react-router-dom";
 import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import {
-    maxNameChars,
-    roomCodeLength,
-} from "constants/constants";
-import { emitJoinAs } from "context/SocketRequestors";
+import { maxNameChars, roomCodeLength } from "constants/constants";
 import { useSocketInfo } from "context/SocketInfoProvider";
-import { Role } from "types/types";
+import { emitJoinAs } from "context/SocketRequestors";
+import * as React from "react";
+import { useParams } from "react-router-dom";
 import { joinErrorMessage, joinFormWrapper, uppercaseInput } from "screens/Join/styles";
+import { Role } from "types/types";
 
 export default function Join() {
-
     const { joinErrorMessage: errorMessage, setRoomCode } = useSocketInfo();
 
     const { id } = useParams();
 
-    const [ roomID, setRoomID ] = React.useState<string>(id ?? "");
-    const [ name, setName ] = React.useState<string>("");
+    const [roomID, setRoomID] = React.useState<string>(id ?? "");
+    const [name, setName] = React.useState<string>("");
 
-    const [ isRoomValid, setIsRoomValid ] = React.useState<boolean>(false);
-    const [ isNameValid, setIsNameValid ] = React.useState<boolean>(false);
+    const [isRoomValid, setIsRoomValid] = React.useState<boolean>(false);
+    const [isNameValid, setIsNameValid] = React.useState<boolean>(false);
 
     const handleRoomEntryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setRoomID(event.target.value);
@@ -48,11 +44,11 @@ export default function Join() {
     React.useEffect(() => {
         setIsRoomValid(roomID.length === roomCodeLength);
         setIsNameValid(name.length > 0);
-    }, [ id, name, roomID ]);
+    }, [name, roomID]);
 
     React.useEffect(() => {
         setRoomID(id ?? "");
-    }, [ id ]);
+    }, [id]);
 
     return (
         <div>
@@ -86,29 +82,15 @@ export default function Join() {
                     />
                 </Box>
             </div>
-            <Stack
-                spacing={2}
-                direction="row"
-                style={{ justifyContent: "center" }}
-            >
-                <Button
-                    disabled={!(isRoomValid && isNameValid)}
-                    onClick={handlePlayPress}
-                    variant="contained"
-                >
-          Play
+            <Stack spacing={2} direction="row" style={{ justifyContent: "center" }}>
+                <Button disabled={!(isRoomValid && isNameValid)} onClick={handlePlayPress} variant="contained">
+                    Play
                 </Button>
-                <Button
-                    disabled={!(isRoomValid && isNameValid)}
-                    onClick={handleSpectatePress}
-                    variant="outlined"
-                >
-          Spectate
+                <Button disabled={!(isRoomValid && isNameValid)} onClick={handleSpectatePress} variant="outlined">
+                    Spectate
                 </Button>
             </Stack>
-            <div
-                className={"joinErrorMessage"}
-                style={joinErrorMessage}>
+            <div className={"joinErrorMessage"} style={joinErrorMessage}>
                 {errorMessage}
             </div>
         </div>

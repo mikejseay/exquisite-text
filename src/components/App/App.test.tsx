@@ -1,15 +1,14 @@
-import * as React from "react";
 import { render } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 // Mock socket.io-client to prevent real connections
-jest.mock("socket.io-client", () => ({
+vi.mock("socket.io-client", () => ({
     io: () => ({
-        on: jest.fn(),
-        off: jest.fn(),
-        emit: jest.fn(),
-        connect: jest.fn(),
-        disconnect: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
+        emit: vi.fn(),
+        connect: vi.fn(),
+        disconnect: vi.fn(),
     }),
 }));
 

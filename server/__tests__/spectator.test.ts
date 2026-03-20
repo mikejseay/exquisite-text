@@ -1,12 +1,11 @@
-import { afterEach, beforeEach, describe, it } from "node:test";
 import assert from "node:assert/strict";
-
-import { DrawingSpectator, PoemSpectator } from "modules/spectator";
-import { DrawingRoom, PoemRoom } from "modules/room";
+import { afterEach, beforeEach, describe, it } from "node:test";
+import { createMockIO, createMockSocket } from "__tests__/helpers";
 import { Drawing, Poem } from "modules/collaboration";
 import { DrawingEditor, PoemEditor } from "modules/editor";
 import { deviceIDToRoomID, deviceIDToSocketID, roomIDToRoom, socketIDToDeviceID } from "modules/globals";
-import { createMockIO, createMockSocket } from "__tests__/helpers";
+import { DrawingRoom, PoemRoom } from "modules/room";
+import { DrawingSpectator, PoemSpectator } from "modules/spectator";
 import type { Point } from "shared/types/types";
 
 describe("PoemSpectator", () => {
@@ -34,8 +33,24 @@ describe("PoemSpectator", () => {
         room.addEditor("ed-dev", editor as any);
 
         const poem = new Poem(io, "ROOM1", 5, 0);
-        poem.lines.add({ ID: poem.ID, contributionIndex: 0, content: "Line A", authorDevice: "a", passerDevice: "", editLength: 0, addedAt: new Date() });
-        poem.lines.add({ ID: poem.ID, contributionIndex: 1, content: "Line B", authorDevice: "b", passerDevice: "a", editLength: 5, addedAt: new Date() });
+        poem.lines.add({
+            ID: poem.ID,
+            contributionIndex: 0,
+            content: "Line A",
+            authorDevice: "a",
+            passerDevice: "",
+            editLength: 0,
+            addedAt: new Date(),
+        });
+        poem.lines.add({
+            ID: poem.ID,
+            contributionIndex: 1,
+            content: "Line B",
+            authorDevice: "b",
+            passerDevice: "a",
+            editLength: 5,
+            addedAt: new Date(),
+        });
         editor.contributionQueue.push(poem);
 
         io.emissions.length = 0;
@@ -56,11 +71,27 @@ describe("PoemSpectator", () => {
         room.addEditor("ed-dev-2", editor2 as any);
 
         const poem1 = new Poem(io, "ROOM1", 5, 0);
-        poem1.lines.add({ ID: poem1.ID, contributionIndex: 0, content: "Poem1 Line", authorDevice: "a", passerDevice: "", editLength: 0, addedAt: new Date() });
+        poem1.lines.add({
+            ID: poem1.ID,
+            contributionIndex: 0,
+            content: "Poem1 Line",
+            authorDevice: "a",
+            passerDevice: "",
+            editLength: 0,
+            addedAt: new Date(),
+        });
         editor1.contributionQueue.push(poem1);
 
         const poem2 = new Poem(io, "ROOM1", 5, 1);
-        poem2.lines.add({ ID: poem2.ID, contributionIndex: 0, content: "Poem2 Line", authorDevice: "b", passerDevice: "", editLength: 0, addedAt: new Date() });
+        poem2.lines.add({
+            ID: poem2.ID,
+            contributionIndex: 0,
+            content: "Poem2 Line",
+            authorDevice: "b",
+            passerDevice: "",
+            editLength: 0,
+            addedAt: new Date(),
+        });
         editor2.contributionQueue.push(poem2);
 
         io.emissions.length = 0;
@@ -77,16 +108,22 @@ describe("PoemSpectator", () => {
         room.addEditor("ed-dev", editor as any);
 
         const poem = new Poem(io, "ROOM1", 3, 0);
-        poem.lines.add({ ID: poem.ID, contributionIndex: 0, content: "Active line", authorDevice: "a", passerDevice: "", editLength: 0, addedAt: new Date() });
+        poem.lines.add({
+            ID: poem.ID,
+            contributionIndex: 0,
+            content: "Active line",
+            authorDevice: "a",
+            passerDevice: "",
+            editLength: 0,
+            addedAt: new Date(),
+        });
         editor.contributionQueue.push(poem);
 
         io.emissions.length = 0;
         spectator.reinstateContext();
 
         // Should emit stcRoomCode (from Member.reinstateContext)
-        const roomCodeEmission = io.emissions.find(
-            (e: any) => e.target === "spec-sock" && e.event === "stcRoomCode",
-        );
+        const roomCodeEmission = io.emissions.find((e: any) => e.target === "spec-sock" && e.event === "stcRoomCode");
         assert.ok(roomCodeEmission);
 
         // Should emit stcUserTableInfo (from Member.reinstateContext)
@@ -129,8 +166,8 @@ describe("DrawingSpectator", () => {
         room.addEditor("ed-dev", editor as any);
 
         const drawing = new Drawing(io, "DRAW1", 3, 0);
-        const panel1: Point[][] = [ [ { x: 10, y: 20, lineWidth: 2, color: "#f00" } ] ];
-        const panel2: Point[][] = [ [ { x: 30, y: 40, lineWidth: 3, color: "#0f0" } ] ];
+        const panel1: Point[][] = [[{ x: 10, y: 20, lineWidth: 2, color: "#f00" }]];
+        const panel2: Point[][] = [[{ x: 30, y: 40, lineWidth: 3, color: "#0f0" }]];
         drawing.submitPanel("ed-dev", panel1);
         drawing.submitPanel("ed-dev", panel2);
         editor.contributionQueue.push(drawing);
@@ -153,12 +190,12 @@ describe("DrawingSpectator", () => {
         room.addEditor("ed-dev-2", editor2 as any);
 
         const drawing1 = new Drawing(io, "DRAW1", 3, 0);
-        const content1: Point[][] = [ [ { x: 1, y: 1, lineWidth: 1, color: "#000" } ] ];
+        const content1: Point[][] = [[{ x: 1, y: 1, lineWidth: 1, color: "#000" }]];
         drawing1.submitPanel("ed-dev-1", content1);
         editor1.contributionQueue.push(drawing1);
 
         const drawing2 = new Drawing(io, "DRAW1", 3, 1);
-        const content2: Point[][] = [ [ { x: 2, y: 2, lineWidth: 2, color: "#fff" } ] ];
+        const content2: Point[][] = [[{ x: 2, y: 2, lineWidth: 2, color: "#fff" }]];
         drawing2.submitPanel("ed-dev-2", content2);
         editor2.contributionQueue.push(drawing2);
 
@@ -198,15 +235,13 @@ describe("DrawingSpectator", () => {
     });
 
     it("sendCanvas emits stcStrokeHistory with finishedCanvas", () => {
-        const finishedCanvas: Point[][] = [ [ { x: 5, y: 5, lineWidth: 1, color: "#abc" } ] ];
+        const finishedCanvas: Point[][] = [[{ x: 5, y: 5, lineWidth: 1, color: "#abc" }]];
         room.finishedCanvas = finishedCanvas;
 
         io.emissions.length = 0;
         spectator.sendCanvas();
 
-        const emission = io.emissions.find(
-            (e: any) => e.target === "spec-sock" && e.event === "stcStrokeHistory",
-        );
+        const emission = io.emissions.find((e: any) => e.target === "spec-sock" && e.event === "stcStrokeHistory");
         assert.ok(emission);
         assert.deepEqual(emission!.args[0], finishedCanvas);
     });
@@ -216,7 +251,7 @@ describe("DrawingSpectator", () => {
         room.addEditor("ed-dev", editor as any);
 
         const drawing = new Drawing(io, "DRAW1", 3, 0);
-        const panelContent: Point[][] = [ [ { x: 1, y: 2, lineWidth: 1, color: "#000" } ] ];
+        const panelContent: Point[][] = [[{ x: 1, y: 2, lineWidth: 1, color: "#000" }]];
         drawing.submitPanel("ed-dev", panelContent);
         editor.contributionQueue.push(drawing);
 
@@ -224,9 +259,7 @@ describe("DrawingSpectator", () => {
         spectator.reinstateContext();
 
         // Member.reinstateContext: stcRoomCode
-        const roomCodeEmission = io.emissions.find(
-            (e: any) => e.target === "spec-sock" && e.event === "stcRoomCode",
-        );
+        const roomCodeEmission = io.emissions.find((e: any) => e.target === "spec-sock" && e.event === "stcRoomCode");
         assert.ok(roomCodeEmission);
 
         // Member.reinstateContext: stcUserTableInfo
@@ -252,8 +285,8 @@ describe("DrawingSpectator", () => {
 
         // Simulate editor submitting a panel during gameplay
         const panelContent: Point[][] = [
-            [ { x: 10, y: 20, lineWidth: 2, color: "#ff0000" } ],
-            [ { x: 30, y: 40, lineWidth: 1, color: "#00ff00" } ],
+            [{ x: 10, y: 20, lineWidth: 2, color: "#ff0000" }],
+            [{ x: 30, y: 40, lineWidth: 1, color: "#00ff00" }],
         ];
         drawing.submitPanel("ed-dev", panelContent);
 
@@ -269,9 +302,7 @@ describe("DrawingSpectator", () => {
     it("spectator receives panelEdit updates during live drawing", () => {
         const drawing = new Drawing(io, "DRAW1", 3, 0);
 
-        const editContent: Point[][] = [
-            [ { x: 5, y: 10, lineWidth: 1, color: "#000" } ],
-        ];
+        const editContent: Point[][] = [[{ x: 5, y: 10, lineWidth: 1, color: "#000" }]];
         drawing.sendPanelEditToSpectators(editContent);
 
         const emission = io.emissions.find(
@@ -288,8 +319,8 @@ describe("DrawingSpectator", () => {
 
         // Simulate a drawing that already has 2 of 3 panels
         const drawing = new Drawing(io, "DRAW1", 3, 0);
-        const panel1: Point[][] = [ [ { x: 1, y: 1, lineWidth: 1, color: "#111" } ] ];
-        const panel2: Point[][] = [ [ { x: 2, y: 2, lineWidth: 2, color: "#222" } ] ];
+        const panel1: Point[][] = [[{ x: 1, y: 1, lineWidth: 1, color: "#111" }]];
+        const panel2: Point[][] = [[{ x: 2, y: 2, lineWidth: 2, color: "#222" }]];
         drawing.submitPanel("ed-dev", panel1);
         drawing.submitPanel("other-dev", panel2);
         editor.contributionQueue.push(drawing);

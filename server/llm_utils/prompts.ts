@@ -1,4 +1,5 @@
-export const analyzeSystemPrompt = "As a poet, your task is to analyze the beginning of a poem and predict what it's going to be about.";
+export const analyzeSystemPrompt =
+    "As a poet, your task is to analyze the beginning of a poem and predict what it's going to be about.";
 
 export const analyzeUserPrompt = `Analyze the beginning of this poem and predict what the poem will be about.
 Who are the narrator and characters? Where are they? What kind of tone will the poem have? What diction and imagery will it use?

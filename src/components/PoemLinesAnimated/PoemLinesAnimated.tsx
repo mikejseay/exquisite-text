@@ -1,15 +1,11 @@
-import * as React from "react";
-import Alert from "@mui/material/Alert";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import IconButton from "@mui/material/IconButton";
-import CardContent from "@mui/material/CardContent";
-import Box from "@mui/material/Box";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
-import Typography from "@mui/material/Typography";
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
-import { useClipboard } from "use-clipboard-copy";
-
-import { useSocketInfo } from "context/SocketInfoProvider";
+import CardContent from "@mui/material/CardContent";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
 import {
     colorKeyCard,
     colorKeyContent,
@@ -19,9 +15,11 @@ import {
     copyButton,
     poemBody,
 } from "components/PoemLinesAnimated/styles";
-import { ILine } from "types/types";
-import { lineSepString, shortDur } from "constants/constants";
 import TypewriterPoem from "components/TypewriterPoem/TypewriterPoem";
+import { lineSepString, shortDur } from "constants/constants";
+import { useSocketInfo } from "context/SocketInfoProvider";
+import type { ILine } from "types/types";
+import { useClipboard } from "use-clipboard-copy";
 
 function PoemLinesAnimated({
     poemLines,
@@ -31,12 +29,12 @@ function PoemLinesAnimated({
     setReRender,
     index,
 }: {
-    poemLines: ILine[],
-    width: number,
-    shouldAnimate: boolean,
-    reRenderIndex: number,
+    poemLines: ILine[];
+    width: number;
+    shouldAnimate: boolean;
+    reRenderIndex: number;
     setReRender: (value: number | ((prevVar: number) => number)) => void;
-    index: number,
+    index: number;
 }) {
     const { userInfo } = useSocketInfo();
     if (!userInfo) {
@@ -50,18 +48,15 @@ function PoemLinesAnimated({
 
     return (
         <div className={"poem-body"} style={poemBody}>
-            <div
-                className={"copy-button"}
-                style={copyButton}
-            >
-                <IconButton
-                    onClick={() => clipboard.copy(poemLines.map(line => line.content).join(lineSepString))}
-                >
+            <div className={"copy-button"} style={copyButton}>
+                <IconButton onClick={() => clipboard.copy(poemLines.map((line) => line.content).join(lineSepString))}>
                     <ContentCopyIcon />
                 </IconButton>
-                {clipboard.copied && <Alert severity="success" style={{ marginBottom: "-1em" }}>
-                  Copied!
-                </Alert>}
+                {clipboard.copied && (
+                    <Alert severity="success" style={{ marginBottom: "-1em" }}>
+                        Copied!
+                    </Alert>
+                )}
             </div>
             <TypewriterPoem
                 poemLines={poemLines}

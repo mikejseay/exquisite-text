@@ -1,17 +1,11 @@
-import * as React from "react";
-import { isNil } from "helpers/helpers";
+import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
+import WarningIcon from "@mui/icons-material/Warning";
+import { ClickAwayListener, Fade } from "@mui/material";
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Fab from "@mui/material/Fab";
 import Stack from "@mui/material/Stack";
-import Alert from "@mui/material/Alert";
-import Box from "@mui/material/Box";
-import { ClickAwayListener, Fade } from "@mui/material";
-import WarningIcon from "@mui/icons-material/Warning";
-import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
-
-import { logger } from "utilities/loggerUtils";
-import { lineConstraints, lineSepString, shortDur } from "constants/constants";
-import { useStateRef } from "helpers/helpers";
 import {
     activeInput,
     alertMessageStyle,
@@ -29,19 +23,17 @@ import {
     underlineSpan,
     underlineSuggestionDiv,
 } from "components/LineInput/styles";
+import { lineConstraints, lineSepString, shortDur } from "constants/constants";
+import { isNil, useStateRef } from "helpers/helpers";
+import * as React from "react";
+import { logger } from "utilities/loggerUtils";
 import "./LineInput.css";
 import { useSocketInfo } from "context/SocketInfoProvider";
 import { emitEditLine, emitSendLastLine, emitSendLineParts } from "context/SocketRequestors";
 
 const LineInput = () => {
-    const {
-        poemInput,
-        poemInputSpectate,
-        onLastContribution,
-        editorActive,
-        setPoemInput,
-        lineLength,
-    } = useSocketInfo();
+    const { poemInput, poemInputSpectate, onLastContribution, editorActive, setPoemInput, lineLength } =
+        useSocketInfo();
     if (
         poemInput === null ||
         poemInputSpectate === null ||
@@ -53,13 +45,15 @@ const LineInput = () => {
     }
 
     const useLineConstraints = lineConstraints[lineLength];
-    const minCharsOnLineOne = useLineConstraints["minCharsOnLineOne"];
-    const maxCharsOnLineOne = useLineConstraints["maxCharsOnLineOne"];
-    const minCharsOnLineTwo = useLineConstraints["minCharsOnLineTwo"];
-    const idealCharsOnLineOne = useLineConstraints["idealCharsOnLineOne"];
+    const minCharsOnLineOne = useLineConstraints.minCharsOnLineOne;
+    const maxCharsOnLineOne = useLineConstraints.maxCharsOnLineOne;
+    const minCharsOnLineTwo = useLineConstraints.minCharsOnLineTwo;
+    const idealCharsOnLineOne = useLineConstraints.idealCharsOnLineOne;
 
-    const [ maxCharsOnLineTwo, setMaxCharsOnLineTwo ] = React.useState<number>(useLineConstraints["maxCharsOnLineTwo"]);
-    const [ idealCharsOnLineTwo, setIdealCharsOnLineTwo ] = React.useState<number>(useLineConstraints["idealCharsOnLineTwo"]);
+    const [maxCharsOnLineTwo, setMaxCharsOnLineTwo] = React.useState<number>(useLineConstraints.maxCharsOnLineTwo);
+    const [idealCharsOnLineTwo, setIdealCharsOnLineTwo] = React.useState<number>(
+        useLineConstraints.idealCharsOnLineTwo,
+    );
 
     // see lastLineListener and editorActiveListener
     React.useEffect(() => {
@@ -70,7 +64,20 @@ const LineInput = () => {
             setMaxCharsOnLineTwo(useLineConstraints.maxCharsOnLineTwo);
             setIdealCharsOnLineTwo(useLineConstraints.idealCharsOnLineTwo);
         }
-    }, [ onLastContribution ]);
+    }, [
+        onLastContribution,
+        useLineConstraints.idealCharsOnLineOne,
+        useLineConstraints.idealCharsOnLineTwo,
+        useLineConstraints.maxCharsOnLineOne,
+        useLineConstraints.maxCharsOnLineTwo,
+    ]);
+
+    const [passEnabled, setPassEnabled, passEnabledRef] = useStateRef(false);
+    const [shouldDisplaySecondLine, setShouldDisplaySecondLine] = React.useState<boolean>(false);
+    const [textAreaVisible, setTextAreaVisible] = React.useState<boolean>(true);
+    const [poemDoneVisible, setPoemDoneVisible] = React.useState<boolean>(true);
+    const [helpMessage, setHelpMessage] = React.useState<string>("");
+    const [completeEarlyBoxOpen, setCompleteEarlyBoxOpen] = React.useState(false);
 
     React.useEffect(() => {
         setShouldDisplaySecondLine(false);
@@ -85,24 +92,15 @@ const LineInput = () => {
             setPassEnabled(false);
             setPoemDoneVisible(false);
         }
-    }, [ editorActive ]);
+    }, [editorActive, setPassEnabled]);
 
-    const [ completeEarlyBoxOpen, setCompleteEarlyBoxOpen ] = React.useState(false);
     const handleClick = () => {
         setCompleteEarlyBoxOpen((prev) => !prev);
     };
     const handleClickAway = () => {
         setCompleteEarlyBoxOpen(false);
     };
-
-    const [ passEnabled, setPassEnabled, passEnabledRef ] = useStateRef(false);
-    const [ shouldDisplaySecondLine, setShouldDisplaySecondLine ] = React.useState<boolean>(false);
-
-    const [ textAreaVisible, setTextAreaVisible ] = React.useState<boolean>(true);
-    const [ poemDoneVisible, setPoemDoneVisible ] = React.useState<boolean>(true);
-
-    const [ helpMessage, setHelpMessage ] = React.useState<string>("");
-    const [ inputErrorMsg, setInputErrorMsg ] = React.useState<string>(lineSepString);
+    const [inputErrorMsg, setInputErrorMsg] = React.useState<string>(lineSepString);
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
     // places the text cursor at the end of the current content of the textarea when it becomes visible
@@ -113,7 +111,7 @@ const LineInput = () => {
                 textareaRef.current.setSelectionRange(-1, -1);
             }
         }
-    }, [ textAreaVisible ]);
+    }, [textAreaVisible]);
 
     // auto-focus textarea when user presses a printable character key while not focused on it
     React.useEffect(() => {
@@ -129,7 +127,7 @@ const LineInput = () => {
 
         window.addEventListener("keydown", handleGlobalKeyDown);
         return () => window.removeEventListener("keydown", handleGlobalKeyDown);
-    }, [ textAreaVisible ]);
+    }, [textAreaVisible]);
 
     function helpBasedOnProgress(messageType: number, progressProp: number) {
         if (messageType === 1) {
@@ -167,7 +165,7 @@ const LineInput = () => {
     }
 
     // handles any change to the textarea element. written to be as fast as possible, so a bit verbose
-    function handlePoemBodyChange(event: { preventDefault: () => void; target: { value: string }; }) {
+    function handlePoemBodyChange(event: { preventDefault: () => void; target: { value: string } }) {
         event.preventDefault();
 
         const lines = String(event.target.value).split(lineSepString);
@@ -188,7 +186,6 @@ const LineInput = () => {
                 helpBasedOnProgress(1, event.target.value.length / idealCharsOnLineOne);
                 setPassEnabled(false);
             }
-
         } else if (lines.length === 2) {
             // two lines
 
@@ -231,8 +228,8 @@ const LineInput = () => {
     }
 
     function passTurn() {
-    // this function takes approximately 1.5 lines of poem, and "makes them exquisite" by clipping the 1st line.
-    // the next person who sees the result should not be aware of the 1st line but must continue with a new line
+        // this function takes approximately 1.5 lines of poem, and "makes them exquisite" by clipping the 1st line.
+        // the next person who sees the result should not be aware of the 1st line but must continue with a new line
 
         if (!poemInput) {
             return;
@@ -243,7 +240,7 @@ const LineInput = () => {
         // check user input, should be two lines, although access to even executing this function is regulated
         // by the passEnabledRef value, which enables and disables the button
         if (poemParts.length > 1) {
-            const [ firstPart, secondPart ] = poemParts;
+            const [firstPart, secondPart] = poemParts;
 
             // broadcast that there was a change
             setPoemInput(secondPart);
@@ -264,7 +261,6 @@ const LineInput = () => {
     // since there is no separate "complete poem" button now,
     // maybe this button's functionality should change?
     function completePoem() {
-
         setPoemDoneVisible(false);
 
         // post the current input to the lines
@@ -274,9 +270,9 @@ const LineInput = () => {
     }
 
     function handleKeyDown({ charCode, key, ctrlKey, metaKey }: React.KeyboardEvent) {
-    // it triggers by pressing macOS cmd or ctrl + enter (13), when the "Done Line" button is enabled
-    // might not be necessary, but it's kind of nice
-    // note we use passEnabledRef instead of passEnabled because it gets the current value
+        // it triggers by pressing macOS cmd or ctrl + enter (13), when the "Done Line" button is enabled
+        // might not be necessary, but it's kind of nice
+        // note we use passEnabledRef instead of passEnabled because it gets the current value
         if (passEnabledRef.current && (ctrlKey || metaKey) && (key === "Enter" || charCode === 13)) {
             if (onLastContribution) {
                 completePoem();
@@ -287,106 +283,61 @@ const LineInput = () => {
     }
 
     return (
-    // the initial idea here was to have a single textarea element that was editable
-    // an alternative idea is to have this element be composed of a non-editable portion
-    // and an editable portion
-        <div
-            className={"line-input-container"}
-            style={lineInputContainer}
-        >
-            <div
-                className={"main-input-container"}
-                style={mainInputContainer}
-            >
-                <div
-                    className={"alert-message"}
-                    style={alertMessageStyle}
-                >
-                    {inputErrorMsg !== "\n"
-                        ? <Alert severity="error">{inputErrorMsg}</Alert>
-                        : helpMessage !== "" && <Alert severity="info">{helpMessage}</Alert>}
+        // the initial idea here was to have a single textarea element that was editable
+        // an alternative idea is to have this element be composed of a non-editable portion
+        // and an editable portion
+        <div className={"line-input-container"} style={lineInputContainer}>
+            <div className={"main-input-container"} style={mainInputContainer}>
+                <div className={"alert-message"} style={alertMessageStyle}>
+                    {inputErrorMsg !== "\n" ? (
+                        <Alert severity="error">{inputErrorMsg}</Alert>
+                    ) : (
+                        helpMessage !== "" && <Alert severity="info">{helpMessage}</Alert>
+                    )}
                 </div>
-                <div
-                    className={"input-box"}
-                    style={inputBox}
-                >
-                    {textAreaVisible
-                        ?
-                        (
-                            <div
-                                className={"active-input"}
-                                style={activeInput}
-                            >
-                                <div
-                                    className={"underline-suggestion"}
-                                    style={underlineSuggestionDiv}
-                                >
-                                    <span
-                                        className={"underline-span-1"}
-                                        style={underlineSpan}
-                                    >
-                                        {"  ".repeat(idealCharsOnLineOne + 3) + lineSepString}
+                <div className={"input-box"} style={inputBox}>
+                    {textAreaVisible ? (
+                        <div className={"active-input"} style={activeInput}>
+                            <div className={"underline-suggestion"} style={underlineSuggestionDiv}>
+                                <span className={"underline-span-1"} style={underlineSpan}>
+                                    {"  ".repeat(idealCharsOnLineOne + 3) + lineSepString}
+                                </span>
+                                <Fade in={shouldDisplaySecondLine} timeout={1000}>
+                                    <span className={"underline-span-2"} style={underlineSpan}>
+                                        {"  ".repeat(idealCharsOnLineTwo + 3)}
                                     </span>
-                                    <Fade in={shouldDisplaySecondLine} timeout={1000}>
-                                        <span
-                                            className={"underline-span-2"}
-                                            style={underlineSpan}
-                                        >
-                                            {"  ".repeat(idealCharsOnLineTwo + 3)}
-                                        </span>
-                                    </Fade>
-                                </div>
-                                <textarea
-                                    autoFocus={true} // this only on initial page load
-                                    className={"poem-input"}
-                                    onChange={handlePoemBodyChange}
-                                    onKeyDown={handleKeyDown}
-                                    readOnly={false}
-                                    ref={textareaRef}
-                                    rows={2}
-                                    style={poemInputStyle}
-                                    value={poemInput}
-                                />
+                                </Fade>
                             </div>
-                        ) :
-                        (
-                            <div
-                                className={"inactive-input"}
-                                style={inactiveInput}
-                            >
-                                <div
-                                    className={"text-spacer"}
-                                    data-autofocus={true}
-                                    style={textSpacer}
-                                >
-                                    <span
-                                        style={spacingSpan}
-                                    >
-                                        {poemInputSpectate.replaceAll(/[^\n]/g, "*")}
-                                    </span>
-                                    <div
-                                        id="caret"
-                                        style={caret}
-                                    > </div>
+                            <textarea // this only on initial page load
+                                className={"poem-input"}
+                                onChange={handlePoemBodyChange}
+                                onKeyDown={handleKeyDown}
+                                readOnly={false}
+                                ref={textareaRef}
+                                rows={2}
+                                style={poemInputStyle}
+                                value={poemInput}
+                            />
+                        </div>
+                    ) : (
+                        <div className={"inactive-input"} style={inactiveInput}>
+                            <div className={"text-spacer"} data-autofocus={true} style={textSpacer}>
+                                <span style={spacingSpan}>{poemInputSpectate.replaceAll(/[^\n]/g, "*")}</span>
+                                <div id="caret" style={caret}>
+                                    {" "}
                                 </div>
                             </div>
-                        )}
+                        </div>
+                    )}
                 </div>
                 <div className={"pass-button-container"}>
-                    <div
-                        className={"pass-button"}
-                        style={passButton}
-                    >
+                    <div className={"pass-button"} style={passButton}>
                         <Button
                             variant={"contained"}
-                            onClick={onLastContribution
-                                ? completePoem
-                                : passTurn}
+                            onClick={onLastContribution ? completePoem : passTurn}
                             disabled={!passEnabled}
                         >
-                            {onLastContribution
-                                ? "Complete Poem"
-                                : "Pass"}
+                            {onLastContribution ? "Complete Poem" : "Pass"}
                         </Button>
                     </div>
                 </div>
@@ -402,18 +353,22 @@ const LineInput = () => {
                         >
                             <PlaylistAddCheckIcon />
                         </Fab>
-                        {completeEarlyBoxOpen
-                            ? (
-                                <Box sx={completeConfirmBox}>
-                                    <p style={{ margin: "0 0 0.5em 0" }}><WarningIcon />
-                                        Want to complete the poem early?</p>
-                                    <Stack spacing={2} direction="row" style={{ justifyContent: "center" }}>
-                                        <Button variant="outlined" onClick={handleClickAway}>No</Button>
-                                        <Button variant="contained" onClick={completePoem}>Yes</Button>
-                                    </Stack>
-                                </Box>
-                            )
-                            : null}
+                        {completeEarlyBoxOpen ? (
+                            <Box sx={completeConfirmBox}>
+                                <p style={{ margin: "0 0 0.5em 0" }}>
+                                    <WarningIcon />
+                                    Want to complete the poem early?
+                                </p>
+                                <Stack spacing={2} direction="row" style={{ justifyContent: "center" }}>
+                                    <Button variant="outlined" onClick={handleClickAway}>
+                                        No
+                                    </Button>
+                                    <Button variant="contained" onClick={completePoem}>
+                                        Yes
+                                    </Button>
+                                </Stack>
+                            </Box>
+                        ) : null}
                     </Box>
                 </ClickAwayListener>
             </div>

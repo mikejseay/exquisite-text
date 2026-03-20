@@ -55,10 +55,7 @@ describe("Drawing composite dimensions", () => {
 
 describe("Canvas scaling logic", () => {
     // Test the resize logic extracted from Canvas component
-    function computeCanvasDimensions(
-        viewportWidth: number,
-        viewportHeight: number,
-    ) {
+    function computeCanvasDimensions(viewportWidth: number, viewportHeight: number) {
         const viewportAspectRatio = viewportWidth / viewportHeight;
         let newWidth: number;
         let newHeight: number;
@@ -104,13 +101,13 @@ describe("Canvas scaling logic", () => {
 
     it("scaleFactor is always >= 1 (never scales down)", () => {
         const viewports = [
-            [ 100, 100 ],
-            [ 300, 200 ],
-            [ 667, 300 ],
-            [ 1920, 1080 ],
-            [ 2560, 1440 ],
+            [100, 100],
+            [300, 200],
+            [667, 300],
+            [1920, 1080],
+            [2560, 1440],
         ];
-        for (const [ w, h ] of viewports) {
+        for (const [w, h] of viewports) {
             const { scaleFactor } = computeCanvasDimensions(w, h);
             expect(scaleFactor).toBeGreaterThanOrEqual(1);
         }
@@ -118,11 +115,11 @@ describe("Canvas scaling logic", () => {
 
     it("maintains panel aspect ratio", () => {
         const viewports = [
-            [ 800, 400 ],
-            [ 1200, 800 ],
-            [ 1920, 1080 ],
+            [800, 400],
+            [1200, 800],
+            [1920, 1080],
         ];
-        for (const [ w, h ] of viewports) {
+        for (const [w, h] of viewports) {
             const { newWidth, newHeight } = computeCanvasDimensions(w, h);
             expect(newWidth / newHeight).toBeCloseTo(PANEL_ASPECT_RATIO, 1);
         }

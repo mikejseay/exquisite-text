@@ -1,19 +1,14 @@
+import type { Drawing, Poem } from "modules/collaboration";
+import type { DrawingEditor, PoemEditor } from "modules/editor";
 import { roomIDToRoom } from "modules/globals";
-import { DrawingEditor, PoemEditor } from "modules/editor";
-import { DrawingRoom, PoemRoom } from "modules/room";
-import {
-    GameState,
-    Medium,
-    Role,
-} from "shared/types/types";
-import { DrawingSpectator, PoemSpectator } from "modules/spectator";
-import { poemsLines as poemsLinesTestData } from "shared/data/multiplePoems";
+import type Host from "modules/host";
+import type { DrawingRoom, PoemRoom } from "modules/room";
+import type { DrawingSpectator, PoemSpectator } from "modules/spectator";
 import { multipleDrawingsTestData } from "shared/data/multipleDrawings";
-import Host from "modules/host";
-import { Drawing, Poem } from "modules/collaboration";
-import { logger } from "utilities/loggerUtils";
+import { poemsLines as poemsLinesTestData } from "shared/data/multiplePoems";
+import { GameState, Medium, Role } from "shared/types/types";
 import type { TypedServer, TypedSocket } from "types";
-
+import { logger } from "utilities/loggerUtils";
 
 export function getRouteForGameStateAndRole(gameState: GameState, role: Role): string {
     if (gameState === GameState.LOBBY) {
@@ -50,7 +45,7 @@ export function getEditorSocketID(roomID: string | undefined, editorID: string |
     }
     const room: PoemRoom | DrawingRoom | undefined = roomIDToRoom.get(roomID);
     if (!room || !room.editors) {
-        logger.error("Editors not found in the room or room not found for ID:", roomID);
+        logger.error(`Editors not found in the room or room not found for ID: ${roomID}`);
         return undefined;
     }
     const editor: PoemEditor | DrawingEditor | undefined = room.editors.get(editorID);
@@ -61,13 +56,12 @@ export function getEditorSocketID(roomID: string | undefined, editorID: string |
     return editor.socket.id;
 }
 
-
 export function standardReconnect(
     io: TypedServer,
     socket: TypedSocket,
     member: PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator | undefined,
 ) {
-    if (member && member.socket) {
+    if (member?.socket) {
         // send socket (tab) that's currently connected to the disconnected view
         logger.debug(`disconnecting previous socket for deviceID ${member.deviceID}`);
         io.to(member.socket.id).emit("stcNavigate", "/disconnected");
@@ -81,17 +75,15 @@ export function standardReconnect(
 }
 
 // only used to test the end screen, but we allow it to be parasitic for now
-export function sendCompletedArtTestData(member: Host | PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator, testingMedium: Medium) {
+export function sendCompletedArtTestData(
+    member: Host | PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator,
+    testingMedium: Medium,
+) {
     if (testingMedium === Medium.POETRY) {
         logger.debug("sending test poemsLines data in a way that is unusual");
         // poemsLinesTestData is an array of arrays of lines
         for (const linesArray of poemsLinesTestData) {
-            member.io
-                .to(member.socket.id)
-                .emit(
-                    "stcPoemLines",
-                    linesArray,
-                );
+            member.io.to(member.socket.id).emit("stcPoemLines", linesArray);
         }
         return;
     } else if (testingMedium === Medium.DRAWING) {
@@ -101,7 +93,9 @@ export function sendCompletedArtTestData(member: Host | PoemEditor | PoemSpectat
     }
 }
 
-export function sendCollaborationContributionsInfo(member: Host | PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator) {
+export function sendCollaborationContributionsInfo(
+    member: Host | PoemEditor | PoemSpectator | DrawingEditor | DrawingSpectator,
+) {
     const room = roomIDToRoom.get(member.roomID);
 
     if (!room) {
@@ -112,16 +106,11 @@ export function sendCollaborationContributionsInfo(member: Host | PoemEditor | P
 
     if (room.medium === Medium.POETRY) {
         for (const collaborationObj of room.finishedWorks) {
-            member.io
-                .to(member.socket.id)
-                .emit(
-                    "stcPoemLines",
-                    Array.from((collaborationObj as Poem).lines),
-                );
+            member.io.to(member.socket.id).emit("stcPoemLines", Array.from((collaborationObj as Poem).lines));
         }
     } else if (room.medium === Medium.DRAWING) {
-        const completedDrawings = (room.finishedWorks as Drawing[]).map(
-            (drawing) => Array.from(drawing.panels).map(panel => panel.content),
+        const completedDrawings = (room.finishedWorks as Drawing[]).map((drawing) =>
+            Array.from(drawing.panels).map((panel) => panel.content),
         );
         member.io.to(member.socket.id).emit("stcCompletedDrawings", completedDrawings);
     }

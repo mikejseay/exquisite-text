@@ -1,5 +1,3 @@
-import { combineDrawingPanels } from "screens/CanvasSpectator/CanvasSpectator";
-import type { Point } from "types/types";
 import {
     DRAWING_ASPECT_RATIO,
     DRAWING_HEIGHT_MIN,
@@ -9,82 +7,84 @@ import {
     PANEL_HEIGHT_MIN,
     PANEL_WIDTH_MIN,
 } from "screens/Canvas/Canvas";
+import { combineDrawingPanels } from "screens/CanvasSpectator/CanvasSpectator";
+import type { Point } from "types/types";
 
-const stroke1: Point[] = [ { x: 10, y: 20, lineWidth: 2, color: "#f00" } ];
-const stroke2: Point[] = [ { x: 30, y: 40, lineWidth: 3, color: "#0f0" } ];
-const stroke3: Point[] = [ { x: 50, y: 60, lineWidth: 1, color: "#00f" } ];
+const stroke1: Point[] = [{ x: 10, y: 20, lineWidth: 2, color: "#f00" }];
+const stroke2: Point[] = [{ x: 30, y: 40, lineWidth: 3, color: "#0f0" }];
+const stroke3: Point[] = [{ x: 50, y: 60, lineWidth: 1, color: "#00f" }];
 
 describe("combineDrawingPanels", () => {
     it("returns empty array when nDrawings is 0", () => {
-        const result = combineDrawingPanels([ [] ], [ [] ], 0);
+        const result = combineDrawingPanels([[]], [[]], 0);
         expect(result).toEqual([]);
     });
 
     it("combines completed panels only (no edits)", () => {
-        const panels = [ [ [ stroke1 ], [ stroke2 ] ] ]; // 1 drawing, 2 panels
-        const panelEdits = [ [] as Point[][] ];
+        const panels = [[[stroke1], [stroke2]]]; // 1 drawing, 2 panels
+        const panelEdits = [[] as Point[][]];
         const result = combineDrawingPanels(panels, panelEdits, 1);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toHaveLength(2);
-        expect(result[0][0]).toEqual([ stroke1 ]);
-        expect(result[0][1]).toEqual([ stroke2 ]);
+        expect(result[0][0]).toEqual([stroke1]);
+        expect(result[0][1]).toEqual([stroke2]);
     });
 
     it("combines panel edits only (no completed panels)", () => {
-        const panels = [ [] as Point[][][] ];
-        const panelEdits = [ [ stroke1, stroke2 ] ]; // 1 drawing, in-progress edit with 2 strokes
+        const panels = [[] as Point[][][]];
+        const panelEdits = [[stroke1, stroke2]]; // 1 drawing, in-progress edit with 2 strokes
         const result = combineDrawingPanels(panels, panelEdits, 1);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toHaveLength(1); // the edit becomes one panel
-        expect(result[0][0]).toEqual([ stroke1, stroke2 ]);
+        expect(result[0][0]).toEqual([stroke1, stroke2]);
     });
 
     it("combines completed panels with in-progress edits", () => {
-        const panels = [ [ [ stroke1 ] ] ]; // 1 completed panel
-        const panelEdits = [ [ stroke2, stroke3 ] ]; // current in-progress panel
+        const panels = [[[stroke1]]]; // 1 completed panel
+        const panelEdits = [[stroke2, stroke3]]; // current in-progress panel
         const result = combineDrawingPanels(panels, panelEdits, 1);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toHaveLength(2); // 1 completed + 1 in-progress
-        expect(result[0][0]).toEqual([ stroke1 ]); // completed panel
-        expect(result[0][1]).toEqual([ stroke2, stroke3 ]); // in-progress edit
+        expect(result[0][0]).toEqual([stroke1]); // completed panel
+        expect(result[0][1]).toEqual([stroke2, stroke3]); // in-progress edit
     });
 
     it("handles multiple drawings independently", () => {
         const panels = [
-            [ [ stroke1 ] ],       // drawing 0: 1 completed panel
-            [ [ stroke2 ], [ stroke3 ] ], // drawing 1: 2 completed panels
+            [[stroke1]], // drawing 0: 1 completed panel
+            [[stroke2], [stroke3]], // drawing 1: 2 completed panels
         ];
         const panelEdits = [
-            [ stroke3 ],           // drawing 0: in-progress edit
-            [] as Point[][],       // drawing 1: no current edit
+            [stroke3], // drawing 0: in-progress edit
+            [] as Point[][], // drawing 1: no current edit
         ];
         const result = combineDrawingPanels(panels, panelEdits, 2);
 
         expect(result).toHaveLength(2);
         // Drawing 0: completed + edit
         expect(result[0]).toHaveLength(2);
-        expect(result[0][0]).toEqual([ stroke1 ]);
-        expect(result[0][1]).toEqual([ stroke3 ]);
+        expect(result[0][0]).toEqual([stroke1]);
+        expect(result[0][1]).toEqual([stroke3]);
         // Drawing 1: only completed
         expect(result[1]).toHaveLength(2);
-        expect(result[1][0]).toEqual([ stroke2 ]);
-        expect(result[1][1]).toEqual([ stroke3 ]);
+        expect(result[1][0]).toEqual([stroke2]);
+        expect(result[1][1]).toEqual([stroke3]);
     });
 
     it("handles null panels gracefully", () => {
-        const panelEdits = [ [ stroke1 ] ];
+        const panelEdits = [[stroke1]];
         const result = combineDrawingPanels(null, panelEdits, 1);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toHaveLength(1);
-        expect(result[0][0]).toEqual([ stroke1 ]);
+        expect(result[0][0]).toEqual([stroke1]);
     });
 
     it("handles null panelEdits gracefully", () => {
-        const panels = [ [ [ stroke1 ] ] ];
+        const panels = [[[stroke1]]];
         const result = combineDrawingPanels(panels, null, 1);
 
         expect(result).toHaveLength(1);
@@ -99,8 +99,8 @@ describe("combineDrawingPanels", () => {
     });
 
     it("skips empty panelEdits (no strokes yet)", () => {
-        const panels = [ [ [ stroke1 ] ] ];
-        const panelEdits = [ [] as Point[][] ]; // empty edit (no strokes)
+        const panels = [[[stroke1]]];
+        const panelEdits = [[] as Point[][]]; // empty edit (no strokes)
         const result = combineDrawingPanels(panels, panelEdits, 1);
 
         // Should only have the completed panel, not an empty in-progress one
@@ -108,9 +108,9 @@ describe("combineDrawingPanels", () => {
     });
 
     it("preserves all strokes within panels without mutation", () => {
-        const panel: Point[][] = [ stroke1, stroke2 ];
-        const panels = [ [ panel ] ];
-        const panelEdits = [ [] as Point[][] ];
+        const panel: Point[][] = [stroke1, stroke2];
+        const panels = [[panel]];
+        const panelEdits = [[] as Point[][]];
 
         const result = combineDrawingPanels(panels, panelEdits, 1);
 
@@ -165,13 +165,13 @@ describe("Spectator canvas uses same dimensions as end screen", () => {
 
     it("drawing canvas scaleFactor is always >= 1", () => {
         const viewports = [
-            [ 100, 100 ],
-            [ 375, 667 ],
-            [ 667, 780 ],
-            [ 1024, 768 ],
-            [ 1920, 1080 ],
+            [100, 100],
+            [375, 667],
+            [667, 780],
+            [1024, 768],
+            [1920, 1080],
         ];
-        for (const [ w, h ] of viewports) {
+        for (const [w, h] of viewports) {
             const { scaleFactor } = computeDrawingDimensions(w, h);
             expect(scaleFactor).toBeGreaterThanOrEqual(1);
         }

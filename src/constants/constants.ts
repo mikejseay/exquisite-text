@@ -1,4 +1,4 @@
-import { IGameSettingsInfo, ILineConstraintDict, LineLength } from "types/types";
+import { type IGameSettingsInfo, type ILineConstraintDict, LineLength } from "types/types";
 
 export const roomCodeLength = 4;
 export const maxNameChars = 13;
@@ -46,9 +46,4 @@ export const defaultGameSettings: IGameSettingsInfo = {
 export const maxMemberTimeSpentInactive = 300_000; // ms
 export const maxRoomTimeSpentEmpty = 600_000; // ms
 export const checkActivityInterval = 30_000; // ms
-export const editorColorDefaultsArr = [
-    "#4F71BE",
-    "#B86029",
-    "#A9D18E",
-    "#B89230",
-];
+export const editorColorDefaultsArr = ["#4F71BE", "#B86029", "#A9D18E", "#B89230"];

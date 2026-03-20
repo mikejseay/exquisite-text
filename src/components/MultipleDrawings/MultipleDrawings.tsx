@@ -1,17 +1,14 @@
 // src/components/MultipleDrawings/index.tsx
-import React from "react";
+
 import useMediaQuery from "@mui/material/useMediaQuery";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
-import { Carousel } from "react-responsive-carousel";
-
-import { title } from "components/MultipleDrawings/styles";
-import { Point } from "types/types";
 import { CompletedDrawing } from "components/CompletedDrawings/CompletedDrawings";
 
-const renderDrawings = (
-    completedDrawings: Point[][][][] | null,
-    shouldAnimate = false,
-) => {
+import { title } from "components/MultipleDrawings/styles";
+import { Carousel } from "react-responsive-carousel";
+import type { Point } from "types/types";
+
+const renderDrawings = (completedDrawings: Point[][][][] | null, shouldAnimate = false) => {
     return completedDrawings?.map((completedDrawing, index) => (
         <div key={index} className={"drawing-container"}>
             <div style={title} className={"drawing-title"}>
@@ -22,32 +19,35 @@ const renderDrawings = (
     ));
 };
 
-function MultipleDrawings(
-    { completedDrawings, shouldAnimate }: { completedDrawings: Point[][][][] | null, shouldAnimate: boolean },
-) {
+function MultipleDrawings({
+    completedDrawings,
+    shouldAnimate,
+}: {
+    completedDrawings: Point[][][][] | null;
+    shouldAnimate: boolean;
+}) {
     const isWide = useMediaQuery("(min-width: 1200px)");
     const useGrid = isWide && completedDrawings && completedDrawings.length > 1;
 
     return (
         <div className={"multiple-drawings"} style={{ width: "100%" }}>
-            {completedDrawings && completedDrawings.length > 1
-                ? useGrid
-                    ? (
-                        <div style={{
+            {completedDrawings && completedDrawings.length > 1 ? (
+                useGrid ? (
+                    <div
+                        style={{
                             display: "grid",
                             gridTemplateColumns: "1fr 1fr",
                             gap: "1em",
-                        }}>
-                            {renderDrawings(completedDrawings, shouldAnimate)}
-                        </div>
-                    )
-                    : (
-                        <Carousel showThumbs={false}>
-                            {renderDrawings(completedDrawings, shouldAnimate)}
-                        </Carousel>
-                    )
-                : renderDrawings(completedDrawings, shouldAnimate)
-            }
+                        }}
+                    >
+                        {renderDrawings(completedDrawings, shouldAnimate)}
+                    </div>
+                ) : (
+                    <Carousel showThumbs={false}>{renderDrawings(completedDrawings, shouldAnimate)}</Carousel>
+                )
+            ) : (
+                renderDrawings(completedDrawings, shouldAnimate)
+            )}
         </div>
     );
 }

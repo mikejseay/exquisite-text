@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { IPoem } from "types/types";
+import type { IPoem } from "types/types";
 
 export function isNil(value: unknown): value is null | undefined {
     return value == null;
@@ -26,7 +26,7 @@ function generateAlphaCharacter() {
     return allPossibleLetters.charAt(Math.floor(Math.random() * quantityAllPossibleLetters));
 }
 
-export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+export const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 export function generateAlphaString(stringLength: number) {
     let result = "";
@@ -38,7 +38,7 @@ export function generateAlphaString(stringLength: number) {
 
 export function alphaCharacterRotate(text: string) {
     const a = text.split("");
-    for (let i = 0; i < a.length; i++){
+    for (let i = 0; i < a.length; i++) {
         if (allPossibleLetters.includes(a[i])) {
             a[i] = generateAlphaCharacter();
         }
@@ -59,17 +59,16 @@ export function getItemsOnCurrentPage(items: IPoem[], page: number, itemsPerPage
     return itemsOnCurrentPage;
 }
 
-
 // this function allows us to get the most current value of a state variable
 // with the third output argument "ref"
 // https://stackoverflow.com/questions/53845595/wrong-react-hooks-behaviour-with-event-listener
 export function useStateRef(initialValue: boolean) {
-    const [ value, setValue ] = React.useState(initialValue);
+    const [value, setValue] = React.useState(initialValue);
     const ref = React.useRef(value);
 
     React.useEffect(() => {
         ref.current = value;
-    }, [ value ]);
+    }, [value]);
 
-    return [ value, setValue, ref ] as const;
+    return [value, setValue, ref] as const;
 }

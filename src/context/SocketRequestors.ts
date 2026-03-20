@@ -1,12 +1,12 @@
 import { socket } from "components/SocketHandler/SocketHandler";
 import { isNil } from "helpers/helpers";
-import { IGameSettingsInfo, Medium, Point, Role } from "types/types";
+import type { IGameSettingsInfo, Medium, Point, Role } from "types/types";
 import { logger } from "utilities/loggerUtils";
 
 export const emitRecognizeDevice = () => {
     // set this to true if you want to be able to connect to the game
     // multiple times from the same browser
-    if (process.env.REACT_APP_DEBUG_SINGLE_BROWSER === "true") {
+    if (import.meta.env.VITE_DEBUG_SINGLE_BROWSER === "true") {
         // to debug I will send a random device id each time
         socket.emit("ctsRecognizeDevice", crypto.randomUUID());
     } else {
@@ -58,7 +58,7 @@ export const emitAddPoemBot = () => {
 };
 
 export const emitRequestSettingsEnabled = () => {
-    socket.emit("ctsRequestSettingsEnabled");   // initial populate
+    socket.emit("ctsRequestSettingsEnabled"); // initial populate
 };
 
 export const emitRequestGameSettingsInfo = () => {

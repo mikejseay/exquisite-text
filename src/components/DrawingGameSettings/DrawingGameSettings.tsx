@@ -2,22 +2,15 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import * as React from "react";
-
-import {
-    emitAlterGameSettings,
-    emitStartGame,
-} from "context/SocketRequestors";
 import { useSocketInfo } from "context/SocketInfoProvider";
+
+import { emitAlterGameSettings, emitStartGame } from "context/SocketRequestors";
 import { useInitializeGameSettings } from "hooks/useInitializeGameSettings";
+import type * as React from "react";
 import { textCentered } from "styles/common";
 
 export default function DrawingGameSettings({ hideStartButton = false }: { hideStartButton?: boolean }) {
-    const {
-        settingsEnabled,
-        nDrawings,
-        setNDrawings,
-    } = useSocketInfo();
+    const { settingsEnabled, nDrawings, setNDrawings } = useSocketInfo();
 
     useInitializeGameSettings();
 
@@ -25,8 +18,8 @@ export default function DrawingGameSettings({ hideStartButton = false }: { hideS
         return null;
     }
 
-    const handleNDrawings = (event: React.MouseEvent<HTMLElement>, nDrawings: number) => {
-        if (!nDrawings)  {
+    const handleNDrawings = (_event: React.MouseEvent<HTMLElement>, nDrawings: number) => {
+        if (!nDrawings) {
             return;
         }
         setNDrawings(nDrawings);
@@ -40,11 +33,7 @@ export default function DrawingGameSettings({ hideStartButton = false }: { hideS
     return (
         <div className={"gameSettings"} style={textCentered}>
             <h2>Game settings:</h2>
-            <Stack
-                spacing={2}
-                direction="column"
-                style={{ alignItems: "center" }}
-            >
+            <Stack spacing={2} direction="column" style={{ alignItems: "center" }}>
                 <div>
                     {"Drawings: "}
                     <ToggleButtonGroup
@@ -62,11 +51,7 @@ export default function DrawingGameSettings({ hideStartButton = false }: { hideS
                 </div>
 
                 {!hideStartButton && (
-                    <Button
-                        disabled={!settingsEnabled}
-                        onClick={handlePressStartGameButton}
-                        variant="contained"
-                    >
+                    <Button disabled={!settingsEnabled} onClick={handlePressStartGameButton} variant="contained">
                         Start Game
                     </Button>
                 )}
@@ -74,4 +59,3 @@ export default function DrawingGameSettings({ hideStartButton = false }: { hideS
         </div>
     );
 }
-

@@ -1,8 +1,8 @@
 // src/components/CompletedDrawings/index.tsx
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { useTheme } from "@mui/material/styles";
-
+import { useCanvasResize } from "hooks/useCanvasResize";
 import {
     DRAWING_ASPECT_RATIO,
     DRAWING_HEIGHT_MIN,
@@ -10,11 +10,9 @@ import {
     OVERLAP,
     PANEL_HEIGHT_MIN,
 } from "screens/Canvas/Canvas";
-import { Point } from "types/types";
+import type { Point } from "types/types";
 import { drawOnCanvas } from "utilities/canvasUtils";
-import { useCanvasResize } from "hooks/useCanvasResize";
-import { ScaleDirection, pixelRatio, scalePoints } from "utilities/scaleUtils";
-
+import { pixelRatio, ScaleDirection, scalePoints } from "utilities/scaleUtils";
 
 export const CompletedDrawing = ({
     completedDrawing,
@@ -24,7 +22,11 @@ export const CompletedDrawing = ({
     shouldAnimate: boolean;
 }): JSX.Element | null => {
     const theme = useTheme();
-    const { canvasRef, dimensions, scaleFactor } = useCanvasResize(DRAWING_WIDTH_MIN, DRAWING_HEIGHT_MIN, DRAWING_ASPECT_RATIO);
+    const { canvasRef, dimensions, scaleFactor } = useCanvasResize(
+        DRAWING_WIDTH_MIN,
+        DRAWING_HEIGHT_MIN,
+        DRAWING_ASPECT_RATIO,
+    );
     const animationRef = useRef<number>();
 
     useEffect(() => {
@@ -96,7 +98,7 @@ export const CompletedDrawing = ({
                 yOffset += PANEL_HEIGHT_MIN * scaleFactor * (1 - OVERLAP);
             });
         }
-    }, [ completedDrawing, shouldAnimate, dimensions, scaleFactor ]);
+    }, [completedDrawing, shouldAnimate, scaleFactor, canvasRef.current, theme.palette.canvas.background]);
 
     return (
         <div style={{ display: "flex", flexDirection: "column" }}>

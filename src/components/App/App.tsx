@@ -1,15 +1,9 @@
 import Paper from "@mui/material/Paper";
-import * as React from "react";
-import { Outlet } from "react-router-dom";
+import { app, appHeader, appTitle, possibleSocket } from "components/App/styles";
 import { LandscapeBanner } from "components/LandscapeBanner/LandscapeBanner";
 import { MenuButtons } from "components/MenuButtons/MenuButtons";
-import {
-    app,
-    appHeader,
-    appTitle,
-    possibleSocket,
-} from "components/App/styles";
 import { emitRecognizeDevice } from "context/SocketRequestors";
+import { Outlet } from "react-router-dom";
 
 export default function App() {
     emitRecognizeDevice();

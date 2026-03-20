@@ -7,8 +7,12 @@ export function createMockSocket(id = "socket-1") {
     const socketEmissions: Array<{ target: string; event: string; args: any[] }> = [];
     return {
         id,
-        join(room: string) { rooms.add(room); },
-        leave(room: string) { rooms.delete(room); },
+        join(room: string) {
+            rooms.add(room);
+        },
+        leave(room: string) {
+            rooms.delete(room);
+        },
         rooms,
         on: emitter.on.bind(emitter),
         emit: emitter.emit.bind(emitter),

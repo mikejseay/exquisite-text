@@ -1,7 +1,6 @@
-import * as React from "react";
+import { roomCodeLabel, roomCodeValue, roomCodeWrapper } from "components/RoomCode/styles";
 
 import { useSocketInfo } from "context/SocketInfoProvider";
-import { roomCodeLabel, roomCodeValue, roomCodeWrapper } from "components/RoomCode/styles";
 
 function RoomCode({ prominent = false }: { prominent?: boolean }) {
     const { roomCode } = useSocketInfo();
@@ -10,9 +9,7 @@ function RoomCode({ prominent = false }: { prominent?: boolean }) {
         return (
             <div style={roomCodeWrapper}>
                 <div style={roomCodeLabel}>Room Code</div>
-                <div style={roomCodeValue}>
-                    {roomCode}
-                </div>
+                <div style={roomCodeValue}>{roomCode}</div>
             </div>
         );
     }

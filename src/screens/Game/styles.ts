@@ -1,5 +1,5 @@
-import * as React from "react";
 import { headerHeight } from "constants/constants";
+import type * as React from "react";
 import { poemTypography } from "styles/common";
 
 export const gameContainer: React.CSSProperties = {
@@ -8,6 +8,6 @@ export const gameContainer: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
     flexWrap: "nowrap",
-    height: "calc(100vh - " + headerHeight.toString() + "px)",
+    height: `calc(100vh - ${headerHeight.toString()}px)`,
     justifyContent: "flex-start",
 };

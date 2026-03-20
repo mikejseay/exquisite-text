@@ -1,9 +1,8 @@
-import * as React from "react";
 import Button from "@mui/material/Button";
 import { useSocketInfo } from "context/SocketInfoProvider";
 import { emitAddPoemBot } from "context/SocketRequestors";
-import { Medium } from "types/types";
 import { textCentered } from "styles/common";
+import { Medium } from "types/types";
 import { logger } from "utilities/loggerUtils";
 
 const SECRET_NAME = "SANANBYEKIM";
@@ -25,9 +24,7 @@ function UserTable() {
         return null;
     }
 
-    const showAddBot = medium === Medium.POETRY
-        && editors.length > 0
-        && editors[0] === SECRET_NAME;
+    const showAddBot = medium === Medium.POETRY && editors.length > 0 && editors[0] === SECRET_NAME;
 
     return (
         <div className={"userTable"} style={textCentered}>
@@ -35,7 +32,9 @@ function UserTable() {
                 <h2>Editors:</h2>
                 {editors.map((name, nameIndex) => {
                     return (
-                        <p key={nameIndex} style={{ color: editorColors[nameIndex] }}>{name}</p>
+                        <p key={nameIndex} style={{ color: editorColors[nameIndex] }}>
+                            {name}
+                        </p>
                     );
                 })}
                 {showAddBot && (
@@ -53,9 +52,7 @@ function UserTable() {
                 <div className={"spectators"}>
                     <h2>Spectators:</h2>
                     {spectators.map((name, nameIndex) => {
-                        return (
-                            <p key={nameIndex}>{name}</p>
-                        );
+                        return <p key={nameIndex}>{name}</p>;
                     })}
                 </div>
             )}

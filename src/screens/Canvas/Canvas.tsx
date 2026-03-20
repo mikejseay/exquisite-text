@@ -1,27 +1,28 @@
 // src/screens/Canvas/index.tsx
-import React, { useCallback, useEffect, useRef, useState } from "react";
+
+import DoneIcon from "@mui/icons-material/Done";
+import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
+import MoveUpIcon from "@mui/icons-material/MoveUp";
+import PaletteIcon from "@mui/icons-material/Palette";
+import RedoIcon from "@mui/icons-material/Redo";
+import UndoIcon from "@mui/icons-material/Undo";
+import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import Slider from "@mui/material/Slider";
-import Divider from "@mui/material/Divider";
-import Tooltip from "@mui/material/Tooltip";
 import { useTheme } from "@mui/material/styles";
-import { debounce } from "helpers/helpers";
-import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
-import UndoIcon from "@mui/icons-material/Undo";
-import MoveUpIcon from "@mui/icons-material/MoveUp";
-import DoneIcon from "@mui/icons-material/Done";
-import RedoIcon from "@mui/icons-material/Redo";
-import PaletteIcon from "@mui/icons-material/Palette";
-import Button from "@mui/material/Button";
-
-import { logger } from "utilities/loggerUtils";
-import { Point } from "types/types";
-import { emitSendLastPanel, emitSendPanel, emitSendPanelEdit } from "context/SocketRequestors";
+import Tooltip from "@mui/material/Tooltip";
 import { useSocketInfo } from "context/SocketInfoProvider";
-import { DEFAULT_COLOR, drawOnCanvas } from "utilities/canvasUtils";
-import { useDisableScroll } from "hooks/useDisableScroll";
+import { emitSendLastPanel, emitSendPanel, emitSendPanelEdit } from "context/SocketRequestors";
+import { debounce } from "helpers/helpers";
 import { useCanvasResize } from "hooks/useCanvasResize";
-import { ScaleDirection, pixelRatio, scalePoints } from "utilities/scaleUtils";
+import { useDisableScroll } from "hooks/useDisableScroll";
+import type React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { Point } from "types/types";
+import { DEFAULT_COLOR, drawOnCanvas } from "utilities/canvasUtils";
+import { logger } from "utilities/loggerUtils";
+import { pixelRatio, ScaleDirection, scalePoints } from "utilities/scaleUtils";
 
 type PointerLikeEvent = {
     clientX: number;
@@ -49,23 +50,27 @@ const Canvas: React.FC = () => {
     const theme = useTheme();
     const { strokeHistory, editorActive, onLastContribution } = useSocketInfo();
     const toolbarRef = useRef<HTMLDivElement>(null);
-    const { canvasRef, dimensions, scaleFactor } = useCanvasResize(PANEL_WIDTH_MIN, PANEL_HEIGHT_MIN, PANEL_ASPECT_RATIO, toolbarRef);
-    const [ points, setPoints ] = useState<Point[]>([]);
-    const [ localStrokeHistory, setLocalStrokeHistory ] = useState<Point[][]>([]);
-    const [ undidStrokeHistory, setUndidStrokeHistory ] = useState<Point[][]>([]);
-    const [ isMousedown, setIsMousedown ] = useState(false);
-    const [ passEnabled, setPassEnabled ] = useState(false);
-    const [ strokeColor, setStrokeColor ] = useState<string>(DEFAULT_COLOR);
-    const [ isEraserActive, setIsEraserActive ] = useState<boolean>(false);
-    const [ triggerRedraw, setTriggerRedraw ] = useState<number>(0);
-    const [ baseLineWidth, setBaseLineWidth ] =
-    useState<number>(DEFAULT_LINE_WIDTH);
+    const { canvasRef, dimensions, scaleFactor } = useCanvasResize(
+        PANEL_WIDTH_MIN,
+        PANEL_HEIGHT_MIN,
+        PANEL_ASPECT_RATIO,
+        toolbarRef,
+    );
+    const [points, setPoints] = useState<Point[]>([]);
+    const [localStrokeHistory, setLocalStrokeHistory] = useState<Point[][]>([]);
+    const [undidStrokeHistory, setUndidStrokeHistory] = useState<Point[][]>([]);
+    const [isMousedown, setIsMousedown] = useState(false);
+    const [_passEnabled, setPassEnabled] = useState(false);
+    const [strokeColor, setStrokeColor] = useState<string>(DEFAULT_COLOR);
+    const [isEraserActive, setIsEraserActive] = useState<boolean>(false);
+    const [_triggerRedraw, setTriggerRedraw] = useState<number>(0);
+    const [baseLineWidth, setBaseLineWidth] = useState<number>(DEFAULT_LINE_WIDTH);
     logger.debug(theme.palette.text);
     const localStrokeHistoryRef = useRef<Point[][]>(localStrokeHistory);
 
     useEffect(() => {
         localStrokeHistoryRef.current = localStrokeHistory;
-    }, [ localStrokeHistory ]);
+    }, [localStrokeHistory]);
 
     useDisableScroll();
 
@@ -83,11 +88,7 @@ const Canvas: React.FC = () => {
         // Redraw vectorized points
         strokeHistory?.forEach((strokeArray) =>
             drawOnCanvas({
-                newPoints: scalePoints(
-                    strokeArray,
-                    ScaleDirection.TO_DISPLAY,
-                    scaleFactor,
-                ),
+                newPoints: scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor),
                 yOffset: 0,
                 context,
                 eraserColor: theme.palette.canvas.background,
@@ -102,35 +103,19 @@ const Canvas: React.FC = () => {
             context.canvas.height,
         );
         context.putImageData(imageData, 0, 0);
-        context.clearRect(
-            context.canvas.width,
-            context.canvas.height * OVERLAP,
-            0,
-            context.canvas.height,
-        );
+        context.clearRect(context.canvas.width, context.canvas.height * OVERLAP, 0, context.canvas.height);
 
         // Redraw current additions from local editor
         localStrokeHistoryRef.current?.forEach((strokeArray, index) => {
             drawOnCanvas({
-                newPoints: scalePoints(
-                    strokeArray,
-                    ScaleDirection.TO_DISPLAY,
-                    scaleFactor,
-                ),
+                newPoints: scalePoints(strokeArray, ScaleDirection.TO_DISPLAY, scaleFactor),
                 yOffset: 0,
                 context,
                 eraserColor: theme.palette.canvas.background,
             }),
-            logger.debug(`Redrew strokeArray #${index}`);
+                logger.debug(`Redrew strokeArray #${index}`);
         });
-    }, [
-        dimensions,
-        scaleFactor,
-        editorActive,
-        passEnabled,
-        triggerRedraw,
-        strokeHistory,
-    ]);
+    }, [scaleFactor, editorActive, strokeHistory, canvasRef.current, theme.palette.canvas.background]);
 
     function passTurn() {
         emitSendPanel(localStrokeHistory);
@@ -153,17 +138,13 @@ const Canvas: React.FC = () => {
 
     const handleEnd = useCallback(() => {
         setIsMousedown(false);
-        const scaledPoints: Point[] = scalePoints(
-            points,
-            ScaleDirection.TO_UNIVERSAL,
-            scaleFactor,
-        );
-        const currentPanel = [ ...localStrokeHistory, scaledPoints ];
+        const scaledPoints: Point[] = scalePoints(points, ScaleDirection.TO_UNIVERSAL, scaleFactor);
+        const currentPanel = [...localStrokeHistory, scaledPoints];
         debouncedEmitPanel(currentPanel);
-        setLocalStrokeHistory((prev) => [ ...prev, scaledPoints ]);
+        setLocalStrokeHistory((prev) => [...prev, scaledPoints]);
         setPoints([]);
         setUndidStrokeHistory([]);
-    }, [ points, scaleFactor ]);
+    }, [points, scaleFactor, debouncedEmitPanel, localStrokeHistory]);
 
     const getPointViaPointerEvent = (
         event: PointerLikeEvent,
@@ -177,25 +158,17 @@ const Canvas: React.FC = () => {
         const x = event.clientX - canvasBounds.left;
         const y = event.clientY - canvasBounds.top;
 
-        const rawPressure = typeof event.pressure === "number"
-            ? event.pressure
-            : DEFAULT_PRESSURE;
+        const rawPressure = typeof event.pressure === "number" ? event.pressure : DEFAULT_PRESSURE;
 
-        const pressure = rawPressure > 0
-            ? rawPressure
-            : DEFAULT_PRESSURE;
+        const pressure = rawPressure > 0 ? rawPressure : DEFAULT_PRESSURE;
 
         // Normalize pressure by input type: finger/touch reports flat ~0.5 while
         // Apple Pencil reports analog 0.01-1.0, so use a fixed multiplier for touch
         // to keep line width consistent when switching between input types
-        const pressureMultiplier = event.pointerType === "touch"
-            ? DEFAULT_PRESSURE
-            : pressure;
+        const pressureMultiplier = event.pointerType === "touch" ? DEFAULT_PRESSURE : pressure;
 
         const lineWidth = Math.log(pressureMultiplier + 1) * baseLineWidth * scaleFactor;
-        const color = isEraserActive
-            ? "!e"
-            : strokeColor;
+        const color = isEraserActive ? "!e" : strokeColor;
 
         return { x, y, lineWidth, color };
     };
@@ -221,16 +194,24 @@ const Canvas: React.FC = () => {
                 strokeColor,
             );
 
-            setPoints((prev) => [ ...prev, newPoint ]);
+            setPoints((prev) => [...prev, newPoint]);
 
             drawOnCanvas({
-                newPoints: [ newPoint ],
+                newPoints: [newPoint],
                 yOffset: 0,
                 context,
                 eraserColor: theme.palette.canvas.background,
             });
         },
-        [ scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
+        [
+            scaleFactor,
+            strokeColor,
+            isEraserActive,
+            baseLineWidth,
+            canvasRef.current,
+            getPointViaPointerEvent,
+            theme.palette.canvas.background,
+        ],
     );
 
     const handlePointerMove = useCallback(
@@ -256,16 +237,25 @@ const Canvas: React.FC = () => {
                 const lastPoint = prev[prev.length - 1];
                 if (lastPoint) {
                     drawOnCanvas({
-                        newPoints: [ lastPoint, newPoint ],
+                        newPoints: [lastPoint, newPoint],
                         yOffset: 0,
                         context,
                         eraserColor: theme.palette.canvas.background,
                     });
                 }
-                return [ ...prev, newPoint ];
+                return [...prev, newPoint];
             });
         },
-        [ isMousedown, scaleFactor, strokeColor, isEraserActive, baseLineWidth ],
+        [
+            isMousedown,
+            scaleFactor,
+            strokeColor,
+            isEraserActive,
+            baseLineWidth,
+            canvasRef.current,
+            getPointViaPointerEvent,
+            theme.palette.canvas.background,
+        ],
     );
 
     const handlePointerEnd = useCallback(
@@ -275,13 +265,13 @@ const Canvas: React.FC = () => {
                 try {
                     canvas.releasePointerCapture(e.pointerId);
                 } catch {
-                // ignore if not captured
+                    // ignore if not captured
                 }
             }
 
             handleEnd();
         },
-        [ handleEnd ],
+        [handleEnd, canvasRef.current],
     );
 
     const handleUndo = () => {
@@ -291,7 +281,7 @@ const Canvas: React.FC = () => {
         const strokeHistoryMinusLastStroke = localStrokeHistory.slice(0, -1);
 
         setLocalStrokeHistory(strokeHistoryMinusLastStroke);
-        setUndidStrokeHistory([ ...undidStrokeHistory, lastStroke ]);
+        setUndidStrokeHistory([...undidStrokeHistory, lastStroke]);
         debouncedEmitPanel(strokeHistoryMinusLastStroke);
         setTriggerRedraw((prev) => (prev += 1));
     };
@@ -300,7 +290,7 @@ const Canvas: React.FC = () => {
         if (undidStrokeHistory.length === 0) return;
 
         const lastUndoneStroke = undidStrokeHistory[undidStrokeHistory.length - 1];
-        const updatedLocalStrokeHistory = [ ...localStrokeHistory, lastUndoneStroke ];
+        const updatedLocalStrokeHistory = [...localStrokeHistory, lastUndoneStroke];
 
         setLocalStrokeHistory(updatedLocalStrokeHistory);
         setUndidStrokeHistory(undidStrokeHistory.slice(0, -1));
@@ -324,20 +314,14 @@ const Canvas: React.FC = () => {
             >
                 <Tooltip title="Undo" enterTouchDelay={0} leaveTouchDelay={1500}>
                     <span>
-                        <IconButton
-                            onClick={handleUndo}
-                            disabled={!editorActive || localStrokeHistory.length === 0}
-                        >
+                        <IconButton onClick={handleUndo} disabled={!editorActive || localStrokeHistory.length === 0}>
                             <UndoIcon />
                         </IconButton>
                     </span>
                 </Tooltip>
                 <Tooltip title="Redo" enterTouchDelay={0} leaveTouchDelay={1500}>
                     <span>
-                        <IconButton
-                            onClick={handleRedo}
-                            disabled={!editorActive || undidStrokeHistory.length === 0}
-                        >
+                        <IconButton onClick={handleRedo} disabled={!editorActive || undidStrokeHistory.length === 0}>
                             <RedoIcon />
                         </IconButton>
                     </span>
@@ -390,10 +374,7 @@ const Canvas: React.FC = () => {
                 </Tooltip>
                 <Tooltip title="Pick Color" enterTouchDelay={0} leaveTouchDelay={1500}>
                     <span>
-                        <IconButton
-                            component="label"
-                            disabled={!editorActive || isEraserActive}
-                        >
+                        <IconButton component="label" disabled={!editorActive || isEraserActive}>
                             <input
                                 type="color"
                                 hidden
@@ -405,9 +386,7 @@ const Canvas: React.FC = () => {
                     </span>
                 </Tooltip>
                 <Tooltip
-                    title={isEraserActive
-                        ? "Switch to Pen"
-                        : "Switch to Eraser"}
+                    title={isEraserActive ? "Switch to Pen" : "Switch to Eraser"}
                     enterTouchDelay={0}
                     leaveTouchDelay={1500}
                 >
@@ -415,9 +394,7 @@ const Canvas: React.FC = () => {
                         <IconButton
                             onClick={() => setIsEraserActive((prev) => !prev)}
                             disabled={!editorActive}
-                            color={isEraserActive
-                                ? "primary"
-                                : "default"}
+                            color={isEraserActive ? "primary" : "default"}
                         >
                             <FormatColorResetIcon />
                         </IconButton>
@@ -433,27 +410,19 @@ const Canvas: React.FC = () => {
                         marginRight: theme.spacing(2),
                     }}
                 />
-                <Tooltip title={
-                    onLastContribution
-                        ? "Complete Drawing"
-                        : "Pass"
-                } enterTouchDelay={0} leaveTouchDelay={1500}>
+                <Tooltip
+                    title={onLastContribution ? "Complete Drawing" : "Pass"}
+                    enterTouchDelay={0}
+                    leaveTouchDelay={1500}
+                >
                     <span>
                         <Button
                             variant="contained"
                             tabIndex={-1}
-                            startIcon={onLastContribution
-                                ? <DoneIcon />
-                                : <MoveUpIcon />}
-                            onClick={onLastContribution
-                                ? completeDrawing
-                                : passTurn}
+                            startIcon={onLastContribution ? <DoneIcon /> : <MoveUpIcon />}
+                            onClick={onLastContribution ? completeDrawing : passTurn}
                         >
-                            {
-                                onLastContribution
-                                    ? "Done"
-                                    : "Pass"
-                            }
+                            {onLastContribution ? "Done" : "Pass"}
                         </Button>
                     </span>
                 </Tooltip>
@@ -469,16 +438,18 @@ const Canvas: React.FC = () => {
                 }}
             >
                 {!editorActive && (
-                    <div style={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        zIndex: 1,
-                        textAlign: "center",
-                        color: theme.palette.text.primary,
-                        pointerEvents: "none",
-                    }}>
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            zIndex: 1,
+                            textAlign: "center",
+                            color: theme.palette.text.primary,
+                            pointerEvents: "none",
+                        }}
+                    >
                         Waiting for other players...
                     </div>
                 )}
@@ -492,15 +463,9 @@ const Canvas: React.FC = () => {
                         border: "1px solid black",
                         backgroundColor: theme.palette.canvas.background,
                         display: "block",
-                        pointerEvents: editorActive
-                            ? "auto"
-                            : "none",
-                        opacity: editorActive
-                            ? 1
-                            : 0.5,
-                        boxShadow: editorActive
-                            ? `0 0 8px 4px ${theme.palette.canvas.boxShadow}`
-                            : undefined,
+                        pointerEvents: editorActive ? "auto" : "none",
+                        opacity: editorActive ? 1 : 0.5,
+                        boxShadow: editorActive ? `0 0 8px 4px ${theme.palette.canvas.boxShadow}` : undefined,
                         touchAction: "none",
                     }}
                     onPointerDown={handlePointerStart}

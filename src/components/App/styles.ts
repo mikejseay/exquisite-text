@@ -1,5 +1,5 @@
-import * as React from "react";
 import { headerHeight } from "constants/constants";
+import type * as React from "react";
 import { estebanFont } from "styles/common";
 
 export const appHeader: React.CSSProperties = {

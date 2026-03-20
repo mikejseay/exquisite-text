@@ -1,17 +1,15 @@
+import CloseIcon from "@mui/icons-material/Close";
 import Alert from "@mui/material/Alert";
 import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
 import * as React from "react";
 import { useLocation } from "react-router-dom";
 
 const DISMISSED_KEY = "landscapeBannerDismissed";
-const END_ROUTES = [ "/end", "/endtestpoem", "/endtestdrawing" ];
+const END_ROUTES = ["/end", "/endtestpoem", "/endtestdrawing"];
 
 export function LandscapeBanner() {
-    const [ isPortrait, setIsPortrait ] = React.useState(false);
-    const [ dismissed, setDismissed ] = React.useState(
-        () => sessionStorage.getItem(DISMISSED_KEY) === "true",
-    );
+    const [isPortrait, setIsPortrait] = React.useState(false);
+    const [dismissed, setDismissed] = React.useState(() => sessionStorage.getItem(DISMISSED_KEY) === "true");
     const location = useLocation();
 
     React.useEffect(() => {

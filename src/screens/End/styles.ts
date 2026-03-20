@@ -1,6 +1,6 @@
-import * as React from "react";
-import { SxProps } from "@mui/system";
+import type { SxProps } from "@mui/system";
 import { FABDiameter, FABSpace } from "constants/constants";
+import type * as React from "react";
 import { centeredFlex } from "styles/common";
 
 export const centered: React.CSSProperties = {

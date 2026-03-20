@@ -1,8 +1,7 @@
-import { beforeEach, describe, it } from "node:test";
 import assert from "node:assert/strict";
-
-import { Drawing, Poem } from "modules/collaboration";
+import { beforeEach, describe, it } from "node:test";
 import { createMockIO } from "__tests__/helpers";
+import { Drawing, Poem } from "modules/collaboration";
 import type { Point } from "shared/types/types";
 
 describe("Poem", () => {
@@ -59,27 +58,23 @@ describe("Poem", () => {
             (e: any) => e.target === "ROOM1_Spectators" && e.event === "stcLineSpectator",
         );
         assert.ok(emission);
-        assert.deepEqual(emission!.args, [ 0, "hello world" ]);
+        assert.deepEqual(emission!.args, [0, "hello world"]);
     });
 
     it("sendLineEditToSpectators emits correct event", () => {
         poem.sendLineEditToSpectators("typing...");
 
-        const emission = io.emissions.find(
-            (e: any) => e.event === "stcLineEditSpectator",
-        );
+        const emission = io.emissions.find((e: any) => e.event === "stcLineEditSpectator");
         assert.ok(emission);
-        assert.deepEqual(emission!.args, [ 0, "typing..." ]);
+        assert.deepEqual(emission!.args, [0, "typing..."]);
     });
 
     it("sendLine emits to a specific socket", () => {
         poem.sendLine("hello", "socket-99");
 
-        const emission = io.emissions.find(
-            (e: any) => e.target === "socket-99" && e.event === "stcLineSpectator",
-        );
+        const emission = io.emissions.find((e: any) => e.target === "socket-99" && e.event === "stcLineSpectator");
         assert.ok(emission);
-        assert.deepEqual(emission!.args, [ 0, "hello" ]);
+        assert.deepEqual(emission!.args, [0, "hello"]);
     });
 
     it("sendAllLinesTo sends all existing lines to a socket", async () => {
@@ -112,8 +107,8 @@ describe("Drawing", () => {
     });
 
     it("submitPanel adds a panel and resets hint", () => {
-        const content: Point[][] = [ [ { x: 10, y: 20, lineWidth: 2, color: "#ff0000" } ] ];
-        drawing.panelHint = [ [ { x: 1, y: 1, lineWidth: 1, color: "#000" } ] ];
+        const content: Point[][] = [[{ x: 10, y: 20, lineWidth: 2, color: "#ff0000" }]];
+        drawing.panelHint = [[{ x: 1, y: 1, lineWidth: 1, color: "#000" }]];
 
         drawing.submitPanel("author-1", content);
 
@@ -128,30 +123,26 @@ describe("Drawing", () => {
     });
 
     it("submitPanel emits to spectators", () => {
-        const content: Point[][] = [ [ { x: 0, y: 0, lineWidth: 1, color: "#000" } ] ];
+        const content: Point[][] = [[{ x: 0, y: 0, lineWidth: 1, color: "#000" }]];
         drawing.submitPanel("author-1", content);
 
-        const emission = io.emissions.find(
-            (e: any) => e.event === "stcPanelSpectator",
-        );
+        const emission = io.emissions.find((e: any) => e.event === "stcPanelSpectator");
         assert.ok(emission);
-        assert.deepEqual(emission!.args, [ 0, content ]);
+        assert.deepEqual(emission!.args, [0, content]);
     });
 
     it("sendPanelEditToSpectators emits correct event", () => {
-        const content: Point[][] = [ [ { x: 5, y: 5, lineWidth: 3, color: "#00f" } ] ];
+        const content: Point[][] = [[{ x: 5, y: 5, lineWidth: 3, color: "#00f" }]];
         drawing.sendPanelEditToSpectators(content);
 
-        const emission = io.emissions.find(
-            (e: any) => e.event === "stcPanelEditSpectator",
-        );
+        const emission = io.emissions.find((e: any) => e.event === "stcPanelEditSpectator");
         assert.ok(emission);
-        assert.deepEqual(emission!.args, [ 0, content ]);
+        assert.deepEqual(emission!.args, [0, content]);
     });
 
     it("sendAllPanelsTo sends all panels to a socket", () => {
-        const c1: Point[][] = [ [ { x: 0, y: 0, lineWidth: 1, color: "#000" } ] ];
-        const c2: Point[][] = [ [ { x: 1, y: 1, lineWidth: 2, color: "#fff" } ] ];
+        const c1: Point[][] = [[{ x: 0, y: 0, lineWidth: 1, color: "#000" }]];
+        const c2: Point[][] = [[{ x: 1, y: 1, lineWidth: 2, color: "#fff" }]];
         drawing.submitPanel("a1", c1);
         drawing.submitPanel("a2", c2);
 

@@ -9,7 +9,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "test": "jest",
-    "lint": "node ../node_modules/eslint/bin/eslint.js . --ext .ts,.tsx --max-warnings 0 --ignore-pattern node_modules",
+    "lint": "npx biome check .",
+    "lint:fix": "npx biome check --write .",
     "typecheck": "tsc --noEmit"
   },
   "jest": {
@@ -44,5 +45,5 @@
     "typescript": "~5.9.2"
   },
   "private": true,
-  "packageManager": "yarn@4.4.0"
+  "packageManager": "yarn@4.13.0"
 }

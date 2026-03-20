@@ -1,13 +1,13 @@
-import * as React from "react";
-import Lines from "components/Lines/Lines";
 import LeaveButton from "components/LeaveButton/LeaveButton";
+import Lines from "components/Lines/Lines";
 import { useSocketInfo } from "context/SocketInfoProvider";
-import { Medium } from "types/types";
+import * as React from "react";
 import CanvasSpectator from "screens/CanvasSpectator/CanvasSpectator";
+import { Medium } from "types/types";
 
 function Spectate() {
     const { medium } = useSocketInfo();
-    const [ view, setView ] = React.useState<JSX.Element | null>(null);
+    const [view, setView] = React.useState<JSX.Element | null>(null);
 
     React.useEffect(() => {
         if (medium === Medium.DRAWING || medium === Medium.ART) {
@@ -17,7 +17,7 @@ function Spectate() {
         } else {
             setView(null);
         }
-    }, [ medium ]);
+    }, [medium]);
 
     return (
         <div>

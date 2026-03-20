@@ -1,9 +1,9 @@
-import { describe, it } from "node:test";
-import { execSync } from "node:child_process";
 import * as assert from "node:assert/strict";
-import * as path from "node:path";
+import { execSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as os from "node:os";
+import * as path from "node:path";
+import { describe, it } from "node:test";
 
 const serverDir = path.resolve(__dirname, "..");
 
@@ -14,12 +14,15 @@ describe("env var loading via --env-file-if-exists", () => {
         const script = path.join(tmpDir, "check.ts");
 
         fs.writeFileSync(envFile, "TEST_VAR=hello_from_env\nPORT=9999\n");
-        fs.writeFileSync(script, "console.log(JSON.stringify({ TEST_VAR: process.env.TEST_VAR, PORT: process.env.PORT }));");
-
-        const result = execSync(
-            `node --env-file=${envFile} --import tsx ${script}`,
-            { cwd: serverDir, encoding: "utf-8" },
+        fs.writeFileSync(
+            script,
+            "console.log(JSON.stringify({ TEST_VAR: process.env.TEST_VAR, PORT: process.env.PORT }));",
         );
+
+        const result = execSync(`node --env-file=${envFile} --import tsx ${script}`, {
+            cwd: serverDir,
+            encoding: "utf-8",
+        });
         const parsed = JSON.parse(result.trim());
 
         assert.equal(parsed.TEST_VAR, "hello_from_env");
@@ -35,10 +38,10 @@ describe("env var loading via --env-file-if-exists", () => {
 
         fs.writeFileSync(script, "console.log(JSON.stringify({ PORT: process.env.PORT ?? 'undefined' }));");
 
-        const result = execSync(
-            `node --env-file-if-exists=${missingEnv} --import tsx ${script}`,
-            { cwd: serverDir, encoding: "utf-8" },
-        );
+        const result = execSync(`node --env-file-if-exists=${missingEnv} --import tsx ${script}`, {
+            cwd: serverDir,
+            encoding: "utf-8",
+        });
         const parsed = JSON.parse(result.trim());
 
         assert.equal(parsed.PORT, "undefined");
@@ -70,10 +73,11 @@ for (const v of vars) result[v] = process.env[v];
 console.log(JSON.stringify(result));`,
         );
 
-        const result = execSync(
-            `node --env-file=${envFile} --import tsx ${script}`,
-            { cwd: serverDir, encoding: "utf-8", env: { PATH: process.env.PATH } },
-        );
+        const result = execSync(`node --env-file=${envFile} --import tsx ${script}`, {
+            cwd: serverDir,
+            encoding: "utf-8",
+            env: { PATH: process.env.PATH },
+        });
         const parsed = JSON.parse(result.trim());
 
         for (const key of envVarsUsed) {
@@ -85,10 +89,11 @@ console.log(JSON.stringify(result));`,
 
     it("--env-file errors when file is specified but missing", () => {
         assert.throws(() => {
-            execSync(
-                "node --env-file=/nonexistent/path/.env -e \"console.log('ok')\"",
-                { cwd: serverDir, encoding: "utf-8", stdio: "pipe" },
-            );
+            execSync("node --env-file=/nonexistent/path/.env -e \"console.log('ok')\"", {
+                cwd: serverDir,
+                encoding: "utf-8",
+                stdio: "pipe",
+            });
         });
     });
 });
