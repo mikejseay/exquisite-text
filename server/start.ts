@@ -1,9 +1,5 @@
 #!/usr/bin/env node
 
-// configure .env access before anything else
-import * as dotenv from "dotenv";
-dotenv.config({ path: __dirname + "/.env" });
-
 import { Server } from "socket.io";
 import { logger } from "utilities/loggerUtils";
 import type { TypedServer } from "types";
