@@ -1,6 +1,5 @@
 import { socket } from "components/SocketHandler/SocketHandler";
-import { v4 as uuidv4 } from "uuid";
-import { isNil } from "es-toolkit";
+import { isNil } from "helpers/helpers";
 import { IGameSettingsInfo, Medium, Point, Role } from "types/types";
 import { logger } from "utilities/loggerUtils";
 
@@ -9,12 +8,12 @@ export const emitRecognizeDevice = () => {
     // multiple times from the same browser
     if (process.env.REACT_APP_DEBUG_SINGLE_BROWSER === "true") {
         // to debug I will send a random device id each time
-        socket.emit("ctsRecognizeDevice", uuidv4());
+        socket.emit("ctsRecognizeDevice", crypto.randomUUID());
     } else {
         // check if this device (browser) has visited the page before
         const firstVisit = !localStorage.getItem("device");
         if (firstVisit) {
-            localStorage.setItem("device", uuidv4());
+            localStorage.setItem("device", crypto.randomUUID());
         }
         const deviceID = localStorage.getItem("device");
         if (!isNil(deviceID)) {

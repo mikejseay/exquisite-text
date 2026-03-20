@@ -5,7 +5,7 @@ import Slider from "@mui/material/Slider";
 import Divider from "@mui/material/Divider";
 import Tooltip from "@mui/material/Tooltip";
 import { useTheme } from "@mui/material/styles";
-import { debounce } from "es-toolkit";
+import { debounce } from "helpers/helpers";
 import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
 import UndoIcon from "@mui/icons-material/Undo";
 import MoveUpIcon from "@mui/icons-material/MoveUp";

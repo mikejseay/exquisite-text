@@ -2,6 +2,23 @@ import * as React from "react";
 
 import { IPoem } from "types/types";
 
+export function isNil(value: unknown): value is null | undefined {
+    return value == null;
+}
+
+export function debounce<T extends (...args: Parameters<T>) => void>(
+    fn: T,
+    wait: number,
+): ((...args: Parameters<T>) => void) & { cancel: () => void } {
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const debounced = (...args: Parameters<T>) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fn(...args), wait);
+    };
+    debounced.cancel = () => clearTimeout(timeoutId);
+    return debounced;
+}
+
 const allPossibleLetters = "abcdefghijklmnopqrstuvwxyz";
 const quantityAllPossibleLetters = allPossibleLetters.length;
 

@@ -1,5 +1,5 @@
 import { RefObject, useLayoutEffect, useRef, useState } from "react";
-import { debounce } from "es-toolkit";
+import { debounce } from "helpers/helpers";
 
 import { logger } from "utilities/loggerUtils";
 import { headerHeight } from "constants/constants";

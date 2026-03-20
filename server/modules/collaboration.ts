@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid for lines
+import { randomUUID } from "crypto";
 import {
     ILine,
     IPanel,
@@ -30,7 +30,7 @@ class Collaboration {
         this.roomID = roomID;
         this.nContributions = nContributions;
         this.indexInGame = indexInGame;
-        this.ID = uuidv4();
+        this.ID = randomUUID();
         this.mostRecentEditor = "";
     }
 

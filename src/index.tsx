@@ -14,7 +14,6 @@ import Lobby from "screens/Lobby/Lobby";
 import Spectate from "screens/Spectate/Spectate";
 import Disconnected from "screens/Disconnected/Disconnected";
 import Canvas from "screens/Canvas/Canvas";
-import reportWebVitals from "reportWebVitals";
 import SocketHandler from "components/SocketHandler/SocketHandler";
 import CanvasSpectator from "screens/CanvasSpectator/CanvasSpectator";
 import { Medium } from "types/types";
@@ -80,8 +79,3 @@ function Root() {
 }
 
 root.render(<Root />);
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();

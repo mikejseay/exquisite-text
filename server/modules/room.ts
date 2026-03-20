@@ -29,7 +29,7 @@ import {
     maxRoomTimeSpentEmpty,
 } from "shared/constants/constants";
 import { sleep } from "shared/helpers/helpers";
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "crypto";
 import { logger } from "utilities/loggerUtils";
 
 const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
@@ -277,7 +277,7 @@ export class PoemRoom extends Room {
         // we use a special top-level socket message to get them to join as a bot
 
         logger.debug(`room trying to add PoemBot with server path ${serverPath}`);
-        const botDeviceID = uuidv4();
+        const botDeviceID = randomUUID();
         const botSocket = ioClient(serverPath);
         botDeviceIDToBotSocket.set(botDeviceID, botSocket);
         botSocket.emit("ctsJoinAsBot", this.roomID, "BOT", botDeviceID);

@@ -4,6 +4,15 @@
 // learn more: https://github.com/testing-library/jest-dom
 import "@testing-library/jest-dom";
 
+// Polyfill crypto.randomUUID for JSDOM test environment
+if (typeof globalThis.crypto?.randomUUID !== "function") {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { randomUUID } = require("crypto");
+    Object.defineProperty(globalThis, "crypto", {
+        value: { ...globalThis.crypto, randomUUID },
+    });
+}
+
 // Polyfill setImmediate for socket.io-client's xmlhttprequest-ssl dependency
 // (removed from newer Node.js but still used by the library)
 if (typeof globalThis.setImmediate === "undefined") {
