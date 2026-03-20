@@ -1,4 +1,4 @@
-export const allowedHosts = new Set([ "exquisitetext.com", "www.exquisitetext.com" ]);
+export const allowedHosts = new Set(["exquisitetext.com", "www.exquisitetext.com"]);
 export const allowedOrigin = "https://www.exquisitetext.com";
 
 export const getIsAllowedUrl = (url: string): boolean => {
