@@ -365,20 +365,31 @@ const Canvas: React.FC = () => {
                     />
                 </Tooltip>
                 <Tooltip title="Pick Color" enterTouchDelay={0} leaveTouchDelay={1500}>
-                    <span>
+                    <span style={{ position: "relative", display: "inline-flex" }}>
+                        <IconButton
+                            disabled={!editorActive || isEraserActive}
+                            component="span"
+                        >
+                            <PaletteIcon />
+                        </IconButton>
                         <input
                             ref={colorInputRef}
                             type="color"
                             value={strokeColor}
                             onChange={(e) => setStrokeColor(e.target.value)}
-                            style={{ position: "absolute", width: 0, height: 0, opacity: 0, pointerEvents: "none" }}
-                        />
-                        <IconButton
-                            onClick={() => colorInputRef.current?.click()}
                             disabled={!editorActive || isEraserActive}
-                        >
-                            <PaletteIcon />
-                        </IconButton>
+                            style={{
+                                position: "absolute",
+                                top: 0,
+                                left: 0,
+                                width: "100%",
+                                height: "100%",
+                                opacity: 0,
+                                cursor: "pointer",
+                                border: "none",
+                                padding: 0,
+                            }}
+                        />
                     </span>
                 </Tooltip>
                 <Tooltip

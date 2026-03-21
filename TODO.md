@@ -6,7 +6,6 @@
         - "Game Settings" should be inside the grouping rounded rectangle for the game settings
         - each multi-select should have the same width
 - Drawing game screen
-    - on iPad, both "color picker" and "eraser" buttons are broken
-        - i cannot get the "color picker" menu to come up with either finger or pencil. clicking the button with either finger or pencil opens a small popover dialog that says "Pick Color" but the color picker menu never appears
+    - on iPad, the "color picker" icon button only opens the color picker with finger press, not apple pencil tap
 - the Drawing End screen currently requires a small amount of scroll when combining the "Done! If you'd like to play again, make a new room" message with the drawing Carousel. We should probably try to make it so everything fits on the screen without scroll, if possible.
 - if players linger on either End screen long enough (10 seconds?), the server-side constructs self-destruct, and that's when the "Leave Room" button stops functioning. This is bad because the user experience is that it's difficult to leave the End screen.
