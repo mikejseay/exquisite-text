@@ -28,6 +28,8 @@ export function drawOnCanvas({
     context: CanvasRenderingContext2D;
     eraserColor?: string;
 }) {
+    if (!newPoints || newPoints.length === 0) return;
+
     setCanvasProperties(context);
 
     // Determine the stroke color.

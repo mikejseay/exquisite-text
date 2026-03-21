@@ -7,6 +7,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import "./index.css";
 import App from "components/App/App";
+import { ErrorBoundary } from "components/ErrorBoundary/ErrorBoundary";
 import SocketHandler from "components/SocketHandler/SocketHandler";
 import Canvas from "screens/Canvas/Canvas";
 import CanvasSpectator from "screens/CanvasSpectator/CanvasSpectator";
@@ -42,30 +43,32 @@ function ThemeWrapper({ children }: { children: React.ReactNode }) {
 function Root() {
     return (
         <ThemeWrapper>
-            <BrowserRouter>
-                <SocketHandler>
-                    <Routes>
-                        <Route path="/" element={<App />}>
-                            <Route path="/" element={<Join />} />
-                            <Route path="lobby" element={<Lobby />} />
-                            <Route path="game" element={<Game />} />
-                            <Route path="spectate" element={<Spectate />} />
-                            <Route path="end" element={<End />} />
-                            <Route path="endtestpoem" element={<End testingMedium={Medium.POETRY} />} />
-                            <Route path="endtestdrawing" element={<End testingMedium={Medium.DRAWING} />} />
-                            <Route path="canvas" element={<Canvas />} />
-                            <Route path="canvasspectator" element={<CanvasSpectator />} />
-                            <Route path="disconnected" element={<Disconnected />} />
+            <ErrorBoundary>
+                <BrowserRouter>
+                    <SocketHandler>
+                        <Routes>
+                            <Route path="/" element={<App />}>
+                                <Route path="/" element={<Join />} />
+                                <Route path="lobby" element={<Lobby />} />
+                                <Route path="game" element={<Game />} />
+                                <Route path="spectate" element={<Spectate />} />
+                                <Route path="end" element={<End />} />
+                                <Route path="endtestpoem" element={<End testingMedium={Medium.POETRY} />} />
+                                <Route path="endtestdrawing" element={<End testingMedium={Medium.DRAWING} />} />
+                                <Route path="canvas" element={<Canvas />} />
+                                <Route path="canvasspectator" element={<CanvasSpectator />} />
+                                <Route path="disconnected" element={<Disconnected />} />
 
-                            <Route path="/:id" element={<Join />} />
-                            <Route // no match route
-                                path="*"
-                                element={noMatchRouteElement}
-                            />
-                        </Route>
-                    </Routes>
-                </SocketHandler>
-            </BrowserRouter>
+                                <Route path="/:id" element={<Join />} />
+                                <Route // no match route
+                                    path="*"
+                                    element={noMatchRouteElement}
+                                />
+                            </Route>
+                        </Routes>
+                    </SocketHandler>
+                </BrowserRouter>
+            </ErrorBoundary>
         </ThemeWrapper>
     );
 }
