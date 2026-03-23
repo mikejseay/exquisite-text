@@ -8,8 +8,10 @@ import Stack from "@mui/material/Stack";
 import { leaveConfirmBox, leaveFAB } from "components/LeaveButton/styles";
 import { emitLeave } from "context/SocketRequestors";
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 
 function LeaveButton() {
+    const navigate = useNavigate();
     const [open, setOpen] = React.useState(false);
 
     const handleClick = () => {
@@ -36,7 +38,13 @@ function LeaveButton() {
                             <Button variant="outlined" onClick={handleClickAway}>
                                 No
                             </Button>
-                            <Button variant="contained" onClick={emitLeave}>
+                            <Button
+                                variant="contained"
+                                onClick={() => {
+                                    emitLeave();
+                                    navigate("/");
+                                }}
+                            >
                                 Yes
                             </Button>
                         </Stack>

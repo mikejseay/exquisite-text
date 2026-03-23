@@ -37,7 +37,7 @@ function UserTable() {
                     marginBottom: "0.5rem",
                 }}
             >
-                <h2 style={{ textDecoration: "underline", marginTop: 0 }}>Editors</h2>
+                <h2 style={{ marginTop: 0 }}>Editors</h2>
                 {editors.map((name, nameIndex) => {
                     return (
                         <p key={nameIndex} style={{ color: editorColors[nameIndex], fontSize: "1.2rem" }}>
@@ -59,7 +59,7 @@ function UserTable() {
             </div>
             {spectators.length > 0 && (
                 <div className={"spectators"} style={{ marginTop: "1rem" }}>
-                    <h2 style={{ textDecoration: "underline" }}>Spectators</h2>
+                    <h2 style={{ marginTop: 0 }}>Spectators</h2>
                     {spectators.map((name, nameIndex) => {
                         return <p key={nameIndex}>{name}</p>;
                     })}

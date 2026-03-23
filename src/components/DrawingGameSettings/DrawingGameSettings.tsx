@@ -41,7 +41,6 @@ export default function DrawingGameSettings({ hideStartButton = false }: { hideS
 
     return (
         <div className={"gameSettings"} style={textCentered}>
-            <h2 style={{ textDecoration: "underline" }}>Game Settings</h2>
             <Stack
                 spacing={2}
                 direction="column"
@@ -52,6 +51,7 @@ export default function DrawingGameSettings({ hideStartButton = false }: { hideS
                     padding: "1rem 1.5rem",
                 }}
             >
+                <h2 style={{ marginTop: 0 }}>Game Settings</h2>
                 <div style={settingRow}>
                     <span style={settingLabel}>Drawings</span>
                     <ToggleButtonGroup

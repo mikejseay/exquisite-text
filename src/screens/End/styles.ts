@@ -6,7 +6,8 @@ import { centeredFlex } from "styles/common";
 export const centered: React.CSSProperties = {
     ...centeredFlex,
     height: "100%",
-    overflow: "auto",
+    minHeight: 0,
+    overflow: "hidden",
 };
 
 export const floatingToggleAnimate: SxProps = {

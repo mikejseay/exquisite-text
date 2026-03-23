@@ -55,8 +55,19 @@ function End({ testingMedium }: { testingMedium?: Medium }) {
                     <KeyboardIcon color={shouldAnimate ? "primary" : "disabled"} />
                 </IconButton>
             )}
-            <span style={{ marginBottom: "1em" }}>Done! If you&apos;d like to play again, make a new room.</span>
-            {displayedCompletedArt}
+            <span style={{ marginBottom: "0.5em" }}>Done! If you&apos;d like to play again, make a new room.</span>
+            <div
+                style={{
+                    flex: 1,
+                    minHeight: 0,
+                    width: "100%",
+                    overflow: "auto",
+                    display: "flex",
+                    justifyContent: "center",
+                }}
+            >
+                {displayedCompletedArt}
+            </div>
         </div>
     );
 }
