@@ -34,6 +34,7 @@
     "@types/react-dom": "^18.0.0",
     "@vitejs/plugin-react": "^6.0.1",
     "jsdom": "^26.1.0",
+    "lefthook": "^2.1.4",
     "vite": "^8.0.1",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^3.2.4"
@@ -45,7 +46,8 @@
     "test": "vitest run",
     "lint": "biome check src/",
     "lint:fix": "biome check --write src/",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postinstall": "lefthook install"
   },
   "browserslist": {
     "production": [

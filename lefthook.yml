@@ -1,0 +1,27 @@
+pre-commit:
+  parallel: true
+  commands:
+    client-lint:
+      run: yarn lint
+    client-typecheck:
+      run: yarn typecheck
+    client-test:
+      run: yarn test
+    server-lint:
+      root: server/
+      run: yarn lint
+    server-typecheck:
+      root: server/
+      run: yarn typecheck
+    server-test:
+      root: server/
+      run: yarn test
+    app-lint:
+      root: app/
+      run: yarn lint
+    app-typecheck:
+      root: app/
+      run: yarn typecheck
+    app-test:
+      root: app/
+      run: yarn test

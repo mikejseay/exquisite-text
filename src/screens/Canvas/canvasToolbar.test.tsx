@@ -105,13 +105,6 @@ function getColorInput() {
     return document.querySelector('input[type="color"]') as HTMLInputElement;
 }
 
-// Helper: find the palette icon button (sibling of the color input)
-function getPaletteButton() {
-    const colorInput = getColorInput();
-    // The palette button is a sibling of the color input, both inside a <span>
-    return colorInput?.parentElement?.querySelector("button") as HTMLButtonElement;
-}
-
 // Helper: find buttons by their SVG icon's data-testid
 function getButtonBySvgTestId(testId: string) {
     const svg = document.querySelector(`[data-testid="${testId}"]`);
@@ -128,24 +121,14 @@ describe("Canvas toolbar — color picker", () => {
         expect(colorInput!.closest("label")).toBeNull();
     });
 
-    it("color input is visually hidden but present in the DOM", () => {
+    it("color input is an overlay covering the palette icon area", () => {
         renderCanvas();
         const colorInput = getColorInput();
         expect(colorInput).not.toBeNull();
         expect(colorInput.style.opacity).toBe("0");
-        expect(colorInput.style.pointerEvents).toBe("none");
-    });
-
-    it("clicking the palette button triggers .click() on the color input", () => {
-        renderCanvas();
-        const colorInput = getColorInput();
-        const clickSpy = vi.spyOn(colorInput, "click");
-        const paletteButton = getPaletteButton();
-        expect(paletteButton).not.toBeNull();
-
-        fireEvent.click(paletteButton);
-        expect(clickSpy).toHaveBeenCalledTimes(1);
-        clickSpy.mockRestore();
+        expect(colorInput.style.position).toBe("absolute");
+        expect(colorInput.style.width).toBe("100%");
+        expect(colorInput.style.height).toBe("100%");
     });
 
     it("color input change updates the value", () => {
@@ -157,23 +140,23 @@ describe("Canvas toolbar — color picker", () => {
         expect(colorInput.value).toBe("#ff0000");
     });
 
-    it("palette button is disabled when editor is not active", () => {
+    it("color input is disabled when editor is not active", () => {
         renderCanvas(false);
-        const paletteButton = getPaletteButton();
-        expect(paletteButton).not.toBeNull();
-        expect(paletteButton.disabled).toBe(true);
+        const colorInput = getColorInput();
+        expect(colorInput).not.toBeNull();
+        expect(colorInput.disabled).toBe(true);
     });
 
-    it("palette button is disabled when eraser is active", () => {
+    it("color input is disabled when eraser is active", () => {
         renderCanvas(true);
         // Activate eraser
         const eraserButton = getButtonBySvgTestId("FormatColorResetIcon");
         expect(eraserButton).not.toBeNull();
         fireEvent.click(eraserButton!);
 
-        // Palette should now be disabled
-        const paletteButton = getPaletteButton();
-        expect(paletteButton.disabled).toBe(true);
+        // Color input should now be disabled
+        const colorInput = getColorInput();
+        expect(colorInput.disabled).toBe(true);
     });
 });
 

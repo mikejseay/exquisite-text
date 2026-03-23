@@ -366,10 +366,7 @@ const Canvas: React.FC = () => {
                 </Tooltip>
                 <Tooltip title="Pick Color" enterTouchDelay={0} leaveTouchDelay={1500}>
                     <span style={{ position: "relative", display: "inline-flex" }}>
-                        <IconButton
-                            disabled={!editorActive || isEraserActive}
-                            component="span"
-                        >
+                        <IconButton disabled={!editorActive || isEraserActive} component="span">
                             <PaletteIcon />
                         </IconButton>
                         <input
