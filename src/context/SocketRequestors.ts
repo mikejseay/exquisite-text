@@ -1,20 +1,33 @@
-import { socket } from "../components/SocketHandler";
-import { v4 as uuidv4 } from "uuid";
-import { isNil } from "es-toolkit";
-import { IGameSettingsInfo, Medium, Point, Role } from "../types";
-import { logger } from "../utilities/loggerUtils";
+import { socket } from "components/SocketHandler/SocketHandler";
+import { isNil } from "helpers/helpers";
+import type { IGameSettingsInfo, Medium, Point, Role } from "types/types";
+import { logger } from "utilities/loggerUtils";
+
+/** crypto.randomUUID() requires a secure context (HTTPS / localhost).
+ *  Fall back to crypto.getRandomValues() so the app works over plain HTTP on a LAN. */
+function generateUUID(): string {
+    if (typeof crypto.randomUUID === "function") {
+        return crypto.randomUUID();
+    }
+    // RFC-4122 version-4 UUID via getRandomValues
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40; // version 4
+    bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant 1
+    const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
 
 export const emitRecognizeDevice = () => {
     // set this to true if you want to be able to connect to the game
     // multiple times from the same browser
-    if (process.env.REACT_APP_DEBUG_SINGLE_BROWSER === "true") {
+    if (import.meta.env.VITE_DEBUG_SINGLE_BROWSER === "true") {
         // to debug I will send a random device id each time
-        socket.emit("ctsRecognizeDevice", uuidv4());
+        socket.emit("ctsRecognizeDevice", generateUUID());
     } else {
         // check if this device (browser) has visited the page before
         const firstVisit = !localStorage.getItem("device");
         if (firstVisit) {
-            localStorage.setItem("device", uuidv4());
+            localStorage.setItem("device", generateUUID());
         }
         const deviceID = localStorage.getItem("device");
         if (!isNil(deviceID)) {
@@ -59,7 +72,7 @@ export const emitAddPoemBot = () => {
 };
 
 export const emitRequestSettingsEnabled = () => {
-    socket.emit("ctsRequestSettingsEnabled");   // initial populate
+    socket.emit("ctsRequestSettingsEnabled"); // initial populate
 };
 
 export const emitRequestGameSettingsInfo = () => {

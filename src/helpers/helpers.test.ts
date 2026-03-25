@@ -1,5 +1,5 @@
-import { alphaCharacterRotate, generateAlphaString, getItemsOnCurrentPage, sleep } from "./index";
-import type { IPoem } from "../types";
+import { alphaCharacterRotate, generateAlphaString, getItemsOnCurrentPage, sleep } from "helpers/helpers";
+import type { IPoem } from "types/types";
 
 describe("generateAlphaString", () => {
     it("returns a string of the requested length", () => {
@@ -14,9 +14,7 @@ describe("generateAlphaString", () => {
     });
 
     it("produces different strings on subsequent calls (probabilistic)", () => {
-        const results = new Set(
-            Array.from({ length: 20 }, () => generateAlphaString(8)),
-        );
+        const results = new Set(Array.from({ length: 20 }, () => generateAlphaString(8)));
         // With 8 chars from 26 letters, extremely unlikely to get all duplicates
         expect(results.size).toBeGreaterThan(1);
     });

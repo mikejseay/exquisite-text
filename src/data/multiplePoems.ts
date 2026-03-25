@@ -87,8 +87,7 @@ export const poemsLines = [
         {
             addedAt: new Date(),
             authorDevice: "8389a55c-b205-4e94-b6f5-6cbec0a66964",
-            content:
-                "like I'm made of candy that fills the average\ncomputer screen around here.",
+            content: "like I'm made of candy that fills the average\ncomputer screen around here.",
             editLength: 22,
             contributionIndex: 4,
             passerDevice: "99090583-9f23-480d-8b34-dc5b500011f1",

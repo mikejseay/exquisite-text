@@ -1,12 +1,12 @@
-import * as React from "react";
-import { textCentered } from "../../styles/common";
+import type * as React from "react";
+import { textCentered } from "styles/common";
 
 export const roomCodeWrapper: React.CSSProperties = {
     ...textCentered,
 };
 
 export const roomCodeLabel: React.CSSProperties = {
-    fontSize: "0.9rem",
+    fontSize: "1.1rem",
     opacity: 0.7,
 };
 

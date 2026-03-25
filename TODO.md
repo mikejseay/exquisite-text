@@ -1,4 +1,8 @@
 - Mike should update his .env to be the same as his old computer and re-test the LLM functionality
-- On iPad, the default line width of using your finger after using pencil is extremely small, but a single dot is very large
-- End screen aspect ratio not getting set up correctly for small macbook / iPad screen in landscape
 - "How to play" modal for the drawing version of the game?
+- Lobby page
+    - more aesthetic TLC
+        - each multi-select should have the same width
+- Drawing game screen
+    - on iPad, the "color picker" icon button only opens the color picker with finger press, not apple pencil tap
+- the Drawing End screen currently requires a small amount of scroll when combining the "Done! If you'd like to play again, make a new room" message with the drawing Carousel. We should probably try to make it so everything fits on the screen without scroll, if possible.

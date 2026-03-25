@@ -1,3 +1,4 @@
 /node_modules
 exquisite*
 .expo/
+.env

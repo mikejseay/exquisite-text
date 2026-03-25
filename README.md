@@ -68,6 +68,18 @@ cd ..
 
 In the server terminal, run `yarn start`, then in the root terminal run `yarn start`. This should automatically open a new browser tab at [`http://localhost:8080/`](http://localhost:8080/). Note that by default, you will not be able to join a game from multiple tabs in the same browser on the same device unless you prevent localStorage from being reused (e.g. incognito tab, Firefox multi-accounts). This can be overridden by changing the root .env variable `REACT_APP_DEBUG_SINGLE_BROWSER` to `true`, but it will prevent you from properly debugging device recognition behavior.
 
+### Pre-commit Hooks
+
+This project uses [Lefthook](https://github.com/evilmartians/lefthook) for pre-commit hooks. Hooks are installed automatically when you run `yarn install` (via the `postinstall` script). On each commit, the following checks run in parallel across all three projects (client, server, app):
+
+- Lint (Biome)
+- Typecheck (TypeScript)
+- Tests (Vitest / Node test runner / Jest)
+
+If any check fails, the commit is blocked. To skip hooks in an emergency, use `git commit --no-verify`.
+
+For linting in VS Code, install the Biome extension.
+
 ### PostgreSQL database functionality
 
 Install [PostgreSQL](https://www.postgresql.org/download/) according to their instructions for your operating system. If you're using a Linux-like OS and have Homebrew, you can install PostgreSQL with `brew install postgresql`, with Linux: `sudo apt install postgresql`. Then start its service with Linux: `sudo systemctl start postgresqlservice` | macOS: `brew services start postgresql`.

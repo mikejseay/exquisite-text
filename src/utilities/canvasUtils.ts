@@ -1,14 +1,10 @@
 // src/utils/canvasUtils.ts
-import { Point } from "../types";
-import { pixelRatio } from "./scaleUtils";
+import type { Point } from "types/types";
+import { pixelRatio } from "utilities/scaleUtils";
 
 export const DEFAULT_COLOR = "#7F7F7F";
 
-export function setCanvasDimensions(
-    canvas: HTMLCanvasElement | null,
-    width: number,
-    height: number,
-) {
+export function setCanvasDimensions(canvas: HTMLCanvasElement | null, width: number, height: number) {
     if (!canvas) return;
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
@@ -27,22 +23,24 @@ export function drawOnCanvas({
     context,
     eraserColor,
 }: {
-    newPoints: Point[],
-    yOffset?: number,
-    context: CanvasRenderingContext2D,
-    eraserColor?: string,
+    newPoints: Point[];
+    yOffset?: number;
+    context: CanvasRenderingContext2D;
+    eraserColor?: string;
 }) {
+    if (!newPoints || newPoints.length === 0) return;
+
     setCanvasProperties(context);
-  
+
     // Determine the stroke color.
     let currentColor = newPoints[0].color;
     if (currentColor === "!e") {
-    // Use the passed-in eraserColor if provided; otherwise, fallback
+        // Use the passed-in eraserColor if provided; otherwise, fallback
         currentColor = eraserColor
             ? eraserColor
-            : (window.matchMedia("(prefers-color-scheme: dark)").matches
-                ? "#000"
-                : "#fff");
+            : window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "#000"
+              : "#fff";
     }
 
     context.strokeStyle = currentColor;

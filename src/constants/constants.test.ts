@@ -9,8 +9,8 @@ import {
     maxNameChars,
     maxRoomTimeSpentEmpty,
     roomCodeLength,
-} from "./index";
-import { LineLength } from "../types";
+} from "constants/constants";
+import { LineLength } from "types/types";
 
 describe("lineConstraints", () => {
     it("has short and long presets", () => {
@@ -18,7 +18,7 @@ describe("lineConstraints", () => {
         expect(lineConstraints).toHaveProperty("long");
     });
 
-    for (const preset of [ "short", "long" ] as LineLength[]) {
+    for (const preset of ["short", "long"] as LineLength[]) {
         describe(`${preset} preset`, () => {
             const c = lineConstraints[preset];
 
@@ -58,12 +58,8 @@ describe("lineConstraints", () => {
     }
 
     it("long preset has larger limits than short", () => {
-        expect(lineConstraints.long.idealCharsOnLineOne).toBeGreaterThan(
-            lineConstraints.short.idealCharsOnLineOne,
-        );
-        expect(lineConstraints.long.idealCharsOnLineTwo).toBeGreaterThan(
-            lineConstraints.short.idealCharsOnLineTwo,
-        );
+        expect(lineConstraints.long.idealCharsOnLineOne).toBeGreaterThan(lineConstraints.short.idealCharsOnLineOne);
+        expect(lineConstraints.long.idealCharsOnLineTwo).toBeGreaterThan(lineConstraints.short.idealCharsOnLineTwo);
     });
 });
 

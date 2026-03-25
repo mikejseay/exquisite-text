@@ -1,8 +1,7 @@
-import { RefObject, useLayoutEffect, useRef, useState } from "react";
-import { debounce } from "es-toolkit";
-
-import { logger } from "../utilities/loggerUtils";
-import { headerHeight } from "../constants";
+import { headerHeight } from "constants/constants";
+import { debounce } from "helpers/helpers";
+import { type RefObject, useLayoutEffect, useRef, useState } from "react";
+import { logger } from "utilities/loggerUtils";
 
 export function useCanvasResize(
     widthMin: number,
@@ -11,8 +10,8 @@ export function useCanvasResize(
     toolbarRef?: RefObject<HTMLDivElement | null>,
 ) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const [ dimensions, setDimensions ] = useState({ width: widthMin, height: heightMin });
-    const [ scaleFactor, setScaleFactor ] = useState<number>(1);
+    const [dimensions, setDimensions] = useState({ width: widthMin, height: heightMin });
+    const [scaleFactor, setScaleFactor] = useState<number>(1);
 
     useLayoutEffect(() => {
         const handleResize = () => {
@@ -22,9 +21,7 @@ export function useCanvasResize(
             const context = canvas.getContext("2d");
             if (!context) return;
 
-            const aboveCanvas = toolbarRef?.current
-                ? toolbarRef.current.getBoundingClientRect().bottom
-                : headerHeight;
+            const aboveCanvas = toolbarRef?.current ? toolbarRef.current.getBoundingClientRect().bottom : headerHeight;
 
             const viewportHeight = window.innerHeight - aboveCanvas;
             const viewportWidth = window.innerWidth;
@@ -34,12 +31,14 @@ export function useCanvasResize(
 
             if (viewportAspectRatio < aspectRatio) {
                 logger.debug("viewportAspectRatio < aspectRatio");
-                newWidth = Math.max(viewportWidth, widthMin);
-                newHeight = Math.max(newWidth / aspectRatio, heightMin);
+                // Width-constrained: fit to viewport width, allow shrinking below min
+                newWidth = viewportWidth;
+                newHeight = newWidth / aspectRatio;
             } else {
                 logger.debug("viewportAspectRatio >= aspectRatio");
-                newHeight = Math.max(viewportHeight, heightMin);
-                newWidth = Math.max(newHeight * aspectRatio, widthMin);
+                // Height-constrained: fit to viewport height, allow shrinking below min
+                newHeight = viewportHeight;
+                newWidth = newHeight * aspectRatio;
             }
 
             const newScaleFactor = newWidth / widthMin;
@@ -69,7 +68,7 @@ export function useCanvasResize(
             window.removeEventListener("resize", debouncedHandleResize);
             resizeObserver?.disconnect();
         };
-    }, []);
+    }, [aspectRatio, toolbarRef?.current, widthMin]);
 
     return { canvasRef, dimensions, scaleFactor };
 }

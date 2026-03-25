@@ -1,6 +1,6 @@
-import * as React from "react";
-import { FABSpace } from "../../constants";
-import { SxProps } from "@mui/system";
+import type { SxProps } from "@mui/system";
+import { FABSpace } from "constants/constants";
+import type * as React from "react";
 
 export const tutorialButton: React.CSSProperties = {
     position: "absolute",

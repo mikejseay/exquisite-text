@@ -1,0 +1,125 @@
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import DrawingGameSettings from "components/DrawingGameSettings/DrawingGameSettings";
+import LeaveButton from "components/LeaveButton/LeaveButton";
+import PoemGameSettings from "components/PoemGameSettings/PoemGameSettings";
+import RoomCode from "components/RoomCode/RoomCode";
+import UserTable from "components/UserTable/UserTable";
+import { useSocketInfo } from "context/SocketInfoProvider";
+import { emitStartGame } from "context/SocketRequestors";
+import { useInitializeGameSettings } from "hooks/useInitializeGameSettings";
+import { useState } from "react";
+import { Medium } from "types/types";
+
+function Lobby() {
+    const { medium, settingsEnabled } = useSocketInfo();
+    const isLandscape = useMediaQuery("(min-width: 768px)");
+    const [activeTab, setActiveTab] = useState(0);
+
+    useInitializeGameSettings();
+
+    const gameSettings =
+        medium === Medium.POETRY ? (
+            <PoemGameSettings hideStartButton={!isLandscape} />
+        ) : (
+            <DrawingGameSettings hideStartButton={!isLandscape} />
+        );
+
+    if (isLandscape) {
+        return (
+            <Box
+                sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    flex: 1,
+                    minHeight: 0,
+                    textAlign: "center",
+                    borderTop: "1px solid rgba(255,255,255,0.12)",
+                    maxWidth: 1200,
+                    margin: "0 auto",
+                    width: "100%",
+                }}
+            >
+                <Box
+                    sx={{
+                        flex: 1,
+                        minHeight: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderRight: "1px solid rgba(255,255,255,0.12)",
+                        p: 2,
+                        overflow: "auto",
+                    }}
+                >
+                    <UserTable />
+                </Box>
+                <Box
+                    sx={{
+                        flex: 1,
+                        minHeight: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        p: 2,
+                        overflow: "auto",
+                    }}
+                >
+                    <RoomCode prominent />
+                    {gameSettings}
+                </Box>
+                <LeaveButton />
+            </Box>
+        );
+    }
+
+    return (
+        <Box
+            sx={{
+                display: "flex",
+                flexDirection: "column",
+                flex: 1,
+                textAlign: "center",
+            }}
+        >
+            <Box sx={{ pt: 2, px: 2 }}>
+                <RoomCode prominent />
+            </Box>
+            <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} centered sx={{ minHeight: 36 }}>
+                <Tab label="Players" />
+                <Tab label="Settings" />
+            </Tabs>
+            <Box
+                sx={{
+                    flex: 1,
+                    overflow: "auto",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    p: 2,
+                }}
+            >
+                {activeTab === 0 ? <UserTable /> : gameSettings}
+            </Box>
+            <Box sx={{ p: 2 }}>
+                <Button
+                    disabled={!settingsEnabled}
+                    onClick={() => emitStartGame()}
+                    variant="contained"
+                    fullWidth
+                    size="large"
+                >
+                    Start Game
+                </Button>
+            </Box>
+            <LeaveButton />
+        </Box>
+    );
+}
+
+export default Lobby;

@@ -1,6 +1,6 @@
-import { SxProps } from "@mui/system";
-import { FABSpace } from "../../constants";
-import { leaveConfirmBox } from "../../styles/common";
+import type { SxProps } from "@mui/system";
+import { FABSpace } from "constants/constants";
+import { leaveConfirmBox } from "styles/common";
 
 export { leaveConfirmBox };
 

@@ -1,10 +1,18 @@
-import { socket } from "../components/SocketHandler";
-import { IGameSettingsInfo, ILine, IPanel, ISocketInfoListeners, IUserTableInfo, Medium, Point } from "../types";
-import { shortDur } from "../constants";
-import { logger } from "../utilities/loggerUtils";
+import { socket } from "components/SocketHandler/SocketHandler";
+import { shortDur } from "constants/constants";
+import type {
+    IGameSettingsInfo,
+    ILine,
+    IPanel,
+    ISocketInfoListeners,
+    IUserTableInfo,
+    Medium,
+    Point,
+} from "types/types";
+import { logger } from "utilities/loggerUtils";
 
 function updateAtIndex<T>(array: T[], index: number, value: T): T[] {
-    return [ ...array.slice(0, index), value, ...array.slice(index + 1) ];
+    return [...array.slice(0, index), value, ...array.slice(index + 1)];
 }
 
 export const socketListeners = ({
@@ -32,8 +40,8 @@ export const socketListeners = ({
 }: ISocketInfoListeners) => {
     // receivePoemsLinesListener
     const receivePoemsLines = (myPoemLines: ILine[]) => {
-        setPoemsLines(prevPoemsLines => {
-            return [ ...prevPoemsLines, myPoemLines ];
+        setPoemsLines((prevPoemsLines) => {
+            return [...prevPoemsLines, myPoemLines];
         });
     };
 
@@ -52,10 +60,10 @@ export const socketListeners = ({
     };
 
     const receiveGameSettingsInfo = (info: IGameSettingsInfo) => {
-        setLineLength(info["lineLength"]);
-        setNRounds(info["nRounds"]);
-        setNPoems(info["nPoems"]);
-        setNDrawings(info["nDrawings"]);
+        setLineLength(info.lineLength);
+        setNRounds(info.nRounds);
+        setNPoems(info.nPoems);
+        setNDrawings(info.nDrawings);
     };
 
     const receiveGameSettingsEnabled = (enabled: boolean) => {
@@ -67,25 +75,25 @@ export const socketListeners = ({
     // each collaboration is of type Array<ILine["content"]>
     // and thus all the lines together for all collaborations is Array<Array<ILine["content"]>>
     const receiveLineSpectator = (collaborationIndex: number, content: ILine["content"]) => {
-        setLines(prevLines =>
-            updateAtIndex(prevLines, collaborationIndex, [ ...prevLines[collaborationIndex], content ]),
+        setLines((prevLines) =>
+            updateAtIndex(prevLines, collaborationIndex, [...prevLines[collaborationIndex], content]),
         );
     };
 
     const receivePanelSpectator = (collaborationIndex: number, content: IPanel["content"]) => {
-        setPanelEdits(prevPanelEdits => updateAtIndex(prevPanelEdits, collaborationIndex, []));
-        setPanels(prevPanels =>
-            updateAtIndex(prevPanels, collaborationIndex, [ ...prevPanels[collaborationIndex], content ]),
+        setPanelEdits((prevPanelEdits) => updateAtIndex(prevPanelEdits, collaborationIndex, []));
+        setPanels((prevPanels) =>
+            updateAtIndex(prevPanels, collaborationIndex, [...prevPanels[collaborationIndex], content]),
         );
     };
 
     const receivePanelEditSpectator = (collaborationIndex: number, content: IPanel["content"]) => {
         logger.debug(`receivePanelEditSpectator ${collaborationIndex} ${content}`);
-        setPanelEdits(prevPanelEdits => updateAtIndex(prevPanelEdits, collaborationIndex, content));
+        setPanelEdits((prevPanelEdits) => updateAtIndex(prevPanelEdits, collaborationIndex, content));
     };
 
     const receiveLineEditSpectator = (poemIndex: number, value: string) => {
-        setLineEdits(prevLineEdits => updateAtIndex(prevLineEdits, poemIndex, value));
+        setLineEdits((prevLineEdits) => updateAtIndex(prevLineEdits, poemIndex, value));
     };
 
     const receiveLineEdit = (lineEdit: string) => {

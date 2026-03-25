@@ -1,25 +1,25 @@
-import { ChatOpenAI } from "@langchain/openai";
 import { InMemoryChatMessageHistory } from "@langchain/core/chat_history";
+import { StringOutputParser } from "@langchain/core/output_parsers";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { RunnableWithMessageHistory } from "@langchain/core/runnables";
-import { botDeviceIDToMessageHistory } from "./globals";
-import { StringOutputParser } from "@langchain/core/output_parsers";
-import { analyzeSystemPrompt, analyzeUserPrompt, completeSystemPrompt, completeUserPrompt } from "../llm_utils/prompts";
-import { IGameSettingsInfo } from "../../src/types";
-import { lineConstraints } from "../../src/constants";
-import { canBeFixedByShifting, isAcceptableShape, processPoetryLines } from "../llm_utils/llm_funcs";
-import { logger } from "../utilities/loggerUtils";
+import { ChatOpenAI } from "@langchain/openai";
+import { canBeFixedByShifting, isAcceptableShape, processPoetryLines } from "llm_utils/llm_funcs";
+import { analyzeSystemPrompt, analyzeUserPrompt, completeSystemPrompt, completeUserPrompt } from "llm_utils/prompts";
+import { botDeviceIDToMessageHistory } from "modules/globals";
+import { lineConstraints } from "shared/constants/constants";
+import type { IGameSettingsInfo } from "shared/types/types";
+import { logger } from "utilities/loggerUtils";
 
 const analyzePoetryPrompt = ChatPromptTemplate.fromMessages([
-    [ "system", analyzeSystemPrompt ],
-    [ "human", analyzeUserPrompt ],
+    ["system", analyzeSystemPrompt],
+    ["human", analyzeUserPrompt],
 ]);
 const completePoetryPrompt = ChatPromptTemplate.fromMessages([
-    [ "system", completeSystemPrompt ],
-    [ "placeholder", "{chat_history}" ],
-    [ "human", completeUserPrompt ],
+    ["system", completeSystemPrompt],
+    ["placeholder", "{chat_history}"],
+    ["human", completeUserPrompt],
 ]);
-const modelHighTemp: ChatOpenAI = new ChatOpenAI({ model: "gpt-4o" , temperature: 1.2 });
+const modelHighTemp: ChatOpenAI = new ChatOpenAI({ model: "gpt-4o", temperature: 1.2 });
 const parser = new StringOutputParser();
 
 const analyzePoetryChain = analyzePoetryPrompt.pipe(modelHighTemp).pipe(parser);
@@ -59,7 +59,6 @@ export async function guaranteeHalfLineCompletion(
     forceIncomplete: boolean, // whether to force the AI to leave second line incomplete
     poemAnalysis: string, // an analysis of the poem to provide
 ) {
-
     const lineLength = gameSettings.lineLength;
     const nWordsFirst = lineConstraints[lineLength].idealWordsOnLineOne;
     const nWordsSecondInit = lineConstraints[lineLength].idealWordsOnLineTwo;
@@ -74,9 +73,7 @@ export async function guaranteeHalfLineCompletion(
     let partsFinal;
     let nTries = 0;
     while (!validInput && nTries < 5) {
-        const nWordsSecond = (forceIncomplete
-            ? (nWordsSecondInit * 2)
-            : nWordsSecondInit);
+        const nWordsSecond = forceIncomplete ? nWordsSecondInit * 2 : nWordsSecondInit;
         logger.debug({
             botDeviceID: botDeviceID,
             halfLine: halfLine,
@@ -85,13 +82,7 @@ export async function guaranteeHalfLineCompletion(
             nWordsSecond: nWordsSecond,
             poemAnalysis: poemAnalysis,
         });
-        const completion = await completeHalfLine(
-            botDeviceID,
-            halfLine,
-            nWordsFirst,
-            nWordsSecond,
-            poemAnalysis,
-        );
+        const completion = await completeHalfLine(botDeviceID, halfLine, nWordsFirst, nWordsSecond, poemAnalysis);
         nTries += 1;
         logger.debug(`original completion:\n ${completion}`);
         const parts = completion.split("\n");

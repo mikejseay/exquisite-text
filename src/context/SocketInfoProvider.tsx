@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { ISocketInfo } from "../types";
+import type { ISocketInfo } from "types/types";
 
 export const SocketInfoContext = createContext<ISocketInfo>({
     // agnostic

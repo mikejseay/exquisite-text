@@ -1,13 +1,13 @@
-import Member from "./member";
-import { sendCompletedArtTestData } from "../utilities/socketUtils";
-import { Medium } from "../../src/types";
+import Member from "modules/member";
+import { Medium } from "shared/types/types";
+import { sendCompletedArtTestData } from "utilities/socketUtils";
 
 class Host extends Member {
     // does not enforce device ID constraint
     // (same device can be Host AND either of Editor or Spectator)
 
     joinRoom() {
-    // unlike other Members, this does NOT navigate to lobby
+        // unlike other Members, this does NOT navigate to lobby
         this.socket.join(this.roomID);
         this.setReceive(); // listen for certain messages from client
     }

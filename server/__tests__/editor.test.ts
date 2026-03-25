@@ -1,12 +1,11 @@
-import { afterEach, beforeEach, describe, it } from "node:test";
 import assert from "node:assert/strict";
-
-import { DrawingEditor, PoemEditor } from "../modules/editor";
-import { DrawingRoom, PoemRoom } from "../modules/room";
-import { Drawing, Poem } from "../modules/collaboration";
-import { roomIDToRoom } from "../modules/globals";
-import { createMockIO, createMockSocket } from "./helpers";
-import { defaultGameSettings } from "../../src/constants";
+import { afterEach, beforeEach, describe, it } from "node:test";
+import { createMockIO, createMockSocket } from "__tests__/helpers";
+import { Drawing, Poem } from "modules/collaboration";
+import { DrawingEditor, PoemEditor } from "modules/editor";
+import { roomIDToRoom } from "modules/globals";
+import { DrawingRoom, PoemRoom } from "modules/room";
+import { defaultGameSettings } from "shared/constants/constants";
 
 describe("PoemEditor", () => {
     let io: ReturnType<typeof createMockIO>;
@@ -44,8 +43,24 @@ describe("PoemEditor", () => {
     it("currentlyOnLastContribution returns true when poem lines.size >= nContributions - 2", () => {
         const poem = new Poem(io, "ROOM1", 4, 0); // nContributions = 4
         // Need lines.size >= 2 (4 - 2)
-        poem.lines.add({ ID: "p", contributionIndex: 0, content: "a", authorDevice: "x", passerDevice: "", editLength: 0, addedAt: new Date() });
-        poem.lines.add({ ID: "p", contributionIndex: 1, content: "b", authorDevice: "y", passerDevice: "x", editLength: 1, addedAt: new Date() });
+        poem.lines.add({
+            ID: "p",
+            contributionIndex: 0,
+            content: "a",
+            authorDevice: "x",
+            passerDevice: "",
+            editLength: 0,
+            addedAt: new Date(),
+        });
+        poem.lines.add({
+            ID: "p",
+            contributionIndex: 1,
+            content: "b",
+            authorDevice: "y",
+            passerDevice: "x",
+            editLength: 1,
+            addedAt: new Date(),
+        });
         editor.contributionQueue.push(poem);
 
         assert.equal(editor.currentlyOnLastContribution(), true);
@@ -53,7 +68,15 @@ describe("PoemEditor", () => {
 
     it("currentlyOnLastContribution returns false when poem has few lines", () => {
         const poem = new Poem(io, "ROOM1", 6, 0); // nContributions = 6, need >= 4
-        poem.lines.add({ ID: "p", contributionIndex: 0, content: "a", authorDevice: "x", passerDevice: "", editLength: 0, addedAt: new Date() });
+        poem.lines.add({
+            ID: "p",
+            contributionIndex: 0,
+            content: "a",
+            authorDevice: "x",
+            passerDevice: "",
+            editLength: 0,
+            addedAt: new Date(),
+        });
         editor.contributionQueue.push(poem);
 
         assert.equal(editor.currentlyOnLastContribution(), false);
@@ -61,8 +84,24 @@ describe("PoemEditor", () => {
 
     it("handlePoem creates IPoem and stores in room", () => {
         const poem = new Poem(io, "ROOM1", 3, 0);
-        poem.lines.add({ ID: poem.ID, contributionIndex: 0, content: "Line one", authorDevice: "a", passerDevice: "", editLength: 0, addedAt: new Date() });
-        poem.lines.add({ ID: poem.ID, contributionIndex: 1, content: "Line two", authorDevice: "b", passerDevice: "a", editLength: 5, addedAt: new Date() });
+        poem.lines.add({
+            ID: poem.ID,
+            contributionIndex: 0,
+            content: "Line one",
+            authorDevice: "a",
+            passerDevice: "",
+            editLength: 0,
+            addedAt: new Date(),
+        });
+        poem.lines.add({
+            ID: poem.ID,
+            contributionIndex: 1,
+            content: "Line two",
+            authorDevice: "b",
+            passerDevice: "a",
+            editLength: 5,
+            addedAt: new Date(),
+        });
 
         room.addEditor("dev-1", editor);
         editor.handlePoem(poem);
@@ -75,13 +114,19 @@ describe("PoemEditor", () => {
 
     it("sendPoemAsLines emits to the whole room", () => {
         const poem = new Poem(io, "ROOM1", 3, 0);
-        poem.lines.add({ ID: poem.ID, contributionIndex: 0, content: "hello", authorDevice: "a", passerDevice: "", editLength: 0, addedAt: new Date() });
+        poem.lines.add({
+            ID: poem.ID,
+            contributionIndex: 0,
+            content: "hello",
+            authorDevice: "a",
+            passerDevice: "",
+            editLength: 0,
+            addedAt: new Date(),
+        });
 
         editor.sendPoemAsLines(poem);
 
-        const emission = io.emissions.find(
-            (e: any) => e.target === "ROOM1" && e.event === "stcPoemLines",
-        );
+        const emission = io.emissions.find((e: any) => e.target === "ROOM1" && e.event === "stcPoemLines");
         assert.ok(emission);
         assert.equal(emission!.args[0].length, 1);
         assert.equal(emission!.args[0][0].content, "hello");
@@ -107,11 +152,9 @@ describe("PoemEditor", () => {
         assert.deepEqual(room.gameSettings, newSettings);
         // Broadcast goes via socket.to(), check socket emissions
         const editorSocket = editor.socket as any;
-        const broadcast = editorSocket.socketEmissions.find(
-            (e: any) => e.event === "stcGameSettingsInfo",
-        );
+        const broadcast = editorSocket.socketEmissions.find((e: any) => e.event === "stcGameSettingsInfo");
         assert.ok(broadcast);
-        assert.deepEqual(broadcast.args, [ newSettings ]);
+        assert.deepEqual(broadcast.args, [newSettings]);
     });
 
     it("possibleStartNewTurn with empty queue sets inactive", () => {
@@ -166,8 +209,24 @@ describe("DrawingEditor", () => {
 
     it("currentlyOnLastContribution returns true when panels.size >= nContributions - 1", () => {
         const drawing = new Drawing(io, "DRAW1", 3, 0); // nContributions = 3
-        drawing.panels.add({ ID: "d", contributionIndex: 0, content: [], authorDevice: "x", passerDevice: "", hintSize: 0, addedAt: new Date() });
-        drawing.panels.add({ ID: "d", contributionIndex: 1, content: [], authorDevice: "y", passerDevice: "x", hintSize: 0, addedAt: new Date() });
+        drawing.panels.add({
+            ID: "d",
+            contributionIndex: 0,
+            content: [],
+            authorDevice: "x",
+            passerDevice: "",
+            hintSize: 0,
+            addedAt: new Date(),
+        });
+        drawing.panels.add({
+            ID: "d",
+            contributionIndex: 1,
+            content: [],
+            authorDevice: "y",
+            passerDevice: "x",
+            hintSize: 0,
+            addedAt: new Date(),
+        });
         editor.contributionQueue.push(drawing);
 
         assert.equal(editor.currentlyOnLastContribution(), true);
@@ -179,7 +238,7 @@ describe("DrawingEditor", () => {
         const before = editor.lastActivity;
 
         // Small delay to ensure Date.now() is different
-        editor.handlePanelEdit([ [ { x: 0, y: 0, lineWidth: 1, color: "#000" } ] ]);
+        editor.handlePanelEdit([[{ x: 0, y: 0, lineWidth: 1, color: "#000" }]]);
 
         assert.ok(editor.lastActivity >= before);
     });

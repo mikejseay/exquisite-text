@@ -22,9 +22,9 @@
 
 @media (prefers-color-scheme: dark) {
     #caret {
-        background-color: white !important;
+        background-color: white;
     }
     .text-spacer {
-        color: transparent !important;
+        color: transparent;
     }
 }

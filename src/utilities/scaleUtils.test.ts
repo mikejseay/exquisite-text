@@ -1,5 +1,5 @@
-import { ScaleDirection, scalePoints } from "./scaleUtils";
-import type { Point } from "../types";
+import type { Point } from "types/types";
+import { ScaleDirection, scalePoints } from "utilities/scaleUtils";
 
 describe("scalePoints", () => {
     const samplePoints: Point[] = [
@@ -48,7 +48,7 @@ describe("scalePoints", () => {
     });
 
     it("handles fractional scale factors", () => {
-        const points: Point[] = [ { x: 10, y: 20, lineWidth: 5, color: "#000" } ];
+        const points: Point[] = [{ x: 10, y: 20, lineWidth: 5, color: "#000" }];
         const scaled = scalePoints(points, ScaleDirection.TO_DISPLAY, 0.5);
         expect(scaled[0]).toEqual({ x: 5, y: 10, lineWidth: 2.5, color: "#000" });
     });
@@ -60,7 +60,7 @@ describe("scalePoints", () => {
     });
 
     it("handles large scale factors correctly", () => {
-        const points: Point[] = [ { x: 1, y: 1, lineWidth: 1, color: "red" } ];
+        const points: Point[] = [{ x: 1, y: 1, lineWidth: 1, color: "red" }];
         const scaled = scalePoints(points, ScaleDirection.TO_DISPLAY, 1000);
         expect(scaled[0].x).toBe(1000);
         expect(scaled[0].y).toBe(1000);
@@ -68,7 +68,7 @@ describe("scalePoints", () => {
     });
 
     it("does not mutate the original array", () => {
-        const original: Point[] = [ { x: 10, y: 20, lineWidth: 3, color: "#abc" } ];
+        const original: Point[] = [{ x: 10, y: 20, lineWidth: 3, color: "#abc" }];
         const originalCopy = JSON.parse(JSON.stringify(original));
         scalePoints(original, ScaleDirection.TO_DISPLAY, 5);
         expect(original).toEqual(originalCopy);

@@ -1,18 +1,18 @@
 {
-  "extends": "@tsconfig/node16/tsconfig.json",
-  "compilerOptions": {
-    "target": "es5",
-    "downlevelIteration": true,
-    "noEmit": true,
-    "skipLibCheck": true
-  },
-  "include": [
-    "**/*.ts",
-    "../src/types",
-    "../src/constants",
-    "../src/helpers"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+    "extends": "@tsconfig/node24/tsconfig.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "target": "es2022",
+        "noEmit": true,
+        "skipLibCheck": true,
+        "paths": {
+            "shared/*": ["../src/*"],
+            "types/*": ["../src/types/*"],
+            "constants/*": ["../src/constants/*"],
+            "helpers/*": ["../src/helpers/*"],
+            "data/*": ["../src/data/*"]
+        }
+    },
+    "include": ["**/*.ts", "../src/types", "../src/constants", "../src/helpers"],
+    "exclude": ["node_modules"]
 }

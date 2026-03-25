@@ -1,11 +1,10 @@
-import { afterEach, describe, it } from "node:test";
 import assert from "node:assert/strict";
-
-import { getEditorSocketID, getRoom, getRouteForGameStateAndRole } from "../utilities/socketUtils";
-import { roomIDToRoom } from "../modules/globals";
-import { GameState,  Role } from "../../src/types";
-import { createMockIO, createMockSocket } from "./helpers";
-import { PoemRoom } from "../modules/room";
+import { afterEach, describe, it } from "node:test";
+import { createMockIO, createMockSocket } from "__tests__/helpers";
+import { roomIDToRoom } from "modules/globals";
+import { PoemRoom } from "modules/room";
+import { GameState, Role } from "shared/types/types";
+import { getEditorSocketID, getRoom, getRouteForGameStateAndRole } from "utilities/socketUtils";
 
 describe("getRouteForGameStateAndRole", () => {
     it("returns /lobby for LOBBY state regardless of role", () => {

@@ -66,6 +66,16 @@ cd app
 yarn
 ```
 
+### Server URL Configuration
+
+The app connects to `https://www.exquisitetext.com` by default. To point it at a local server during development, create a `.env` file:
+
+```bash
+cp .env.example .env
+```
+
+This sets `EXPO_PUBLIC_SERVER_URL=http://localhost:8080`. Remove or change the value as needed. The `.env` file is gitignored, so it won't affect production builds, which always fall back to the production URL.
+
 Start the development server:
 
 ```bash

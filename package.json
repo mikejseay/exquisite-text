@@ -12,53 +12,42 @@
     "@mui/material": "^5.8.4",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
-    "es-toolkit": "^1.17.0",
-    "eslint": "^8.21.0",
-    "express": "^4.18.1",
-    "morgan": "^1.10.0",
-    "pino": "^9.6.0",
+    "pino": "^10.3.1",
     "pino-pretty": "^13.0.0",
     "react": "^18.2.0",
-    "react-copy-to-clipboard": "^5.1.0",
     "react-dom": "^18.2.0",
     "react-responsive-carousel": "^3.2.23",
     "react-router-dom": "^6.3.0",
-    "react-scripts": "5.0.1",
     "socket.io": "^4.5.1",
     "socket.io-client": "4.5.1",
-    "ts-node": "^10.9.1",
-    "typescript": "^4.7.4",
-    "use-clipboard-copy": "^0.2.0",
-    "uuid": "^8.3.2",
-    "web-vitals": "^2.1.4"
+    "typescript": "^5.8.0",
+    "use-clipboard-copy": "^0.2.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@biomejs/biome": "^2.4.8",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
-    "@testing-library/user-event": "^13.2.1",
-    "@types/jest": "^27.0.1",
-    "@types/node": "^16.7.13",
+    "@types/babel__core": "^7",
+    "@types/node": "^22.0.0",
     "@types/react": "^18.0.0",
-    "@types/react-copy-to-clipboard": "^5.0.4",
     "@types/react-dom": "^18.0.0",
-    "@types/uuid": "^8.3.4",
-    "@typescript-eslint/eslint-plugin": "^5.32.0",
-    "@typescript-eslint/parser": "^5.32.0",
-    "prettier": "^3.3.3"
+    "@vitejs/plugin-react": "^6.0.1",
+    "jsdom": "^26.1.0",
+    "lefthook": "^2.1.4",
+    "vite": "^8.0.1",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^3.2.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test --watchAll=false",
-    "lint": "eslint src/ --ext .ts,.tsx --max-warnings 0",
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "lint": "biome check src/",
+    "lint:fix": "biome check --write src/",
     "typecheck": "tsc --noEmit",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "postinstall": "lefthook install"
   },
   "browserslist": {
     "production": [
@@ -73,7 +62,7 @@
     ]
   },
   "engines": {
-    "node": ">=20.0.0 <25.0.0"
+    "node": ">=24.0.0"
   },
-  "packageManager": "yarn@4.4.0"
+  "packageManager": "yarn@4.13.0"
 }

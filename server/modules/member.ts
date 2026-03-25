@@ -1,11 +1,10 @@
-import { isNil } from "es-toolkit";
-
-import { deviceIDToRoomID, deviceIDToSocketID, roomIDToRoom, socketIDToDeviceID } from "./globals";
-import { GameState, ServerToClientEvents } from "../../src/types";
-import { userInfo as userInfoTestData } from "../../src/data/userInfo";
-import { getRoom } from "../utilities/socketUtils";
-import { logger } from "../utilities/loggerUtils";
-import type { TypedServer, TypedSocket } from "../types";
+import { deviceIDToRoomID, deviceIDToSocketID, roomIDToRoom, socketIDToDeviceID } from "modules/globals";
+import { userInfo as userInfoTestData } from "shared/data/userInfo";
+import { isNil } from "shared/helpers/helpers";
+import { GameState, type ServerToClientEvents } from "shared/types/types";
+import type { TypedServer, TypedSocket } from "types";
+import { logger } from "utilities/loggerUtils";
+import { getRoom } from "utilities/socketUtils";
 
 class Member {
     // represents an Editor or Spectator (which extend this)
@@ -22,13 +21,7 @@ class Member {
     connected: boolean;
     private _registeredEvents: string[] = [];
 
-    constructor(
-        io: TypedServer,
-        socket: TypedSocket,
-        roomID: string,
-        deviceID: string,
-        name: string,
-    ) {
+    constructor(io: TypedServer, socket: TypedSocket, roomID: string, deviceID: string, name: string) {
         this.io = io;
         this.socket = socket;
         this.roomID = roomID;
@@ -96,12 +89,7 @@ class Member {
         logger.debug(`${this.name} requestUserTableInfo`);
         const room = getRoom(this.roomID);
         if (room) {
-            this.emitToSelf(
-                "stcUserTableInfo",
-                shouldTest
-                    ? userInfoTestData
-                    : room.currentUserTableInfo(),
-            );
+            this.emitToSelf("stcUserTableInfo", shouldTest ? userInfoTestData : room.currentUserTableInfo());
         } else {
             logger.debug("Failed to get room details for user table info");
         }
@@ -128,9 +116,9 @@ class Member {
     }
 
     disconnect() {
-    // note this could be called by something as simple as closing the tab
-    // therefore we don't want to boot someone from the game based on this
-    // however if they are AFK, etc., we should do those things
+        // note this could be called by something as simple as closing the tab
+        // therefore we don't want to boot someone from the game based on this
+        // however if they are AFK, etc., we should do those things
 
         logger.debug(`${this.socket.id} disconnected`);
         this.connected = false;
@@ -154,7 +142,7 @@ class Member {
         // this gives opportunity for the person to reconnect...
         // but eventually we might have to remove them if they're inactive
 
-    // two-minute timer to boot completely from the Room?
+        // two-minute timer to boot completely from the Room?
     }
 
     disconnecting() {

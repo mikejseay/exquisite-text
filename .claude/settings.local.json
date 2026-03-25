@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc --noEmit --pretty)",
+      "Bash(node --version)",
+      "Bash(yarn test)"
+    ]
+  }
+}

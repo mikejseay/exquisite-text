@@ -1,0 +1,63 @@
+{
+    "$schema": "https://biomejs.dev/schemas/2.4.8/schema.json",
+    "files": {
+        "includes": [
+            "**",
+            "!build/",
+            "!node_modules/",
+            "!server/node_modules/",
+            "!app/node_modules/",
+            "!src/data/multipleDrawings.ts",
+            "!server/llm_utils/langchain_chatbot.ts"
+        ]
+    },
+    "formatter": {
+        "indentStyle": "space",
+        "indentWidth": 4,
+        "lineWidth": 120
+    },
+    "javascript": {
+        "formatter": {
+            "quoteStyle": "double",
+            "trailingCommas": "all",
+            "bracketSpacing": true
+        }
+    },
+    "linter": {
+        "rules": {
+            "recommended": true,
+            "correctness": {
+                "noUnusedVariables": "warn",
+                "noUnusedImports": "warn",
+                "useHookAtTopLevel": "off",
+                "noInvalidUseBeforeDeclaration": "off",
+                "useExhaustiveDependencies": "warn"
+            },
+            "complexity": {
+                "noCommaOperator": "off"
+            },
+            "style": {
+                "useConst": "error",
+                "noNonNullAssertion": "off"
+            },
+            "suspicious": {
+                "noExplicitAny": "off",
+                "noArrayIndexKey": "off",
+                "noImplicitAnyLet": "off",
+                "useIterableCallbackReturn": "off"
+            }
+        }
+    },
+    "overrides": [
+        {
+            "includes": ["**/__tests__/**", "**/*.test.*"],
+            "linter": {
+                "rules": {
+                    "suspicious": {
+                        "noExplicitAny": "off"
+                    }
+                }
+            }
+        }
+    ]
+}

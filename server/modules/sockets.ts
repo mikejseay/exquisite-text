@@ -2,21 +2,16 @@
 // and using that content, we maintain the user list and current history of the poem.
 // as far as I can tell, this will be the equivalent of the exquisite functionality, etc.
 
-import Host from "./host";
-import { DrawingEditor, PoemBot, PoemEditor } from "./editor";
-import { DrawingSpectator, PoemSpectator } from "./spectator";
-import { DrawingRoom, PoemRoom } from "./room";
-import {
-    GameState,
-    Medium,
-    Role,
-} from "../../src/types";
-import { maxEditors } from "../../src/constants";
-
-import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "./globals";
-import { getRoom, getRouteForGameStateAndRole, standardReconnect } from "../utilities/socketUtils";
-import { logger } from "../utilities/loggerUtils";
-import type { TypedServer } from "../types";
+import { DrawingEditor, PoemBot, PoemEditor } from "modules/editor";
+import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "modules/globals";
+import Host from "modules/host";
+import { DrawingRoom, PoemRoom } from "modules/room";
+import { DrawingSpectator, PoemSpectator } from "modules/spectator";
+import { maxEditors } from "shared/constants/constants";
+import { GameState, Medium, Role } from "shared/types/types";
+import type { TypedServer } from "types";
+import { logger } from "utilities/loggerUtils";
+import { getRoom, getRouteForGameStateAndRole, standardReconnect } from "utilities/socketUtils";
 
 // The module exports a single function poem that takes the Socket.IO server instance as a parameter.
 function sockets(io: TypedServer) {
@@ -30,10 +25,7 @@ function sockets(io: TypedServer) {
         socket.on("ctsRecognizeDevice", (deviceID) => {
             logger.debug(`new socket ${socket.id} from device ${deviceID}`);
 
-            const isDeviceInARoom: boolean = Object.prototype.hasOwnProperty.call(
-                deviceIDToRoomID,
-                deviceID,
-            );
+            const isDeviceInARoom: boolean = Object.hasOwn(deviceIDToRoomID, deviceID);
 
             // if device not already in a room, add it to globals and exit
             if (!isDeviceInARoom) {
@@ -90,20 +82,14 @@ function sockets(io: TypedServer) {
         socket.on("ctsCreateRoomAndHost", (roomID: string, medium: Medium) => {
             logger.debug(`createGameHost for ${socket.id} joining ${roomID}`);
             // notice we don't add the host device to deviceIDToRoomID
-            const host = new Host(
-                io,
-                socket,
-                roomID,
-                socketIDToDeviceID[socket.id],
-                "HOST",
-            );
+            const host = new Host(io, socket, roomID, socketIDToDeviceID[socket.id], "HOST");
             host.joinRoom();
             roomIDToHost.set(roomID, host);
             let room: PoemRoom | DrawingRoom | null = null;
 
-            if (medium == Medium.POETRY) {
+            if (medium === Medium.POETRY) {
                 room = new PoemRoom(io, socket, roomID);
-            } else if (medium == Medium.DRAWING) {
+            } else if (medium === Medium.DRAWING) {
                 room = new DrawingRoom(io, socket, roomID);
             } else {
                 throw new Error(`Unknown medium type: ${medium}`);
@@ -134,28 +120,21 @@ function sockets(io: TypedServer) {
             if (role === Role.EDITOR) {
                 if (room.gameState !== GameState.LOBBY) {
                     logger.debug(`${roomID} game already started`);
-                    io.to(socket.id).emit(
-                        "stcJoinError",
-                        "Game already started. Join as spectator?",
-                    );
+                    io.to(socket.id).emit("stcJoinError", "Game already started. Join as spectator?");
                     return;
                 }
                 if (room.editors.size >= maxEditors) {
                     logger.debug("trying to join as editor but it's already full");
-                    io.to(socket.id).emit(
-                        "stcJoinError",
-                        "Writer's room full. Join as spectator?",
-                    );
+                    io.to(socket.id).emit("stcJoinError", "Writer's room full. Join as spectator?");
                     return;
                 }
                 deviceIDToRoomID[deviceID] = roomID;
                 logger.debug(`about to make editor obj with deviceID ${deviceID} and name ${name}`);
 
                 let editor: PoemEditor | DrawingEditor | null = null;
-                if (room.medium == Medium.POETRY) {
+                if (room.medium === Medium.POETRY) {
                     editor = new PoemEditor(io, socket, roomID, deviceID, name);
-
-                } else if (room.medium == Medium.DRAWING) {
+                } else if (room.medium === Medium.DRAWING) {
                     editor = new DrawingEditor(io, socket, roomID, deviceID, name);
                 } else {
                     throw new Error("Unknown medium type.");
@@ -170,14 +149,13 @@ function sockets(io: TypedServer) {
                     io.to(socket.id).emit("stcNavigate", "/lobby");
                 }
                 room.addEditor(deviceID, editor);
-
             } else if (role === Role.SPECTATOR) {
                 deviceIDToRoomID[deviceID] = roomID;
                 let spectator: PoemSpectator | DrawingSpectator | null = null;
 
-                if (room.medium == Medium.POETRY) {
+                if (room.medium === Medium.POETRY) {
                     spectator = new PoemSpectator(io, socket, roomID, deviceID, name);
-                } else if (room.medium == Medium.DRAWING) {
+                } else if (room.medium === Medium.DRAWING) {
                     spectator = new DrawingSpectator(io, socket, roomID, deviceID, name);
                 } else {
                     throw new Error("Unknown medium type.");

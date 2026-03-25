@@ -1,20 +1,14 @@
-import { isNil } from "es-toolkit";
-import {
-    GameState,
-    IGameSettingsInfo,
-    IPanel,
-    Point,
-} from "../../src/types";
-import { roomIDToRoom } from "./globals";
-import type { Drawing, Poem } from "./collaboration";
-import Member from "./member";
-import { getEditorSocketID, getRoom, sendCollaborationContributionsInfo } from "../utilities/socketUtils";
-import { DrawingRoom, PoemRoom } from "./room";
-import { guaranteeHalfLineCompletion } from "./poem_bot";
-import { delay, isBotUsageAuthorized } from "../llm_utils/llm_funcs";
-import { logger } from "../utilities/loggerUtils";
-import type { TypedServer, TypedSocket } from "../types";
-
+import { delay, isBotUsageAuthorized } from "llm_utils/llm_funcs";
+import type { Drawing, Poem } from "modules/collaboration";
+import { roomIDToRoom } from "modules/globals";
+import Member from "modules/member";
+import { guaranteeHalfLineCompletion } from "modules/poem_bot";
+import type { DrawingRoom, PoemRoom } from "modules/room";
+import { isNil } from "shared/helpers/helpers";
+import { GameState, type IGameSettingsInfo, type IPanel, type Point } from "shared/types/types";
+import type { TypedServer, TypedSocket } from "types";
+import { logger } from "utilities/loggerUtils";
+import { getEditorSocketID, getRoom, sendCollaborationContributionsInfo } from "utilities/socketUtils";
 
 class Editor extends Member {
     targetEditorID: string; // device ID
@@ -22,13 +16,7 @@ class Editor extends Member {
     contributionQueue: Array<Poem | Drawing>;
     isCurrentlyEditing: boolean;
 
-    constructor(
-        io: TypedServer,
-        hostSocket: TypedSocket,
-        roomID: string,
-        deviceID: string,
-        name: string,
-    ) {
+    constructor(io: TypedServer, hostSocket: TypedSocket, roomID: string, deviceID: string, name: string) {
         super(io, hostSocket, roomID, deviceID, name);
         this.targetEditorID = ""; // device ID
         this.turnPosition = 0;
@@ -136,9 +124,9 @@ class Editor extends Member {
         return room.editors.keys().next().value === this.deviceID;
     }
 
-
     alterGameSettings(gameSettings: Partial<IGameSettingsInfo>) {
         logger.debug("ctsAlterGameSettings");
+        if (!this.isVIP()) return;
         const room = getRoom(this.roomID);
         if (room) {
             room.gameSettings = { ...room.gameSettings, ...gameSettings };
@@ -157,14 +145,11 @@ class Editor extends Member {
 }
 
 export class PoemEditor extends Editor {
-
     setReceive() {
         super.setReceive();
         this.listen("ctsRequestLineEdit", () => this.sendLineEdit()); // initial populate
         this.listen("ctsEditLine", (value) => this.handleLineEdit(value)); // whenever the input box is edited.
-        this.listen("ctsSendLineParts", (firstPart, secondPart) =>
-            this.handleLineParts(firstPart, secondPart),
-        );
+        this.listen("ctsSendLineParts", (firstPart, secondPart) => this.handleLineParts(firstPart, secondPart));
         this.listen("ctsSendLastLine", (value) => this.handleLastLine(value)); // whenever a new line has been submitted into the poem.
         this.listen("ctsRequestLastContributionStatus", () => this.sendLastContributionStatus());
         this.listen("ctsAddPoemBot", () => this.requestAddPoemBotToRoom());
@@ -209,9 +194,7 @@ export class PoemEditor extends Editor {
 
         const socketID = getEditorSocketID(this.roomID, this.targetEditorID);
         if (socketID) {
-            this.io
-                .to(socketID)
-                .emit("stcLineEditorWatch", value);
+            this.io.to(socketID).emit("stcLineEditorWatch", value);
         } else {
             logger.debug("Failed to get editor socket ID");
         }
@@ -338,7 +321,6 @@ export class PoemEditor extends Editor {
             return;
         }
         room.storePoem(poemObj);
-
     }
 
     sendPoemAsLines(poemObj: Poem) {
@@ -379,9 +361,7 @@ export class PoemBot extends PoemEditor {
                 await delay(6000);
             }
             const halfLine = poem.halfLine;
-            const forceIncomplete = this.currentlyOnLastContribution()
-                ? false
-                : halfLine.includes(".");
+            const forceIncomplete = this.currentlyOnLastContribution() ? false : halfLine.includes(".");
             logger.debug("possibleStartNewTurn invoking guaranteeHalfLineCompletion");
             if (!isBotUsageAuthorized(room)) {
                 this.isCurrentlyEditing = false;
@@ -466,10 +446,10 @@ export class DrawingEditor extends Editor {
             const drawing = this.contributionQueue[0] as Drawing;
             if (!drawing) throw new Error("No drawings in contribution queue...");
 
-            const latestPanel = Array.from((drawing)?.panels).pop();
+            const latestPanel = Array.from(drawing?.panels).pop();
             if (!latestPanel) throw new Error("All your pylons I mean panels are belong to us :(");
 
-            this.emitToSelf("stcStrokeHistory", latestPanel["content"]);
+            this.emitToSelf("stcStrokeHistory", latestPanel.content);
             logger.debug(`we think the drawing has ${drawing.panels.size} submissions so far`);
 
             if (drawing.panels.size === drawing.nContributions - 1) {
@@ -489,10 +469,10 @@ export class DrawingEditor extends Editor {
         const drawing = this.contributionQueue[0] as Drawing;
         if (drawing) {
             logger.debug(`drawing.panels: ${drawing?.panels}`);
-            const currentLength = drawing?.panels
-                ? drawing?.panels?.size
-                : 0;
-            logger.debug(`we think the drawing has ${currentLength} of ${drawing.nContributions} (this should always be 3)`);
+            const currentLength = drawing?.panels ? drawing?.panels?.size : 0;
+            logger.debug(
+                `we think the drawing has ${currentLength} of ${drawing.nContributions} (this should always be 3)`,
+            );
             return currentLength >= drawing.nContributions - 1;
         } else {
             return false;

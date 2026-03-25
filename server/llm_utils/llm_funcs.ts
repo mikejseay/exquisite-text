@@ -1,11 +1,11 @@
-import { logger } from "../utilities/loggerUtils";
-import { PoemRoom } from "../modules/room";
+import { setTimeout as delay } from "node:timers/promises";
+import type { PoemRoom } from "modules/room";
+import { logger } from "utilities/loggerUtils";
 
-export function delay(ms: number) {
-    return new Promise( resolve => setTimeout(resolve, ms) );
-}
+export { delay };
 
-export function isAcceptableShape(lineOne: string,
+export function isAcceptableShape(
+    lineOne: string,
     lineTwo: string,
     idealCharsOnLineOne: number,
     idealCharsOnLineTwo: number,
@@ -24,14 +24,23 @@ export function isAcceptableShape(lineOne: string,
     const lengthLineTwo = lineTwo.length;
 
     if (forceIncomplete) {
-        return !(lengthLineOne < minLengthLineOne || lengthLineOne > maxLengthLineOne || lengthLineTwo < minLengthLineTwo);
+        return !(
+            lengthLineOne < minLengthLineOne ||
+            lengthLineOne > maxLengthLineOne ||
+            lengthLineTwo < minLengthLineTwo
+        );
     } else {
-        return !(lengthLineOne < minLengthLineOne || lengthLineOne > maxLengthLineOne || lengthLineTwo < minLengthLineTwo || lengthLineTwo > maxLengthLineTwo);
+        return !(
+            lengthLineOne < minLengthLineOne ||
+            lengthLineOne > maxLengthLineOne ||
+            lengthLineTwo < minLengthLineTwo ||
+            lengthLineTwo > maxLengthLineTwo
+        );
     }
-
 }
 
-export function canBeFixedByShifting(lineOne: string,
+export function canBeFixedByShifting(
+    lineOne: string,
     lineTwo: string,
     idealCharsOnLineOne: number,
     idealCharsOnLineTwo: number,
@@ -47,8 +56,10 @@ export function canBeFixedByShifting(lineOne: string,
     const lengthLineTwo = lineTwo.length;
 
     if (
-        (lengthLineOne < minLengthLineOne || lengthLineOne > maxLengthLineOne) ||
-        (lengthLineTwo < minLengthLineTwo || lengthLineTwo > maxLengthLineTwo)
+        lengthLineOne < minLengthLineOne ||
+        lengthLineOne > maxLengthLineOne ||
+        lengthLineTwo < minLengthLineTwo ||
+        lengthLineTwo > maxLengthLineTwo
     ) {
         if (lengthLineTwo > lengthLineOne) {
             return true;
@@ -57,10 +68,7 @@ export function canBeFixedByShifting(lineOne: string,
     return false;
 }
 
-export function processPoetryLines(
-    lineOne: string,
-    lineTwo: string,
-): [string, string] {
+export function processPoetryLines(lineOne: string, lineTwo: string): [string, string] {
     // Shift words from the beginning of line two back to the end of line one
     // until line one is about twice as long as line two.
 
@@ -73,11 +81,11 @@ export function processPoetryLines(
             break;
         }
         wordsToMove.push(wordToMove);
-        lineOne += " " + wordsToMove[wordsToMove.length - 1];
+        lineOne += ` ${wordsToMove[wordsToMove.length - 1]}`;
         lineTwo = wordsLineTwo.join(" ");
     }
 
-    return [ lineOne, lineTwo ];
+    return [lineOne, lineTwo];
 }
 
 export function isBotUsageAuthorized(room: PoemRoom): boolean {
@@ -85,7 +93,11 @@ export function isBotUsageAuthorized(room: PoemRoom): boolean {
         logger.warn("Env var AUTHORIZED_BOT_USER_NAME not defined, cannot authorize Poem Bot.");
         return false;
     }
-    if (!Array.from(room.editors.values()).map((editor) => editor.name).includes(process.env.AUTHORIZED_BOT_USER_NAME)) {
+    if (
+        !Array.from(room.editors.values())
+            .map((editor) => editor.name)
+            .includes(process.env.AUTHORIZED_BOT_USER_NAME)
+    ) {
         logger.warn(`Unauthorized attempt to use Poem Bot in possibleStartNewTurn, roomID=${room.roomID}`);
         return false;
     }
@@ -100,7 +112,7 @@ function _main() {
     const idealCharsOnLineTwo = 30;
 
     if (canBeFixedByShifting(lineOne, lineTwo, idealCharsOnLineOne, idealCharsOnLineTwo)) {
-        const [ lineOneModified, lineTwoModified ] = processPoetryLines(lineOne, lineTwo);
+        const [lineOneModified, lineTwoModified] = processPoetryLines(lineOne, lineTwo);
         logger.debug(`Line One Modified: ${lineOneModified}`);
         logger.debug(`Line Two Modified: ${lineTwoModified}`);
     }

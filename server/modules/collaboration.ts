@@ -1,16 +1,11 @@
-import { v4 as uuidv4 } from "uuid"; // a function that generates a random uuid for lines
-import {
-    ILine,
-    IPanel,
-    Point,
-    ServerToClientEvents,
-} from "../../src/types";
-import type { TypedServer } from "../types";
-import { getRoom } from "../utilities/socketUtils";
-import { analyzeBeginning } from "./poem_bot";
-import type { PoemRoom } from "./room";
-import { logger } from "../utilities/loggerUtils";
-import { isBotUsageAuthorized } from "../llm_utils/llm_funcs";
+import { randomUUID } from "node:crypto";
+import { isBotUsageAuthorized } from "llm_utils/llm_funcs";
+import { analyzeBeginning } from "modules/poem_bot";
+import type { PoemRoom } from "modules/room";
+import type { ILine, IPanel, Point, ServerToClientEvents } from "shared/types/types";
+import type { TypedServer } from "types";
+import { logger } from "utilities/loggerUtils";
+import { getRoom } from "utilities/socketUtils";
 
 class Collaboration {
     io: TypedServer;
@@ -20,17 +15,12 @@ class Collaboration {
     ID: string; // uuid assigned to this Collaboration
     mostRecentEditor: string; // deviceID (uuid)
 
-    constructor(
-        io: TypedServer,
-        roomID: string,
-        nContributions: number,
-        indexInGame: number,
-    ) {
+    constructor(io: TypedServer, roomID: string, nContributions: number, indexInGame: number) {
         this.io = io;
         this.roomID = roomID;
         this.nContributions = nContributions;
         this.indexInGame = indexInGame;
-        this.ID = uuidv4();
+        this.ID = randomUUID();
         this.mostRecentEditor = "";
     }
 
@@ -52,13 +42,7 @@ export class Poem extends Collaboration {
     // any edit of lines or half-line (e.g. submitLine, handleLineEdit)
     // will send a message to the Spectators in the roomID
 
-    constructor(
-
-        io: TypedServer,
-        roomID: string,
-        nContributions: number,
-        indexInGame: number,
-    ) {
+    constructor(io: TypedServer, roomID: string, nContributions: number, indexInGame: number) {
         super(io, roomID, nContributions, indexInGame);
         this.halfLine = "";
         this.lines = new Set<ILine>();
@@ -97,7 +81,7 @@ export class Poem extends Collaboration {
         }
         logger.debug(`poem ${this.ID} just got its first line in a room with a PoemBot`);
         logger.debug("analyzing the poem to help the PoemBot");
-        const poemStart = firstPart + "\n" + secondPart;
+        const poemStart = `${firstPart}\n${secondPart}`;
         this.analysis = await analyzeBeginning(poemStart);
         // TODO: sleep here?
     }
@@ -122,15 +106,10 @@ export class Drawing extends Collaboration {
     panelHint: Point[][];
     panels: Set<IPanel>;
 
-    constructor(
-        io: TypedServer,
-        roomID: string,
-        nContributions: number,
-        indexInGame: number,
-    ) {
+    constructor(io: TypedServer, roomID: string, nContributions: number, indexInGame: number) {
         super(io, roomID, nContributions, indexInGame);
         this.panelHint = [];
-        this.panels = new Set<IPanel>;
+        this.panels = new Set<IPanel>();
     }
 
     submitPanel(authorID: string, content: Point[][]) {

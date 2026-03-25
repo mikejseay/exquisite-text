@@ -1,6 +1,6 @@
-import * as React from "react";
-import { SxProps } from "@mui/system";
-import { FABDiameter, FABSpace } from "../constants";
+import type { SxProps } from "@mui/system";
+import { FABDiameter, FABSpace } from "constants/constants";
+import type * as React from "react";
 
 export const textCentered: React.CSSProperties = {
     textAlign: "center",
