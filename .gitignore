@@ -48,3 +48,5 @@ yarn-error.log*
 ngrok.exe
 ngrok.yml
 
+# lefthook local config (machine-specific)
+lefthook-local.yml
