@@ -375,6 +375,12 @@ const Canvas: React.FC = () => {
                             value={strokeColor}
                             onChange={(e) => setStrokeColor(e.target.value)}
                             disabled={!editorActive || isEraserActive}
+                            onPointerDown={(e) => {
+                                if (e.pointerType === "pen") {
+                                    e.preventDefault();
+                                    e.currentTarget.click();
+                                }
+                            }}
                             style={{
                                 position: "absolute",
                                 top: 0,

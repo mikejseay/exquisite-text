@@ -1,3 +1,17 @@
+// jsdom lacks PointerEvent — polyfill so we can test pointerType-dependent logic
+if (typeof globalThis.PointerEvent === "undefined") {
+    class PointerEvent extends MouseEvent {
+        readonly pointerType: string;
+        readonly pointerId: number;
+        constructor(type: string, init: PointerEventInit & { pointerType?: string; pointerId?: number } = {}) {
+            super(type, init);
+            this.pointerType = init.pointerType ?? "";
+            this.pointerId = init.pointerId ?? 0;
+        }
+    }
+    globalThis.PointerEvent = PointerEvent as any;
+}
+
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { fireEvent, render, screen } from "@testing-library/react";
 
@@ -145,6 +159,39 @@ describe("Canvas toolbar — color picker", () => {
         const colorInput = getColorInput();
         expect(colorInput).not.toBeNull();
         expect(colorInput.disabled).toBe(true);
+    });
+
+    it("pen pointerdown calls click() to open picker on iPadOS", () => {
+        renderCanvas();
+        const colorInput = getColorInput();
+        const clickSpy = vi.spyOn(colorInput, "click");
+
+        colorInput.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "pen" }));
+
+        expect(clickSpy).toHaveBeenCalledTimes(1);
+        clickSpy.mockRestore();
+    });
+
+    it("touch pointerdown does NOT programmatically call click()", () => {
+        renderCanvas();
+        const colorInput = getColorInput();
+        const clickSpy = vi.spyOn(colorInput, "click");
+
+        colorInput.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "touch" }));
+
+        expect(clickSpy).not.toHaveBeenCalled();
+        clickSpy.mockRestore();
+    });
+
+    it("mouse pointerdown does NOT programmatically call click()", () => {
+        renderCanvas();
+        const colorInput = getColorInput();
+        const clickSpy = vi.spyOn(colorInput, "click");
+
+        colorInput.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "mouse" }));
+
+        expect(clickSpy).not.toHaveBeenCalled();
+        clickSpy.mockRestore();
     });
 
     it("color input is disabled when eraser is active", () => {
