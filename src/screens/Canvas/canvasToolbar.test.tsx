@@ -161,17 +161,6 @@ describe("Canvas toolbar — color picker", () => {
         expect(colorInput.disabled).toBe(true);
     });
 
-    it("pen pointerdown calls click() to open picker on iPadOS", () => {
-        renderCanvas();
-        const colorInput = getColorInput();
-        const clickSpy = vi.spyOn(colorInput, "click");
-
-        colorInput.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "pen" }));
-
-        expect(clickSpy).toHaveBeenCalledTimes(1);
-        clickSpy.mockRestore();
-    });
-
     it("touch pointerdown does NOT programmatically call click()", () => {
         renderCanvas();
         const colorInput = getColorInput();

@@ -16,7 +16,6 @@ import { useSocketInfo } from "context/SocketInfoProvider";
 import { emitSendLastPanel, emitSendPanel, emitSendPanelEdit } from "context/SocketRequestors";
 import { debounce } from "helpers/helpers";
 import { useCanvasResize } from "hooks/useCanvasResize";
-import { useDisableScroll } from "hooks/useDisableScroll";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Point } from "types/types";
@@ -99,8 +98,6 @@ const Canvas: React.FC = () => {
     useEffect(() => {
         localStrokeHistoryRef.current = localStrokeHistory;
     }, [localStrokeHistory]);
-
-    useDisableScroll();
 
     // Redraw the canvas whenever dimensions or scaleFactor change
     useEffect(() => {
@@ -375,12 +372,6 @@ const Canvas: React.FC = () => {
                             value={strokeColor}
                             onChange={(e) => setStrokeColor(e.target.value)}
                             disabled={!editorActive || isEraserActive}
-                            onPointerDown={(e) => {
-                                if (e.pointerType === "pen") {
-                                    e.preventDefault();
-                                    e.currentTarget.click();
-                                }
-                            }}
                             style={{
                                 position: "absolute",
                                 top: 0,
