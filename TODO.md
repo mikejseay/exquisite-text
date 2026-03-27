@@ -3,6 +3,4 @@
 - Lobby page
     - more aesthetic TLC
         - each multi-select should have the same width
-- Drawing game screen
-    - on iPad, the "color picker" icon button only opens the color picker with finger press, not apple pencil tap
 - the Drawing End screen currently requires a small amount of scroll when combining the "Done! If you'd like to play again, make a new room" message with the drawing Carousel. We should probably try to make it so everything fits on the screen without scroll, if possible.
