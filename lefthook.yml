@@ -2,14 +2,16 @@ pre-commit:
   parallel: true
   commands:
     client-lint:
-      run: yarn lint
+      run: yarn lint:fix
+      stage_fixed: true
     client-typecheck:
       run: yarn typecheck
     client-test:
       run: yarn test
     server-lint:
       root: server/
-      run: yarn lint
+      run: yarn lint:fix
+      stage_fixed: true
     server-typecheck:
       root: server/
       run: yarn typecheck
@@ -18,7 +20,8 @@ pre-commit:
       run: yarn test
     app-lint:
       root: app/
-      run: yarn lint
+      run: yarn lint:fix
+      stage_fixed: true
     app-typecheck:
       root: app/
       run: yarn typecheck
