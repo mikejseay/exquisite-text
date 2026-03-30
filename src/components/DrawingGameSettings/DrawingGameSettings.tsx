@@ -59,7 +59,7 @@ export default function DrawingGameSettings({ hideStartButton = false }: { hideS
                         exclusive
                         onChange={handleNDrawings}
                         disabled={!settingsEnabled}
-                        sx={{ minWidth: 160 }}
+                        sx={{ width: 200, "& .MuiToggleButton-root": { flex: 1 } }}
                     >
                         <ToggleButton value={1}>1</ToggleButton>
                         <ToggleButton value={2}>2</ToggleButton>

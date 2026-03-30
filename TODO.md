@@ -1,6 +1,6 @@
-- Mike should update his .env to be the same as his old computer and re-test the LLM functionality
-- "How to play" modal for the drawing version of the game?
-- Lobby page
-    - more aesthetic TLC
-        - each multi-select should have the same width
-- the Drawing End screen currently requires a small amount of scroll when combining the "Done! If you'd like to play again, make a new room" message with the drawing Carousel. We should probably try to make it so everything fits on the screen without scroll, if possible.
+- [ ] Mike should update his .env to be the same as his old computer and re-test the LLM functionality
+- [ ] "How to play" modal for the drawing version of the game?
+- [ ] Lobby page
+    - [ ] more aesthetic TLC
+        - [x] each multi-select should have the same width
+- [x] the Drawing End screen currently requires a small amount of scroll when combining the "Done! If you'd like to play again, make a new room" message with the drawing Carousel. We should probably try to make it so everything fits on the screen without scroll, if possible.

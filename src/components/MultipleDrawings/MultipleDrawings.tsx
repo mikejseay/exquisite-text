@@ -8,13 +8,13 @@ import { title } from "components/MultipleDrawings/styles";
 import { Carousel } from "react-responsive-carousel";
 import type { Point } from "types/types";
 
-const renderDrawings = (completedDrawings: Point[][][][] | null, shouldAnimate = false) => {
+const renderDrawings = (completedDrawings: Point[][][][] | null, shouldAnimate = false, topOffset = 0) => {
     return completedDrawings?.map((completedDrawing, index) => (
         <div key={index} className={"drawing-container"}>
             <div style={title} className={"drawing-title"}>
                 <strong>{`exquisite corpse #${index}`}</strong>
             </div>
-            <CompletedDrawing completedDrawing={completedDrawing} shouldAnimate={shouldAnimate} />
+            <CompletedDrawing completedDrawing={completedDrawing} shouldAnimate={shouldAnimate} topOffset={topOffset} />
         </div>
     ));
 };
@@ -22,9 +22,11 @@ const renderDrawings = (completedDrawings: Point[][][][] | null, shouldAnimate =
 function MultipleDrawings({
     completedDrawings,
     shouldAnimate,
+    topOffset = 0,
 }: {
     completedDrawings: Point[][][][] | null;
     shouldAnimate: boolean;
+    topOffset?: number;
 }) {
     const isWide = useMediaQuery("(min-width: 1200px)");
     const useGrid = isWide && completedDrawings && completedDrawings.length > 1;
@@ -40,13 +42,15 @@ function MultipleDrawings({
                             gap: "1em",
                         }}
                     >
-                        {renderDrawings(completedDrawings, shouldAnimate)}
+                        {renderDrawings(completedDrawings, shouldAnimate, topOffset)}
                     </div>
                 ) : (
-                    <Carousel showThumbs={false}>{renderDrawings(completedDrawings, shouldAnimate)}</Carousel>
+                    <Carousel showThumbs={false}>
+                        {renderDrawings(completedDrawings, shouldAnimate, topOffset)}
+                    </Carousel>
                 )
             ) : (
-                renderDrawings(completedDrawings, shouldAnimate)
+                renderDrawings(completedDrawings, shouldAnimate, topOffset)
             )}
         </div>
     );
