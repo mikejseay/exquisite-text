@@ -17,15 +17,19 @@ import { pixelRatio, ScaleDirection, scalePoints } from "utilities/scaleUtils";
 export const CompletedDrawing = ({
     completedDrawing,
     shouldAnimate,
+    topOffset = 0,
 }: {
     completedDrawing: Point[][][];
     shouldAnimate: boolean;
+    topOffset?: number;
 }): JSX.Element | null => {
     const theme = useTheme();
     const { canvasRef, dimensions, scaleFactor } = useCanvasResize(
         DRAWING_WIDTH_MIN,
         DRAWING_HEIGHT_MIN,
         DRAWING_ASPECT_RATIO,
+        undefined,
+        topOffset,
     );
     const animationRef = useRef<number>();
 

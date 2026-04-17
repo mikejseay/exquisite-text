@@ -6,7 +6,7 @@ describe("default (production) configuration", () => {
     let mod: ReturnType<typeof loadModule>;
 
     beforeAll(() => {
-        delete process.env.EXPO_PUBLIC_SERVER_URL;
+        delete process.env.EXPO_PUBLIC_WEBVIEW_URL;
         jest.resetModules();
         mod = loadModule();
     });
@@ -78,17 +78,17 @@ describe("default (production) configuration", () => {
     });
 });
 
-describe("custom EXPO_PUBLIC_SERVER_URL (local dev)", () => {
+describe("custom EXPO_PUBLIC_WEBVIEW_URL (local dev)", () => {
     let mod: ReturnType<typeof loadModule>;
 
     beforeAll(() => {
-        process.env.EXPO_PUBLIC_SERVER_URL = "http://localhost:8080";
+        process.env.EXPO_PUBLIC_WEBVIEW_URL = "http://localhost:8080";
         jest.resetModules();
         mod = loadModule();
     });
 
     afterAll(() => {
-        delete process.env.EXPO_PUBLIC_SERVER_URL;
+        delete process.env.EXPO_PUBLIC_WEBVIEW_URL;
     });
 
     it("uses the custom origin", () => {
@@ -116,17 +116,17 @@ describe("custom EXPO_PUBLIC_SERVER_URL (local dev)", () => {
     });
 });
 
-describe("invalid EXPO_PUBLIC_SERVER_URL falls back to production", () => {
+describe("invalid EXPO_PUBLIC_WEBVIEW_URL falls back to production", () => {
     let mod: ReturnType<typeof loadModule>;
 
     beforeAll(() => {
-        process.env.EXPO_PUBLIC_SERVER_URL = "not-a-valid-url";
+        process.env.EXPO_PUBLIC_WEBVIEW_URL = "not-a-valid-url";
         jest.resetModules();
         mod = loadModule();
     });
 
     afterAll(() => {
-        delete process.env.EXPO_PUBLIC_SERVER_URL;
+        delete process.env.EXPO_PUBLIC_WEBVIEW_URL;
     });
 
     it("falls back to production origin", () => {

@@ -76,7 +76,7 @@ function PoemGameSettings({ hideStartButton = false }: { hideStartButton?: boole
                         exclusive
                         onChange={handleLineLength}
                         disabled={!settingsEnabled}
-                        sx={{ minWidth: 160 }}
+                        sx={{ width: 200, "& .MuiToggleButton-root": { flex: 1 } }}
                     >
                         <ToggleButton value={LineLength.SHORT}>Short</ToggleButton>
                         <ToggleButton value={LineLength.LONG}>Long</ToggleButton>
@@ -90,7 +90,7 @@ function PoemGameSettings({ hideStartButton = false }: { hideStartButton?: boole
                         exclusive
                         onChange={handleNRounds}
                         disabled={!settingsEnabled}
-                        sx={{ minWidth: 160 }}
+                        sx={{ width: 200, "& .MuiToggleButton-root": { flex: 1 } }}
                     >
                         <ToggleButton value={2}>2</ToggleButton>
                         <ToggleButton value={3}>3</ToggleButton>
@@ -105,7 +105,7 @@ function PoemGameSettings({ hideStartButton = false }: { hideStartButton?: boole
                         exclusive
                         onChange={handleNPoems}
                         disabled={!settingsEnabled}
-                        sx={{ minWidth: 160 }}
+                        sx={{ width: 200, "& .MuiToggleButton-root": { flex: 1 } }}
                     >
                         <ToggleButton value={1}>1</ToggleButton>
                         <ToggleButton value={2}>2</ToggleButton>

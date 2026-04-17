@@ -8,6 +8,7 @@ export function useCanvasResize(
     heightMin: number,
     aspectRatio: number,
     toolbarRef?: RefObject<HTMLDivElement | null>,
+    extraAbove = 0,
 ) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [dimensions, setDimensions] = useState({ width: widthMin, height: heightMin });
@@ -21,7 +22,8 @@ export function useCanvasResize(
             const context = canvas.getContext("2d");
             if (!context) return;
 
-            const aboveCanvas = toolbarRef?.current ? toolbarRef.current.getBoundingClientRect().bottom : headerHeight;
+            const aboveCanvas =
+                (toolbarRef?.current ? toolbarRef.current.getBoundingClientRect().bottom : headerHeight) + extraAbove;
 
             const viewportHeight = window.innerHeight - aboveCanvas;
             const viewportWidth = window.innerWidth;
@@ -68,7 +70,7 @@ export function useCanvasResize(
             window.removeEventListener("resize", debouncedHandleResize);
             resizeObserver?.disconnect();
         };
-    }, [aspectRatio, toolbarRef?.current, widthMin]);
+    }, [aspectRatio, toolbarRef?.current, widthMin, extraAbove]);
 
     return { canvasRef, dimensions, scaleFactor };
 }
