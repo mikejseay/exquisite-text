@@ -90,7 +90,7 @@ const Canvas: React.FC = () => {
     const [_passEnabled, setPassEnabled] = useState(false);
     const [strokeColor, setStrokeColor] = useState<string>(DEFAULT_COLOR);
     const [isEraserActive, setIsEraserActive] = useState<boolean>(false);
-    const [_triggerRedraw, setTriggerRedraw] = useState<number>(0);
+    const [triggerRedraw, setTriggerRedraw] = useState<number>(0);
     const [baseLineWidth, setBaseLineWidth] = useState<number>(DEFAULT_LINE_WIDTH);
     logger.debug(theme.palette.text);
     const localStrokeHistoryRef = useRef<Point[][]>(localStrokeHistory);
@@ -140,7 +140,7 @@ const Canvas: React.FC = () => {
             }),
                 logger.debug(`Redrew strokeArray #${index}`);
         });
-    }, [scaleFactor, editorActive, strokeHistory, canvasRef.current, theme.palette.canvas.background]);
+    }, [scaleFactor, editorActive, strokeHistory, triggerRedraw, canvasRef.current, theme.palette.canvas.background]);
 
     function passTurn() {
         emitSendPanel(localStrokeHistory);
