@@ -8,7 +8,7 @@ function parseOrigin(url: string): URL {
     }
 }
 
-const parsed = parseOrigin(process.env.EXPO_PUBLIC_SERVER_URL ?? DEFAULT_ORIGIN);
+const parsed = parseOrigin(process.env.EXPO_PUBLIC_WEBVIEW_URL ?? DEFAULT_ORIGIN);
 
 export const allowedHosts = new Set([parsed.host, parsed.host.replace(/^www\./, "")]);
 export const allowedOrigin = parsed.origin;
