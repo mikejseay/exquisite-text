@@ -4,7 +4,7 @@
         "slug": "exquisite",
         "scheme": "exquisite",
         "version": "1.0.2",
-        "orientation": "portrait",
+        "orientation": "default",
         "icon": "./assets/icon.png",
         "userInterfaceStyle": "automatic",
         "splash": {

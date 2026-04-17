@@ -48,14 +48,8 @@ export function LandscapeBanner() {
             role="status"
             severity="info"
             sx={{
-                justifyContent: "center",
-                position: "absolute",
-                top: "3rem",
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: "fit-content",
-                zIndex: 10,
                 fontSize: "clamp(0.7rem, 3vw, 0.875rem)",
+                width: "fit-content",
             }}
         >
             For the best experience, rotate your device to landscape.

@@ -1,4 +1,4 @@
-import CustomStatusBar from "app/components/CustomStatusBar";
+import CustomStatusBar, { useAppBackground } from "app/components/CustomStatusBar";
 import * as SplashScreen from "expo-splash-screen";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -11,6 +11,7 @@ import { allowedOrigin, getIsAllowedUrl } from "utils/urlValidation";
 void SplashScreen.preventAutoHideAsync();
 
 export default function Index() {
+    const backgroundColor = useAppBackground();
     const initialUrl = `${allowedOrigin}/`;
     const [webViewKey, setWebViewKey] = useState(0);
     const [sourceUri, setSourceUri] = useState(initialUrl);
@@ -63,14 +64,16 @@ export default function Index() {
     if (Platform.OS === "web") {
         return (
             <SafeAreaProvider>
-                <CustomStatusBar />
-                <View style={styles.webContainer}>
-                    <iframe
-                        src={initialUrl}
-                        style={styles.webIframe as React.CSSProperties}
-                        title={"Exquisite Text"}
-                        allow={"fullscreen"}
-                    />
+                <View style={[styles.root, { backgroundColor }]}>
+                    <CustomStatusBar />
+                    <View style={styles.webContainer}>
+                        <iframe
+                            src={initialUrl}
+                            style={styles.webIframe as React.CSSProperties}
+                            title={"Exquisite Text"}
+                            allow={"fullscreen"}
+                        />
+                    </View>
                 </View>
             </SafeAreaProvider>
         );
@@ -78,33 +81,38 @@ export default function Index() {
 
     return (
         <SafeAreaProvider>
-            <CustomStatusBar />
-            <WebView
-                allowsBackForwardNavigationGestures
-                decelerationRate={0.998}
-                javaScriptCanOpenWindowsAutomatically={false}
-                bounces={false}
-                allowsLinkPreview={false}
-                key={webViewKey}
-                mediaPlaybackRequiresUserAction={false}
-                onContentProcessDidTerminate={reloadWebView}
-                onLoadEnd={hideSplashScreen}
-                onNavigationStateChange={onNavigationStateChange}
-                onRenderProcessGone={reloadWebView}
-                onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
-                ref={webViewRef}
-                sharedCookiesEnabled={false}
-                source={{
-                    uri: sourceUri,
-                }}
-                startInLoadingState
-                style={styles.container}
-            />
+            <View style={[styles.root, { backgroundColor }]}>
+                <CustomStatusBar />
+                <WebView
+                    allowsBackForwardNavigationGestures
+                    decelerationRate={0.998}
+                    javaScriptCanOpenWindowsAutomatically={false}
+                    bounces={false}
+                    allowsLinkPreview={false}
+                    key={webViewKey}
+                    mediaPlaybackRequiresUserAction={false}
+                    onContentProcessDidTerminate={reloadWebView}
+                    onLoadEnd={hideSplashScreen}
+                    onNavigationStateChange={onNavigationStateChange}
+                    onRenderProcessGone={reloadWebView}
+                    onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
+                    ref={webViewRef}
+                    sharedCookiesEnabled={false}
+                    source={{
+                        uri: sourceUri,
+                    }}
+                    startInLoadingState
+                    style={styles.container}
+                />
+            </View>
         </SafeAreaProvider>
     );
 }
 
 const styles = StyleSheet.create({
+    root: {
+        flex: 1,
+    },
     container: {
         flex: 1,
         marginTop: -2,
