@@ -3,7 +3,7 @@
         "name": "exquisite",
         "slug": "exquisite",
         "scheme": "exquisite",
-        "version": "1.0.2",
+        "version": "1.0.3",
         "orientation": "default",
         "icon": "./assets/icon.png",
         "userInterfaceStyle": "automatic",
@@ -18,7 +18,7 @@
             "newArchEnabled": false,
             "supportsTablet": true,
             "bundleIdentifier": "com.exquisite",
-            "buildNumber": "102",
+            "buildNumber": "103",
             "userInterfaceStyle": "automatic",
             "infoPlist": { "ITSAppUsesNonExemptEncryption": false }
         },
@@ -29,7 +29,7 @@
             },
             "package": "com.exquisite",
             "userInterfaceStyle": "automatic",
-            "versionCode": 102
+            "versionCode": 103
         },
         "web": { "favicon": "./assets/favicon.png", "bundler": "metro" },
         "extra": { "eas": { "projectId": "3faa3b37-98fe-42e7-8ce9-b4105d745638" } },
