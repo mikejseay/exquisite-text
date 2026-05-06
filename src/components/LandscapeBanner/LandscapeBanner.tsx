@@ -2,6 +2,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import Alert from "@mui/material/Alert";
 import IconButton from "@mui/material/IconButton";
 import { useNotificationStackTarget } from "components/NotificationBannerStack/NotificationBannerStack";
+import { NARROW_VIEWPORT_MAX_PX } from "constants/constants";
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
@@ -22,7 +23,7 @@ export function LandscapeBanner() {
             const w = window.innerWidth;
             const h = window.innerHeight;
             const isTouch = window.matchMedia("(pointer: coarse)").matches;
-            const shouldShow = h > w && w <= 767 && isTouch;
+            const shouldShow = h > w && w <= NARROW_VIEWPORT_MAX_PX && isTouch;
             setIsPortrait(shouldShow);
             if (shouldShow) {
                 setDismissed(sessionStorage.getItem(DISMISSED_KEY) === "true");

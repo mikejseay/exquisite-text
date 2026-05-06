@@ -5,7 +5,7 @@ import Fab from "@mui/material/Fab";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { hostButtonLabel, hostButtonsContainer, hostButtonWrapper } from "components/HostButton/styles";
 import { useNotificationStackTarget } from "components/NotificationBannerStack/NotificationBannerStack";
-import { roomCodeLength } from "constants/constants";
+import { NARROW_VIEWPORT_QUERY, roomCodeLength } from "constants/constants";
 import { emitCreateRoomAndHost } from "context/SocketRequestors";
 import { generateAlphaString } from "helpers/helpers";
 import * as React from "react";
@@ -18,7 +18,7 @@ function HostButton() {
     const [roomID, setRoomID] = React.useState<string | null>(null);
     const [shareLink, setShareLink] = React.useState<string | null>(null);
     const navigate = useNavigate();
-    const isNarrow = useMediaQuery("(max-width: 767px)");
+    const isNarrow = useMediaQuery(NARROW_VIEWPORT_QUERY);
     const stackTarget = useNotificationStackTarget();
     const clipboard = useClipboard({ copiedTimeout: 6_000 });
 

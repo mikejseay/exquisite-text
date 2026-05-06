@@ -3,7 +3,7 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { maxNameChars, roomCodeLength } from "constants/constants";
+import { maxNameChars, NARROW_VIEWPORT_QUERY, roomCodeLength } from "constants/constants";
 import { useSocketInfo } from "context/SocketInfoProvider";
 import { emitJoinAs } from "context/SocketRequestors";
 import * as React from "react";
@@ -13,7 +13,7 @@ import { Role } from "types/types";
 
 export default function Join() {
     const { joinErrorMessage: errorMessage, setRoomCode } = useSocketInfo();
-    const isNarrow = useMediaQuery("(max-width: 767px)");
+    const isNarrow = useMediaQuery(NARROW_VIEWPORT_QUERY);
 
     const { id } = useParams();
 

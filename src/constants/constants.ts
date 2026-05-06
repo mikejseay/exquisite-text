@@ -7,6 +7,10 @@ export const FABSpace = 10;
 export const FABDiameter = 40;
 export const headerHeight = 60;
 
+// viewports at or below this width are treated as "narrow" (mobile portrait, narrow desktop)
+export const NARROW_VIEWPORT_MAX_PX = 767;
+export const NARROW_VIEWPORT_QUERY = `(max-width: ${NARROW_VIEWPORT_MAX_PX}px)`;
+
 export const shortDur = 3000;
 
 export const lineSepString = "\n";
