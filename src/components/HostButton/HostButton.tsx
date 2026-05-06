@@ -2,49 +2,48 @@ import ArticleIcon from "@mui/icons-material/Article";
 import BrushIcon from "@mui/icons-material/Brush";
 import Alert from "@mui/material/Alert";
 import Fab from "@mui/material/Fab";
-import { hostButtonLabel, hostButtonsContainer, hostButtonWrapper, roomCodeStyles } from "components/HostButton/styles";
-import { roomCodeLength } from "constants/constants";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { hostButtonLabel, hostButtonsContainer, hostButtonWrapper } from "components/HostButton/styles";
+import { useNotificationStackTarget } from "components/NotificationBannerStack/NotificationBannerStack";
+import { NARROW_VIEWPORT_QUERY, roomCodeLength } from "constants/constants";
 import { emitCreateRoomAndHost } from "context/SocketRequestors";
 import { generateAlphaString } from "helpers/helpers";
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { Medium } from "types/types";
 import { useClipboard } from "use-clipboard-copy";
 
 function HostButton() {
-    const [open, setOpen] = React.useState(false);
     const [roomID, setRoomID] = React.useState<string | null>(null);
     const [shareLink, setShareLink] = React.useState<string | null>(null);
     const navigate = useNavigate();
-
-    const clipboard = useClipboard({
-        copiedTimeout: 6_000, // timeout duration in milliseconds
-    });
+    const isNarrow = useMediaQuery(NARROW_VIEWPORT_QUERY);
+    const stackTarget = useNotificationStackTarget();
+    const clipboard = useClipboard({ copiedTimeout: 6_000 });
 
     const handleClick = (medium: Medium) => {
-        setOpen((prev) => !prev);
-        if (!open) {
-            const roomID = generateAlphaString(roomCodeLength);
-            const shareLink = `${location.protocol}//${location.host}/${roomID}`;
-            setRoomID(roomID);
-            setShareLink(shareLink);
-            clipboard.copy(shareLink);
-            emitCreateRoomAndHost(roomID, medium);
-            navigate(`/${roomID}`);
-        }
+        const newRoomID = generateAlphaString(roomCodeLength);
+        const newShareLink = `${location.protocol}//${location.host}/${newRoomID}`;
+        setRoomID(newRoomID);
+        setShareLink(newShareLink);
+        clipboard.copy(newShareLink);
+        emitCreateRoomAndHost(newRoomID, medium);
+        navigate(`/${newRoomID}`);
     };
 
-    const alerts = open && (
-        <div style={roomCodeStyles}>
-            <Alert severity="warning">
-                Enter room code: <b>{roomID}</b>
+    const alerts = roomID && (
+        <>
+            <Alert severity="success">
+                Room created! <br />
+                Code: <b>{roomID}</b>
             </Alert>
-            {clipboard.copied && (
+            {!isNarrow && clipboard.copied && (
                 <Alert severity="success">
                     Copied to clipboard: <b>{shareLink}</b>
                 </Alert>
             )}
-        </div>
+        </>
     );
 
     const buttons: {
@@ -80,7 +79,7 @@ function HostButton() {
                     <span style={hostButtonLabel}>{label}</span>
                 </div>
             ))}
-            {alerts}
+            {stackTarget && alerts && createPortal(alerts, stackTarget)}
         </div>
     );
 }

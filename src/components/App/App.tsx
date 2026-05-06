@@ -2,6 +2,7 @@ import Paper from "@mui/material/Paper";
 import { app, appHeader, appTitle, possibleSocket } from "components/App/styles";
 import { LandscapeBanner } from "components/LandscapeBanner/LandscapeBanner";
 import { MenuButtons } from "components/MenuButtons/MenuButtons";
+import { NotificationBannerStack } from "components/NotificationBannerStack/NotificationBannerStack";
 import { emitRecognizeDevice } from "context/SocketRequestors";
 import { Outlet } from "react-router-dom";
 
@@ -14,6 +15,7 @@ export default function App() {
                     <MenuButtons />
                     <h1 style={appTitle}>Exquisite Text</h1>
                 </header>
+                <NotificationBannerStack />
                 <LandscapeBanner />
                 <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
                     <Outlet />

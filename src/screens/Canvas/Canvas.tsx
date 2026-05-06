@@ -90,7 +90,7 @@ const Canvas: React.FC = () => {
     const [_passEnabled, setPassEnabled] = useState(false);
     const [strokeColor, setStrokeColor] = useState<string>(DEFAULT_COLOR);
     const [isEraserActive, setIsEraserActive] = useState<boolean>(false);
-    const [_triggerRedraw, setTriggerRedraw] = useState<number>(0);
+    const [triggerRedraw, setTriggerRedraw] = useState<number>(0);
     const [baseLineWidth, setBaseLineWidth] = useState<number>(DEFAULT_LINE_WIDTH);
     logger.debug(theme.palette.text);
     const localStrokeHistoryRef = useRef<Point[][]>(localStrokeHistory);
@@ -140,7 +140,7 @@ const Canvas: React.FC = () => {
             }),
                 logger.debug(`Redrew strokeArray #${index}`);
         });
-    }, [scaleFactor, editorActive, strokeHistory, canvasRef.current, theme.palette.canvas.background]);
+    }, [scaleFactor, editorActive, strokeHistory, triggerRedraw, canvasRef.current, theme.palette.canvas.background]);
 
     function passTurn() {
         emitSendPanel(localStrokeHistory);
@@ -295,22 +295,30 @@ const Canvas: React.FC = () => {
                 style={{
                     display: "flex",
                     flexDirection: "row",
-                    flexWrap: "wrap",
+                    flexWrap: "nowrap",
                     alignItems: "center",
-                    gap: theme.spacing(1),
+                    gap: theme.spacing(0.5),
                     marginBottom: theme.spacing(1),
                 }}
             >
                 <Tooltip title="Undo" enterTouchDelay={0} leaveTouchDelay={1500}>
                     <span>
-                        <IconButton onClick={handleUndo} disabled={!editorActive || localStrokeHistory.length === 0}>
+                        <IconButton
+                            size="small"
+                            onClick={handleUndo}
+                            disabled={!editorActive || localStrokeHistory.length === 0}
+                        >
                             <UndoIcon />
                         </IconButton>
                     </span>
                 </Tooltip>
                 <Tooltip title="Redo" enterTouchDelay={0} leaveTouchDelay={1500}>
                     <span>
-                        <IconButton onClick={handleRedo} disabled={!editorActive || undidStrokeHistory.length === 0}>
+                        <IconButton
+                            size="small"
+                            onClick={handleRedo}
+                            disabled={!editorActive || undidStrokeHistory.length === 0}
+                        >
                             <RedoIcon />
                         </IconButton>
                     </span>
@@ -321,8 +329,8 @@ const Canvas: React.FC = () => {
                         height: 28,
                         alignSelf: "center",
                         backgroundColor: theme.palette.divider,
-                        marginLeft: theme.spacing(0.5),
-                        marginRight: theme.spacing(1.5),
+                        marginLeft: theme.spacing(0.25),
+                        marginRight: theme.spacing(0.75),
                     }}
                 />
                 {/* Other controls */}
@@ -336,8 +344,8 @@ const Canvas: React.FC = () => {
                         valueLabelDisplay="auto"
                         disabled={!editorActive}
                         sx={{
-                            marginRight: theme.spacing(2.75),
-                            width: "clamp(60px, 20vw, 120px)",
+                            marginRight: theme.spacing(1),
+                            width: "clamp(40px, 12vw, 120px)",
                             cursor: "ew-resize",
                             color: strokeColor,
                             "& .MuiSlider-rail": {
@@ -363,7 +371,7 @@ const Canvas: React.FC = () => {
                 </Tooltip>
                 <Tooltip title="Pick Color" enterTouchDelay={0} leaveTouchDelay={1500}>
                     <span style={{ position: "relative", display: "inline-flex" }}>
-                        <IconButton disabled={!editorActive || isEraserActive} component="span">
+                        <IconButton size="small" disabled={!editorActive || isEraserActive} component="span">
                             <PaletteIcon />
                         </IconButton>
                         <input
@@ -393,6 +401,7 @@ const Canvas: React.FC = () => {
                 >
                     <span>
                         <IconButton
+                            size="small"
                             onClick={() => setIsEraserActive((prev) => !prev)}
                             disabled={!editorActive}
                             color={isEraserActive ? "primary" : "default"}
@@ -407,8 +416,8 @@ const Canvas: React.FC = () => {
                         height: 28,
                         alignSelf: "center",
                         backgroundColor: theme.palette.divider,
-                        marginLeft: theme.spacing(0.5),
-                        marginRight: theme.spacing(2),
+                        marginLeft: theme.spacing(0.25),
+                        marginRight: theme.spacing(1),
                     }}
                 />
                 <Tooltip

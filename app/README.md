@@ -74,21 +74,28 @@ The app connects to `https://www.exquisitetext.com` by default. To point it at a
 cp .env.example .env
 ```
 
-This sets `EXPO_PUBLIC_SERVER_URL=http://localhost:8080`. Remove or change the value as needed. The `.env` file is gitignored, so it won't affect production builds, which always fall back to the production URL.
-
-Start the development server:
+This sets `EXPO_PUBLIC_WEBVIEW_URL`, the URL the WebView points at. For local dev on a **physical device** (e.g. an iPad scanning the QR code), use your computer's LAN IP rather than `localhost` — the device resolves `localhost` to itself, not your Mac:
 
 ```bash
+EXPO_PUBLIC_WEBVIEW_URL=http://192.168.x.x:8080
+```
+
+Run `ipconfig getifaddr en0` (macOS Wi-Fi) to find your LAN IP. The `.env` file is gitignored, so it won't affect production builds, which always fall back to the production URL.
+
+Start the development server (must be run from inside `app/` so it uses the local Expo CLI bundled with the project, not the deprecated global `expo-cli`):
+
+```bash
+cd app
 npx expo start
 ```
 
-Run on iOS simulator (only available on Mac OSX):
+Run on iOS simulator (only available on Mac OSX, also from inside `app/`):
 
 ```bash
 npx expo run:ios
 ```
 
-Run on Android emulator (requires Android SDK configuration):
+Run on Android emulator (requires Android SDK configuration, also from inside `app/`):
 
 ```bash
 npx expo run:android
@@ -138,7 +145,7 @@ eas submit --platform android
 
 ## Fully npx-Based Alternative (No Global Installs)
 
-If you prefer not to install EAS globally:
+If you prefer not to install EAS globally (run all commands from inside `app/`):
 
 ```bash
 npx expo start

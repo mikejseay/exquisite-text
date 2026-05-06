@@ -1,4 +1,4 @@
-import { FABDiameter, FABSpace } from "constants/constants";
+import { FABSpace } from "constants/constants";
 import type * as React from "react";
 
 export const hostButtonLabel: React.CSSProperties = {
@@ -26,10 +26,4 @@ export const hostButtonsContainer: React.CSSProperties = {
     gap: "6px",
     alignItems: "flex-start",
     zIndex: 11,
-};
-
-export const roomCodeStyles: React.CSSProperties = {
-    position: "absolute",
-    left: FABDiameter + FABSpace + 60,
-    top: 0,
 };

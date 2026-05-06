@@ -1,11 +1,16 @@
 import { StatusBar, type StatusBarStyle, useColorScheme, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+export function useAppBackground(): string {
+    const colorScheme = useColorScheme();
+    return colorScheme === "dark" ? "#181A1B" : "#fff";
+}
+
 export default function CustomStatusBar() {
     const insets = useSafeAreaInsets();
+    const backgroundColor = useAppBackground();
     const colorScheme = useColorScheme();
     const isDark: boolean = colorScheme === "dark";
-    const backgroundColor: string = isDark ? "#181A1B" : "#fff";
     const barStyle: StatusBarStyle = isDark ? "light-content" : "dark-content";
 
     return (
