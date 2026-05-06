@@ -2,6 +2,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import { maxNameChars, roomCodeLength } from "constants/constants";
 import { useSocketInfo } from "context/SocketInfoProvider";
 import { emitJoinAs } from "context/SocketRequestors";
@@ -12,6 +13,7 @@ import { Role } from "types/types";
 
 export default function Join() {
     const { joinErrorMessage: errorMessage, setRoomCode } = useSocketInfo();
+    const isNarrow = useMediaQuery("(max-width: 767px)");
 
     const { id } = useParams();
 
@@ -52,7 +54,7 @@ export default function Join() {
 
     return (
         <div>
-            <div style={joinFormWrapper}>
+            <div style={{ ...joinFormWrapper, marginTop: isNarrow ? "29vh" : joinFormWrapper.marginTop }}>
                 <Box
                     autoComplete="off"
                     component="form"
