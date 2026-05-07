@@ -1,68 +1,68 @@
 {
-  "name": "exquisite-client-js",
-  "workspaces": [
-    "server"
-  ],
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@emotion/react": "^11.9.3",
-    "@emotion/styled": "^11.9.3",
-    "@mui/icons-material": "^5.8.4",
-    "@mui/material": "^5.8.4",
-    "cookie-parser": "^1.4.6",
-    "cors": "^2.8.5",
-    "pino": "^10.3.1",
-    "pino-pretty": "^13.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-responsive-carousel": "^3.2.23",
-    "react-router-dom": "^6.3.0",
-    "socket.io": "^4.5.1",
-    "socket.io-client": "4.5.1",
-    "typescript": "^5.8.0",
-    "use-clipboard-copy": "^0.2.0"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.29.0",
-    "@biomejs/biome": "^2.4.8",
-    "@testing-library/jest-dom": "^5.14.1",
-    "@testing-library/react": "^13.0.0",
-    "@types/babel__core": "^7",
-    "@types/node": "^22.0.0",
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
-    "@vitejs/plugin-react": "^6.0.1",
-    "jsdom": "^26.1.0",
-    "lefthook": "^2.1.4",
-    "vite": "^8.0.1",
-    "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^3.2.4"
-  },
-  "scripts": {
-    "start": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "lint": "biome check src/",
-    "lint:fix": "biome check --write src/",
-    "typecheck": "tsc --noEmit",
-    "postinstall": "lefthook install"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
+    "name": "exquisite-client-js",
+    "workspaces": [
+        "server"
     ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "engines": {
-    "node": ">=24.0.0"
-  },
-  "packageManager": "yarn@4.13.0"
+    "version": "0.1.0",
+    "private": true,
+    "dependencies": {
+        "@emotion/react": "^11.9.3",
+        "@emotion/styled": "^11.9.3",
+        "@mui/icons-material": "^5.8.4",
+        "@mui/material": "^5.8.4",
+        "cookie-parser": "^1.4.6",
+        "cors": "^2.8.5",
+        "pino": "^10.3.1",
+        "pino-pretty": "^13.0.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-responsive-carousel": "^3.2.23",
+        "react-router-dom": "^6.3.0",
+        "socket.io": "^4.5.1",
+        "socket.io-client": "4.5.1",
+        "typescript": "^5.8.0",
+        "use-clipboard-copy": "^0.2.0"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.29.0",
+        "@biomejs/biome": "^2.4.8",
+        "@testing-library/jest-dom": "^5.14.1",
+        "@testing-library/react": "^13.0.0",
+        "@types/babel__core": "^7",
+        "@types/node": "^22.0.0",
+        "@types/react": "^18.0.0",
+        "@types/react-dom": "^18.0.0",
+        "@vitejs/plugin-react": "^6.0.1",
+        "jsdom": "^26.1.0",
+        "lefthook": "^2.1.4",
+        "vite": "^8.0.1",
+        "vite-tsconfig-paths": "^6.1.1",
+        "vitest": "^3.2.4"
+    },
+    "scripts": {
+        "start": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "test": "vitest run",
+        "lint": "biome check src/",
+        "lint:fix": "biome check --write src/",
+        "typecheck": "tsc --noEmit",
+        "postinstall": "lefthook install || true"
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "engines": {
+        "node": ">=24.0.0"
+    },
+    "packageManager": "yarn@4.13.0"
 }
