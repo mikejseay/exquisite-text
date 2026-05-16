@@ -78,6 +78,9 @@ export const socketListeners = ({
         setLines((prevLines) =>
             updateAtIndex(prevLines, collaborationIndex, [...prevLines[collaborationIndex], content]),
         );
+        // a line just completed — clear the active-editor typing buffer so stale
+        // asterisks from the previous editor don't show until the next editor starts typing
+        setPoemInputSpectate("");
     };
 
     const receivePanelSpectator = (collaborationIndex: number, content: IPanel["content"]) => {

@@ -70,7 +70,7 @@ export const spacingSpan: React.CSSProperties = {
 };
 
 export const textSpacer: React.CSSProperties = {
-    color: "transparent",
+    color: "white",
     margin: "auto",
     textAlign: "center",
     whiteSpace: "pre",
