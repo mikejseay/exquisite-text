@@ -3,7 +3,7 @@ import type * as React from "react";
 export const joinFormWrapper: React.CSSProperties = {
     display: "flex",
     justifyContent: "center",
-    marginTop: "clamp(1em, 8vh, 6em)",
+    marginTop: "clamp(11rem, 20vh, 14em)",
 };
 
 export const uppercaseInput: React.CSSProperties = {
