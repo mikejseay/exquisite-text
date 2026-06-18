@@ -71,6 +71,10 @@ export const emitAddPoemBot = () => {
     socket.emit("ctsAddPoemBot");
 };
 
+export const emitAddDrawingBot = () => {
+    socket.emit("ctsAddDrawingBot");
+};
+
 export const emitRequestSettingsEnabled = () => {
     socket.emit("ctsRequestSettingsEnabled"); // initial populate
 };

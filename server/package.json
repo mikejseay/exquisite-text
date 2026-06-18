@@ -29,6 +29,8 @@
     "scripts": {
         "startwatch": "node --watch --env-file-if-exists=.env --import tsx -r tsconfig-paths/register start.ts",
         "start": "node --env-file-if-exists=.env --import tsx -r tsconfig-paths/register start.ts",
+        "validate:drawing": "node --env-file-if-exists=.env --import tsx -r tsconfig-paths/register scripts/validateDrawingBot.ts",
+        "selfplay:drawing": "node --env-file-if-exists=.env --import tsx -r tsconfig-paths/register scripts/selfPlayDrawing.ts",
         "test": "OPENAI_API_KEY=test-dummy node --import tsx --test --test-force-exit './__tests__/**/*.test.ts'",
         "lint": "npx biome check .",
         "lint:fix": "npx biome check --write .",

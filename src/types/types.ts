@@ -144,6 +144,7 @@ export interface ClientToServerEvents {
     ctsRequestSettingsEnabled: () => void;
     ctsStartGame: () => void;
     ctsAddPoemBot: () => void;
+    ctsAddDrawingBot: () => void;
     ctsRequestEditorActive: () => void;
     ctsSendLineParts: (firstPart: string, secondPart: string) => void;
     ctsSendLastLine: (lastLine: string) => void;
