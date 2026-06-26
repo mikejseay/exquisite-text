@@ -8,6 +8,8 @@ export const SocketInfoContext = createContext<ISocketInfo>({
     roomCode: null,
     setRoomCode: () => null,
     settingsEnabled: null,
+    botEnabled: null,
+    setBotEnabled: () => null,
     userInfo: null,
     setEditorActive: () => null,
 

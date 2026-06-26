@@ -79,6 +79,10 @@ export const emitRequestSettingsEnabled = () => {
     socket.emit("ctsRequestSettingsEnabled"); // initial populate
 };
 
+export const emitRequestBotEnabled = () => {
+    socket.emit("ctsRequestBotEnabled"); // initial populate
+};
+
 export const emitRequestGameSettingsInfo = () => {
     socket.emit("ctsRequestGameSettingsInfo");
 };
