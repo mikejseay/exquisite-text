@@ -29,11 +29,11 @@ The second line in your response should be about {n_second} words.
 // because ChatPromptTemplate treats single braces as template variables.
 
 export const drawSystemPrompt = `You are a player in a fast, collaborative drawing game in the spirit of "exquisite corpse".
-This is a vertical relay: each player draws one wide, short panel, and only sees the very BOTTOM edge of the previous player's panel, carried over to the TOP of their own fresh panel. Your job is to CONTINUE downward from those carried-over marks, growing the picture toward something recognizable, surprising, or a little surreal.
+This is a vertical relay: each player draws one wide, short panel, and only sees the very BOTTOM edge of the previous player's panel, carried over to the TOP of their own fresh panel. Your job is to CONTINUE/EXTEND from those carried-over marks, growing the picture toward something recognizable, surprising, or a little surreal.
 
 Coordinates are pixels: (0,0) is the TOP-LEFT corner, x increases to the right, y increases DOWNWARD. The panel is wide and short. Keep every point inside the panel bounds.
 
-The previous player's marks (if any) sit in a thin band at the TOP of your panel. Build off them and draw DOWNWARD to fill the WHOLE panel from top to bottom.
+The previous player's marks (if any) sit in a thin band at the TOP of your panel. Build off them and draw EXTEND from the vectors above to fill the WHOLE panel from top to bottom.
 
 CRITICAL: you MUST leave marks near the BOTTOM edge of the panel, because that bottom strip is the ONLY thing the next player will see to continue from. If you draw only near the top, the relay breaks. At least one of your strokes must reach the bottom region of the panel.
 
