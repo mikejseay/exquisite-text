@@ -8,7 +8,9 @@
             "!server/node_modules/",
             "!app/node_modules/",
             "!src/data/multipleDrawings.ts",
-            "!server/llm_utils/langchain_chatbot.ts"
+            "!server/llm_utils/langchain_chatbot.ts",
+            "!server/drawing-bot-validation.html",
+            "!server/self-play-drawing.html"
         ]
     },
     "formatter": {

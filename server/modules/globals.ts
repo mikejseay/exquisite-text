@@ -13,3 +13,6 @@ export const roomIDToHost: Map<string, Host> = new Map();
 export const botDeviceIDToBotSocket: Map<string, Socket<DefaultEventsMap, DefaultEventsMap>> = new Map();
 // possibly map both poem & bot ID to message history (history would be poem specific)
 export const botDeviceIDToMessageHistory: Record<string, InMemoryChatMessageHistory> = {};
+// drawing bot memory is scoped per-drawing (keyed by the Drawing's ID), so the
+// bot remembers its own marks within one drawing but starts fresh on the next
+export const drawingIDToMessageHistory: Record<string, InMemoryChatMessageHistory> = {};

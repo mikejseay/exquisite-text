@@ -1,14 +1,12 @@
 import Button from "@mui/material/Button";
 import { useSocketInfo } from "context/SocketInfoProvider";
-import { emitAddPoemBot } from "context/SocketRequestors";
+import { emitAddDrawingBot, emitAddPoemBot } from "context/SocketRequestors";
 import { textCentered } from "styles/common";
 import { Medium } from "types/types";
 import { logger } from "utilities/loggerUtils";
 
-const SECRET_NAME = "SANANBYEKIM";
-
 function UserTable() {
-    const { userInfo, settingsEnabled, medium } = useSocketInfo();
+    const { userInfo, settingsEnabled, botEnabled, medium } = useSocketInfo();
     logger.debug(`userInfo ${userInfo}`);
     if (!userInfo) {
         return null;
@@ -24,7 +22,11 @@ function UserTable() {
         return null;
     }
 
-    const showAddBot = medium === Medium.POETRY && editors.length > 0 && editors[0] === SECRET_NAME;
+    // The server tells us whether this client may add a bot (it checks the
+    // authorized name server-side), so the secret name is never shipped to the
+    // front-end. The add-bot handlers re-check authorization server-side too.
+    const showAddBot = Boolean(botEnabled) && (medium === Medium.POETRY || medium === Medium.DRAWING);
+    const addBot = medium === Medium.DRAWING ? emitAddDrawingBot : emitAddPoemBot;
 
     return (
         <div className={"userTable"} style={textCentered}>
@@ -49,7 +51,7 @@ function UserTable() {
                 {showAddBot && (
                     <Button
                         disabled={!settingsEnabled || editors.length >= 4}
-                        onClick={() => emitAddPoemBot()}
+                        onClick={() => addBot()}
                         variant="contained"
                         sx={{ mt: 1 }}
                     >

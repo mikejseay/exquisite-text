@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { setTimeout as sleep } from "node:timers/promises";
 import { Drawing, Poem } from "modules/collaboration";
 import type { DrawingEditor, PoemEditor } from "modules/editor";
-import { PoemBot } from "modules/editor";
+import { DrawingBot, PoemBot } from "modules/editor";
 import {
     botDeviceIDToBotSocket,
     deviceIDToRoomID,
@@ -307,6 +307,31 @@ export class DrawingRoom extends Room {
         }
 
         this.navigateMembersToGame();
+
+        // Bots have no client UI to trigger their first turn, so start them explicitly
+        for (const editor of this.editors.values()) {
+            if (editor instanceof DrawingBot && editor.hasWorkInQueue()) {
+                editor.possibleStartNewTurn();
+            }
+        }
+    }
+
+    addDrawingBot() {
+        // mirror PoemRoom.addPoemBot: spoof a client socket that joins as a bot
+        logger.debug(`room trying to add DrawingBot with server path ${serverPath}`);
+        const botDeviceID = randomUUID();
+        const botSocket = ioClient(serverPath);
+        botDeviceIDToBotSocket.set(botDeviceID, botSocket);
+        botSocket.emit("ctsJoinAsBot", this.roomID, "BOT", botDeviceID);
+    }
+
+    hasDrawingBot() {
+        for (const value of this.editors.values()) {
+            if (value instanceof DrawingBot) {
+                return true;
+            }
+        }
+        return false;
     }
 
     storeDrawing(drawingObj: Drawing) {

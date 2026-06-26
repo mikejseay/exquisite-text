@@ -115,6 +115,7 @@ export interface ServerToClientEvents {
     stcUserTableInfo: (userTableInfo: IUserTableInfo) => void;
     stcGameSettingsInfo: (gameSettings: IGameSettingsInfo) => void;
     stcGameSettingsEnabled: (enabled: boolean) => void;
+    stcBotEnabled: (enabled: boolean) => void;
     stcNavigate: (targetRoute: string) => void;
     stcEditorActive: (isActive: boolean) => void;
     stcLastContribution: (isLast: boolean) => void;
@@ -142,8 +143,10 @@ export interface ClientToServerEvents {
     ctsRequestLastContributionStatus: () => void;
     ctsAlterGameSettings: (gameSettings: Partial<IGameSettingsInfo>) => void;
     ctsRequestSettingsEnabled: () => void;
+    ctsRequestBotEnabled: () => void;
     ctsStartGame: () => void;
     ctsAddPoemBot: () => void;
+    ctsAddDrawingBot: () => void;
     ctsRequestEditorActive: () => void;
     ctsSendLineParts: (firstPart: string, secondPart: string) => void;
     ctsSendLastLine: (lastLine: string) => void;
@@ -173,6 +176,8 @@ export interface ISocketInfoListeners {
     setRoomCode: (value: string | ((prevVar: string) => string)) => void;
     // React.useState<boolean>(false);
     setSettingsEnabled: (value: boolean | ((prevVar: boolean) => boolean)) => void;
+    // React.useState<boolean>(false);
+    setBotEnabled: (value: boolean | ((prevVar: boolean) => boolean)) => void;
     // React.useState<LineLength>(defaultGameSettings.lineLength);
     setLineLength: (value: LineLength | ((prevVar: LineLength) => LineLength)) => void;
     // React.useState<number>(defaultGameSettings.nRounds);
@@ -215,6 +220,8 @@ export interface ISocketInfo {
     roomCode: string | null;
     setRoomCode: (value: string | ((prevVar: string) => string)) => void;
     settingsEnabled: boolean | null;
+    botEnabled: boolean | null;
+    setBotEnabled: (value: boolean | ((prevVar: boolean) => boolean)) => void;
     userInfo: IUserTableInfo | null;
     setEditorActive: (value: boolean | ((prevVar: boolean) => boolean)) => void;
 
