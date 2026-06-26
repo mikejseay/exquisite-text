@@ -21,6 +21,7 @@ export const socketListeners = ({
     setJoinErrorMessage,
     setRoomCode,
     setSettingsEnabled,
+    setBotEnabled,
     setLineLength,
     setNRounds,
     setNPoems,
@@ -68,6 +69,10 @@ export const socketListeners = ({
 
     const receiveGameSettingsEnabled = (enabled: boolean) => {
         setSettingsEnabled(enabled);
+    };
+
+    const receiveBotEnabled = (enabled: boolean) => {
+        setBotEnabled(enabled);
     };
 
     // the React state lines is of type Array<Array<ILine["content"]>>
@@ -142,6 +147,7 @@ export const socketListeners = ({
     socket.on("stcRoomCode", receiveRoomCode);
     socket.on("stcGameSettingsInfo", receiveGameSettingsInfo);
     socket.on("stcGameSettingsEnabled", receiveGameSettingsEnabled);
+    socket.on("stcBotEnabled", receiveBotEnabled);
     socket.on("stcLineSpectator", receiveLineSpectator);
     socket.on("stcPanelSpectator", receivePanelSpectator);
     socket.on("stcPanelEditSpectator", receivePanelEditSpectator);
@@ -162,6 +168,7 @@ export const socketListeners = ({
         socket.off("stcRoomCode", receiveRoomCode);
         socket.off("stcGameSettingsInfo", receiveGameSettingsInfo);
         socket.off("stcGameSettingsEnabled", receiveGameSettingsEnabled);
+        socket.off("stcBotEnabled", receiveBotEnabled);
         socket.off("stcLineSpectator", receiveLineSpectator);
         socket.off("stcPanelSpectator", receivePanelSpectator);
         socket.off("stcPanelEditSpectator", receivePanelEditSpectator);

@@ -98,6 +98,7 @@ class Editor extends Member {
     setReceive() {
         super.setReceive();
         this.listen("ctsRequestEditorActive", () => this.sendActivity());
+        this.listen("ctsRequestBotEnabled", () => this.sendBotEnabled());
         this.listen("ctsStartGame", () => this.broadcastStartGame());
         this.listen("ctsAlterGameSettings", (value) => this.alterGameSettings(value));
     }
@@ -105,6 +106,19 @@ class Editor extends Member {
     sendActivity() {
         logger.debug(`${this.name} requestEditorActivity`);
         this.emitToSelf("stcEditorActive", this.hasWorkInQueue());
+    }
+
+    // Whether THIS editor is allowed to add a bot. The authorized name lives
+    // only in the server env, so the client gates its "Add Bot" button on this
+    // flag and never learns the secret name. The add-bot handlers re-check the
+    // same condition, so this is presentation-only, not the security boundary.
+    isBotAuthorized() {
+        return Boolean(process.env.AUTHORIZED_BOT_USER_NAME) && this.name === process.env.AUTHORIZED_BOT_USER_NAME;
+    }
+
+    sendBotEnabled() {
+        logger.debug(`${this.name} requestBotEnabled`);
+        this.emitToSelf("stcBotEnabled", this.isBotAuthorized());
     }
 
     hasWorkInQueue() {
@@ -158,7 +172,7 @@ export class PoemEditor extends Editor {
 
     requestAddPoemBotToRoom() {
         logger.debug("ctsAddPoemBot");
-        if (this.name !== process.env.AUTHORIZED_BOT_USER_NAME) {
+        if (!this.isBotAuthorized()) {
             logger.warn(`Unauthorized attempt to add poem bot to the room from user ${this.name}`);
             return;
         }
@@ -398,7 +412,7 @@ export class DrawingEditor extends Editor {
 
     requestAddDrawingBotToRoom() {
         logger.debug("ctsAddDrawingBot");
-        if (this.name !== process.env.AUTHORIZED_BOT_USER_NAME) {
+        if (!this.isBotAuthorized()) {
             logger.warn(`Unauthorized attempt to add drawing bot to the room from user ${this.name}`);
             return;
         }
