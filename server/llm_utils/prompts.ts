@@ -24,32 +24,120 @@ The second line in your response should be about {n_second} words.
 
 // ─── Drawing bot ──────────────────────────────────────────────
 // Vector continuation prompts for the exquisite-corpse drawing game.
-// The model receives the strokes drawn so far and returns new strokes
-// that build on them. Literal JSON braces below are escaped as {{ }}
-// because ChatPromptTemplate treats single braces as template variables.
+// The model plans one subject for its panel and returns a small program of
+// shapes (ellipse / line / polyline / curve) that the server expands into
+// strokes. Literal JSON braces are escaped as {{ }} because ChatPromptTemplate
+// treats single braces as template variables.
 
-export const drawSystemPrompt = `You are a player in a fast, collaborative drawing game in the spirit of "exquisite corpse".
-This is a vertical relay: each player draws one wide, short panel, and only sees the very BOTTOM edge of the previous player's panel, carried over to the TOP of their own fresh panel. Your job is to CONTINUE/EXTEND from those carried-over marks, growing the picture toward something recognizable, surprising, or a little surreal.
+export const drawSystemPrompt = `You are an artist playing "exquisite corpse", a collaborative drawing game.
+One tall picture is drawn in {n_panels} horizontal panels by different players, top to bottom. Each player sees only a thin strip: the bottom edge of the previous panel, carried over to the top of their own blank panel. They continue those lines, and pass their own bottom edge on. Nobody sees the whole picture until the end, so it becomes a surreal creature: a fish head on a ballerina body on tractor wheels. Play into that: be bold, funny, specific.
 
-Coordinates are pixels: (0,0) is the TOP-LEFT corner, x increases to the right, y increases DOWNWARD. The panel is wide and short. Keep every point inside the panel bounds.
+Your panel is {canvas} pixels. (0,0) is the TOP-LEFT corner, x grows to the right, y grows DOWNWARD.
 
-The previous player's marks (if any) sit in a thin band at the TOP of your panel. Build off them and draw EXTEND from the vectors above to fill the WHOLE panel from top to bottom.
+You draw with these shapes (all numbers are pixels, JSON only):
+- {{"type":"ellipse","cx":333,"cy":150,"rx":80,"ry":110}} closed oval; rx is the horizontal radius, ry the vertical one. Optional "rotation" in degrees
+- {{"type":"circle","cx":333,"cy":150,"r":40}} a circle
+- {{"type":"line","x1":0,"y1":0,"x2":100,"y2":100}} a straight line
+- {{"type":"polyline","points":[[x,y],[x,y],...]}} straight segments through the points: boxes, zigzags, stars, teeth
+- {{"type":"curve","points":[[x,y],[x,y],[x,y],...]}} a smooth curve through 3 or more points: outlines, smiles, hair, waves, tails, arms
 
-CRITICAL: you MUST leave marks near the BOTTOM edge of the panel, because that bottom strip is the ONLY thing the next player will see to continue from. If you draw only near the top, the relay breaks. At least one of your strokes must reach the bottom region of the panel.
+How to draw well:
+1. Pick ONE clear subject that fits this panel's position in the picture (given below) and commit to it. Say what it is in "subject".
+2. Draw it with 6 to 14 shapes: big outline shapes first, then a few characteristic details (eyes, fins, buttons, spokes, stripes). Big and readable beats fussy. Shapes should not overlap unless they are meant to (an eye inside a head).
+3. Use the panel: your subject should span most of its height and a good part of its width, centred around the carried-over lines.
+4. Continue what you were given. The carried-over lines end at listed EXIT points on the strip's bottom edge. Your outline must start exactly at those exits and grow downward from them (two exits 120 px apart are the two sides of a neck, a trunk, a stem: make them the sides of the body you draw). Never redraw the carried-over strokes themselves.
+5. Hand the picture on: unless this is the bottom panel, at least two of your lines must run all the way down to the bottom edge of the panel (y = {panel_bottom}) so the next player has something to continue, and they should be the natural sides of whatever comes next (a waist, legs, a stalk).
+6. Keep every coordinate inside the panel.
 
-A stroke is an ordered list of points connected by straight line segments. To draw a curve, use several short segments. To lift the pen, start a new stroke.
+Example answer for a middle panel whose exits were (300, 60) heading down and (360, 60) heading down:
+{{"subject": "a round teapot body with spout and handle", "shapes": [
+ {{"type":"curve","points":[[300,60],[190,110],[170,220],[210,300]]}},
+ {{"type":"curve","points":[[360,60],[470,110],[490,220],[450,300]]}},
+ {{"type":"curve","points":[[175,150],[120,120],[90,70]]}},
+ {{"type":"curve","points":[[178,178],[130,150],[104,96]]}},
+ {{"type":"line","x1":90,"y1":70,"x2":104,"y2":96}},
+ {{"type":"curve","points":[[490,150],[560,140],[570,200],[500,220]]}},
+ {{"type":"circle","cx":330,"cy":180,"r":25}},
+ {{"type":"curve","points":[[200,245],[260,235],[330,250],[400,235],[460,245]]}}
+]}}
+Notice how the two big curves start exactly on the exits, swell out to use the panel, and run off the bottom edge as the two sides of whatever the next player draws.`;
 
-Style: naive, gestural, charming. A few confident strokes, like a quick game sketch, not a polished illustration. Do NOT restate or redraw the carried-over marks; return ONLY the new strokes you are adding, placed so they clearly connect to what is already there.`;
+export const drawUserPrompt = `Panel {panel_number} of {n_panels}: the {position} of the picture.
+{position_advice}
+Ideas, if you want one (or invent your own): {ideas}.
 
-export const drawUserPrompt = `The panel is {canvas} pixels.
-Carried over from the previous player: {n_strokes} stroke(s) sitting in {hint_band}, occupying roughly {bbox}.
+{hint_section}
 
-Those carried-over strokes (each is a list of [x, y] points, in order):
+Respond with ONLY a JSON object of the form
+{{"subject": "<what you are drawing, a few words>", "shapes": [ ... 6 to 14 shape objects ... ]}}`;
+
+export const drawHintEmpty = `The panel is blank: you start the picture.`;
+
+export const drawHintEmptyLater = `The previous player left nothing in the strip at the top, so you have no exits to continue from: draw your part of the picture anyway, centred in the panel.`;
+
+// A few of these are offered at random each turn so consecutive games do not
+// all start with the same head
+export const drawIdeas = {
+    top: [
+        "a pirate's head with an eyepatch",
+        "a lighthouse top with its lamp",
+        "a cat wearing a crown",
+        "an astronaut helmet",
+        "a fish head with big lips",
+        "a robot head with antennae",
+        "a wizard hat and beard",
+        "a sunflower",
+        "an owl with huge eyes",
+        "a knight's helmet with a plume",
+        "a teapot lid and steam",
+        "a hot air balloon",
+        "a vampire with a widow's peak",
+        "a snail's shell and eyestalks",
+        "a birthday cake with candles",
+        "a chef's hat over a moustache",
+    ],
+    middle: [
+        "a torso in a spacesuit",
+        "a ballerina's tutu",
+        "a car body with doors",
+        "a barrel with hoops",
+        "a superhero chest with a logo",
+        "an octopus body with tentacle roots",
+        "a tuxedo with a bow tie",
+        "a tree trunk with a knot hole",
+        "a wrestler's belt and muscles",
+        "an accordion",
+        "a guitar body",
+        "a teapot with spout and handle",
+        "a hoodie with a pocket",
+        "a beetle's shell with spots",
+        "a cactus with arms",
+        "a wooden crate",
+    ],
+    bottom: [
+        "ballet shoes en pointe",
+        "tractor wheels",
+        "flippers on a surfboard",
+        "tree roots gripping the ground",
+        "a mermaid tail",
+        "roller skates",
+        "octopus tentacles",
+        "clown shoes",
+        "a rocket's fins and flame",
+        "elephant feet",
+        "a skateboard",
+        "high heels on a red carpet",
+        "a snake's coiled tail",
+        "chicken legs",
+        "a pedestal with a plaque",
+        "a puddle with ripples",
+    ],
+};
+
+export const drawHintPresent = `Carried over from the previous player, in the top {band_bottom} px of your panel (y from 0 to {band_bottom}):
+- {n_strokes} stroke(s), spanning {bbox}
+- EXITS on the strip's bottom edge, where you must continue: {exits}
+- loose ends inside the strip (the lowest point of each stroke that stops short of the bottom edge): {loose_ends}
+- the raw strokes, as [x, y] points in drawing order:
 {input}
-
-Respond with ONLY a JSON object with two keys:
-- "description": one short phrase naming what you see and what you are adding
-- "strokes": an array of NEW strokes; each stroke is an array of [x, y] number pairs
-Add at most {max_strokes} new stroke(s), continuing downward from the carried-over marks.
-Fill the vertical space: your marks should span from the top band down toward y={panel_bottom}, and at least one stroke MUST end with a point whose y is {bottom_zone} or greater.
-Example: {{"description": "a cat's body under the head", "strokes": [[[120,60],[180,160],[200,265]]]}}`;
+That strip already holds their marks: put nothing new in it except the lines that continue the exits.`;

@@ -112,6 +112,7 @@ export interface ServerToClientEvents {
     stcDrawingPanels: (panels: IPanel[]) => void;
     stcRoomCode: (roomCode: string) => void;
     stcJoinError: (errorMessage: string) => void;
+    stcNotice: (message: string) => void;
     stcUserTableInfo: (userTableInfo: IUserTableInfo) => void;
     stcGameSettingsInfo: (gameSettings: IGameSettingsInfo) => void;
     stcGameSettingsEnabled: (enabled: boolean) => void;
@@ -173,6 +174,8 @@ export interface ISocketInfoListeners {
     // React.useState<string>("");
     setJoinErrorMessage: (value: string | ((prevVar: string) => string)) => void;
     // React.useState<string>("");
+    setNotice: (value: string | ((prevVar: string) => string)) => void;
+    // React.useState<string>("");
     setRoomCode: (value: string | ((prevVar: string) => string)) => void;
     // React.useState<boolean>(false);
     setSettingsEnabled: (value: boolean | ((prevVar: boolean) => boolean)) => void;
@@ -217,6 +220,7 @@ export interface ISocketInfo {
     // agnostic
     editorActive: boolean | null;
     joinErrorMessage: string | null;
+    notice: string | null;
     roomCode: string | null;
     setRoomCode: (value: string | ((prevVar: string) => string)) => void;
     settingsEnabled: boolean | null;

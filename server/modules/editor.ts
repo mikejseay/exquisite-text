@@ -1,7 +1,7 @@
 import { delay, isBotUsageAuthorized } from "llm_utils/llm_funcs";
 import type { Drawing, Poem } from "modules/collaboration";
 import { completePanel, extractHintEnd, OVERLAP, PANEL_HEIGHT, PANEL_WIDTH } from "modules/drawing_bot";
-import { roomIDToRoom } from "modules/globals";
+import { botDeviceIDToBotSocket, deviceIDToSocketID, roomIDToRoom, socketIDToDeviceID } from "modules/globals";
 import Member from "modules/member";
 import { guaranteeHalfLineCompletion } from "modules/poem_bot";
 import type { DrawingRoom, PoemRoom } from "modules/room";
@@ -85,6 +85,14 @@ class Editor extends Member {
                 room.selfDestruct();
             }
         } else if (room.gameState === GameState.LOBBY) {
+            // Bots cannot start a game, so a lobby holding only bots would sit
+            // there forever (the empty-room sweep never sees it as empty)
+            const remaining = Array.from(room.editors.values());
+            if (remaining.length > 0 && remaining.every((editor) => editor.isBot())) {
+                // each leave re-enters here, so skip bots an earlier iteration already removed
+                for (const bot of remaining) if (room.editors.has(bot.deviceID)) bot.leaveRoom();
+                return;
+            }
             // if we are still in the lobby then tell first editor to check whether they are VIP
             const firstEditor: Editor | undefined = room.editors.values().next().value;
             if (!isNil(firstEditor)) {
@@ -101,6 +109,10 @@ class Editor extends Member {
         this.listen("ctsRequestBotEnabled", () => this.sendBotEnabled());
         this.listen("ctsStartGame", () => this.broadcastStartGame());
         this.listen("ctsAlterGameSettings", (value) => this.alterGameSettings(value));
+    }
+
+    isBot() {
+        return false;
     }
 
     sendActivity() {
@@ -356,7 +368,22 @@ export class PoemEditor extends Editor {
 export class PoemBot extends PoemEditor {
     // override parent properties & methods as needed
 
+    isBot() {
+        return true;
+    }
+
+    // Callers fire this without awaiting it, so a rejection here would crash
+    // the server; on failure the bot bows out and the poem moves on
     async possibleStartNewTurn() {
+        try {
+            await this.takeTurn();
+        } catch (err) {
+            logger.warn(`PoemBot failed to complete a line, leaving the room: ${(err as Error).message}`);
+            this.leaveRoom();
+        }
+    }
+
+    async takeTurn() {
         if (this.hasWorkInQueue()) {
             this.isCurrentlyEditing = true;
 
@@ -424,8 +451,12 @@ export class DrawingEditor extends Editor {
 
     handlePanel(panelContent: IPanel["content"]) {
         logger.debug(`handlePanel activated with panelContent ${panelContent}`);
-        // tmp to maintain testing functionality
         const room = getRoom(this.roomID) as DrawingRoom;
+        if (!room) {
+            logger.debug("room not found");
+            return;
+        }
+        // tmp to maintain testing functionality
         room.finishedCanvas = panelContent;
         const drawingToPass = this.contributionQueue.shift() as Drawing;
         if (isNil(drawingToPass)) {
@@ -434,10 +465,6 @@ export class DrawingEditor extends Editor {
 
         drawingToPass.submitPanel(this.deviceID, panelContent);
 
-        if (!room) {
-            logger.debug("room not found");
-            return;
-        }
         const nextEditor = room.editors.get(this.targetEditorID);
         if (!nextEditor) {
             logger.debug("nextEditor not found");
@@ -474,10 +501,10 @@ export class DrawingEditor extends Editor {
             const drawing = this.contributionQueue[0] as Drawing;
             if (!drawing) throw new Error("No drawings in contribution queue...");
 
-            const latestPanel = Array.from(drawing?.panels).pop();
-            if (!latestPanel) throw new Error("All your pylons I mean panels are belong to us :(");
-
-            this.emitToSelf("stcStrokeHistory", latestPanel.content);
+            // A drawing nobody has touched yet (handed out at game start) has no
+            // panel to carry over, so the editor starts from a blank canvas
+            const latestPanel = Array.from(drawing.panels).pop();
+            this.emitToSelf("stcStrokeHistory", latestPanel?.content ?? []);
             logger.debug(`we think the drawing has ${drawing.panels.size} submissions so far`);
 
             if (drawing.panels.size === drawing.nContributions - 1) {
@@ -577,12 +604,28 @@ export class DrawingEditor extends Editor {
 export class DrawingBot extends DrawingEditor {
     // override parent properties & methods as needed
 
+    isBot() {
+        return true;
+    }
+
+    // Callers fire this without awaiting it, so nothing may escape: an
+    // unhandled rejection would take the whole server down
     async possibleStartNewTurn() {
+        try {
+            await this.takeTurn();
+        } catch (err) {
+            logger.error(`DrawingBot turn crashed, leaving the room: ${(err as Error).stack ?? err}`);
+            this.leaveRoom();
+        }
+    }
+
+    async takeTurn() {
         if (!this.hasWorkInQueue()) {
             this.isCurrentlyEditing = false;
             return;
         }
         this.isCurrentlyEditing = true;
+        this.lastActivity = Date.now(); // thinking counts as activity, so the AFK sweep leaves the bot alone
 
         const room = getRoom(this.roomID) as DrawingRoom;
         if (!room) {
@@ -590,34 +633,63 @@ export class DrawingBot extends DrawingEditor {
             return;
         }
         if (!isBotUsageAuthorized(room as unknown as PoemRoom)) {
-            this.isCurrentlyEditing = false;
+            // Nobody may use the bot any more: hand the queue on rather than
+            // sitting on the drawing forever
+            this.leaveRoom();
             return;
         }
 
         const drawing = this.contributionQueue[0] as Drawing;
         const latestPanel = Array.from(drawing.panels).pop();
         // Show the bot only the "end" of the previous contribution, exactly
-        // like a human: the bottom strip, translated to the top of its panel.
+        // like a human: the bottom strip, translated to the top of its panel
         const hint = latestPanel ? extractHintEnd(latestPanel.content) : [];
 
         try {
             const { strokes, description } = await completePanel(hint, {
-                sessionId: drawing.ID,
                 canvasWidth: PANEL_WIDTH,
                 canvasHeight: PANEL_HEIGHT,
                 overlap: OVERLAP,
+                panelIndex: drawing.panels.size,
+                nPanels: drawing.nContributions,
             });
-            logger.debug(`DrawingBot added strokes: ${description}`);
-            // Submit ONLY the bot's new strokes, never the hint — same contract
-            // as a human editor's passTurn (emits localStrokeHistory only).
+            if (!room.editors.has(this.deviceID)) {
+                // Booted (AFK sweep, room torn down) while thinking: the drawing was handed on already
+                logger.warn("DrawingBot finished a panel after leaving the room, discarding it");
+                return;
+            }
+            logger.info(
+                `DrawingBot drew "${description}" (${strokes.length} strokes) on panel ${drawing.panels.size + 1}`,
+            );
+            // Let spectators watch the bot draw, a stroke at a time, like a human's live edits
+            for (let i = 1; i <= strokes.length; i++) {
+                drawing.sendPanelEditToSpectators(strokes.slice(0, i));
+                await delay(Math.min(150, 2000 / strokes.length));
+            }
+            // Submit ONLY the bot's new strokes, never the hint: same contract
+            // as a human editor's passTurn (emits localStrokeHistory only)
             if (this.currentlyOnLastContribution()) {
                 this.handleLastPanel(strokes);
             } else {
                 this.handlePanel(strokes);
             }
         } catch (err) {
-            logger.warn(`DrawingBot failed to complete panel: ${(err as Error).message}`);
-            this.isCurrentlyEditing = false;
+            // Every attempt failed (no credits, network down, model refused).
+            // Leaving hands the queue to the next editor so the game goes on
+            logger.warn(`DrawingBot failed to complete panel, leaving the room: ${(err as Error).message}`);
+            this.leaveRoom();
         }
+    }
+
+    leaveRoom() {
+        if (getRoom(this.roomID)?.gameState === GameState.GAME) {
+            this.io.in(this.roomID).emit("stcNotice", `${this.name} could not take its turn and left the game`);
+        }
+        super.leaveRoom();
+        // A bot has no browser to reconnect from, so drop its socket and maps outright
+        botDeviceIDToBotSocket.get(this.deviceID)?.disconnect();
+        botDeviceIDToBotSocket.delete(this.deviceID);
+        delete socketIDToDeviceID[this.socket.id];
+        delete deviceIDToSocketID[this.deviceID];
     }
 }

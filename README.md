@@ -80,6 +80,19 @@ If any check fails, the commit is blocked. To skip hooks in an emergency, use `g
 
 For linting in VS Code, install the Biome extension.
 
+### AI players (bots)
+
+A room's host can add a bot from the lobby when their name matches `AUTHORIZED_BOT_USER_NAME` in `server/.env` and `OPENAI_API_KEY` is set. The poem bot completes lines; the drawing bot plays exquisite corpse for real: it sees only the strip carried over from the previous panel, picks a subject for its position in the picture (top, middle or bottom), answers with vector shapes that the server expands into strokes, connects them to the exits of the carried-over lines, and always leaves lines at its own bottom edge for the next player. If the model is unavailable the bot leaves the game and the drawing returns to the next player, with a notice in the room.
+
+Optional server env: `DRAWING_BOT_MODEL` (default `gpt-4.1`) and `DRAWING_BOT_FAKE=1`, which swaps in a canned bot so the whole flow runs without an API key. From `server/`:
+
+```sh
+yarn validate:drawing              # the bot continues a set of hand-off strips, writes drawing-bot-validation.html
+GAMES=3 yarn selfplay:drawing      # the bot plays whole games against itself, writes self-play-drawing.html
+```
+
+Both scripts assert the relay invariants (only the strip is shown, nothing is retraced, strokes stay in bounds, the bottom edge is handed on, exits are continued) and exit non-zero on a failure.
+
 ### PostgreSQL database functionality
 
 Install [PostgreSQL](https://www.postgresql.org/download/) according to their instructions for your operating system. If you're using a Linux-like OS and have Homebrew, you can install PostgreSQL with `brew install postgresql`, with Linux: `sudo apt install postgresql`. Then start its service with Linux: `sudo systemctl start postgresqlservice` | macOS: `brew services start postgresql`.

@@ -1,122 +1,150 @@
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { completePanel } from "modules/drawing_bot";
+import { completePanel, extractHintEnd, PANEL_HEIGHT, PANEL_WIDTH } from "modules/drawing_bot";
+import { findAnchors } from "modules/drawing_geometry";
+import { BAND_BOTTOM, checkContribution, strokesToSvg } from "scripts/drawingChecks";
 import type { Point } from "shared/types/types";
 
-// Validation harness for the vector drawing bot.
-//
-// The open question: can a text LLM collaborate on a drawing from raw
-// coordinates alone, without ever rasterizing the canvas? This script
-// feeds the model a few recognizable partial drawings, asks it to
-// continue each, and renders the result to an HTML file so a human can
-// judge whether the continuation actually relates to the input.
+// Validation harness for the drawing bot: one panel at a time, in the real
+// panel geometry, against the kinds of strips a human actually hands over.
+// Each scenario is a previous panel; the bot sees only its bottom band (as a
+// player would) and must continue it. The report renders the strip, the
+// exits we told the model about, and what it drew, so a human can judge
+// whether the continuation really collaborates.
 //
 // Run from the server directory:
-//   node --env-file-if-exists=.env --import tsx -r tsconfig-paths/register scripts/validateDrawingBot.ts
-// (or: yarn validate:drawing) then open the printed HTML path in a browser.
+//   yarn validate:drawing                      (live model)
+//   DRAWING_BOT_FAKE=1 yarn validate:drawing   (canned bot, checks the harness itself)
+// then open the printed HTML path in a browser.
 
-const CANVAS = 500;
-const HINT_COLOR = "#999999";
 const AI_COLOR = "#1d4ed8";
+const HINT_COLOR = "#7F7F7F";
 
-function circle(cx: number, cy: number, r: number, n = 24): Point[] {
-    return Array.from({ length: n + 1 }, (_, i) => {
-        const a = (i / n) * 2 * Math.PI;
-        return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a), lineWidth: 3, color: HINT_COLOR };
-    });
-}
+const mk = (x: number, y: number, extra: Partial<Point> = {}): Point => ({
+    x,
+    y,
+    lineWidth: 3,
+    color: HINT_COLOR,
+    ...extra,
+});
+const line = (...xy: Array<[number, number]>): Point[] => xy.map(([x, y]) => mk(x, y));
 
-function polyline(coords: Array<[number, number]>): Point[] {
-    return coords.map(([x, y]) => ({ x, y, lineWidth: 3, color: HINT_COLOR }));
-}
+type Scenario = { name: string; expectation: string; prev: Point[][]; panelIndex: number };
 
-const scenarios: Array<{ name: string; expectation: string; hint: Point[][] }> = [
+const scenarios: Scenario[] = [
     {
-        name: "A lone circle (a head?)",
-        expectation: "should add a face, body, hat, or limbs",
-        hint: [circle(250, 150, 60)],
+        name: "Blank top panel",
+        expectation: "the top of something, with lines running off the bottom",
+        prev: [],
+        panelIndex: 0,
     },
     {
-        name: "A house with no roof",
-        expectation: "should add a roof, door, or windows",
-        hint: [
-            polyline([
-                [180, 440],
-                [180, 300],
-                [320, 300],
-                [320, 440],
-                [180, 440],
-            ]),
-        ],
+        name: "Two neck lines, 60 px apart",
+        expectation: "shoulders or a body growing out of the neck, two lines leaving the bottom",
+        prev: [line([305, 180], [298, 240], [300, 300]), line([361, 180], [368, 240], [360, 300])],
+        panelIndex: 1,
     },
     {
-        name: "A single horizon line",
-        expectation: "open-ended: sun, tree, figure — anything sitting on the horizon",
-        hint: [
-            polyline([
-                [40, 300],
-                [140, 280],
-                [250, 310],
-                [360, 285],
-                [460, 305],
-            ]),
+        name: "A wide body bottom with a belt",
+        expectation: "hips and legs, or wheels, starting at the two far-apart sides",
+        prev: [line([190, 100], [185, 300]), line([480, 100], [485, 300]), line([185, 270], [485, 270])],
+        panelIndex: 1,
+    },
+    {
+        name: "A head whose chin dips into the strip, no neck",
+        expectation: "a neck or body hanging from the chin (the only loose end), not from the panel centre",
+        prev: [
+            Array.from({ length: 41 }, (_, i) => {
+                const a = -Math.PI / 2 + (i / 40) * 2 * Math.PI;
+                return mk(280 + 70 * Math.cos(a), 200 + 70 * Math.sin(a));
+            }),
         ],
+        panelIndex: 1,
+    },
+    {
+        name: "A single stem in the middle",
+        expectation: "one thing balanced on a stalk: a flower pot, a lollipop, a unicycle",
+        prev: [line([333, 120], [333, 300])],
+        panelIndex: 1,
+    },
+    {
+        name: "A diagonal exiting down-right",
+        expectation: "something that continues the slant: a tail, a slide, a leaning trunk",
+        prev: [line([200, 150], [300, 260], [340, 300])],
+        panelIndex: 1,
+    },
+    {
+        name: "A scribble in the strip",
+        expectation: "the bot copes with a messy hand-off and still continues from the exits",
+        prev: [
+            Array.from({ length: 60 }, (_, i) => mk(250 + i * 3, 262 + 18 * Math.sin(i / 2))),
+            line([300, 230], [280, 300]),
+            line([400, 230], [420, 300]),
+        ],
+        panelIndex: 1,
+    },
+    {
+        name: "Nothing in the strip (previous player stopped short)",
+        expectation: "a middle panel with no exits: draw something anyway and leave exits",
+        prev: [line([300, 50], [350, 200])],
+        panelIndex: 1,
+    },
+    {
+        name: "Bottom panel: two legs entering",
+        expectation: "feet, wheels or roots and some ground, nothing needs to reach the bottom",
+        prev: [line([250, 100], [240, 300]), line([420, 100], [430, 300])],
+        panelIndex: 2,
     },
 ];
 
-function strokesToSvg(strokes: Point[][]): string {
-    return strokes
-        .map((stroke) => {
-            const pts = stroke.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
-            const color = stroke[0]?.color ?? "#000";
-            const width = stroke[0]?.lineWidth ?? 3;
-            return `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" />`;
-        })
-        .join("\n      ");
-}
-
-function svgBlock(title: string, strokes: Point[][]): string {
-    return `<figure>
-    <figcaption>${title}</figcaption>
-    <svg viewBox="0 0 ${CANVAS} ${CANVAS}" width="320" height="320" style="background:#fff;border:1px solid #ddd">
-      ${strokesToSvg(strokes)}
-    </svg>
-  </figure>`;
+function panelSvg(hint: Point[][], strokes: Point[][]): string {
+    const exits = findAnchors(hint, BAND_BOTTOM)
+        .map(
+            (a) =>
+                `<circle cx="${a.x.toFixed(1)}" cy="${a.y.toFixed(1)}" r="4" fill="${a.kind === "exit" ? "#b91c1c" : "#d97706"}" />`,
+        )
+        .join("");
+    return `<svg viewBox="0 0 ${PANEL_WIDTH} ${PANEL_HEIGHT}" width="${PANEL_WIDTH}" height="${PANEL_HEIGHT}" style="background:#fff;border:1px solid #ccc">
+    <rect x="0" y="0" width="${PANEL_WIDTH}" height="${BAND_BOTTOM}" fill="#eef" />
+    ${strokesToSvg(hint)}
+    ${exits}
+    ${strokesToSvg(strokes, 0, AI_COLOR)}
+  </svg>`;
 }
 
 async function main() {
-    if (!process.env.OPENAI_API_KEY) {
-        console.error(
-            "OPENAI_API_KEY is not set. Ensure server/.env contains it (the run command loads .env), then re-run.",
-        );
+    if (!process.env.OPENAI_API_KEY && process.env.DRAWING_BOT_FAKE !== "1") {
+        console.error("OPENAI_API_KEY is not set. Ensure server/.env contains it, then re-run.");
         process.exit(1);
     }
 
     const sections: string[] = [];
+    let allPass = true;
     for (const scenario of scenarios) {
         console.log(`\n▶ ${scenario.name}`);
         console.log(`  expectation: ${scenario.expectation}`);
+        const hint = extractHintEnd(scenario.prev);
+        const isLast = scenario.panelIndex === 2;
         try {
-            const { strokes, description } = await completePanel(scenario.hint, {
-                canvasWidth: CANVAS,
-                canvasHeight: CANVAS,
-                maxStrokes: 4,
+            const { strokes, description } = await completePanel(hint, {
+                panelIndex: scenario.panelIndex,
+                nPanels: 3,
                 color: AI_COLOR,
             });
+            const checks = checkContribution(strokes, hint, isLast);
+            allPass = allPass && checks.every((c) => c.pass);
             console.log(`  model said: "${description}"`);
             console.log(`  added ${strokes.length} stroke(s), ${strokes.flat().length} point(s)`);
-
-            const overlay = [...scenario.hint, ...strokes];
+            for (const c of checks) console.log(`  ${c.pass ? "✔" : "✖"} ${c.name}: ${c.detail}`);
             sections.push(`<section>
   <h2>${scenario.name}</h2>
   <p class="exp">Expectation: ${scenario.expectation}</p>
   <p class="said">Model: &ldquo;${description}&rdquo;</p>
-  <div class="row">
-    ${svgBlock("Input (previous player, grey)", scenario.hint)}
-    ${svgBlock("Input + AI continuation (blue)", overlay)}
-  </div>
+  ${panelSvg(hint, strokes)}
+  <ul>${checks.map((c) => `<li class="${c.pass ? "pass" : "fail"}">${c.name}: ${c.detail}</li>`).join("")}</ul>
 </section>`);
         } catch (err) {
+            allPass = false;
             console.error(`  FAILED: ${(err as Error).message}`);
             sections.push(
                 `<section><h2>${scenario.name}</h2><p class="fail">FAILED: ${(err as Error).message}</p></section>`,
@@ -130,23 +158,24 @@ async function main() {
   body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
   h1 { font-size: 1.3rem; }
   section { margin: 2rem 0; padding-bottom: 1rem; border-bottom: 1px solid #eee; }
-  .row { display: flex; gap: 2rem; flex-wrap: wrap; }
-  figure { margin: 0; }
-  figcaption { font-size: .8rem; color: #666; margin-bottom: .3rem; }
   .exp { color: #666; font-size: .9rem; }
   .said { font-style: italic; }
-  .fail { color: #b00; }
+  ul { font-size: .85rem; }
+  .pass { color: #15803d; }
+  .fail { color: #b91c1c; }
 </style></head>
 <body>
-  <h1>Vector drawing bot &mdash; collaboration validation</h1>
-  <p>Grey = strokes passed in. Blue = what the model added from coordinates alone (no rasterization).</p>
+  <h1>Drawing bot validation</h1>
+  <p>Grey = the strip carried over from the previous player (the blue band is all the bot sees). Red dots = the exits we told the model about, orange = loose ends. Blue = what the bot drew.</p>
+  <p class="${allPass ? "pass" : "fail"}">${allPass ? "ALL INVARIANTS PASS" : "INVARIANT FAILURE"}</p>
   ${sections.join("\n  ")}
 </body></html>`;
 
     const outPath = resolve(process.cwd(), "drawing-bot-validation.html");
     writeFileSync(outPath, html);
-    console.log(`\n✔ Wrote ${outPath}`);
-    console.log("  Open it in a browser to judge whether the continuations actually collaborate.");
+    console.log(`\n${allPass ? "✔ ALL INVARIANTS PASS" : "✖ INVARIANT FAILURE"}`);
+    console.log(`Wrote ${outPath}`);
+    process.exit(allPass ? 0 : 1);
 }
 
 main();

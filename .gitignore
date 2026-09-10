@@ -54,3 +54,4 @@ lefthook-local.yml
 # Generated drawing-bot artifacts
 server/drawing-bot-validation.html
 server/self-play-drawing.html
+.playwright-mcp/

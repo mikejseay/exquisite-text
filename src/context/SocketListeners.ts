@@ -19,6 +19,7 @@ export const socketListeners = ({
     setUserInfo,
     setPoemsLines,
     setJoinErrorMessage,
+    setNotice,
     setRoomCode,
     setSettingsEnabled,
     setBotEnabled,
@@ -53,6 +54,12 @@ export const socketListeners = ({
     const receiveJoinError = (errorMsg: string) => {
         setJoinErrorMessage(errorMsg);
         setTimeout(() => setJoinErrorMessage(""), shortDur);
+    };
+
+    // A short-lived in-room announcement, e.g. a bot bowing out
+    const receiveNotice = (message: string) => {
+        setNotice(message);
+        setTimeout(() => setNotice(""), 2 * shortDur);
     };
 
     // Event handlers for the line and the deleteLine events are set up for the Socket.IO connection.
@@ -144,6 +151,7 @@ export const socketListeners = ({
     socket.on("stcPoemLines", receivePoemsLines);
     socket.on("stcUserTableInfo", receiveUserTableInfo);
     socket.on("stcJoinError", receiveJoinError);
+    socket.on("stcNotice", receiveNotice);
     socket.on("stcRoomCode", receiveRoomCode);
     socket.on("stcGameSettingsInfo", receiveGameSettingsInfo);
     socket.on("stcGameSettingsEnabled", receiveGameSettingsEnabled);
@@ -165,6 +173,7 @@ export const socketListeners = ({
         socket.off("stcPoemLines", receivePoemsLines);
         socket.off("stcUserTableInfo", receiveUserTableInfo);
         socket.off("stcJoinError", receiveJoinError);
+        socket.off("stcNotice", receiveNotice);
         socket.off("stcRoomCode", receiveRoomCode);
         socket.off("stcGameSettingsInfo", receiveGameSettingsInfo);
         socket.off("stcGameSettingsEnabled", receiveGameSettingsEnabled);

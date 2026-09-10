@@ -33,6 +33,7 @@ export default function SocketHandler({ children }: Props) {
     const [userInfo, setUserInfo] = React.useState<IUserTableInfo>({} as IUserTableInfo);
     const [poemsLines, setPoemsLines] = React.useState<Array<ILine[]>>([]);
     const [joinErrorMessage, setJoinErrorMessage] = React.useState<string>("");
+    const [notice, setNotice] = React.useState<string>("");
     const [roomCode, setRoomCode] = React.useState<string>("");
     const [settingsEnabled, setSettingsEnabled] = React.useState<boolean>(false);
     const [botEnabled, setBotEnabled] = React.useState<boolean>(false);
@@ -61,6 +62,7 @@ export default function SocketHandler({ children }: Props) {
                 setUserInfo,
                 setPoemsLines,
                 setJoinErrorMessage,
+                setNotice,
                 setRoomCode,
                 setSettingsEnabled,
                 setBotEnabled,
@@ -90,6 +92,7 @@ export default function SocketHandler({ children }: Props) {
                 userInfo,
                 poemsLines,
                 joinErrorMessage,
+                notice,
                 roomCode,
                 setRoomCode,
                 setEditorActive,

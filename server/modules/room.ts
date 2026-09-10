@@ -183,6 +183,9 @@ class Room {
         member.unsetReceive();
         delete socketIDToDeviceID[member.socket.id];
         delete deviceIDToSocketID[deviceID];
+        // a bot's client-side socket would otherwise stay connected for the life of the process
+        botDeviceIDToBotSocket.get(deviceID)?.disconnect();
+        botDeviceIDToBotSocket.delete(deviceID);
     }
 
     navigateMembersToGame() {
