@@ -515,6 +515,8 @@ export class DrawingEditor extends Editor {
             this.emitToSelf("stcEditorActive", true);
             this.isCurrentlyEditing = true;
         } else {
+            // nothing to draw: clear the strip like PoemEditor clears its half line
+            this.emitToSelf("stcStrokeHistory", []);
             this.emitToSelf("stcEditorActive", false);
             this.isCurrentlyEditing = false;
         } // otherwise, leave it the way it was?

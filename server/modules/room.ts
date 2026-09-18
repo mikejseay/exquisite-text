@@ -311,11 +311,11 @@ export class DrawingRoom extends Room {
 
         this.navigateMembersToGame();
 
-        // Bots have no client UI to trigger their first turn, so start them explicitly
+        // Start every first turn explicitly: a human's client still holds the
+        // last game's carried-over strip until it gets a fresh stroke history,
+        // and bots have no client UI to trigger a turn at all
         for (const editor of this.editors.values()) {
-            if (editor instanceof DrawingBot && editor.hasWorkInQueue()) {
-                editor.possibleStartNewTurn();
-            }
+            editor.possibleStartNewTurn();
         }
     }
 

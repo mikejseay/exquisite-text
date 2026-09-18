@@ -45,7 +45,7 @@ How to draw well:
 1. Pick ONE clear subject that fits this panel's position in the picture (given below) and commit to it. Say what it is in "subject".
 2. Draw it with 6 to 14 shapes: big outline shapes first, then a few characteristic details (eyes, fins, buttons, spokes, stripes). Big and readable beats fussy. Shapes should not overlap unless they are meant to (an eye inside a head).
 3. Use the panel: your subject should span most of its height and a good part of its width, centred around the carried-over lines.
-4. Continue what you were given. The carried-over lines end at listed EXIT points on the strip's bottom edge. Your outline must start exactly at those exits and grow downward from them (two exits 120 px apart are the two sides of a neck, a trunk, a stem: make them the sides of the body you draw). Never redraw the carried-over strokes themselves.
+4. Continue what you were given. The carried-over lines end at listed EXIT points on the strip's bottom edge. Two of them are the SIDES of your subject: grow your outline downward from exactly those points, so two exits 120 px apart become the two sides of a neck, a trunk, a stem. Any other exit is FRINGE (hair, tentacles, teeth): end it just below the strip with a small flick or curl, or leave it alone. Never run a long line down from a fringe end, and never redraw the carried-over strokes themselves.
 5. Hand the picture on: unless this is the bottom panel, at least two of your lines must run all the way down to the bottom edge of the panel (y = {panel_bottom}) so the next player has something to continue, and they should be the natural sides of whatever comes next (a waist, legs, a stalk).
 6. Keep every coordinate inside the panel.
 
@@ -64,7 +64,7 @@ Notice how the two big curves start exactly on the exits, swell out to use the p
 
 export const drawUserPrompt = `Panel {panel_number} of {n_panels}: the {position} of the picture.
 {position_advice}
-Ideas, if you want one (or invent your own): {ideas}.
+Subject: pick one of these and adapt it to the exits, or something else only if it fits the exits better: {ideas}.
 
 {hint_section}
 
@@ -136,7 +136,7 @@ export const drawIdeas = {
 
 export const drawHintPresent = `Carried over from the previous player, in the top {band_bottom} px of your panel (y from 0 to {band_bottom}):
 - {n_strokes} stroke(s), spanning {bbox}
-- EXITS on the strip's bottom edge, where you must continue: {exits}
+- EXITS on the strip's bottom edge: {exits}
 - loose ends inside the strip (the lowest point of each stroke that stops short of the bottom edge): {loose_ends}
 - the raw strokes, as [x, y] points in drawing order:
 {input}

@@ -13,6 +13,7 @@ import {
 import {
     type Anchor,
     applyEraser,
+    DEFAULT_SNAP_RADIUS,
     expandShape,
     findAnchors,
     parseShape,
@@ -52,6 +53,9 @@ const ECHO_EPSILON = 3;
 // A contribution "reaches the bottom" when a stroke gets within this fraction
 // of the panel height from the bottom edge
 const BOTTOM_REACH = 0.1;
+// How far below the strip a fringe line end (any exit that is not one of the
+// two sides) may run before the answer is sent back
+const FRINGE_REACH_PX = 80;
 const DEFAULT_MAX_SHAPES = 16;
 
 export type PanelCompletion = {
@@ -191,6 +195,29 @@ function reachesBottom(strokes: Point[][], canvasHeight: number): boolean {
     return strokes.some((s) => s.some((p) => p.y >= zone));
 }
 
+// The outermost pair of exits are the sides of whatever comes next. Every
+// exit between them is fringe (hair, tentacles, teeth) that a partner ties
+// off short. Seen live: told to continue all eight exits, the model ran a
+// wire from each to the bottom edge and called it a robot, every game
+export function splitExits(anchors: Anchor[]): { sides: Anchor[]; fringe: Anchor[] } {
+    const exits = anchors.filter((a) => a.kind === "exit").sort((a, b) => a.x - b.x);
+    if (exits.length <= 2) return { sides: exits, fringe: [] };
+    return { sides: [exits[0], exits[exits.length - 1]], fringe: exits.slice(1, -1) };
+}
+
+// Fringe anchors the model ran a long line down from anyway
+export function fringeOverrun(strokes: XY[][], anchors: Anchor[], bandBottom: number): Anchor[] {
+    const { sides, fringe } = splitExits(anchors);
+    const near = (p: XY, a: Anchor) => Math.hypot(p.x - a.x, p.y - a.y) <= DEFAULT_SNAP_RADIUS;
+    return fringe.filter((a) =>
+        strokes.some((s) => {
+            const ends = [s[0], s[s.length - 1]];
+            const onFringe = ends.some((p) => near(p, a)) && !ends.some((p) => sides.some((b) => near(p, b)));
+            return onFringe && s.some((p) => p.y > bandBottom + FRINGE_REACH_PX);
+        }),
+    );
+}
+
 // The human pen at default settings: log(1 + 0.5 pressure) * 8 px base width
 const DEFAULT_PEN_COLOR = "#7F7F7F";
 const DEFAULT_PEN_WIDTH = Math.log(1.5) * 8;
@@ -231,15 +258,20 @@ function describeBoundingBox(hint: XY[][]): string {
     return `x ${Math.round(Math.min(...xs))} to ${Math.round(Math.max(...xs))}, y ${Math.round(Math.min(...ys))} to ${Math.round(Math.max(...ys))}`;
 }
 
-function describeAnchors(anchors: Anchor[], kind: Anchor["kind"]): string {
-    const list = anchors.filter((a) => a.kind === kind);
-    if (list.length === 0) return "none";
-    const items = list.map((a) => `(${Math.round(a.x)}, ${Math.round(a.y)}) heading ${a.heading}`);
-    if (kind === "exit" && list.length > 1) {
-        const xs = list.map((a) => a.x);
-        items.push(`(outermost exits are ${Math.round(Math.max(...xs) - Math.min(...xs))} px apart)`);
-    }
-    return items.join("; ");
+const describeAnchor = (a: Anchor) => `(${Math.round(a.x)}, ${Math.round(a.y)}) heading ${a.heading}`;
+
+function describeLooseEnds(anchors: Anchor[]): string {
+    const list = anchors.filter((a) => a.kind === "end");
+    return list.length === 0 ? "none" : list.map(describeAnchor).join("; ");
+}
+
+function describeExits(anchors: Anchor[], bandBottom: number): string {
+    const { sides, fringe } = splitExits(anchors);
+    if (sides.length === 0) return "none";
+    let text = sides.map(describeAnchor).join("; ");
+    if (sides.length === 2) text += ` (${Math.round(sides[1].x - sides[0].x)} px apart)`;
+    if (fringe.length === 0) return text;
+    return `the two SIDES to grow your outline from: ${text}. Between them, FRINGE: ${fringe.length} more line end(s) to tie off within ${FRINGE_REACH_PX} px (a flick, a curl, a drip, ending by y=${bandBottom + FRINGE_REACH_PX}) or leave alone: ${fringe.map(describeAnchor).join("; ")}`;
 }
 
 function pickIdeas(pool: string[], n: number): string[] {
@@ -256,9 +288,9 @@ export function positionOf(panelIndex: number, nPanels: number): "top" | "middle
 }
 
 const positionAdvice = {
-    top: "Draw the TOP of a thing: a head with a face, a hat, a roof, a treetop, a periscope, a lampshade. Finish with lines running off the bottom edge (a neck, a trunk, walls) for the next player to continue.",
-    middle: "Draw the MIDDLE of a thing: a torso with arms, a car body, a dress, a barrel, a trunk with branches. Attach it to the exits at the top, and send two lines off the bottom edge (hips, legs, a stem, an axle) for the next player to continue.",
-    bottom: "Draw the BOTTOM of a thing and finish the picture: legs and feet, wheels, roots, tentacles, a pedestal, plus a bit of ground or shadow. Attach it to the exits at the top. The picture ends at your bottom edge, so nothing needs to run off it.",
+    top: "Draw the TOP of a thing. Finish with lines running off the bottom edge (a neck, a trunk, walls) for the next player to continue.",
+    middle: "Draw the MIDDLE of a thing. Attach it to the exits at the top, and send two lines off the bottom edge (hips, legs, a stem, an axle) for the next player to continue.",
+    bottom: "Draw the BOTTOM of a thing and finish the picture, with a bit of ground or shadow. Attach it to the exits at the top. The picture ends at your bottom edge, so nothing needs to run off it.",
 };
 
 // The model only ever reasons about position. Color and width are ours to
@@ -501,8 +533,8 @@ export async function completePanel(hint: Point[][], opts: CompletePanelOptions 
                   .replaceAll("{band_bottom}", bandBottom.toString())
                   .replace("{n_strokes}", hint.length.toString())
                   .replace("{bbox}", describeBoundingBox(promptHint))
-                  .replace("{exits}", describeAnchors(anchors, "exit"))
-                  .replace("{loose_ends}", describeAnchors(anchors, "end"))
+                  .replace("{exits}", describeExits(anchors, bandBottom))
+                  .replace("{loose_ends}", describeLooseEnds(anchors))
                   .replace("{input}", JSON.stringify(promptHint.map((s) => s.map((p) => [p.x, p.y]))));
     const promptVars = {
         canvas: `${canvasWidth} wide by ${canvasHeight} tall`,
@@ -527,9 +559,10 @@ export async function completePanel(hint: Point[][], opts: CompletePanelOptions 
     logger.debug(`drawing bot panel ${panelIndex + 1}/${nPanels} (${position}):\n${hintSection}`);
 
     // Prefer an answer that hands the picture on; keep the best fallback (the
-    // one reaching furthest down) so a stubborn model never dead-ends the turn
+    // fewest complaints, then reaching furthest down) so a stubborn model never
+    // dead-ends the turn
     let best: PanelCompletion | undefined;
-    let bestLowestY = -1;
+    let bestScore = Number.NEGATIVE_INFINITY;
     let feedback: BaseMessage[] = [];
     let lastErr: Error | undefined;
     let attempts = 0;
@@ -549,20 +582,28 @@ export async function completePanel(hint: Point[][], opts: CompletePanelOptions 
             if (strokes.length === 0) throw new Error("model only retraced the carried-over strokes");
 
             const lowestY = Math.max(...strokes.flat().map((p) => p.y));
-            if (lowestY > bestLowestY) {
+            const complaints: string[] = [];
+            const overrun = fringeOverrun(strokes, anchors, bandBottom);
+            if (overrun.length > 0) {
+                complaints.push(
+                    `you ran long lines down from the fringe ends at ${overrun.map((a) => `(${Math.round(a.x)}, ${Math.round(a.y)})`).join(", ")}, and only the two SIDES may run down the panel: end each fringe line by y=${bandBottom + FRINGE_REACH_PX} or leave it out`,
+                );
+            }
+            if (mustReachBottom && !reachesBottom(strokes, canvasHeight)) {
+                complaints.push(
+                    `your lowest point was y=${Math.round(lowestY)}, so the next player would get nothing to continue: make at least two lines run all the way down to y=${canvasHeight}`,
+                );
+            }
+            const score = lowestY - 1000 * complaints.length;
+            if (score > bestScore) {
                 best = { strokes, description };
-                bestLowestY = lowestY;
+                bestScore = score;
             }
-            if (!mustReachBottom || reachesBottom(strokes, canvasHeight)) {
-                return { strokes, description };
-            }
-            const need = Math.round(canvasHeight * (1 - BOTTOM_REACH));
-            logger.debug(`drawing bot attempt ${attempt} stopped at y=${Math.round(lowestY)}, need ${need}`);
+            if (complaints.length === 0) return { strokes, description };
+            logger.debug(`drawing bot attempt ${attempt} rejected: ${complaints.join("; ")}`);
             feedback = [
                 new AIMessage(raw),
-                new HumanMessage(
-                    `Your lowest point was y=${Math.round(lowestY)}, so the next player would get nothing to continue. Answer again with the same subject, but make at least two lines run all the way down to y=${canvasHeight}.`,
-                ),
+                new HumanMessage(`Answer again with the same subject, fixed: ${complaints.join(". Also, ")}.`),
             ];
         } catch (err) {
             lastErr = err as Error;
@@ -580,7 +621,7 @@ export async function completePanel(hint: Point[][], opts: CompletePanelOptions 
         }
     }
     if (best) {
-        logger.warn(`DrawingBot never reached the bottom; using best attempt (lowest y=${Math.round(bestLowestY)})`);
+        logger.warn("DrawingBot answers were never accepted; using the best attempt");
         return best;
     }
     throw new Error(`completePanel failed after ${attempts} attempt(s): ${lastErr?.message}`);

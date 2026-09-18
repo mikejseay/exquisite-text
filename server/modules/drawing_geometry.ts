@@ -24,7 +24,7 @@ const ANCHOR_DEDUPE_PX = 8;
 // A stroke that stops this close to the strip's bottom edge visually touches
 // it (the pen is about 3 px wide), so it counts as an exit, not a loose end
 const EXIT_TOLERANCE_PX = 5;
-const DEFAULT_SNAP_RADIUS = 24;
+export const DEFAULT_SNAP_RADIUS = 24;
 const DEFAULT_WOBBLE = 0.6;
 
 // ─── Parsing what the model sent ────────────────────────────────
@@ -85,10 +85,12 @@ export function parseShape(raw: unknown): Shape | null {
         }
         case "rect":
         case "rectangle": {
-            const x = num(r.x);
-            const y = num(r.y);
-            const w = num(r.width ?? r.w);
-            const h = num(r.height ?? r.h);
+            const x = num(r.x ?? r.x1);
+            const y = num(r.y ?? r.y1);
+            const x2 = num(r.x2);
+            const y2 = num(r.y2);
+            const w = num(r.width ?? r.w) ?? (x !== null && x2 !== null ? x2 - x : null); // corner form x1,y1,x2,y2
+            const h = num(r.height ?? r.h) ?? (y !== null && y2 !== null ? y2 - y : null);
             if (x === null || y === null || w === null || h === null || w <= 0 || h <= 0) return null;
             return {
                 type: "polyline",

@@ -5,6 +5,7 @@ import {
     dominantColor,
     extractHintEnd,
     fakeCompletion,
+    fringeOverrun,
     medianLineWidth,
     OVERLAP,
     PANEL_HEIGHT,
@@ -12,6 +13,7 @@ import {
     parseCompletion,
     positionOf,
     shapesToStrokes,
+    splitExits,
     stripHintEcho,
 } from "modules/drawing_bot";
 import { findAnchors } from "modules/drawing_geometry";
@@ -271,6 +273,37 @@ describe("the bot's pen mirrors the previous player", () => {
                 assert.equal(p.lineWidth, 6);
             }
         }));
+});
+
+describe("fringe: many exits are two sides plus tie-offs, never a wire each", () => {
+    // eight strands crossing the bottom edge, 70 px apart
+    const hint = Array.from({ length: 8 }, (_, i) => [pt(70 + i * 70, 40), pt(70 + i * 70, BAND_BOTTOM)]);
+    const anchors = findAnchors(hint, BAND_BOTTOM);
+    const wire = (x: number, toY: number) => [
+        { x, y: BAND_BOTTOM },
+        { x, y: toY },
+    ];
+
+    it("the outermost pair are the sides, the six between are fringe", () => {
+        const { sides, fringe } = splitExits(anchors);
+        assert.deepEqual(
+            sides.map((a) => a.x),
+            [70, 560],
+        );
+        assert.equal(fringe.length, 6);
+        assert.deepEqual(splitExits(anchors.slice(0, 2)).fringe, []);
+    });
+
+    it("flags fringe ends that were run down the panel, and only those", () => {
+        const wires = anchors.map((a) => wire(a.x, PANEL_HEIGHT));
+        assert.equal(fringeOverrun(wires, anchors, BAND_BOTTOM).length, 6);
+        const tiedOff = [
+            wire(70, PANEL_HEIGHT),
+            wire(560, PANEL_HEIGHT),
+            ...anchors.slice(1, -1).map((a) => wire(a.x, BAND_BOTTOM + 30)),
+        ];
+        assert.deepEqual(fringeOverrun(tiedOff, anchors, BAND_BOTTOM), []);
+    });
 });
 
 describe("positionOf: where this panel sits in the picture", () => {

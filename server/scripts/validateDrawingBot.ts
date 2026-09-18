@@ -84,6 +84,13 @@ const scenarios: Scenario[] = [
         panelIndex: 1,
     },
     {
+        name: "A fringe: eight strands crossing the bottom edge, 500 px wide",
+        expectation:
+            "one subject hanging from two of the strands, the rest tied off short (seen live: one wire per exit made a robot every time)",
+        prev: Array.from({ length: 8 }, (_, i) => line([70 + i * 70, 200], [65 + i * 72, 300])),
+        panelIndex: 1,
+    },
+    {
         name: "Nothing in the strip (previous player stopped short)",
         expectation: "a middle panel with no exits: draw something anyway and leave exits",
         prev: [line([300, 50], [350, 200])],
@@ -120,7 +127,10 @@ async function main() {
 
     const sections: string[] = [];
     let allPass = true;
+    // ONLY=fringe runs the scenarios whose name contains that text
+    const only = process.env.ONLY?.toLowerCase();
     for (const scenario of scenarios) {
+        if (only && !scenario.name.toLowerCase().includes(only)) continue;
         console.log(`\n▶ ${scenario.name}`);
         console.log(`  expectation: ${scenario.expectation}`);
         const hint = extractHintEnd(scenario.prev);

@@ -111,6 +111,12 @@ describe("parseShape: tolerant reading of the model's shapes", () => {
             ],
         });
         assert.equal(parseShape({ type: "rectangle", x: 10, y: 20, w: 0, h: 40 }), null);
+        // corner form, seen live: {"type":"rectangle","x1":305,"y1":120,"x2":395,"y2":210}
+        assert.deepEqual(
+            parseShape({ type: "rectangle", x1: 10, y1: 20, x2: 40, y2: 60 }),
+            parseShape({ type: "rect", x: 10, y: 20, width: 30, height: 40 }),
+        );
+        assert.equal(parseShape({ type: "rectangle", x1: 40, y1: 20, x2: 10, y2: 60 }), null);
         assert.deepEqual(
             parseShape({
                 type: "polygon",
