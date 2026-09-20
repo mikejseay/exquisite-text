@@ -4,6 +4,7 @@
     "private": true,
     "dependencies": {
         "@langchain/openai": "^0.0.33",
+        "@napi-rs/canvas": "^1.0.9",
         "cookie-parser": "^1.4.6",
         "cors": "^2.8.5",
         "express": "^5.1.0",

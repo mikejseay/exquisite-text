@@ -2,7 +2,8 @@ import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { completePanel, extractHintEnd, PANEL_HEIGHT, PANEL_WIDTH } from "modules/drawing_bot";
 import { findAnchors } from "modules/drawing_geometry";
-import { BAND_BOTTOM, checkContribution, strokesToSvg } from "scripts/drawingChecks";
+import { renderPanelPng } from "modules/drawing_render";
+import { BAND_BOTTOM, checkContribution } from "scripts/drawingChecks";
 import type { Point } from "shared/types/types";
 
 // Validation harness for the drawing bot: one panel at a time, in the real
@@ -104,6 +105,8 @@ const scenarios: Scenario[] = [
     },
 ];
 
+// The panel as players will see it (the same renderer the model is shown),
+// with the anchors we told the model about drawn on top
 function panelSvg(hint: Point[][], strokes: Point[][]): string {
     const exits = findAnchors(hint, BAND_BOTTOM)
         .map(
@@ -111,11 +114,10 @@ function panelSvg(hint: Point[][], strokes: Point[][]): string {
                 `<circle cx="${a.x.toFixed(1)}" cy="${a.y.toFixed(1)}" r="4" fill="${a.kind === "exit" ? "#b91c1c" : "#d97706"}" />`,
         )
         .join("");
-    return `<svg viewBox="0 0 ${PANEL_WIDTH} ${PANEL_HEIGHT}" width="${PANEL_WIDTH}" height="${PANEL_HEIGHT}" style="background:#fff;border:1px solid #ccc">
-    <rect x="0" y="0" width="${PANEL_WIDTH}" height="${BAND_BOTTOM}" fill="#eef" />
-    ${strokesToSvg(hint)}
+    const png = renderPanelPng(hint, strokes).toString("base64");
+    return `<svg viewBox="0 0 ${PANEL_WIDTH} ${PANEL_HEIGHT}" width="${PANEL_WIDTH}" height="${PANEL_HEIGHT}" style="border:1px solid #ccc">
+    <image href="data:image/png;base64,${png}" width="${PANEL_WIDTH}" height="${PANEL_HEIGHT}" />
     ${exits}
-    ${strokesToSvg(strokes, 0, AI_COLOR)}
   </svg>`;
 }
 
@@ -136,21 +138,24 @@ async function main() {
         const hint = extractHintEnd(scenario.prev);
         const isLast = scenario.panelIndex === 2;
         try {
-            const { strokes, description } = await completePanel(hint, {
+            const { strokes, description, guess, draft } = await completePanel(hint, {
                 panelIndex: scenario.panelIndex,
                 nPanels: 3,
                 color: AI_COLOR,
             });
             const checks = checkContribution(strokes, hint, isLast);
             allPass = allPass && checks.every((c) => c.pass);
+            if (guess) console.log(`  guessed above: "${guess}"`);
             console.log(`  model said: "${description}"`);
-            console.log(`  added ${strokes.length} stroke(s), ${strokes.flat().length} point(s)`);
+            console.log(
+                `  added ${strokes.length} stroke(s), ${strokes.flat().length} point(s)${draft ? ` (revised from ${draft.length} after seeing the render)` : ""}`,
+            );
             for (const c of checks) console.log(`  ${c.pass ? "✔" : "✖"} ${c.name}: ${c.detail}`);
             sections.push(`<section>
   <h2>${scenario.name}</h2>
   <p class="exp">Expectation: ${scenario.expectation}</p>
-  <p class="said">Model: &ldquo;${description}&rdquo;</p>
-  ${panelSvg(hint, strokes)}
+  <p class="said">${guess ? `Guessed above: &ldquo;${guess}&rdquo;. ` : ""}Model: &ldquo;${description}&rdquo;</p>
+  ${draft ? `<div class="pair"><figure><figcaption>blind draft</figcaption>${panelSvg(hint, draft)}</figure><figure><figcaption>after seeing the render</figcaption>${panelSvg(hint, strokes)}</figure></div>` : panelSvg(hint, strokes)}
   <ul>${checks.map((c) => `<li class="${c.pass ? "pass" : "fail"}">${c.name}: ${c.detail}</li>`).join("")}</ul>
 </section>`);
         } catch (err) {
@@ -173,10 +178,13 @@ async function main() {
   ul { font-size: .85rem; }
   .pass { color: #15803d; }
   .fail { color: #b91c1c; }
+  .pair { display: flex; gap: 1rem; flex-wrap: wrap; }
+  figure { margin: 0; }
+  figcaption { font-size: .8rem; color: #666; margin-bottom: .25rem; }
 </style></head>
 <body>
   <h1>Drawing bot validation</h1>
-  <p>Grey = the strip carried over from the previous player (the blue band is all the bot sees). Red dots = the exits we told the model about, orange = loose ends. Blue = what the bot drew.</p>
+  <p>Grey = the strip carried over from the previous player (the tinted band is all the bot sees). Red dots = the exits we told the model about, orange = loose ends. Blue = what the bot drew, rendered as players will see it.</p>
   <p class="${allPass ? "pass" : "fail"}">${allPass ? "ALL INVARIANTS PASS" : "INVARIANT FAILURE"}</p>
   ${sections.join("\n  ")}
 </body></html>`;

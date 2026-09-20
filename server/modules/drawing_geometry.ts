@@ -7,10 +7,11 @@ import type { Point } from "shared/types/types";
 export type XY = { x: number; y: number };
 
 export type Shape =
-    | { type: "line"; x1: number; y1: number; x2: number; y2: number }
-    | { type: "polyline"; points: XY[] } // straight segments through the points, >= 2 points
-    | { type: "curve"; points: XY[] } // smooth Catmull-Rom spline through the points, >= 2 points
-    | { type: "ellipse"; cx: number; cy: number; rx: number; ry: number; rotation?: number }; // closed, rotation in degrees
+    | { type: "line"; x1: number; y1: number; x2: number; y2: number; weight?: number }
+    | { type: "polyline"; points: XY[]; weight?: number } // straight segments through the points, >= 2 points
+    | { type: "curve"; points: XY[]; weight?: number } // smooth Catmull-Rom spline through the points, >= 2 points
+    | { type: "ellipse"; cx: number; cy: number; rx: number; ry: number; rotation?: number; weight?: number } // closed, rotation in degrees
+    | { type: "hatch"; points: XY[]; angle: number; spacing: number; weight?: number }; // fill lines inside the region polygon, implicitly closed
 
 export type Anchor = {
     x: number;
@@ -18,6 +19,12 @@ export type Anchor = {
     heading: "down" | "down-left" | "down-right" | "left" | "right" | "up";
     kind: "exit" | "end";
 };
+
+// Panel geometry, the single source of truth (mirrors the client Canvas
+// constants PANEL_WIDTH_MIN / PANEL_HEIGHT_MIN / OVERLAP)
+export const PANEL_WIDTH = 667;
+export const PANEL_HEIGHT = 300;
+export const OVERLAP = 0.2;
 
 const DEFAULT_STEP = 4;
 const ANCHOR_DEDUPE_PX = 8;
@@ -32,6 +39,13 @@ const DEFAULT_WOBBLE = 0.6;
 function num(value: unknown): number | null {
     const n = typeof value === "string" && value.trim() !== "" ? Number(value) : value;
     return typeof n === "number" && Number.isFinite(n) ? n : null;
+}
+
+// A shape's optional line weight (a multiplier on the pen's base width),
+// silently dropped rather than rejecting the shape when it is not a number
+function parseWeight(raw: unknown): number | undefined {
+    const w = num(raw);
+    return w === null ? undefined : Math.max(0.4, Math.min(2.5, w));
 }
 
 function parsePoints(raw: unknown): XY[] | null {
@@ -58,12 +72,21 @@ function parsePoints(raw: unknown): XY[] | null {
     return points.length >= 2 ? points : null;
 }
 
-// Tolerant reader for one raw JSON shape from the model. Returns null for
-// anything unusable rather than throwing, so one bad shape never spoils a turn
-export function parseShape(raw: unknown): Shape | null {
-    if (!raw || typeof raw !== "object") return null;
-    const r = raw as Record<string, unknown>;
-    const type = typeof r.type === "string" ? r.type.trim().toLowerCase() : "";
+// The region for a hatch: an explicit polygon (3+ points), or an ellipse /
+// circle expanded to one, same tolerance as the ellipse/circle shape itself
+function parseHatchRegion(r: Record<string, unknown>): XY[] | null {
+    const points = parsePoints(r.points);
+    if (points && points.length >= 3) return points;
+    const cx = num(r.cx ?? r.x);
+    const cy = num(r.cy ?? r.y);
+    const rx = num(r.rx ?? r.r);
+    const ry = num(r.ry ?? r.r);
+    if (cx === null || cy === null || rx === null || ry === null || rx <= 0 || ry <= 0) return null;
+    return ellipsePoints({ type: "ellipse", cx, cy, rx, ry }, 6).slice(0, -1); // drop the duplicate closing point
+}
+
+// The switch on shape type, before the (shape-agnostic) weight is merged in
+function parseShapeByType(type: string, r: Record<string, unknown>): Shape | null {
     switch (type) {
         case "line": {
             const x1 = num(r.x1);
@@ -115,9 +138,30 @@ export function parseShape(raw: unknown): Shape | null {
                 ? { type: "ellipse", cx, cy, rx, ry }
                 : { type: "ellipse", cx, cy, rx, ry, rotation };
         }
+        case "hatch":
+        case "hatching":
+        case "shade": {
+            const region = parseHatchRegion(r);
+            if (!region) return null;
+            const angle = num(r.angle) ?? 45;
+            const spacing = Math.max(5, Math.min(20, num(r.spacing) ?? 7));
+            return { type: "hatch", points: region, angle, spacing };
+        }
         default:
             return null;
     }
+}
+
+// Tolerant reader for one raw JSON shape from the model. Returns null for
+// anything unusable rather than throwing, so one bad shape never spoils a turn
+export function parseShape(raw: unknown): Shape | null {
+    if (!raw || typeof raw !== "object") return null;
+    const r = raw as Record<string, unknown>;
+    const type = typeof r.type === "string" ? r.type.trim().toLowerCase() : "";
+    const shape = parseShapeByType(type, r);
+    if (!shape) return null;
+    const weight = parseWeight(r.weight);
+    return weight === undefined ? shape : { ...shape, weight };
 }
 
 // ─── Shapes to points ───────────────────────────────────────────
@@ -189,6 +233,44 @@ function ellipsePoints(shape: Extract<Shape, { type: "ellipse" }>, step: number)
     return out;
 }
 
+// Parallel fill lines inside a polygon (implicitly closed), spaced along its
+// normal direction. Each hatch line is the polygon's intersection with an
+// infinite line at a given offset along the normal, paired up even-odd
+const HATCH_SEGMENT_CAP = 40; // a hatch is a shadow, never a fill
+export function hatchLines(region: XY[], angleDeg: number, spacing: number): Array<[XY, XY]> {
+    const rad = (angleDeg * Math.PI) / 180;
+    const d: XY = { x: Math.cos(rad), y: Math.sin(rad) }; // direction along each hatch line
+    const n: XY = { x: -Math.sin(rad), y: Math.cos(rad) }; // direction the lines are spaced along
+    const along = (p: XY, axis: XY) => p.x * axis.x + p.y * axis.y;
+    const offsets = region.map((p) => along(p, n));
+    const min = Math.min(...offsets);
+    const max = Math.max(...offsets);
+    const segments: Array<[XY, XY]> = [];
+    for (let offset = min + spacing / 2; offset <= max; offset += spacing) {
+        const hits: number[] = []; // position along `d` of each edge crossing
+        for (let i = 0; i < region.length; i++) {
+            const a = region[i];
+            const b = region[(i + 1) % region.length];
+            const na = along(a, n);
+            const nb = along(b, n);
+            if (na === nb) continue; // edge runs parallel to the hatch line
+            const t = (offset - na) / (nb - na);
+            if (t < 0 || t >= 1) continue;
+            hits.push(along({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }, d));
+        }
+        hits.sort((x, y) => x - y);
+        for (let i = 0; i + 1 < hits.length; i += 2) {
+            if (hits[i + 1] - hits[i] < 2) continue;
+            segments.push([
+                { x: n.x * offset + d.x * hits[i], y: n.y * offset + d.y * hits[i] },
+                { x: n.x * offset + d.x * hits[i + 1], y: n.y * offset + d.y * hits[i + 1] },
+            ]);
+            if (segments.length >= HATCH_SEGMENT_CAP) return segments;
+        }
+    }
+    return segments;
+}
+
 // Expand a shape into points along its path, roughly `step` px apart
 export function expandShape(shape: Shape, step: number = DEFAULT_STEP): XY[] {
     switch (shape.type) {
@@ -200,7 +282,18 @@ export function expandShape(shape: Shape, step: number = DEFAULT_STEP): XY[] {
             return curvePoints(shape.points, step);
         case "ellipse":
             return ellipsePoints(shape, step);
+        case "hatch":
+            return []; // a hatch is many strokes, see expandShapeStrokes
     }
+}
+
+// Expand a shape into one or more strokes: a hatch is one stroke per fill
+// line, everything else is the single path expandShape already gives
+export function expandShapeStrokes(shape: Shape, step: number = DEFAULT_STEP): XY[][] {
+    if (shape.type === "hatch") {
+        return hatchLines(shape.points, shape.angle, shape.spacing).map(([a, b]) => segment(a, b, step, true));
+    }
+    return [expandShape(shape, step)];
 }
 
 // ─── Where to continue from ─────────────────────────────────────
@@ -397,5 +490,17 @@ export function wobble(points: XY[], amplitude: number = DEFAULT_WOBBLE, seed = 
         out.push({ x: points[i].x + nx * offset, y: points[i].y + ny * offset });
     }
     out.push(points[points.length - 1]);
+    return out;
+}
+
+// Per-point width multipliers for a pencil stroke: thin at the ends and full
+// in the middle of an open stroke, a gentler dip for one that closes on itself
+export function pressureProfile(n: number, closed: boolean): number[] {
+    if (n <= 1) return [1];
+    const out: number[] = [];
+    for (let i = 0; i < n; i++) {
+        const t = i / (n - 1);
+        out.push(closed ? 0.85 + 0.15 * Math.sin(2 * Math.PI * t) : 0.55 + 0.45 * Math.sin(Math.PI * t));
+    }
     return out;
 }

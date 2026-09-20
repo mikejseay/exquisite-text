@@ -12,6 +12,7 @@ import {
     PANEL_WIDTH,
     parseCompletion,
     positionOf,
+    seedIdeas,
     shapesToStrokes,
     splitExits,
     stripHintEcho,
@@ -144,6 +145,14 @@ describe("stripHintEcho: the edge is never copied back (output guarantee)", () =
 });
 
 describe("parseCompletion: the model's JSON program", () => {
+    it("reads the guess of what is above, empty when the model gives none", () => {
+        assert.equal(
+            parseCompletion('{"guess":"a head with hair","subject":"x","shapes":[]}').guess,
+            "a head with hair",
+        );
+        assert.equal(parseCompletion('{"subject":"x","shapes":[]}').guess, "");
+    });
+
     it("reads subject and shapes, dropping malformed shapes", () => {
         const raw = `Sure! {"subject":"a cat head","shapes":[{"type":"circle","cx":300,"cy":100,"r":50},{"type":"blob"},{"type":"line","x1":1,"y1":2,"x2":3,"y2":4}]}`;
         const { shapes, description, invalid } = parseCompletion(raw);
@@ -183,7 +192,8 @@ describe("shapesToStrokes: end-to-end output contract", () => {
         assert.ok(out[0].length >= 12, "an ellipse should be sampled densely");
         for (const p of out[0]) {
             assert.equal(p.color, "#123456");
-            assert.equal(p.lineWidth, 7);
+            // pressure-scaled, so at most the configured width, never bare zero
+            assert.ok(p.lineWidth > 0 && p.lineWidth <= 7, `lineWidth ${p.lineWidth} out of range`);
         }
     });
 
@@ -251,6 +261,77 @@ describe("shapesToStrokes: end-to-end output contract", () => {
     });
 });
 
+describe("shapesToStrokes: hatch lines for shading and pencil-like pressure", () => {
+    it("gives an open curve thinner ends than a full middle", () => {
+        const [out] = shapesToStrokes(
+            [
+                {
+                    type: "curve",
+                    points: [
+                        { x: 100, y: 100 },
+                        { x: 150, y: 80 },
+                        { x: 200, y: 100 },
+                    ],
+                },
+            ],
+            [],
+            baseOpts,
+        );
+        const mid = out[Math.floor(out.length / 2)];
+        assert.ok(out[0].lineWidth < mid.lineWidth, "start is thinner than the middle");
+        assert.ok(out[out.length - 1].lineWidth < mid.lineWidth, "end is thinner than the middle");
+    });
+
+    it("a heavier weight draws wider than a lighter one at the same point in the pressure curve", () => {
+        const heavy = shapesToStrokes([{ type: "line", x1: 0, y1: 100, x2: 200, y2: 100, weight: 2 }], [], baseOpts);
+        const light = shapesToStrokes([{ type: "line", x1: 0, y1: 100, x2: 200, y2: 100, weight: 0.6 }], [], baseOpts);
+        const i = Math.floor(heavy[0].length / 2);
+        assert.ok(heavy[0][i].lineWidth > light[0][i].lineWidth);
+    });
+
+    it("hatch lines never snap onto an anchor, but a shape endpoint does", () => {
+        const hint = [stroke([100, 40], [100, 80])];
+        const anchors = findAnchors(hint, BAND_BOTTOM); // exit at (100, 60)
+        const hatchOut = shapesToStrokes(
+            [
+                {
+                    type: "hatch",
+                    points: [
+                        { x: 80, y: 50 },
+                        { x: 120, y: 50 },
+                        { x: 120, y: 70 },
+                        { x: 80, y: 70 },
+                    ],
+                    angle: 0,
+                    spacing: 10,
+                },
+            ],
+            [],
+            { ...baseOpts, anchors },
+        );
+        for (const s of hatchOut) {
+            for (const p of [s[0], s[s.length - 1]]) {
+                assert.ok(p.x !== 100 || p.y !== 60, "a hatch line must not snap onto the anchor");
+            }
+        }
+        const curveOut = shapesToStrokes(
+            [
+                {
+                    type: "curve",
+                    points: [
+                        { x: 110, y: 62 },
+                        { x: 105, y: 80 },
+                        { x: 100, y: 120 },
+                    ],
+                },
+            ],
+            [],
+            { ...baseOpts, anchors },
+        );
+        assert.deepEqual({ x: curveOut[0][0].x, y: curveOut[0][0].y }, { x: 100, y: 60 });
+    });
+});
+
 describe("the bot's pen mirrors the previous player", () => {
     it("uses the dominant colour and median width of the carried-over ink, or the default pen", () => {
         const blue = stroke([0, 0], [10, 10], [20, 20]).map((p) => ({ ...p, color: "#0000ff", lineWidth: 9 }));
@@ -270,7 +351,7 @@ describe("the bot's pen mirrors the previous player", () => {
             const { strokes } = await completePanel(extractHintEnd(prev), { panelIndex: 1, nPanels: 3 });
             for (const p of strokes.flat()) {
                 assert.equal(p.color, "#123456");
-                assert.equal(p.lineWidth, 6);
+                assert.ok(p.lineWidth > 0 && p.lineWidth <= 6, `lineWidth ${p.lineWidth} out of range`);
             }
         }));
 });
@@ -303,6 +384,15 @@ describe("fringe: many exits are two sides plus tie-offs, never a wire each", ()
             ...anchors.slice(1, -1).map((a) => wire(a.x, BAND_BOTTOM + 30)),
         ];
         assert.deepEqual(fringeOverrun(tiedOff, anchors, BAND_BOTTOM), []);
+    });
+});
+
+describe("seedIdeas: subject seeds are rolled, never drawn from a fixed list", () => {
+    it("gives n distinct category-and-letter constraints, each a whole thing", () => {
+        const seeds = seedIdeas(3);
+        assert.equal(seeds.length, 3);
+        for (const seed of seeds) assert.match(seed, /^an? .+ whose name starts with [A-Z]$/);
+        assert.equal(new Set(seeds.map((s) => s.split(" whose")[0])).size, 3);
     });
 });
 

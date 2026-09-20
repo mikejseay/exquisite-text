@@ -648,7 +648,7 @@ export class DrawingBot extends DrawingEditor {
         const hint = latestPanel ? extractHintEnd(latestPanel.content) : [];
 
         try {
-            const { strokes, description } = await completePanel(hint, {
+            const { strokes, description, guess } = await completePanel(hint, {
                 canvasWidth: PANEL_WIDTH,
                 canvasHeight: PANEL_HEIGHT,
                 overlap: OVERLAP,
@@ -661,7 +661,7 @@ export class DrawingBot extends DrawingEditor {
                 return;
             }
             logger.info(
-                `DrawingBot drew "${description}" (${strokes.length} strokes) on panel ${drawing.panels.size + 1}`,
+                `DrawingBot drew "${description}" (${strokes.length} strokes) on panel ${drawing.panels.size + 1}${guess ? `, guessing "${guess}" above` : ""}`,
             );
             // Let spectators watch the bot draw, a stroke at a time, like a human's live edits
             for (let i = 1; i <= strokes.length; i++) {

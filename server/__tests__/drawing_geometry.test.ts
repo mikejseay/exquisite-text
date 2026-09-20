@@ -3,9 +3,12 @@ import { describe, it } from "node:test";
 import {
     applyEraser,
     expandShape,
+    expandShapeStrokes,
     findAnchors,
+    hatchLines,
     parseShape,
     pointToSegmentDistance,
+    pressureProfile,
     snapToAnchors,
     wobble,
     type XY,
@@ -166,6 +169,74 @@ describe("parseShape: tolerant reading of the model's shapes", () => {
     });
 });
 
+describe("parseShape: hatch shading and per-shape weight", () => {
+    it("reads the points form of a hatch with explicit angle and spacing", () => {
+        const shape = parseShape({
+            type: "hatch",
+            points: [
+                [0, 0],
+                [10, 0],
+                [5, 8],
+            ],
+            angle: 30,
+            spacing: 5,
+        });
+        assert.deepEqual(shape, {
+            type: "hatch",
+            points: [
+                { x: 0, y: 0 },
+                { x: 10, y: 0 },
+                { x: 5, y: 8 },
+            ],
+            angle: 30,
+            spacing: 5,
+        });
+    });
+
+    it("reads the ellipse form of a hatch (and its aliases) with defaults", () => {
+        const shape = parseShape({ type: "hatching", cx: 50, cy: 50, r: 20 });
+        assert.equal(shape?.type, "hatch");
+        if (!shape || shape.type !== "hatch") return;
+        assert.equal(shape.angle, 45);
+        assert.equal(shape.spacing, 7);
+        assert.ok(shape.points.length >= 12);
+        for (const p of shape.points) assert.ok(Math.abs(Math.hypot(p.x - 50, p.y - 50) - 20) < 1e-6);
+    });
+
+    it("clamps spacing and returns null without a usable region", () => {
+        const shape = parseShape({
+            type: "shade",
+            points: [
+                [0, 0],
+                [10, 0],
+                [5, 8],
+            ],
+            spacing: 1,
+        });
+        assert.equal(shape?.type === "hatch" ? shape.spacing : null, 5);
+        assert.equal(parseShape({ type: "hatch" }), null);
+        assert.equal(
+            parseShape({
+                type: "hatch",
+                points: [
+                    [0, 0],
+                    [10, 10],
+                ],
+            }),
+            null,
+        );
+    });
+
+    it("clamps weight on any shape and drops a non-numeric weight", () => {
+        const heavy = parseShape({ type: "line", x1: 0, y1: 0, x2: 1, y2: 1, weight: 9 });
+        const light = parseShape({ type: "line", x1: 0, y1: 0, x2: 1, y2: 1, weight: -9 });
+        const bad = parseShape({ type: "line", x1: 0, y1: 0, x2: 1, y2: 1, weight: "many" });
+        assert.equal(heavy?.weight, 2.5);
+        assert.equal(light?.weight, 0.4);
+        assert.equal(bad?.weight, undefined);
+    });
+});
+
 describe("expandShape: shapes become evenly spaced points", () => {
     it("samples lines and polylines at about the step, keeping the corners", () => {
         const line = expandShape({ type: "line", x1: 0, y1: 0, x2: 100, y2: 0 }, 4);
@@ -232,6 +303,75 @@ describe("expandShape: shapes become evenly spaced points", () => {
         }
         const rotated = expandShape({ type: "ellipse", cx: 100, cy: 50, rx: 40, ry: 20, rotation: 90 }, 4);
         assert.ok(Math.abs(rotated[0].x - 100) < 1e-6 && Math.abs(rotated[0].y - 90) < 1e-6);
+    });
+});
+
+describe("hatchLines: parallel fill lines inside a polygon", () => {
+    const square: XY[] = [
+        { x: 0, y: 0 },
+        { x: 100, y: 0 },
+        { x: 100, y: 100 },
+        { x: 0, y: 100 },
+    ];
+
+    it("fills a square with evenly spaced, near-horizontal lines at angle 0", () => {
+        const lines = hatchLines(square, 0, 10);
+        assert.equal(lines.length, 10);
+        for (const [a, b] of lines) {
+            assert.ok(Math.abs(a.y - b.y) < 1e-9, "near-horizontal");
+            assert.ok(Math.abs(Math.abs(b.x - a.x) - 100) < 1e-9, "about 100 px long");
+            for (const p of [a, b]) assert.ok(p.x >= -1e-9 && p.x <= 100 + 1e-9 && p.y >= -1e-9 && p.y <= 100 + 1e-9);
+        }
+    });
+
+    it("rotates to near-vertical lines at angle 90", () => {
+        const lines = hatchLines(square, 90, 10);
+        assert.equal(lines.length, 10);
+        for (const [a, b] of lines) assert.ok(Math.abs(a.x - b.x) < 1e-9, "near-vertical");
+    });
+
+    it("crosses a U-shaped gap as two segments per row, one below it", () => {
+        const u: XY[] = [
+            { x: 0, y: 0 },
+            { x: 0, y: 100 },
+            { x: 100, y: 100 },
+            { x: 100, y: 0 },
+            { x: 70, y: 0 },
+            { x: 70, y: 60 },
+            { x: 30, y: 60 },
+            { x: 30, y: 0 },
+        ];
+        const lines = hatchLines(u, 0, 20); // rows at y = 10, 30, 50, 70, 90
+        const byRow = new Map<number, number>();
+        for (const [a] of lines) byRow.set(Math.round(a.y), (byRow.get(Math.round(a.y)) ?? 0) + 1);
+        assert.equal(byRow.get(10), 2, "row crosses the gap: one segment either side");
+        assert.equal(byRow.get(30), 2);
+        assert.equal(byRow.get(50), 2);
+        assert.equal(byRow.get(70), 1, "row is below the gap: one segment spanning the whole width");
+        assert.equal(byRow.get(90), 1);
+    });
+});
+
+describe("expandShapeStrokes: a hatch becomes many strokes, everything else stays one", () => {
+    it("gives one stroke per hatch line", () => {
+        const hatch = parseShape({ type: "hatch", cx: 100, cy: 100, r: 30, spacing: 8 });
+        assert.equal(hatch?.type, "hatch");
+        if (!hatch) return;
+        const strokes = expandShapeStrokes(hatch);
+        assert.ok(strokes.length >= 5, "a hatched circle should have several fill lines");
+        for (const s of strokes) assert.ok(s.length >= 2);
+    });
+
+    it("gives a single stroke for a curve", () => {
+        const strokes = expandShapeStrokes({
+            type: "curve",
+            points: [
+                { x: 0, y: 0 },
+                { x: 50, y: 50 },
+                { x: 100, y: 0 },
+            ],
+        });
+        assert.equal(strokes.length, 1);
     });
 });
 
@@ -381,6 +521,26 @@ describe("wobble: hand-drawn feel without breaking connections", () => {
             assert.ok(Math.hypot(a[i].x - line[i].x, a[i].y - line[i].y) <= 1.4);
         }
         assert.notDeepEqual(wobble(line, 0.7, 4), a, "a different seed gives a different wobble");
+    });
+});
+
+describe("pressureProfile: thin ends, full middle", () => {
+    it("an open stroke is thinnest at both ends and symmetric", () => {
+        const profile = pressureProfile(11, false);
+        assert.equal(profile.length, 11);
+        const mid = profile[5];
+        assert.ok(profile[0] < mid && profile[10] < mid);
+        assert.ok(Math.abs(profile[0] - profile[10]) < 1e-9);
+    });
+
+    it("a closed stroke stays within a gentle 0.7 to 1 range", () => {
+        const profile = pressureProfile(20, true);
+        for (const v of profile) assert.ok(v >= 0.7 - 1e-9 && v <= 1 + 1e-9);
+    });
+
+    it("one or zero points always gives a single full-strength multiplier", () => {
+        assert.deepEqual(pressureProfile(1, false), [1]);
+        assert.deepEqual(pressureProfile(0, true), [1]);
     });
 });
 

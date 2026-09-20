@@ -3,10 +3,12 @@ import { StringOutputParser } from "@langchain/core/output_parsers";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { ChatOpenAI } from "@langchain/openai";
 import {
+    drawCategories,
     drawHintEmpty,
     drawHintEmptyLater,
     drawHintPresent,
-    drawIdeas,
+    drawRevisePrompt,
+    drawStripLook,
     drawSystemPrompt,
     drawUserPrompt,
 } from "llm_utils/prompts";
@@ -14,15 +16,20 @@ import {
     type Anchor,
     applyEraser,
     DEFAULT_SNAP_RADIUS,
-    expandShape,
+    expandShapeStrokes,
     findAnchors,
+    OVERLAP,
+    PANEL_HEIGHT,
+    PANEL_WIDTH,
     parseShape,
     pointToSegmentDistance,
+    pressureProfile,
     type Shape,
     snapToAnchors,
     wobble,
     type XY,
 } from "modules/drawing_geometry";
+import { renderPanelPng } from "modules/drawing_render";
 import type { Point } from "shared/types/types";
 import { logger } from "utilities/loggerUtils";
 
@@ -41,11 +48,7 @@ import { logger } from "utilities/loggerUtils";
 // The model is stateless per panel. If an answer fails a check we ask again
 // with the failed answer and a one-line correction in the conversation.
 
-// Panel geometry, the single source of truth (mirrors the client Canvas
-// constants PANEL_WIDTH_MIN / PANEL_HEIGHT_MIN / OVERLAP)
-export const PANEL_WIDTH = 667;
-export const PANEL_HEIGHT = 300;
-export const OVERLAP = 0.2;
+export { OVERLAP, PANEL_HEIGHT, PANEL_WIDTH } from "modules/drawing_geometry";
 
 // Distance (px) within which a model point counts as "the same" as a hint
 // point when deciding whether a stroke merely retraces the carried band
@@ -56,11 +59,13 @@ const BOTTOM_REACH = 0.1;
 // How far below the strip a fringe line end (any exit that is not one of the
 // two sides) may run before the answer is sent back
 const FRINGE_REACH_PX = 80;
-const DEFAULT_MAX_SHAPES = 16;
+const DEFAULT_MAX_SHAPES = 40;
 
 export type PanelCompletion = {
     strokes: Point[][];
     description: string;
+    guess: string; // what the model thinks the previous player drew above the strip
+    draft?: Point[][]; // the accepted answer before the model saw and revised it
 };
 
 export type CompletePanelOptions = {
@@ -179,14 +184,38 @@ export type ShapesToStrokesOptions = {
 // Turn the model's shape program into styled, connected, in-bounds, echo-free
 // strokes. Pure and deterministic so it can be unit-tested without the network
 export function shapesToStrokes(shapes: Shape[], hint: XY[][], opts: ShapesToStrokesOptions): Point[][] {
-    const expanded = shapes.slice(0, opts.maxShapes).map((shape) => expandShape(shape, opts.step));
-    const snapped = snapToAnchors(expanded, opts.anchors);
-    const clipped = snapped.flatMap((stroke, i) =>
-        clipToCanvas(wobble(stroke, undefined, i + 1), opts.canvasWidth, opts.canvasHeight),
+    // Hatch lines are shading, not outline: they never snap onto an anchor,
+    // and default to a lighter weight than a shape drawn with no weight at all
+    const raw = shapes.slice(0, opts.maxShapes).flatMap((shape) => {
+        const weight = shape.weight ?? (shape.type === "hatch" ? 0.6 : 1);
+        const snap = shape.type !== "hatch";
+        return expandShapeStrokes(shape, opts.step).map((points) => ({ points, weight, snap }));
+    });
+    const snapped = snapToAnchors(
+        raw.map((s) => s.points),
+        opts.anchors,
     );
-    const styled: Point[][] = clipped.map((stroke) =>
-        stroke.map((p) => ({ x: p.x, y: p.y, lineWidth: opts.lineWidth, color: opts.color })),
-    );
+    const clipped = raw.flatMap((s, i) => {
+        const wobbled = wobble(s.snap ? snapped[i] : s.points, undefined, i + 1);
+        return clipToCanvas(wobbled, opts.canvasWidth, opts.canvasHeight).map((points) => ({
+            points,
+            weight: s.weight,
+        }));
+    });
+    // Pencil pressure: thin at the ends of an open stroke, full in the middle,
+    // scaled by the shape's own weight and clamped to a sane pen width
+    const styled: Point[][] = clipped.map(({ points, weight }) => {
+        const first = points[0];
+        const last = points[points.length - 1];
+        const closed = Math.hypot(last.x - first.x, last.y - first.y) <= 0.5;
+        const profile = pressureProfile(points.length, closed);
+        return points.map((p, i) => ({
+            x: p.x,
+            y: p.y,
+            lineWidth: Math.max(1, Math.min(14, opts.lineWidth * weight * profile[i])),
+            color: opts.color,
+        }));
+    });
     return stripHintEcho(styled, hint, opts.bandBottom, opts.epsilon);
 }
 
@@ -281,6 +310,16 @@ function pickIdeas(pool: string[], n: number): string[] {
     return picked;
 }
 
+// A category and a first letter per seed: the letter is what keeps "an
+// animal" from being a cat every game. Always a whole thing: "the middle of
+// a tapir" is a belly by definition, and the model drew that belly as an
+// oval between two lines every game
+export function seedIdeas(n = 3): string[] {
+    return pickIdeas(drawCategories, n).map(
+        (category) => `${category} whose name starts with ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}`,
+    );
+}
+
 export function positionOf(panelIndex: number, nPanels: number): "top" | "middle" | "bottom" {
     if (panelIndex <= 0) return "top";
     if (panelIndex >= nPanels - 1) return "bottom";
@@ -288,9 +327,9 @@ export function positionOf(panelIndex: number, nPanels: number): "top" | "middle
 }
 
 const positionAdvice = {
-    top: "Draw the TOP of a thing. Finish with lines running off the bottom edge (a neck, a trunk, walls) for the next player to continue.",
-    middle: "Draw the MIDDLE of a thing. Attach it to the exits at the top, and send two lines off the bottom edge (hips, legs, a stem, an axle) for the next player to continue.",
-    bottom: "Draw the BOTTOM of a thing and finish the picture, with a bit of ground or shadow. Attach it to the exits at the top. The picture ends at your bottom edge, so nothing needs to run off it.",
+    top: "You start the picture. Draw your whole subject big, and finish with two lines running off the bottom edge (its neck, trunk, stalk or walls) for the next player to continue.",
+    middle: "Draw your whole subject growing out of the exits at the top (they become its neck, handle, stem or roof line), and send two lines off the bottom edge (its legs, stalk or axle) for the next player to continue.",
+    bottom: "Finish the picture: draw your whole subject hanging from the exits at the top (they become its legs, stalk or straps), standing on a bit of ground or shadow. Nothing needs to run off the bottom edge.",
 };
 
 // The model only ever reasons about position. Color and width are ours to
@@ -340,6 +379,19 @@ function buildChain() {
     return drawPrompt.pipe(llm).pipe(new StringOutputParser());
 }
 
+// A human turn that carries a picture
+function lookAt(text: string, png: Buffer): HumanMessage {
+    return new HumanMessage({
+        content: [
+            { type: "text", text },
+            {
+                type: "image_url",
+                image_url: { url: `data:image/png;base64,${png.toString("base64")}`, detail: "high" },
+            },
+        ],
+    });
+}
+
 async function generate(vars: Record<string, string>, feedback: BaseMessage[]): Promise<string> {
     if (!chain) chain = buildChain();
     return chain.invoke({ ...vars, feedback });
@@ -355,11 +407,11 @@ function extractJSON(raw: string): unknown {
     return JSON.parse(raw.slice(start, end + 1));
 }
 
-type RawCompletion = { subject?: unknown; description?: unknown; shapes?: unknown; strokes?: unknown };
+type RawCompletion = { guess?: unknown; subject?: unknown; description?: unknown; shapes?: unknown; strokes?: unknown };
 
 // Accept the shape program, and be lenient with a model that answers in the
 // older raw-strokes form (each stroke a list of [x, y] pairs)
-export function parseCompletion(raw: string): { shapes: Shape[]; description: string; invalid: number } {
+export function parseCompletion(raw: string): { shapes: Shape[]; description: string; guess: string; invalid: number } {
     const parsed = extractJSON(raw) as RawCompletion;
     const rawShapes: unknown[] = Array.isArray(parsed.shapes)
         ? parsed.shapes
@@ -376,7 +428,12 @@ export function parseCompletion(raw: string): { shapes: Shape[]; description: st
         else invalid++;
     }
     const subject = parsed.subject ?? parsed.description;
-    return { shapes, description: typeof subject === "string" ? subject : "", invalid };
+    return {
+        shapes,
+        description: typeof subject === "string" ? subject : "",
+        guess: typeof parsed.guess === "string" ? parsed.guess : "",
+        invalid,
+    };
 }
 
 // ─── Fake model for end-to-end tests (no network) ───────────────
@@ -503,7 +560,11 @@ export function fakeCompletion(
         ],
     };
     const subjects = { top: "a spiky-haired head", middle: "a buttoned-up torso", bottom: "legs on the ground" };
-    return JSON.stringify({ subject: `fake: ${subjects[position]}`, shapes: shapes[position] });
+    return JSON.stringify({
+        guess: anchors.length > 0 ? "fake: something with lines" : "",
+        subject: `fake: ${subjects[position]}`,
+        shapes: shapes[position],
+    });
 }
 
 // ─── The turn ───────────────────────────────────────────────────
@@ -542,7 +603,7 @@ export async function completePanel(hint: Point[][], opts: CompletePanelOptions 
         panel_number: (panelIndex + 1).toString(),
         position,
         position_advice: positionAdvice[position],
-        ideas: pickIdeas(drawIdeas[position], 3).join(", "),
+        ideas: seedIdeas().join(", "),
         panel_bottom: canvasHeight.toString(),
         hint_section: hintSection,
     };
@@ -558,48 +619,71 @@ export async function completePanel(hint: Point[][], opts: CompletePanelOptions 
     const mustReachBottom = position !== "bottom";
     logger.debug(`drawing bot panel ${panelIndex + 1}/${nPanels} (${position}):\n${hintSection}`);
 
+    // Parse an answer into strokes and list what the relay rules object to
+    const judge = (raw: string) => {
+        const { shapes, description, guess, invalid } = parseCompletion(raw);
+        if (invalid > 0) logger.debug(`drawing bot: ignored ${invalid} malformed shape(s)`);
+        if (shapes.length === 0) throw new Error("response had no valid shapes");
+        const strokes = shapesToStrokes(shapes, promptHint, strokeOpts);
+        if (strokes.length === 0) throw new Error("model only retraced the carried-over strokes");
+
+        const lowestY = Math.max(...strokes.flat().map((p) => p.y));
+        const complaints: string[] = [];
+        const overrun = fringeOverrun(strokes, anchors, bandBottom);
+        if (overrun.length > 0) {
+            complaints.push(
+                `you ran long lines down from the fringe ends at ${overrun.map((a) => `(${Math.round(a.x)}, ${Math.round(a.y)})`).join(", ")}, and only the two SIDES may run down the panel: end each fringe line by y=${bandBottom + FRINGE_REACH_PX} or leave it out`,
+            );
+        }
+        if (mustReachBottom && !reachesBottom(strokes, canvasHeight)) {
+            complaints.push(
+                `your lowest point was y=${Math.round(lowestY)}, so the next player would get nothing to continue: make at least two lines run all the way down to y=${canvasHeight}`,
+            );
+        }
+        return { strokes, description, guess, complaints, lowestY };
+    };
+
+    // The strip as the model would see it on paper, ahead of its first answer
+    const opening: BaseMessage[] =
+        hint.length > 0 && process.env.DRAWING_BOT_FAKE !== "1"
+            ? [
+                  lookAt(
+                      drawStripLook,
+                      renderPanelPng(hint, [], { width: canvasWidth, height: bandBottom + 20, bandBottom }),
+                  ),
+              ]
+            : [];
+
     // Prefer an answer that hands the picture on; keep the best fallback (the
     // fewest complaints, then reaching furthest down) so a stubborn model never
     // dead-ends the turn
+    let accepted: PanelCompletion | undefined;
+    let transcript: BaseMessage[] = []; // the exchange that produced the accepted answer
     let best: PanelCompletion | undefined;
     let bestScore = Number.NEGATIVE_INFINITY;
     let feedback: BaseMessage[] = [];
     let lastErr: Error | undefined;
     let attempts = 0;
-    for (let attempt = 1; attempt <= maxTries; attempt++) {
+    for (let attempt = 1; attempt <= maxTries && !accepted; attempt++) {
         attempts = attempt;
         let raw = "";
         try {
             raw =
                 process.env.DRAWING_BOT_FAKE === "1"
                     ? fakeCompletion(position, anchors, canvasWidth, canvasHeight)
-                    : await generate(promptVars, feedback);
+                    : await generate(promptVars, [...opening, ...feedback]);
             logger.debug(`drawing bot raw completion (attempt ${attempt}):\n${raw}`);
-            const { shapes, description, invalid } = parseCompletion(raw);
-            if (invalid > 0) logger.debug(`drawing bot: ignored ${invalid} malformed shape(s)`);
-            if (shapes.length === 0) throw new Error("response had no valid shapes");
-            const strokes = shapesToStrokes(shapes, promptHint, strokeOpts);
-            if (strokes.length === 0) throw new Error("model only retraced the carried-over strokes");
-
-            const lowestY = Math.max(...strokes.flat().map((p) => p.y));
-            const complaints: string[] = [];
-            const overrun = fringeOverrun(strokes, anchors, bandBottom);
-            if (overrun.length > 0) {
-                complaints.push(
-                    `you ran long lines down from the fringe ends at ${overrun.map((a) => `(${Math.round(a.x)}, ${Math.round(a.y)})`).join(", ")}, and only the two SIDES may run down the panel: end each fringe line by y=${bandBottom + FRINGE_REACH_PX} or leave it out`,
-                );
-            }
-            if (mustReachBottom && !reachesBottom(strokes, canvasHeight)) {
-                complaints.push(
-                    `your lowest point was y=${Math.round(lowestY)}, so the next player would get nothing to continue: make at least two lines run all the way down to y=${canvasHeight}`,
-                );
-            }
+            const { strokes, description, guess, complaints, lowestY } = judge(raw);
             const score = lowestY - 1000 * complaints.length;
             if (score > bestScore) {
-                best = { strokes, description };
+                best = { strokes, description, guess };
                 bestScore = score;
             }
-            if (complaints.length === 0) return { strokes, description };
+            if (complaints.length === 0) {
+                accepted = { strokes, description, guess };
+                transcript = [...opening, ...feedback, new AIMessage(raw)];
+                break;
+            }
             logger.debug(`drawing bot attempt ${attempt} rejected: ${complaints.join("; ")}`);
             feedback = [
                 new AIMessage(raw),
@@ -620,9 +704,37 @@ export async function completePanel(hint: Point[][], opts: CompletePanelOptions 
                 : [];
         }
     }
-    if (best) {
+    if (!accepted) {
+        if (!best) throw new Error(`completePanel failed after ${attempts} attempt(s): ${lastErr?.message}`);
         logger.warn("DrawingBot answers were never accepted; using the best attempt");
         return best;
     }
-    throw new Error(`completePanel failed after ${attempts} attempt(s): ${lastErr?.message}`);
+
+    // The model drew blind so far. Show it the render once (or more, see
+    // DRAWING_BOT_REVISIONS) and let it redraw; a revision that breaks a relay
+    // rule or fails outright is dropped in favour of what was already accepted
+    const revisions = process.env.DRAWING_BOT_FAKE === "1" ? 0 : Number(process.env.DRAWING_BOT_REVISIONS ?? 1);
+    let draft: Point[][] | undefined;
+    for (let round = 1; round <= revisions; round++) {
+        try {
+            const look = lookAt(
+                drawRevisePrompt,
+                renderPanelPng(hint, accepted.strokes, { width: canvasWidth, height: canvasHeight, bandBottom }),
+            );
+            const raw = await generate(promptVars, [...transcript, look]);
+            logger.debug(`drawing bot revision ${round}:\n${raw}`);
+            const { strokes, description, complaints } = judge(raw);
+            if (complaints.length > 0) {
+                logger.debug(`drawing bot revision ${round} rejected: ${complaints.join("; ")}`);
+                break;
+            }
+            draft ??= accepted.strokes;
+            accepted = { ...accepted, strokes, description };
+            transcript = [...transcript, look, new AIMessage(raw)];
+        } catch (err) {
+            logger.warn(`drawing bot revision ${round} failed, keeping the earlier answer: ${(err as Error).message}`);
+            break;
+        }
+    }
+    return { ...accepted, draft };
 }
