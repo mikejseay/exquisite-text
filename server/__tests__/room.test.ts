@@ -212,6 +212,10 @@ describe("DrawingRoom", () => {
             isCurrentlyEditing: false,
             sendActivity() {},
             sendLastContributionStatus() {},
+            turnsStarted: 0,
+            possibleStartNewTurn() {
+                this.turnsStarted++;
+            },
         } as any;
         room.editors.set("dev-1", editor);
 
@@ -220,6 +224,8 @@ describe("DrawingRoom", () => {
         assert.equal(editor.contributionQueue.length, 1);
         assert.equal(room.nUnfinishedWorks, 1);
         assert.equal(room.gameState, GameState.GAME);
+        // humans get their first turn started too, so the client's stale strip is replaced
+        assert.equal(editor.turnsStarted, 1);
     });
 
     it("sendCompletedDrawings emits to room", () => {

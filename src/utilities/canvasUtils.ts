@@ -63,10 +63,13 @@ export function drawOnCanvas({
     }
 
     // newPoints is length >=2 if being drawn by handleMove
-    context.beginPath();
     for (let i = 0; i < newPoints.length - 1; i++) {
         const startPoint = newPoints[i];
         const endPoint = newPoints[i + 1];
+        // one path per segment: stroke() paints the whole path, so a shared
+        // path repainted every segment at the newest width lost the pressure
+        // taper of any stroke drawn in one go (redraws, spectators, the End screen)
+        context.beginPath();
         context.moveTo(startPoint.x * pixelRatio, (startPoint.y + yOffset) * pixelRatio);
         context.lineWidth = startPoint.lineWidth * pixelRatio;
         context.lineTo(endPoint.x * pixelRatio, (endPoint.y + yOffset) * pixelRatio);

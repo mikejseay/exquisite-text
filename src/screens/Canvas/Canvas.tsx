@@ -142,7 +142,16 @@ const Canvas: React.FC = () => {
         });
     }, [scaleFactor, editorActive, strokeHistory, triggerRedraw, canvasRef.current, theme.palette.canvas.background]);
 
+    const debouncedEmitPanel = useCallback(
+        debounce((currentPanel: Point[][]) => {
+            emitSendPanelEdit(currentPanel);
+        }, 200),
+        [],
+    );
+
     function passTurn() {
+        // a pending live edit would arrive after the pass and be credited to the next drawing in the queue
+        debouncedEmitPanel.cancel();
         emitSendPanel(localStrokeHistory);
         setPoints([]);
         setLocalStrokeHistory([]);
@@ -150,16 +159,10 @@ const Canvas: React.FC = () => {
     }
 
     function completeDrawing() {
+        debouncedEmitPanel.cancel();
         emitSendLastPanel(localStrokeHistory);
         setLocalStrokeHistory([]);
     }
-
-    const debouncedEmitPanel = useCallback(
-        debounce((currentPanel: Point[][]) => {
-            emitSendPanelEdit(currentPanel);
-        }, 200),
-        [],
-    );
 
     const handleEnd = useCallback(() => {
         setIsMousedown(false);
