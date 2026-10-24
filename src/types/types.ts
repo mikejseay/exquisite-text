@@ -112,9 +112,11 @@ export interface ServerToClientEvents {
     stcDrawingPanels: (panels: IPanel[]) => void;
     stcRoomCode: (roomCode: string) => void;
     stcJoinError: (errorMessage: string) => void;
+    stcNotice: (message: string) => void;
     stcUserTableInfo: (userTableInfo: IUserTableInfo) => void;
     stcGameSettingsInfo: (gameSettings: IGameSettingsInfo) => void;
     stcGameSettingsEnabled: (enabled: boolean) => void;
+    stcBotEnabled: (enabled: boolean) => void;
     stcNavigate: (targetRoute: string) => void;
     stcEditorActive: (isActive: boolean) => void;
     stcLastContribution: (isLast: boolean) => void;
@@ -142,8 +144,10 @@ export interface ClientToServerEvents {
     ctsRequestLastContributionStatus: () => void;
     ctsAlterGameSettings: (gameSettings: Partial<IGameSettingsInfo>) => void;
     ctsRequestSettingsEnabled: () => void;
+    ctsRequestBotEnabled: () => void;
     ctsStartGame: () => void;
     ctsAddPoemBot: () => void;
+    ctsAddDrawingBot: () => void;
     ctsRequestEditorActive: () => void;
     ctsSendLineParts: (firstPart: string, secondPart: string) => void;
     ctsSendLastLine: (lastLine: string) => void;
@@ -170,9 +174,13 @@ export interface ISocketInfoListeners {
     // React.useState<string>("");
     setJoinErrorMessage: (value: string | ((prevVar: string) => string)) => void;
     // React.useState<string>("");
+    setNotice: (value: string | ((prevVar: string) => string)) => void;
+    // React.useState<string>("");
     setRoomCode: (value: string | ((prevVar: string) => string)) => void;
     // React.useState<boolean>(false);
     setSettingsEnabled: (value: boolean | ((prevVar: boolean) => boolean)) => void;
+    // React.useState<boolean>(false);
+    setBotEnabled: (value: boolean | ((prevVar: boolean) => boolean)) => void;
     // React.useState<LineLength>(defaultGameSettings.lineLength);
     setLineLength: (value: LineLength | ((prevVar: LineLength) => LineLength)) => void;
     // React.useState<number>(defaultGameSettings.nRounds);
@@ -212,9 +220,12 @@ export interface ISocketInfo {
     // agnostic
     editorActive: boolean | null;
     joinErrorMessage: string | null;
+    notice: string | null;
     roomCode: string | null;
     setRoomCode: (value: string | ((prevVar: string) => string)) => void;
     settingsEnabled: boolean | null;
+    botEnabled: boolean | null;
+    setBotEnabled: (value: boolean | ((prevVar: boolean) => boolean)) => void;
     userInfo: IUserTableInfo | null;
     setEditorActive: (value: boolean | ((prevVar: boolean) => boolean)) => void;
 

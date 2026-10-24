@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { setTimeout as sleep } from "node:timers/promises";
 import { Drawing, Poem } from "modules/collaboration";
 import type { DrawingEditor, PoemEditor } from "modules/editor";
-import { PoemBot } from "modules/editor";
+import { DrawingBot, PoemBot } from "modules/editor";
 import {
     botDeviceIDToBotSocket,
     deviceIDToRoomID,
@@ -183,6 +183,9 @@ class Room {
         member.unsetReceive();
         delete socketIDToDeviceID[member.socket.id];
         delete deviceIDToSocketID[deviceID];
+        // a bot's client-side socket would otherwise stay connected for the life of the process
+        botDeviceIDToBotSocket.get(deviceID)?.disconnect();
+        botDeviceIDToBotSocket.delete(deviceID);
     }
 
     navigateMembersToGame() {
@@ -307,6 +310,31 @@ export class DrawingRoom extends Room {
         }
 
         this.navigateMembersToGame();
+
+        // Start every first turn explicitly: a human's client still holds the
+        // last game's carried-over strip until it gets a fresh stroke history,
+        // and bots have no client UI to trigger a turn at all
+        for (const editor of this.editors.values()) {
+            editor.possibleStartNewTurn();
+        }
+    }
+
+    addDrawingBot() {
+        // mirror PoemRoom.addPoemBot: spoof a client socket that joins as a bot
+        logger.debug(`room trying to add DrawingBot with server path ${serverPath}`);
+        const botDeviceID = randomUUID();
+        const botSocket = ioClient(serverPath);
+        botDeviceIDToBotSocket.set(botDeviceID, botSocket);
+        botSocket.emit("ctsJoinAsBot", this.roomID, "BOT", botDeviceID);
+    }
+
+    hasDrawingBot() {
+        for (const value of this.editors.values()) {
+            if (value instanceof DrawingBot) {
+                return true;
+            }
+        }
+        return false;
     }
 
     storeDrawing(drawingObj: Drawing) {

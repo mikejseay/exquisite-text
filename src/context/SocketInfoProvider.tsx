@@ -5,9 +5,12 @@ export const SocketInfoContext = createContext<ISocketInfo>({
     // agnostic
     editorActive: null,
     joinErrorMessage: null,
+    notice: null,
     roomCode: null,
     setRoomCode: () => null,
     settingsEnabled: null,
+    botEnabled: null,
+    setBotEnabled: () => null,
     userInfo: null,
     setEditorActive: () => null,
 

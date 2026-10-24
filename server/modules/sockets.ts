@@ -2,7 +2,7 @@
 // and using that content, we maintain the user list and current history of the poem.
 // as far as I can tell, this will be the equivalent of the exquisite functionality, etc.
 
-import { DrawingEditor, PoemBot, PoemEditor } from "modules/editor";
+import { DrawingBot, DrawingEditor, PoemBot, PoemEditor } from "modules/editor";
 import { deviceIDToRoomID, deviceIDToSocketID, roomIDToHost, roomIDToRoom, socketIDToDeviceID } from "modules/globals";
 import Host from "modules/host";
 import { DrawingRoom, PoemRoom } from "modules/room";
@@ -187,8 +187,11 @@ function sockets(io: TypedServer) {
             deviceIDToRoomID[botDeviceID] = roomID;
             logger.debug(`about to make bot editor obj with botDeviceID ${botDeviceID} and name ${name}`);
 
-            const bot = new PoemBot(io, socket, roomID, botDeviceID, name);
-            logger.debug(`bot object (for poems) created with botDeviceID ${bot.deviceID}`);
+            const bot =
+                room.medium === Medium.DRAWING
+                    ? new DrawingBot(io, socket, roomID, botDeviceID, name)
+                    : new PoemBot(io, socket, roomID, botDeviceID, name);
+            logger.debug(`bot object created with botDeviceID ${bot.deviceID} for medium ${room.medium}`);
             bot.joinRoom();
             room.addEditor(botDeviceID, bot);
         });
