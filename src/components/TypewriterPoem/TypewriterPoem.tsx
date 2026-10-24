@@ -160,7 +160,7 @@ export default function TypewriterPoem({
             style={{
                 ...poemTypography,
                 whiteSpace: "pre-line",
-                height: `${nLines + 4}em`,
+                minHeight: `${nLines + 4}em`,
                 width: `${width}px`,
                 textAlign: "left",
             }}
